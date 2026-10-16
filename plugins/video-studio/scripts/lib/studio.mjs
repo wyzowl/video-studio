@@ -250,8 +250,23 @@ export function scriptVersions(root, slug) {
   return sharedVersions(join(root, "videos", slug, "script"), "script.json");
 }
 
-/** Whether a script has a voiceover; without one, its second column is the text on screen. */
+/** Whether a script has a voiceover; without one, its second column is the text on screen. A footage video's script
+    counts as one: its words are what's said on camera. */
 export const scriptHasVoiceover = (script) => script?.mode !== "text";
+
+/** Whether a script is cut from footage (mode "footage"): its words are what's said on camera, from the takes, and
+    each row can say where in the footage they are (`source`: [{ clip, in, out }], seconds in that clip). */
+export const scriptFromFootage = (script) => script?.mode === "footage";
+
+/** The heading over a script's words. */
+export const scriptWordsLabel = (script) => (scriptFromFootage(script) ? "What's said" : scriptHasVoiceover(script) ? "Voiceover" : "Text on screen");
+
+/** A footage row's takes, as they read on the page: "talk-a.mp4 00:06.4–00:09.6", one per range. */
+export function rowSources(row) {
+  return (Array.isArray(row?.source) ? row.source : [])
+    .filter((r) => r && r.clip && Number(r.out) > Number(r.in))
+    .map((r) => `${r.clip} ${timecode(+r.in, true)}–${timecode(+r.out, true)}`);
+}
 
 /** A script's rows, numbered from 1 as its page shows them, each with an id (r01, r02…) its notes point to. */
 export function scriptRows(script) {
@@ -267,6 +282,13 @@ export function scriptLength(script) {
     .replace(/\*\*/g, "")
     .replace(/\([^)]*\)/g, " ");
   const words = said.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+  // from footage, the takes set the length: the ranges each row uses, end to end
+  if (scriptFromFootage(script)) {
+    const taken = scriptRows(script)
+      .flatMap((row) => (Array.isArray(row.source) ? row.source : []))
+      .reduce((sum, r) => sum + Math.max(0, Number(r?.out) - Number(r?.in) || 0), 0);
+    if (taken > 0) return { words, seconds: Math.round(taken), footage: true };
+  }
   return { words, seconds: Math.round((words / WORDS_PER_MINUTE) * 60) };
 }
 

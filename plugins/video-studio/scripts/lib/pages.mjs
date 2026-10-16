@@ -15,6 +15,9 @@ import {
   scriptVersions,
   scriptRows,
   scriptHasVoiceover,
+  scriptFromFootage,
+  scriptWordsLabel,
+  rowSources,
   scriptLength,
   WORDS_PER_MINUTE,
   readStoryboard,
@@ -867,15 +870,18 @@ export function scriptPage(studio, slug, version) {
   const latest = v === versions.at(-1);
   const rows = scriptRows(sc);
   const spoken = scriptHasVoiceover(sc);
-  const words = spoken ? "Voiceover" : "Text on screen";
+  const footage = scriptFromFootage(sc);
+  const words = scriptWordsLabel(sc);
   const length = scriptLength(sc);
-  const recorded = spoken && (sc.recorded === true || readBrief(studio.root, slug).voiceover === "recorded");
+  const recorded = spoken && !footage && (sc.recorded === true || readBrief(studio.root, slug).voiceover === "recorded");
   const hasBold = rows.some((r) => /\*\*.+?\*\*/s.test(`${r.voiceover || ""} ${r.onScreen || ""} ${r.action || ""}`));
   const state = { project: slug, version: v, latest, columns: { words, action: "Action on screen" }, rows: rows.map((r) => ({ id: r.id, n: r.n })), feedback: fb || null };
   const chosen = openingDecision(fb, summary);
 
-  const cellHtml = (row, key, label, text) => `<td class="scriptsheet_cell" data-cell="${key}" data-label="${esc(label)}">
-        <div class="scriptsheet_text">${itemChips(rich(text || ""), video)}</div>
+  // from footage, under what's said: the takes it comes from
+  const takes = (row) => (footage && rowSources(row).length ? `<p class="scriptsheet_source">${rowSources(row).map(esc).join(" + ")}</p>` : "");
+  const cellHtml = (row, key, label, text, extra = "") => `<td class="scriptsheet_cell" data-cell="${key}" data-label="${esc(label)}">
+        <div class="scriptsheet_text">${itemChips(rich(text || ""), video)}</div>${extra}
         <button class="scriptsheet_add" type="button"${latest ? "" : " hidden"} aria-label="Add a note to row ${row.n}, ${esc(label.toLowerCase())}">+ Note</button>
         <div class="scriptsheet_note" data-note-slot></div>
       </td>`;
@@ -905,6 +911,7 @@ export function scriptPage(studio, slug, version) {
         ? `<div class="callout"><strong>How to review</strong><p>Read the script row by row: the ${spoken ? "voiceover" : "text on screen"}, and what happens on screen beside it. To comment on a cell, click it and write your note; it's pinned to that row and column, so Claude knows exactly what to change. Your decision is <b>Approve script</b> unless you add a note or write under <b>Anything else?</b>: then it switches to <b>Changes needed</b> (you can change it). When you've read it all, press <b>Save review</b>: Claude picks your review up straight away (if Claude isn't waiting, tell it you've saved). The storyboard is only made once you approve.</p></div>`
         : `<div class="callout"><strong>This is an earlier script.</strong><p>Its notes are shown as they were saved. <a href="/videos/${enc(slug)}/script/v${versions.at(-1)}/">Review the latest script (v${versions.at(-1)})</a>.</p></div>`
     }
+    ${footage ? `<div class="callout"><strong>The words are from the footage</strong><p>They're what was said on camera, in the takes used; under each line is the clip and time it comes from. A note can ask for a line to be cut, moved or swapped for another take, but changing the words themselves needs a new take.</p></div>` : ""}
     ${recorded ? `<div class="callout"><strong>The voiceover is a recording</strong><p>Its words come from the recording, cut to the take that's used. A note can ask for a line to be cut or moved, but changing the words themselves needs a new recording.</p></div>` : ""}
     ${sc.changes ? `<div class="callout"><strong>What changed in script v${v}</strong><p>${esc(sc.changes)}</p></div>` : ""}
   </div>
@@ -913,7 +920,7 @@ export function scriptPage(studio, slug, version) {
   <div class="container">
     ${eyebrow("01", "Read and comment")}
     <div class="scriptsheet_length">
-      ${length ? `<p><b>Rule:</b> ${WORDS_PER_MINUTE} Words of voiceover = Approx 60 Seconds of video</p><p><b>This script:</b> ${length.words} Words of voiceover = ${length.seconds} Seconds of video</p>` : ""}
+      ${length?.footage ? `<p><b>Length:</b> about ${length.seconds} seconds of footage, from the takes used (${length.words} words said)</p>` : length ? `<p><b>Rule:</b> ${WORDS_PER_MINUTE} Words of voiceover = Approx 60 Seconds of video</p><p><b>This script:</b> ${length.words} Words of voiceover = ${length.seconds} Seconds of video</p>` : ""}
       <p class="scriptsheet_legend">${hasBold ? "<strong>Bold text</strong> appears on screen. " : ""}${latest ? "Click any cell to add a note to it." : ""}</p>
     </div>
     <div class="scriptsheet_wrap">
@@ -924,7 +931,7 @@ ${rows
   .map(
     (r) => `    <tr data-row="${esc(r.id)}">
       <th scope="row" class="scriptsheet_n">${r.n}</th>
-      ${cellHtml(r, "words", words, spoken ? r.voiceover : (r.onScreen ?? r.voiceover))}
+      ${cellHtml(r, "words", words, spoken ? r.voiceover : (r.onScreen ?? r.voiceover), takes(r))}
       ${cellHtml(r, "action", "Action on screen", r.action)}
     </tr>`,
   )
@@ -932,6 +939,7 @@ ${rows
         </tbody>
       </table>
     </div>
+    ${footage && sc.cuts ? `<div class="callout"><strong>Cut from the footage</strong><p>${esc(sc.cuts)}</p></div>` : ""}
   </div>
 </section>
 <section class="section section--rule" id="general">
@@ -1007,7 +1015,11 @@ export function storyboardPage(studio, slug, version) {
   <div class="container">
     <div class="scene_head">
       <p class="eyebrow eyebrow--plain"><span class="eyebrow_index">${String(i + 1).padStart(2, "0")}</span><span>${esc([timecode(s.start), timecode(s.end)].filter(Boolean).join("–"))}${dur ? ` · ${esc(dur)}` : ""}</span></p>
-      <div class="row">${badges}</div>
+      <div class="row">${badges}${
+        s.clip
+          ? `<a class="button button--secondary scene_play" href="${base}${enc(s.clip)}" data-play data-w="${size.w}" data-h="${size.h}" data-label="${esc(`Scene ${i + 1}: ${s.title || `Scene ${i + 1}`}`)}"><span aria-hidden="true">▶</span> Play the scene</a>`
+          : ""
+      }</div>
     </div>
     <h2>${esc(s.title || `Scene ${i + 1}`)}</h2>
     <div class="scene_frames" data-frames="${frames.length}" style="--_fmax: ${fmax}px">

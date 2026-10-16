@@ -159,6 +159,13 @@ strong {
 .doc_legend:not(:first-child) {
   margin-top: 1.5mm;
 }
+/* from footage: the clip and time a line comes from */
+.doc_source {
+  margin-top: 1mm;
+  font-family: var(--mono);
+  font-size: 7.5pt;
+  color: var(--ink-2);
+}
 
 /* ───────── the script: # | voiceover (or text on screen) | action on screen ───────── */
 .doc_table {

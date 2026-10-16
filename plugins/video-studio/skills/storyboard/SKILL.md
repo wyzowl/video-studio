@@ -18,6 +18,7 @@ every scene is approved.
 videos/<project>/storyboard/v<N>/
   frames.html       every frame as a still, at the video's real size
   frames/           PNGs rendered from frames.html
+  stills/, clips/   footage videos only: stills taken from the footage, and each scene's rough cut
   storyboard.json   scenes, frames and notes; the review page is built from it
   feedback.json     written by the review page when the user saves; never write or edit it yourself
 ```
@@ -58,12 +59,31 @@ videos/<project>/storyboard/v<N>/
 4. **Render the frames:**
    `node PLUGIN/scripts/render-frames.mjs videos/<project>/storyboard/v1/frames.html videos/<project>/storyboard/v1/frames`
    Look at every PNG yourself (Read tool) and fix layout, legibility and brand problems before the user sees them.
+   For a footage video, see "From footage" below: the frames are real stills, and each scene gets a rough cut.
 5. **Write `storyboard.json` last** (format below). Writing it publishes the review page, and the studio tells you
    its address, so the frames must be rendered and checked first.
 6. **Share it:** show the page `/videos/<project>/storyboard/v1/` (see "Showing a page" in the production skill):
    beside the chat, with its card, then wait for the review in the background. Say in one sentence how to review:
    every scene starts Approved, so switch any that needs changing to Feedback with a note, then press Save feedback,
    and you'll take it from there. End your turn.
+
+## From footage
+
+A footage video's storyboard is made the same way, from the approved script's takes (its rows' `source`):
+
+- **Frames are real stills** from the footage, at each frame's moment, filling the video's size:
+  `node PLUGIN/scripts/tools/footage.mjs still <clip> <time in the clip> --size <W>x<H> --out videos/<project>/storyboard/v1/stills/<scene>-<n>.png`.
+  In `frames.html`, each frame shows its still full-frame (an `<img>` filling the frame), with what goes over it on
+  top: library items' stills, captions, punch-ins (scale the still), and the B-roll's own still where B-roll plays.
+- **Each scene has a rough cut**, which the page's **Play the scene** button plays with its sound, so the user can
+  judge the takes and the timing: the scene's ranges back to back, and any B-roll over the picture.
+  `node PLUGIN/scripts/tools/footage.mjs clip <clip>@<in>-<out> [<clip>@<in>-<out> …] --size <W>x<H> --out videos/<project>/storyboard/v1/clips/<scene>.mp4`
+  (`--over <clip>@<in>-<out>+<seconds into the cut>` for B-roll). It's small and light, and has no graphics: the
+  frames show those. Watch a moment or two of each yourself (a still from it with `footage.mjs still`), then set the
+  scene's `"clip"` in `storyboard.json`.
+- A scene's `start` and `end` are the cut's own timing: the total of its ranges, scene after scene.
+- Feedback on a footage scene is often about the takes ("use the other take", "start a beat later", "cut the second
+  sentence"): change its ranges, then cut its rough cut again. Re-cut only the scenes that changed.
 
 ## When the review comes in
 
@@ -119,3 +139,5 @@ go-ahead: carry on without asking them to confirm. Read `feedback.json`.
 - `id` is stable across versions (`s01`, `s02`, …); give a new scene a new id rather than renumbering.
 - Times are seconds of video time. `voiceover`, `onScreen` and `notes` are optional; `description` is not.
 - `frames[].src` is relative to the version folder. Use 1 to 5 frames.
+- `clip` (footage): the scene's rough cut, relative to the version folder (`clips/s01.mp4`). The page shows **Play
+  the scene** when there is one.

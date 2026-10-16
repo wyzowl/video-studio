@@ -3,7 +3,7 @@
 //   the request in a video's brief.
 // - On the dashboard, the nav marks the section on screen: Videos, Brands or Library.
 // - A storyboard frame opens full size, as large as the window allows, in a viewer: arrows step through the
-//   page's frames, Esc or a click outside closes it.
+//   page's frames, Esc or a click outside closes it. A footage storyboard's "Play the scene" plays its rough cut there.
 // - "Download PDF" waits while the studio makes the PDF, then downloads it, and offers the copy it keeps in Finder.
 // - The library: a brand, size or type reloads the page with it; previews play only while they're on screen; "Play
 //   from the start" restarts them; "Copy" buttons copy their text.
@@ -73,9 +73,11 @@
   }
 
   // ───────── frame viewer ─────────
+  // It also plays a footage storyboard's scene: its rough cut, with its sound, in the same place.
   let viewer = null;
   let frames = [];
   let at = 0;
+  let playing = null;
 
   function build() {
     viewer = document.createElement("dialog");
@@ -83,7 +85,7 @@
     viewer.setAttribute("aria-label", "Frame, full size");
     viewer.innerHTML = `<button class="viewer_close" type="button" aria-label="Close">×</button>
 <button class="viewer_step viewer_step--prev" type="button" aria-label="Previous frame">‹</button>
-<figure class="viewer_figure"><img class="viewer_img" alt=""><figcaption class="viewer_caption"><span data-viewer-label></span><span class="viewer_count" data-viewer-count></span></figcaption></figure>
+<figure class="viewer_figure"><img class="viewer_img" alt=""><video class="viewer_video" controls playsinline preload="auto" hidden></video><figcaption class="viewer_caption"><span data-viewer-label></span><span class="viewer_count" data-viewer-count></span></figcaption></figure>
 <button class="viewer_step viewer_step--next" type="button" aria-label="Next frame">›</button>`;
     document.body.append(viewer);
     viewer.querySelector(".viewer_close").addEventListener("click", () => viewer.close());
@@ -94,25 +96,38 @@
       if (event.target === viewer || event.target.classList.contains("viewer_figure")) viewer.close();
     });
     viewer.addEventListener("keydown", (event) => {
+      if (playing) return;
       if (event.key === "ArrowLeft") show(at - 1);
       if (event.key === "ArrowRight") show(at + 1);
+    });
+    // closing stops the scene playing
+    viewer.addEventListener("close", () => {
+      // (unless something was opened again before this event came round)
+      if (viewer.open) return;
+      const video = viewer.querySelector(".viewer_video");
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+      playing = null;
     });
     addEventListener("resize", () => viewer.open && fit());
   }
 
   // as large as the window allows, never past the video's own size, keeping its shape
   function fit() {
-    const link = frames[at];
+    const link = playing || frames[at];
     const w = Number(link.dataset.w) || 1920;
     const h = Number(link.dataset.h) || 1080;
     const width = Math.max(120, Math.min(w, innerWidth - 112, ((innerHeight - 120) * w) / h));
-    viewer.querySelector(".viewer_img").style.width = `${Math.round(width)}px`;
+    viewer.querySelector(playing ? ".viewer_video" : ".viewer_img").style.width = `${Math.round(width)}px`;
   }
 
   function show(index) {
     at = (index + frames.length) % frames.length;
     const link = frames[at];
     const img = viewer.querySelector(".viewer_img");
+    img.hidden = false;
+    viewer.querySelector(".viewer_video").hidden = true;
     img.src = link.href;
     img.alt = link.querySelector("img")?.alt || "";
     viewer.querySelector("[data-viewer-label]").textContent = link.dataset.label || "";
@@ -121,11 +136,31 @@
     fit();
   }
 
+  function play(link) {
+    playing = link;
+    const video = viewer.querySelector(".viewer_video");
+    viewer.querySelector(".viewer_img").hidden = true;
+    video.hidden = false;
+    video.src = link.href;
+    viewer.querySelector("[data-viewer-label]").textContent = link.dataset.label || "";
+    viewer.querySelector("[data-viewer-count]").textContent = "Rough cut";
+    viewer.querySelectorAll(".viewer_step").forEach((b) => (b.hidden = true));
+    fit();
+    video.play().catch(() => {});
+  }
+
   document.addEventListener("click", (event) => {
-    const link = event.target.closest("a[data-zoom]");
+    const link = event.target.closest("a[data-zoom], a[data-play]");
     if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
     event.preventDefault();
     if (!viewer) build();
+    if (link.hasAttribute("data-play")) {
+      if (!viewer.open) viewer.showModal();
+      play(link);
+      return;
+    }
+    playing = null;
+    viewer.querySelector(".viewer_video").pause();
     frames = [...document.querySelectorAll("a[data-zoom]")];
     show(frames.indexOf(link));
     if (!viewer.open) viewer.showModal();

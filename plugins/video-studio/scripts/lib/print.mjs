@@ -9,6 +9,9 @@ import {
   scriptVersions,
   scriptRows,
   scriptHasVoiceover,
+  scriptFromFootage,
+  scriptWordsLabel,
+  rowSources,
   scriptLength,
   WORDS_PER_MINUTE,
   readStoryboard,
@@ -76,14 +79,19 @@ export function scriptPrint(studio, slug, version) {
   const size = parseSize(sc.size || video.size);
   const rows = scriptRows(sc);
   const spoken = scriptHasVoiceover(sc);
-  const words = spoken ? "Voiceover" : "Text on screen";
+  const footage = scriptFromFootage(sc);
+  const words = scriptWordsLabel(sc);
   const length = scriptLength(sc);
-  const recorded = spoken && (sc.recorded === true || readBrief(studio.root, slug).voiceover === "recorded");
+  const recorded = spoken && !footage && (sc.recorded === true || readBrief(studio.root, slug).voiceover === "recorded");
   const hasBold = rows.some((r) => /\*\*.+?\*\*/s.test(`${r.voiceover || ""} ${r.onScreen || ""} ${r.action || ""}`));
   const title = sc.title || video.title;
   const what = `Script v${version}`;
   const rule = [
-    length ? `<p><b>Rule:</b> ${WORDS_PER_MINUTE} Words of voiceover = Approx 60 Seconds of video</p><p><b>This script:</b> ${length.words} Words of voiceover = ${length.seconds} Seconds of video</p>` : "",
+    length?.footage
+      ? `<p><b>Length:</b> about ${length.seconds} seconds of footage, from the takes used (${length.words} words said)</p>`
+      : length
+        ? `<p><b>Rule:</b> ${WORDS_PER_MINUTE} Words of voiceover = Approx 60 Seconds of video</p><p><b>This script:</b> ${length.words} Words of voiceover = ${length.seconds} Seconds of video</p>`
+        : "",
     hasBold ? `<p class="doc_legend"><strong>Bold text</strong> appears on screen.</p>` : "",
   ].join("");
   const body = `${head({
@@ -100,16 +108,18 @@ export function scriptPrint(studio, slug, version) {
     ],
   })}
 ${sc.changes ? note(`What changed in v${version}`, sc.changes) : ""}
+${footage ? note("The words are from the footage", "They're what was said on camera, in the takes used; under each line is the clip and time it comes from. Lines can be cut, moved or swapped for another take, but changing the words themselves needs a new take.") : ""}
 ${recorded ? note("The voiceover is a recording", "Its words come from the recording, cut to the take that's used. Lines can be cut or moved, but changing the words themselves needs a new recording.") : ""}
 ${rule ? `<div class="doc_rule">${rule}</div>` : ""}
 <table class="doc_table">
   <thead><tr><th class="doc_n" scope="col">#</th><th scope="col">${words}</th><th scope="col">Action on screen</th></tr></thead>
   <tbody>
 ${rows
-  .map((r) => `    <tr><th class="doc_n" scope="row">${r.n}</th><td>${rich(spoken ? r.voiceover : (r.onScreen ?? r.voiceover))}</td><td>${items(rich(r.action))}</td></tr>`)
+  .map((r) => `    <tr><th class="doc_n" scope="row">${r.n}</th><td>${rich(spoken ? r.voiceover : (r.onScreen ?? r.voiceover))}${footage && rowSources(r).length ? `<p class="doc_source">${rowSources(r).map(esc).join(" + ")}</p>` : ""}</td><td>${items(rich(r.action))}</td></tr>`)
   .join("\n")}
   </tbody>
 </table>
+${footage && sc.cuts ? note("Cut from the footage", sc.cuts) : ""}
 ${reply("row", "Row 4: make the second line shorter")}`;
   return { title, what, html: doc({ title: `${title} – ${what}`, orientation: "portrait", footer: `${title} · ${what}`, body }) };
 }

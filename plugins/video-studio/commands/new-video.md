@@ -21,8 +21,7 @@ Ask with the AskUserQuestion tool, in one panel:
 
 - **What type of video would you like to create?** (header "Type")
   - "Animated video": designed motion graphics, made from scratch to your script or voiceover.
-  - "Footage-based video": your footage, cut and assembled with animated text, transitions and overlays. Not available
-    yet: if chosen, say so and offer an animated video instead.
+  - "Footage-based video": your footage, cut and assembled with animated text, transitions and overlays.
 - **Which brand is this video for?** (header "Brand"): up to three existing brands, most recently used first (label:
   the brand's name; description: "Use the saved brand kit"), then "New brand" ("Build a brand kit from your logo,
   website, colours and fonts"). With no brands yet, offer "New brand" and "No brand (a neutral style)". "Other" lets
@@ -32,9 +31,13 @@ Ask with the AskUserQuestion tool, in one panel:
   - "Script only": you'll paste or upload the script.
   - "Neither yet": Claude asks about the video and drafts a script for you.
 
+  For a footage video, "Neither yet" means the speech in the footage directs the edit (with no speech in it, Claude
+  asks about the video and drafts what's said or shown); a recorded voiceover plays over the footage.
+
 Then a second panel:
 
-- **What size should the video be?** (header "Size"): "Horizontal 16:9" (websites, YouTube, presentations), "Square
+- **What size should the video be?** (header "Size"), only for an animated video (a footage video takes its size
+  from the footage): "Horizontal 16:9" (websites, YouTube, presentations), "Square
   1:1", "Tall square 4:5" (social feeds), "Vertical 9:16" (Stories, Reels, TikTok, Shorts). "Other" takes a custom
   size such as 1200×628.
 - **Where will it mainly be shown?** (header "Where"): "Website or landing page", "YouTube or online ad", "Social
@@ -45,6 +48,11 @@ Then a second panel:
 ### 2. Follow-ups, only for what's needed
 
 - **New brand:** follow the video-studio:brand-kit skill now, then come back here.
+- **Footage-based video:** ask what kind of footage it is (AskUserQuestion, header "Footage", more than one
+  allowed): "Talking head" (someone speaking to camera), "Interview", "B-roll" (scenes, products, places) and
+  "Screen recordings". Then whether there's music: "I have a track", "Suggest one" or "No music". After step 3, ask
+  them to put the clips in the project's `inputs/footage/` folder (give the full path), or to tell you where they are
+  and copy them there yourself.
 - **Recorded voiceover:** after step 3, ask them to put the file in the project's `inputs/` folder (give the full
   path), or to tell you where it is. WAV is best; MP3 is fine.
 - **Script only:** ask for the script, pasted or as a file. Then ask how it should be voiced (AskUserQuestion):
@@ -60,7 +68,9 @@ Then a second panel:
 2. Scaffold with the studio's HyperFrames version (`hyperframes` in studio.json, shown above):
    `HYPERFRAMES_SKIP_SKILLS=1 npx --yes hyperframes@<version> init "videos/<project>" --non-interactive`
    Add `--resolution portrait` for 9:16 or `--resolution square` for 1:1. For 4:5 and custom sizes, set the
-   composition's `data-width` and `data-height` after `init`.
+   composition's `data-width` and `data-height` after `init`. For a footage video, scaffold it, put the clips in
+   `inputs/footage/` and scan them (production skill, "Footage videos"), then set `data-width` and `data-height` to
+   the size the scan gives.
 3. Copy the brand's fonts and logos into the project's `assets/fonts/` and `assets/logos/`.
 4. Put supplied files in `videos/<project>/inputs/`. Keep the original voiceover; if it's MP3, also make
    `inputs/vo.wav` with ffmpeg.
@@ -79,7 +89,7 @@ Then a second panel:
    ---
    title: <Video title>
    brand: <brand slug, or none>
-   type: animated
+   type: <animated | footage>
    size: <16:9 | 1:1 | 4:5 | 9:16 | WxH>
    aspect: <width>x<height>
    voiceover: <recorded | ai | none>
@@ -121,4 +131,5 @@ Then a second panel:
 
 Tell the user in a few lines what's set up and what happens next. Then follow the video-studio:production skill from
 its "Script" stage: the script for their approval, then the voiceover and timing, the storyboard for their approval,
-then the build.
+then the build. A footage video is scanned first, and its script is cut from the takes (production skill, "Footage
+videos").

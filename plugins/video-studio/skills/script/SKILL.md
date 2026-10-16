@@ -32,9 +32,17 @@ videos/<project>/script/v<N>/
    - **Recorded voiceover** (supplied by the user): transcribe it first (production skill, stage 3) and use the clean
      take: no retakes, false starts or anything that will be cut. The voiceover column is that transcript, word for
      word; set `"recorded": true`.
-   - **Footage with speech** (an interview, a presenter): transcribe it the same way and write the cut you propose:
-     the lines that stay, in order, as the voiceover, clean of retakes and anything that will be cut. The action
-     column says which footage plays.
+   - **Footage** (a footage video): scan it first (production skill, "Footage videos"): every clip's transcript,
+     with its pauses, umms and repeated takes marked, and its contact sheet. Write the cut you propose, with
+     `"mode": "footage"`:
+     - the lines that stay, in order, word for word from the take you chose: the best one, clean of umms, false
+       starts and retakes (say which take you chose when there's a choice);
+     - each row's `source`: where in the footage its words are, as the clip and the in and out times in it. Start
+       a beat before the first word and end a beat after the last, in the pauses, never mid-word;
+     - `cuts`: a sentence on what you left out (other takes, umms, the pauses), so the user knows what's gone.
+     The words are what was said on camera, so they can be cut or moved, or swapped for another take, but never
+     reworded. The action column says what's seen: the shot (and any punch-in), B-roll (which clip), and what's
+     added on top.
    - **AI voiceover** (`voiceover: ai`): write the voiceover. Once the script is approved, the AI voice reads exactly
      that.
    - **No voiceover:** set `"mode": "text"`. The second column is the text on screen, word for word, in each row's
@@ -54,8 +62,9 @@ videos/<project>/script/v<N>/
    action cell.
 7. **Library items.** Suggest the studio's ready-made items wherever one makes a beat clearer or richer, so every
    video gets them without anyone having to ask (see "Library items" below).
-8. **Length:** the page counts the voiceover's words and shows the length: 135 words is about 60 seconds. Aim for the
-   brief's length, and say in `summary` if the script runs long or short.
+8. **Length:** the page counts the voiceover's words and shows the length: 135 words is about 60 seconds (from
+   footage, the takes' own lengths). Aim for the brief's length, and say in `summary` if the script runs long or
+   short.
 9. **Write `script.json` last** (format below). Writing it publishes the review page, and the studio tells you how to
    show it.
 10. **Share it** (production skill, "Showing a page"): beside the chat, with its card and link, then wait for the
@@ -149,7 +158,12 @@ on without asking them to confirm. Read `feedback.json`: `decision` (`approved` 
 }
 ```
 
-- `mode`: `voiceover` (the default), or `text` without a voiceover: then each row's words are in `onScreen`.
+- `mode`: `voiceover` (the default); `text` without a voiceover, when each row's words are in `onScreen`; or
+  `footage` for a footage video, when each row's `voiceover` is what's said on camera and the page heads it "What's
+  said".
+- `source` (footage): where the row's words are, `[{ "clip": "talk-a.mp4", "in": 6.3, "out": 9.7 }]`, seconds in
+  that clip (a name in `inputs/footage/`); several ranges for a jump cut inside a row. The page shows each under the
+  words, and the length is their total. `cuts` (footage): what was left out, shown under the table.
 - `id`: a row's id (`r01`, `r02`…), kept for a row across versions where it can be. `scene` groups rows into the
   storyboard's scenes.
 - `recorded`: true when the voiceover is a recording. The page then says its words can't change without a new

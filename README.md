@@ -1,10 +1,10 @@
 # Wyzowl Video Studio
 
-A Claude Code plugin for making animated videos with [HyperFrames](https://github.com/heygen-com/hyperframes):
-a few questions to start, reusable brand kits with their own pages, a written script and a storyboard you approve
+A Claude Code plugin for making animated videos, and videos cut from your own footage, with
+[HyperFrames](https://github.com/heygen-com/hyperframes): a few questions to start, reusable brand kits with their own pages, a written script and a storyboard you approve
 before anything is built, a scored review loop, and rendering on your own Mac.
 
-**Status:** animated videos, with a free library of ready-made pieces and the full library to unlock.
+**Status:** animated and footage videos, with a free library of ready-made pieces and the full library to unlock.
 
 ## Install
 
@@ -81,13 +81,16 @@ out of footage), Claude tells you once and offers to fetch it.
    the length it makes (135 words ≈ 60 seconds). On the script page you click any cell to leave a note on it and add
    general notes. The decision starts on **Approve script** and switches to **Changes needed** when you add a note.
    Claude writes new versions until you approve.
-   A recorded voiceover, or footage with speech, is transcribed and cut clean first.
+   A recorded voiceover is transcribed and cut clean first. For a footage video, Claude reads all the footage first:
+   every clip transcribed, with its pauses, umms and repeated takes marked. The script is then the cut it proposes,
+   word for word from the best takes, with the clip and time of each line, and a note of what was cut.
 3. **Voiceover and timing.** A recorded voiceover is the master clock. Without one: an AI voiceover (HyperFrames'
    built-in voices by default, made on the Mac) read from the approved script, or on-screen text timed to a beat
    grid.
 4. **Storyboard.** Every scene with 1–5 frames, rendered in the brand at the video's real size. On the storyboard
    page every scene starts **Approved**: switch any you'd like changed to **Feedback**, with a note, then save. Claude
-   makes a new version until every scene is approved. Nothing is built before that.
+   makes a new version until every scene is approved. Nothing is built before that. For a footage video the frames
+   are stills from the footage, and each scene has **Play the scene**, which plays its rough cut with its sound.
 5. **Build and review.** Claude builds the video, renders drafts and reviews them against a seven-point rubric, for at
    least two rounds, until every score is 8 or more.
 6. **Video review.** On the video's review page you watch it and pin notes to moments in it. The decision is

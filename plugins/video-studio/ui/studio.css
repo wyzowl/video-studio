@@ -2171,12 +2171,17 @@ a.stages_item:hover {
   justify-items: center;
   gap: var(--space-3);
 }
-.viewer_img {
+.viewer_img,
+.viewer_video {
   display: block;
   height: auto;
   max-width: 100%;
   background: var(--ink-800);
   box-shadow: 0 1.5rem 4rem -1rem #000;
+}
+.viewer_img[hidden],
+.viewer_video[hidden] {
+  display: none;
 }
 .viewer_caption {
   display: flex;
@@ -2298,6 +2303,14 @@ a.stages_item:hover {
 }
 .scriptsheet_text strong {
   font-weight: 800;
+}
+/* from footage: the clip and time a line comes from */
+.scriptsheet_source {
+  margin: var(--space-2) 0 0;
+  padding-right: 3.25rem;
+  font: 500 var(--text-tiny) / 1.4 var(--font-mono);
+  letter-spacing: 0.02em;
+  color: var(--text-2);
 }
 /* "+ Note": quiet until the cell is hovered or it's focused; a click anywhere on the cell does the same */
 .scriptsheet_add {

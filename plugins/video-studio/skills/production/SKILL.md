@@ -21,8 +21,8 @@ release instead of the pin: don't use it. New projects use the `hyperframes` ver
    edit it (put later changes in Notes). Read the brand kit (`brands/<brand>/brand.json`) before designing anything.
 2. **Script.** Follow the video-studio:script skill: the written script (the voiceover or the text on screen, and
    what happens on screen, a row per beat) on its review page. No storyboard until the user approves the script. With
-   a recorded voiceover, or footage with speech, transcribe it first (stage 3) and write the script from the clean
-   take.
+   a recorded voiceover, transcribe it first (stage 3) and write the script from the clean take. With footage, scan
+   it first ("Footage videos" below) and write the script from its takes.
 3. **Voiceover and timing.** One master clock per video:
    - **Recorded voiceover** (`inputs/vo.wav`): it's the clock. Never re-time or edit it. Get word times with
      `HF transcribe inputs/vo.wav --engine parakeet`; correct misheard words against the script; run
@@ -33,10 +33,13 @@ release instead of the pin: don't use it. New projects use the `hyperframes` ver
      step above.
    - **No voiceover:** a beat grid is the clock. `TEMPO` and a `PRE` lead-in, with beat *b* at
      `PRE + b × 60 / TEMPO`. Write every cue in beats, so re-timing is one change.
+   - **Footage** (`type: footage`): the cut's own speech is the clock. Each kept range plays at its own pace, and
+     everything else is timed to the scan's word times, moved to where each range sits in the cut.
 4. **Storyboard.** Follow the video-studio:storyboard skill. Build nothing until every scene is approved.
 5. **Build.** One `index.html` with a pure `render(t)` on one paused GSAP clock, or `src/` plus a build script that
    generates `index.html` for bigger films. Reuse the approved storyboard frames' layouts. `HF check` must show
-   0 errors. Check stills with `HF snapshot --at <times>` before the first render.
+   0 errors. Check stills with `HF snapshot --at <times>` before the first render. A footage video is built as clips
+   instead ("Footage videos" below).
 6. **Sound.** Use a supplied track if there is one. Otherwise propose a music bed and sound design, never add them
    silently. See `references/audio.md`.
 7. **Review loop.** Draft renders, review sheets, seven scores, fixes, and at least two rounds until every score is 8
@@ -61,6 +64,42 @@ release instead of the pin: don't use it. New projects use the `hyperframes` ver
    timeline, audio and assets. Re-lay out type and composition for each format; never crop or letterbox.
 11. **Revisions.** A new version suffix (`_v2`); keep the previous files; motion or feel changes come with a
     side-by-side before/after. If the user has edited in HyperFrames Studio, follow "Studio" below.
+
+## Footage videos
+
+A footage video goes through the same stages: brief, script, storyboard, build, review loop and video review. The
+footage sets the size, and its speech is the clock.
+
+1. **Scan the footage first**, before the script: `node PLUGIN/scripts/tools/footage.mjs scan` in the project folder.
+   - It reads every clip in `inputs/footage/`: its length, its size (after any phone rotation), frame rate and
+     sound.
+   - It makes light preview copies and a contact sheet of each clip.
+   - Where there's speech, it transcribes it with word times (`footage/transcripts/<clip>.json`), and writes notes
+     marking the pauses, umms and possible retakes (`<clip>.md`).
+   - It lists all of it in `footage/footage.json`.
+
+   Read every clip's notes and look at every sheet (Read tool) before choosing anything. The scan also gives the
+   video's size, from the footage: put it in `BRIEF.md` (`size`, `aspect`). Clips of another shape are cropped to fill
+   it, never letterboxed; a horizontal video stays horizontal. Footage of the same moment from several cameras isn't
+   cut between: use one camera's clips, and say so if the user gives more.
+2. **The script** is the cut you propose, from the takes (script skill: `"mode": "footage"`, each row's `source`).
+3. **The storyboard** shows real stills and plays each scene's rough cut (storyboard skill, "From footage").
+4. **Build the cut** in HyperFrames' clip-and-track structure, so the user can open it in HyperFrames Studio and
+   adjust it:
+   - one `<video>` per kept range: `data-start` where it sits in the video, `data-media-start` its in point and
+     `data-duration` its length, with `data-has-audio="true"` so its sound plays;
+   - B-roll as muted `<video>` clips on the track above;
+   - library items, captions and titles on the tracks above those.
+
+   Use the original files in `inputs/footage/`, not the previews.
+   - Cut in the pauses: a beat after the last word and before the next, never mid-word, and keep breaths natural.
+     Hide a jump cut inside a take with a punch-in (scale the next range by about 1.1) or B-roll over it.
+   - Anything timed to the words (captions, items' cues) takes the scan's word times, moved to the cut: time in the
+     video = the range's `data-start` + the word's time − the range's in point.
+   - Sound: the speech leads. Music sits under it and ducks while people speak (`references/audio.md`); B-roll's own
+     sound stays off unless it's the point.
+   - Check every join: transcribe the draft (`HF transcribe`) and compare its words with the script's, so no word is
+     clipped, doubled or missing; and look at the cuts with `HF snapshot`.
 
 ## Showing a page
 
