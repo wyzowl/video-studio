@@ -1,0 +1,388 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"eyebrow","type":"string","label":"Eyebrow (where the figures come from)","default":"Online shop report 2026"},
+    {"id":"title","type":"string","label":"Title: the takeaway, in a sentence","default":"78% of orders are now placed on a phone, up from 22% in 2016"},
+    {"id":"subtitle","type":"string","label":"What was measured","default":"Orders placed on a mobile device, as a share of all orders"},
+    {"id":"points","type":"string","label":"Points, as JSON: [{\"label\":\"2016\",\"value\":22}, …] (2 to 16, oldest first)","default":"[{\"label\":\"2016\",\"value\":22},{\"label\":\"2017\",\"value\":26},{\"label\":\"2018\",\"value\":33},{\"label\":\"2019\",\"value\":41},{\"label\":\"2020\",\"value\":52},{\"label\":\"2021\",\"value\":58},{\"label\":\"2022\",\"value\":63},{\"label\":\"2023\",\"value\":67},{\"label\":\"2024\",\"value\":71},{\"label\":\"2025\",\"value\":74},{\"label\":\"2026\",\"value\":78}]"},
+    {"id":"prefix","type":"string","label":"Before each value, such as $ or £","default":""},
+    {"id":"suffix","type":"string","label":"After each value, such as % or k","default":"%"},
+    {"id":"max","type":"number","label":"Top of the scale (0 works it out: 100 for percentages)","default":0,"min":0},
+    {"id":"source","type":"string","label":"Source","default":"Example figures"},
+    {"id":"exit","type":"enum","label":"At the end","default":"animate","options":[{"value":"animate","label":"Animate out"},{"value":"hold","label":"Hold, for a transition"}]},
+    {"id":"duration","type":"number","label":"Length","default":8,"min":4,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Background","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Text and the line","default":"#1E1E1E"},
+    {"id":"muted","type":"color","label":"Muted text","default":"#5F5E5B"},
+    {"id":"line","type":"color","label":"Gridlines","default":"#CBC8C1"},
+    {"id":"accent","type":"color","label":"Accent","default":"#F9B336"},
+    {"id":"fontDisplay","type":"string","label":"Heading font","default":"Inter"},
+    {"id":"fontBody","type":"string","label":"Body font","default":"Inter"},
+    {"id":"fontLabel","type":"string","label":"Label font","default":"JetBrains Mono"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>D02 Line chart · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "D02",
+        "name": "Line chart",
+        "category": "data",
+        "free": true,
+        "summary": "A full-frame line that draws on, ending on the figure that matters.",
+        "use": "When the point is how something changed over time. The title says the change; the last point takes the accent and its value counts up.",
+        "motion": "The title fades up (0.40 s), then the baseline and dashed gridlines draw left to right (0.60 s, 0.05 s apart) as the axis labels fade in. The line draws from the first point to the last (1.60 s), each point popping in as the line reaches it. The last point turns to the accent and grows (0.30 s) while its value counts up (1.00 s, easing out). Out: labels, points and line fade (0.30 s), then the gridlines retract (0.40 s).",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #d02-line-chart {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          background: var(--card, #f6f3ea);
+          color: var(--ink, #1e1e1e);
+          -webkit-font-smoothing: antialiased;
+        }
+        #d02-line-chart .box {
+          position: absolute;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          gap: 40px;
+        }
+        #d02-line-chart[data-fmt="16x9"] .box { left: 192px; top: 72px; width: 1536px; height: 864px; padding: 56px 72px 44px; }
+        #d02-line-chart[data-fmt="1x1"] .box { left: 108px; top: 96px; width: 864px; height: 792px; padding: 44px 48px 36px; }
+        #d02-line-chart[data-fmt="4x5"] .box { left: 108px; top: 120px; width: 864px; height: 1008px; padding: 52px 48px 40px; }
+        #d02-line-chart[data-fmt="9x16"] .box { left: 108px; top: 200px; width: 864px; height: 1260px; padding: 60px 48px 48px; }
+        #d02-line-chart .head { display: flex; flex-direction: column; gap: 14px; }
+        #d02-line-chart[data-fmt="1x1"] .head { gap: 12px; }
+        #d02-line-chart[data-fmt="9x16"] .head { gap: 16px; }
+        #d02-line-chart .eyebrow {
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 24px;
+          line-height: 32px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--muted, #5f5e5b);
+        }
+        #d02-line-chart .title {
+          max-width: 1300px;
+          font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
+          font-weight: 800;
+          font-size: 50px;
+          line-height: 58px;
+          letter-spacing: -0.02em;
+        }
+        #d02-line-chart .subtitle {
+          font-family: var(--fontBody, "Inter"), system-ui, sans-serif;
+          font-size: 26px;
+          line-height: 36px;
+          color: var(--muted, #5f5e5b);
+        }
+        #d02-line-chart[data-fmt="1x1"] .eyebrow,
+        #d02-line-chart[data-fmt="4x5"] .eyebrow { font-size: 20px; line-height: 28px; }
+        #d02-line-chart[data-fmt="9x16"] .eyebrow { font-size: 22px; line-height: 30px; }
+        #d02-line-chart[data-fmt="1x1"] .title { font-size: 40px; line-height: 46px; }
+        #d02-line-chart[data-fmt="4x5"] .title { font-size: 44px; line-height: 50px; }
+        #d02-line-chart[data-fmt="9x16"] .title { font-size: 50px; line-height: 56px; }
+        #d02-line-chart[data-fmt="1x1"] .subtitle,
+        #d02-line-chart[data-fmt="4x5"] .subtitle { font-size: 22px; line-height: 30px; }
+        #d02-line-chart[data-fmt="9x16"] .subtitle { font-size: 24px; line-height: 34px; }
+
+        #d02-line-chart .chart { position: relative; flex: 1 1 auto; min-height: 0; display: flex; align-items: flex-end; }
+        #d02-line-chart .plot { position: relative; flex-shrink: 0; }
+        #d02-line-chart .plot svg { position: absolute; left: 0; top: 0; overflow: visible; }
+        #d02-line-chart .tick {
+          position: absolute;
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 20px;
+          line-height: 26px;
+          color: var(--muted, #5f5e5b);
+          white-space: nowrap;
+        }
+        #d02-line-chart:not([data-fmt="16x9"]) .tick { font-size: 18px; line-height: 24px; }
+        #d02-line-chart .tick.y { text-align: right; }
+        #d02-line-chart .tick.x { width: 120px; text-align: center; }
+        #d02-line-chart .keyval,
+        #d02-line-chart .firstval {
+          position: absolute;
+          font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
+          white-space: nowrap;
+          font-variant-numeric: tabular-nums;
+        }
+        #d02-line-chart .keyval { font-weight: 800; letter-spacing: -0.02em; font-size: 40px; line-height: 44px; }
+        #d02-line-chart:not([data-fmt="16x9"]) .keyval { font-size: 34px; line-height: 38px; }
+        #d02-line-chart .firstval { font-weight: 600; color: var(--muted, #5f5e5b); font-size: 24px; line-height: 28px; }
+        #d02-line-chart:not([data-fmt="16x9"]) .firstval { font-size: 22px; line-height: 26px; }
+
+        #d02-line-chart .source {
+          position: absolute;
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          height: 56px;
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 28px;
+          line-height: 36px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--muted, #5f5e5b);
+          white-space: nowrap;
+        }
+        #d02-line-chart .source b { font-weight: 600; color: var(--ink, #1e1e1e); }
+        #d02-line-chart .source .dot { letter-spacing: 0; }
+        #d02-line-chart[data-fmt="16x9"] .source { left: 192px; top: 962px; }
+        #d02-line-chart[data-fmt="1x1"] .source { left: 108px; top: 912px; }
+        #d02-line-chart[data-fmt="4x5"] .source { left: 108px; top: 1156px; }
+        #d02-line-chart[data-fmt="9x16"] .source { left: 108px; top: 1484px; }
+      </style>
+
+      <div id="d02-line-chart" data-composition-id="d02-line-chart">
+        <div class="box">
+          <div class="head"><div class="eyebrow"></div><div class="title"></div><div class="subtitle"></div></div>
+          <div class="chart"><div class="plot"></div></div>
+        </div>
+        <div class="source"><b>Source</b><span class="dot">·</span><span class="text"></span></div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "d02-line-chart";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const r = W / H;
+          const fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
+          root.dataset.fmt = fmt;
+          const wide = fmt === "16x9";
+
+          const EASE = v("ease", "power3.inOut") || "power3.inOut";
+          const D = Math.max(4, Number(v("duration", 8)) || 8);
+          const q = (s) => root.querySelector(s);
+          const text = (s, k) => {
+            q(s).textContent = String(v(k, ""));
+            if (!q(s).textContent.trim()) q(s).style.display = "none";
+          };
+          text(".eyebrow", "eyebrow");
+          text(".title", "title");
+          text(".subtitle", "subtitle");
+          q(".source .text").textContent = String(v("source", ""));
+          if (!q(".source .text").textContent.trim()) q(".source").style.display = "none";
+
+          // the points: [{label, value}], oldest first
+          let data = [];
+          try {
+            const given = JSON.parse(String(v("points", "[]")));
+            if (Array.isArray(given)) data = given;
+          } catch (err) {}
+          data = data
+            .map((d) => ({ label: String(d && d.label != null ? d.label : ""), value: Number(d && d.value) }))
+            .filter((d) => Number.isFinite(d.value))
+            .slice(0, 16);
+          const prefix = String(v("prefix", ""));
+          const suffix = String(v("suffix", "%"));
+          const decimals = Math.max(0, ...data.map((d) => (String(d.value).split(".")[1] || "").length));
+          const valueFormat = new Intl.NumberFormat("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+          // a value as it's shown; the last point's count calls it on each frame, so it only formats (nothing is measured)
+          function show(n) {
+            return prefix + valueFormat.format(n) + suffix;
+          }
+
+          // the scale: from zero to 100 for percentages, otherwise to a round number above the largest value, in four steps
+          const largest = Math.max(0, ...data.map((d) => d.value));
+          let top = Number(v("max", 0)) || 0;
+          if (!(top > 0)) {
+            if (suffix.trim() === "%" && largest <= 100) top = 100;
+            else {
+              const raw = (largest || 1) / 4;
+              const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+              const step = [1, 2, 2.5, 5, 10].map((k) => k * mag).find((s) => s >= raw) || raw;
+              top = step * 4;
+            }
+          }
+          const tickPlaces = Number.isInteger(top / 4) ? 0 : 1;
+          const tickFormat = new Intl.NumberFormat("en-US", { minimumFractionDigits: tickPlaces, maximumFractionDigits: tickPlaces });
+
+          const NS = "http://www.w3.org/2000/svg";
+          const make = (tag, attrs, parent) => {
+            const el = document.createElementNS(NS, tag);
+            for (const k in attrs) el.setAttribute(k, attrs[k]);
+            parent.appendChild(el);
+            return el;
+          };
+          const css = (k, d) => getComputedStyle(root).getPropertyValue(`--${k}`).trim() || d;
+          const colour = (k, d) => (typeof vars[k] === "string" && vars[k]) || css(k, d);
+
+          // text widths off a canvas, as HyperFrames recommends: nothing in the page is measured, so this works while
+          // the clip is still hidden (until its start, a clip measures as zero)
+          const pen = document.createElement("canvas").getContext("2d");
+          function lineCount(text, font, spacing, width) {
+            pen.font = font;
+            pen.letterSpacing = spacing;
+            let n = 0;
+            let line = "";
+            for (const word of String(text).trim().split(/\s+/).filter(Boolean)) {
+              const next = line ? `${line} ${word}` : word;
+              if (line && pen.measureText(next).width > width - 2) {
+                n++;
+                line = word;
+              } else line = next;
+            }
+            return n + (line ? 1 : 0);
+          }
+
+          let parts = null;
+          // draw the chart in the room left under the title (the Paper designs' height at most), working out the title's
+          // height from its lines: [inside height, eyebrow, gap, title size and line, what-was-measured size and line,
+          // their widths]
+          function draw() {
+            const plot = q(".plot");
+            const width = wide ? 1392 : 768;
+            const tallest = { "16x9": 470, "1x1": 440, "4x5": 600, "9x16": 820 }[fmt];
+            const [inner, eyeLine, gap, titlePx, titleLine, subPx, subLine, titleWidth] = {
+              "16x9": [764, 32, 14, 50, 58, 26, 36, 1300],
+              "1x1": [712, 28, 12, 40, 46, 22, 30, 768],
+              "4x5": [916, 28, 14, 44, 50, 22, 30, 768],
+              "9x16": [1152, 30, 16, 50, 56, 24, 34, 768],
+            }[fmt];
+            const display = String(v("fontDisplay", "Inter") || "Inter");
+            const body = String(v("fontBody", "Inter") || "Inter");
+            const heights = [];
+            if (String(v("eyebrow", "")).trim()) heights.push(eyeLine);
+            if (String(v("title", "")).trim()) heights.push(titleLine * lineCount(v("title", ""), `800 ${titlePx}px ${display}, system-ui, sans-serif`, `${-0.02 * titlePx}px`, titleWidth));
+            if (String(v("subtitle", "")).trim()) heights.push(subLine * lineCount(v("subtitle", ""), `400 ${subPx}px ${body}, system-ui, sans-serif`, "0px", width));
+            const head = heights.reduce((a, b) => a + b, 0) + gap * Math.max(0, heights.length - 1);
+            const height = Math.max(240, Math.min(tallest, inner - head - 40));
+            plot.style.width = `${width}px`;
+            plot.style.height = `${height}px`;
+            const x0 = wide ? 78 : 66;
+            const x1 = wide ? 1296 : 672;
+            const yTop = 14;
+            const yBase = height - (wide ? 50 : 48);
+            const xAt = (i) => (data.length < 2 ? (x0 + x1) / 2 : x0 + ((x1 - x0) * i) / (data.length - 1));
+            const yAt = (value) => yBase - ((yBase - yTop) * Math.max(0, Math.min(value, top))) / top;
+            const svg = make("svg", { width, height, viewBox: `0 0 ${width} ${height}` }, plot);
+            const ink = colour("ink", "#1E1E1E");
+
+            // gridlines at each quarter, the baseline solid
+            const grid = [];
+            for (let k = 1; k <= 4; k++) {
+              const y = yAt((top * k) / 4);
+              grid.push(make("line", { x1: x0, y1: y, x2: x0, y2: y, "data-x2": x1, stroke: colour("line", "#CBC8C1"), "stroke-width": 2, "stroke-dasharray": "8 8" }, svg));
+            }
+            grid.unshift(make("line", { x1: x0, y1: yBase, x2: x0, y2: yBase, "data-x2": x1, stroke: ink, "stroke-width": 2 }, svg));
+
+            const labels = [];
+            for (let k = 0; k <= 4; k++) {
+              const t = document.createElement("div");
+              t.className = "tick y";
+              t.textContent = prefix + tickFormat.format((top * k) / 4) + suffix;
+              t.style.width = `${wide ? 62 : 50}px`;
+              t.style.left = "0px";
+              t.style.top = `${yAt((top * k) / 4) - (wide ? 13 : 12)}px`;
+              plot.appendChild(t);
+              labels.push(t);
+            }
+            // year labels under the points: every one at 16:9, fewer at the other sizes so they never touch
+            const room = wide ? 12 : 6;
+            const every = Math.max(1, Math.ceil(data.length / room));
+            data.forEach((d, i) => {
+              const last = i === data.length - 1;
+              if (i % every !== 0 && !last) return;
+              if (!last && i % every === 0 && data.length - 1 - i < every * 0.6 && i !== 0) return;
+              const t = document.createElement("div");
+              t.className = "tick x";
+              t.textContent = d.label;
+              t.style.left = `${xAt(i) - 60}px`;
+              t.style.top = `${yBase + 16}px`;
+              plot.appendChild(t);
+              labels.push(t);
+            });
+
+            // the line and its points; each point's place along the line, for when the line reaches it
+            const pts = data.map((d, i) => [xAt(i), yAt(d.value)]);
+            const path = make("path", { d: pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" "), fill: "none", stroke: ink, "stroke-width": 4, "stroke-linecap": "round", "stroke-linejoin": "round", pathLength: 1, "stroke-dasharray": "1 1", "stroke-dashoffset": 1 }, svg);
+            let run = 0;
+            const along = pts.map((p, i) => (i ? (run += Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1])) : 0));
+            const total = run || 1;
+            const dots = pts.map((p, i) => make("circle", { cx: p[0], cy: p[1], r: 6, fill: ink }, svg));
+            const lastDot = dots[dots.length - 1];
+
+            // the last value, beside its point, and the first, above its point
+            const key = document.createElement("div");
+            key.className = "keyval";
+            plot.appendChild(key);
+            const first = document.createElement("div");
+            first.className = "firstval";
+            plot.appendChild(first);
+            if (pts.length) {
+              const [lx, ly] = pts[pts.length - 1];
+              key.style.left = `${lx + 22}px`;
+              key.style.top = `${ly - (wide ? 24 : 21)}px`;
+              key.textContent = show(0);
+              const [fx, fy] = pts[0];
+              first.textContent = pts.length > 1 ? show(data[0].value) : "";
+              first.style.left = `${fx + 10}px`;
+              first.style.top = `${fy - (wide ? 52 : 46)}px`;
+            }
+            parts = { grid, labels, path, dots, lastDot, along: along.map((a) => a / total), key, first, ink };
+          }
+
+          // sine.inOut, turned round: when the line, drawing with that ease, reaches a share of its length
+          const reach = (share) => Math.acos(1 - 2 * Math.max(0, Math.min(1, share))) / Math.PI;
+
+          function build() {
+            const tl = gsap.timeline({ paused: true });
+            const { grid, labels, path, dots, lastDot, along, key, first, ink } = parts;
+            tl.fromTo([q(".eyebrow"), q(".title"), q(".subtitle")], { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE, stagger: 0.08 }, 0);
+            grid.forEach((g, i) => tl.to(g, { attr: { x2: Number(g.getAttribute("data-x2")) }, duration: 0.6, ease: EASE }, 0.3 + i * 0.05));
+            tl.fromTo(labels, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "none", stagger: 0.02 }, 0.4);
+            const START = 0.9;
+            const DRAW = 1.6;
+            tl.to(path, { attr: { "stroke-dashoffset": 0 }, duration: DRAW, ease: "sine.inOut" }, START);
+            dots.forEach((dot, i) => tl.fromTo(dot, { scale: 0, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.25, ease: "back.out(2)" }, START + reach(along[i]) * DRAW - 0.05));
+            tl.fromTo(first, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "none" }, START);
+            const END = START + DRAW;
+            if (lastDot) {
+              tl.to(lastDot, { attr: { r: 13 }, fill: colour("accent", "#F9B336"), stroke: ink, strokeWidth: 3, duration: 0.3, ease: "back.out(2)" }, END);
+              const count = { n: 0 };
+              const value = data[data.length - 1].value;
+              tl.fromTo(key, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "none" }, END);
+              tl.fromTo(count, { n: 0 }, { n: value, duration: 1, ease: "power2.out", onUpdate: () => (key.textContent = show(count.n)) }, END);
+            }
+            tl.fromTo(q(".source"), { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "none" }, 0.8);
+            if (v("exit", "animate") !== "hold") {
+              const out = D - 0.7;
+              tl.to([...labels, key, first, path, ...dots], { opacity: 0, duration: 0.3, ease: "none" }, out);
+              grid.forEach((g) => tl.to(g, { attr: { x2: Number(g.getAttribute("x1")) }, duration: 0.4, ease: EASE }, out + 0.3));
+            }
+            tl.set({}, {}, D);
+            window.__timelines[ID] = tl;
+          }
+
+          // the title is measured (off a canvas), so draw once the fonts have loaded
+          const fonts = [`800 50px ${v("fontDisplay", "Inter") || "Inter"}`, `400 26px ${v("fontBody", "Inter") || "Inter"}`, `400 20px ${v("fontLabel", "JetBrains Mono") || "JetBrains Mono"}`];
+          const loaded = document.fonts ? Promise.all(fonts.map((f) => document.fonts.load(f).catch(() => null))).then(() => document.fonts.ready) : Promise.resolve();
+          loaded.then(() => {
+            draw();
+            build();
+          });
+        })();
+      </script>
+    </template>
+  </body>
+</html>

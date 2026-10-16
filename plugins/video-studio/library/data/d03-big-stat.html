@@ -1,0 +1,270 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"eyebrow","type":"string","label":"Eyebrow (where the figure comes from)","default":"Customer report 2026"},
+    {"id":"number","type":"string","label":"Number (it counts up to this; keep any $, £ or commas)","default":"68"},
+    {"id":"unit","type":"string","label":"Unit after the number","default":"%"},
+    {"id":"words","type":"string","label":"What the number is","default":"of customers came back to buy again within a month"},
+    {"id":"source","type":"string","label":"Source","default":"Example figures"},
+    {"id":"exit","type":"enum","label":"At the end","default":"animate","options":[{"value":"animate","label":"Animate out"},{"value":"hold","label":"Hold, for a transition"}]},
+    {"id":"duration","type":"number","label":"Length","default":5,"min":2.5,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Background","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Text","default":"#1E1E1E"},
+    {"id":"muted","type":"color","label":"Muted text","default":"#5F5E5B"},
+    {"id":"accent","type":"color","label":"Accent","default":"#F9B336"},
+    {"id":"fontDisplay","type":"string","label":"Heading font","default":"Inter"},
+    {"id":"fontBody","type":"string","label":"Body font","default":"Inter"},
+    {"id":"fontLabel","type":"string","label":"Label font","default":"JetBrains Mono"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>D03 Big stat · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "D03",
+        "name": "Big stat",
+        "category": "data",
+        "free": true,
+        "summary": "One number that fills the frame, with what it means and its source.",
+        "use": "When one figure is the point of a scene and deserves the whole screen. It counts up from zero and holds long enough to read twice.",
+        "motion": "The eyebrow fades up (0.40 s). The accent marker scales in (0.35 s) and the line draws down from it (0.90 s) while the number counts up from zero (1.00 s, easing out, in tabular figures so the unit never moves). The words fade up as the count settles. Out: the number and words fade (0.30 s), then the line retracts into the marker.",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #d03-big-stat {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          background: var(--card, #f6f3ea);
+          color: var(--ink, #1e1e1e);
+          -webkit-font-smoothing: antialiased;
+        }
+        #d03-big-stat .box {
+          position: absolute;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+        #d03-big-stat[data-fmt="16x9"] .box { left: 192px; top: 72px; width: 1536px; height: 864px; padding: 56px 72px 44px; }
+        #d03-big-stat[data-fmt="1x1"] .box { left: 108px; top: 96px; width: 864px; height: 792px; padding: 44px 48px 36px; }
+        #d03-big-stat[data-fmt="4x5"] .box { left: 108px; top: 120px; width: 864px; height: 1008px; padding: 52px 48px 40px; }
+        #d03-big-stat[data-fmt="9x16"] .box { left: 108px; top: 200px; width: 864px; height: 1260px; padding: 60px 48px 48px; }
+        #d03-big-stat .eyebrow {
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 24px;
+          line-height: 32px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--muted, #5f5e5b);
+        }
+        #d03-big-stat[data-fmt="1x1"] .eyebrow,
+        #d03-big-stat[data-fmt="4x5"] .eyebrow { font-size: 20px; line-height: 28px; }
+        #d03-big-stat[data-fmt="9x16"] .eyebrow { font-size: 22px; line-height: 30px; }
+        #d03-big-stat .stat {
+          position: relative;
+          display: flex;
+          align-items: flex-end;
+          gap: 72px;
+          padding: 40px 0 0 48px;
+        }
+        #d03-big-stat:not([data-fmt="16x9"]) .stat { flex-direction: column; align-items: flex-start; gap: 16px; padding: 32px 0 0 40px; }
+        #d03-big-stat[data-fmt="4x5"] .stat { padding-top: 36px; }
+        #d03-big-stat[data-fmt="9x16"] .stat { padding-top: 40px; gap: 20px; }
+        #d03-big-stat .rule {
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 2px;
+          background: var(--accent, #f9b336);
+        }
+        #d03-big-stat .marker {
+          position: absolute;
+          left: -7px;
+          top: 0;
+          width: 16px;
+          height: 16px;
+          background: var(--accent, #f9b336);
+        }
+        #d03-big-stat .figure { display: flex; align-items: flex-start; flex-shrink: 0; }
+        #d03-big-stat .num {
+          font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
+          font-weight: 600;
+          letter-spacing: -0.02em;
+          font-variant-numeric: tabular-nums;
+          white-space: nowrap;
+        }
+        #d03-big-stat .unit {
+          font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+        #d03-big-stat .words {
+          flex-shrink: 0;
+          box-sizing: border-box;
+          font-family: var(--fontBody, "Inter"), system-ui, sans-serif;
+          font-weight: 500;
+          letter-spacing: -0.01em;
+          font-size: 48px;
+          line-height: 60px;
+        }
+        #d03-big-stat[data-fmt="16x9"] .words { width: 600px; padding-bottom: 34px; }
+        #d03-big-stat[data-fmt="1x1"] .words { width: 700px; font-size: 44px; line-height: 54px; }
+        #d03-big-stat[data-fmt="4x5"] .words,
+        #d03-big-stat[data-fmt="9x16"] .words { width: 720px; }
+        #d03-big-stat .source {
+          position: absolute;
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          height: 56px;
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 28px;
+          line-height: 36px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--muted, #5f5e5b);
+          white-space: nowrap;
+        }
+        #d03-big-stat .source b { font-weight: 600; color: var(--ink, #1e1e1e); }
+        #d03-big-stat .source .dot { letter-spacing: 0; }
+        #d03-big-stat[data-fmt="16x9"] .source { left: 192px; top: 962px; }
+        #d03-big-stat[data-fmt="1x1"] .source { left: 108px; top: 912px; }
+        #d03-big-stat[data-fmt="4x5"] .source { left: 108px; top: 1156px; }
+        #d03-big-stat[data-fmt="9x16"] .source { left: 108px; top: 1484px; }
+      </style>
+
+      <div id="d03-big-stat" data-composition-id="d03-big-stat">
+        <div class="box">
+          <div class="eyebrow"></div>
+          <div class="stat">
+            <div class="rule"></div>
+            <div class="figure"><div class="num"></div><div class="unit"></div></div>
+            <div class="words"></div>
+            <div class="marker"></div>
+          </div>
+        </div>
+        <div class="source"><b>Source</b><span class="dot">·</span><span class="text"></span></div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "d03-big-stat";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const r = W / H;
+          const fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
+          root.dataset.fmt = fmt;
+
+          const EASE = v("ease", "power3.inOut") || "power3.inOut";
+          const D = Math.max(2.5, Number(v("duration", 5)) || 5);
+          const q = (s) => root.querySelector(s);
+          const eyebrow = q(".eyebrow");
+          const num = q(".num");
+          const unit = q(".unit");
+          const words = q(".words");
+          const source = q(".source");
+          eyebrow.textContent = String(v("eyebrow", ""));
+          unit.textContent = String(v("unit", "%"));
+          words.textContent = String(v("words", ""));
+          q(".source .text").textContent = String(v("source", ""));
+          for (const el of [eyebrow, unit, words]) if (!el.textContent.trim()) el.style.visibility = "hidden";
+          if (!q(".source .text").textContent.trim()) source.style.display = "none";
+
+          // the number's size at each format, from the Paper designs: [number, unit, unit's offset from the top and left]
+          const TYPE = { "16x9": [340, 153, 18, 12], "1x1": [300, 135, 16, 10], "4x5": [340, 153, 18, 12], "9x16": [400, 180, 21, 14] }[fmt];
+          function setType(px) {
+            const k = px / TYPE[0];
+            num.style.fontSize = `${px}px`;
+            num.style.lineHeight = `${px}px`;
+            unit.style.fontSize = `${Math.round(TYPE[1] * k)}px`;
+            unit.style.lineHeight = `${Math.round(TYPE[1] * k * 1.1)}px`;
+            unit.style.padding = `${Math.round(TYPE[2] * k)}px 0 0 ${Math.round(TYPE[3] * k)}px`;
+          }
+          setType(TYPE[0]);
+
+          // "68", "4,000", "2.5", "$1.2" → what comes before and after the digits, the value, its decimals and commas
+          const raw = String(v("number", "68")).trim();
+          const m = /^([^\d-]*)(-?[\d,]*\.?\d+)(.*)$/.exec(raw);
+          const value = m ? Number(m[2].replace(/,/g, "")) : NaN;
+          const decimals = m && m[2].includes(".") ? m[2].split(".")[1].length : 0;
+          const commas = Boolean(m && m[2].includes(","));
+          const digits = new Intl.NumberFormat("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: commas });
+          const before = m ? m[1] : "";
+          const after = m ? m[3] : "";
+          const shown = m ? before + digits.format(Number.isFinite(value) ? value : 0) + after : raw;
+          num.textContent = shown;
+          // the count: a value the timeline tweens, written into the number on each frame (nothing is measured)
+          const count = { n: 0 };
+
+          // text widths off a canvas, as HyperFrames recommends: nothing in the page is measured, so this works while
+          // the clip is still hidden (until its start, a clip measures as zero)
+          const pen = document.createElement("canvas").getContext("2d");
+          function textWidth(text, font, spacing) {
+            pen.font = font;
+            pen.letterSpacing = spacing;
+            return pen.measureText(text).width;
+          }
+          // a long number gets smaller until it fits beside (or above) the words; then it keeps its final width as it
+          // counts, in tabular figures (measured as zeros), so the unit and the words never move
+          function fit() {
+            const display = String(v("fontDisplay", "Inter") || "Inter");
+            // the room in the frame: the box's inside, less the line's padding, and beside the words at 16:9
+            const room = fmt === "16x9" ? 1392 - 48 - 600 - 72 : 768 - 40;
+            const figure = shown.replace(/\d/g, "0");
+            const numWidth = (px) => textWidth(figure, `600 ${px}px ${display}, system-ui, sans-serif`, `${-0.02 * px}px`);
+            const unitWidth = (px) => (unit.textContent.trim() ? textWidth(unit.textContent, `600 ${Math.round((TYPE[1] * px) / TYPE[0])}px ${display}, system-ui, sans-serif`, "0px") + (TYPE[3] * px) / TYPE[0] : 0);
+            let px = TYPE[0];
+            while (px > 80 && numWidth(px) + unitWidth(px) > room) px -= 8;
+            setType(px);
+            num.style.minWidth = `${Math.ceil(numWidth(px)) + 2}px`;
+          }
+
+          function build() {
+            const tl = gsap.timeline({ paused: true });
+            tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE }, 0);
+            tl.fromTo(q(".marker"), { scale: 0 }, { scale: 1, duration: 0.35, ease: "back.out(1.7)" }, 0.3);
+            tl.fromTo(q(".rule"), { scaleY: 0, transformOrigin: "50% 0%" }, { scaleY: 1, duration: 0.9, ease: EASE }, 0.3);
+            if (Number.isFinite(value)) {
+              tl.fromTo(count, { n: 0 }, { n: value, duration: 1, ease: "power2.out", onUpdate: () => (num.textContent = before + digits.format(count.n) + after) }, 0.35);
+            }
+            tl.fromTo(num, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "none" }, 0.35);
+            tl.fromTo(unit, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "none" }, 0.5);
+            tl.fromTo(words, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: EASE }, 1.05);
+            tl.fromTo(source, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "none" }, 1.2);
+            if (v("exit", "animate") !== "hold") {
+              const out = D - 0.7;
+              tl.to([q(".figure"), words], { opacity: 0, duration: 0.3, ease: "none" }, out);
+              tl.to(q(".rule"), { scaleY: 0, duration: 0.4, ease: EASE }, out + 0.3);
+            }
+            tl.set({}, {}, D);
+            window.__timelines[ID] = tl;
+          }
+
+          // the number is measured (off a canvas), so build once the fonts have loaded
+          const fonts = [`600 ${TYPE[0]}px ${v("fontDisplay", "Inter") || "Inter"}`, `500 48px ${v("fontBody", "Inter") || "Inter"}`];
+          const loaded = document.fonts ? Promise.all(fonts.map((f) => document.fonts.load(f).catch(() => null))).then(() => document.fonts.ready) : Promise.resolve();
+          loaded.then(() => {
+            fit();
+            build();
+          });
+        })();
+      </script>
+    </template>
+  </body>
+</html>

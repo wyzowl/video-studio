@@ -1,0 +1,319 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"before","type":"string","label":"Words before the number (optional)","default":""},
+    {"id":"number","type":"string","label":"Number (it rolls up to this; keep any $, %, commas or decimals)","default":"48%"},
+    {"id":"after","type":"string","label":"Words after the number","default":"of new users finish setting up on their first day."},
+    {"id":"from","type":"string","label":"Rolls up from (leave empty to roll the last dozen steps)","default":""},
+    {"id":"source","type":"string","label":"Source","default":"Example figures"},
+    {"id":"exit","type":"enum","label":"At the end","default":"animate","options":[{"value":"animate","label":"Animate out"},{"value":"hold","label":"Hold, for a transition"}]},
+    {"id":"duration","type":"number","label":"Length","default":4.5,"min":3,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Background","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Text","default":"#1E1E1E"},
+    {"id":"muted","type":"color","label":"Muted text","default":"#5F5E5B"},
+    {"id":"fontDisplay","type":"string","label":"Heading font","default":"Inter"},
+    {"id":"fontLabel","type":"string","label":"Label font","default":"JetBrains Mono"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>T46 Number roll · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "T46",
+        "name": "Number roll",
+        "category": "text-effects",
+        "free": true,
+        "summary": "A number in a sentence rolls up to its value, with faded digits trailing above it.",
+        "use": "When a figure sits inside a sentence and is the point of it: a result, a saving, a share of people. Lead with the number so its faded digits trail into the space above, keep the sentence to three lines, and give the source.",
+        "motion": "The sentence sets on, line by line (0.50 s). Then the number rolls up to its value (1.20 s, easing out), the left-hand digits settling first, with faded digits trailing above it; each digit closes up as it lands (0.35 s). The source fades up. Out: the trail fades, then the sentence (0.35 s).",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #t46-number-roll {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          background: var(--card, #f6f3ea);
+          color: var(--ink, #1e1e1e);
+          -webkit-font-smoothing: antialiased;
+        }
+        #t46-number-roll .box {
+          position: absolute;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+        }
+        #t46-number-roll[data-fmt="16x9"] .box { left: 192px; top: 72px; width: 1536px; height: 864px; padding: 56px 72px 44px; }
+        #t46-number-roll[data-fmt="1x1"] .box { left: 108px; top: 96px; width: 864px; height: 792px; padding: 44px 48px 36px; }
+        #t46-number-roll[data-fmt="4x5"] .box { left: 108px; top: 120px; width: 864px; height: 1008px; padding: 52px 48px 40px; }
+        #t46-number-roll[data-fmt="9x16"] .box { left: 108px; top: 200px; width: 864px; height: 1260px; padding: 60px 48px 48px; }
+        #t46-number-roll .line {
+          display: flex;
+          align-items: flex-start;
+          white-space: nowrap;
+          font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+        }
+        #t46-number-roll .word,
+        #t46-number-roll .fix { display: block; flex: none; white-space: pre; }
+        #t46-number-roll .fig { display: flex; flex: none; position: relative; }
+        #t46-number-roll .col { display: block; flex: none; position: relative; }
+        /* each digit rolls in its own window, one line high: clipped above and below, never at the sides */
+        #t46-number-roll .cell { position: absolute; left: 0; width: 100%; overflow-x: visible; overflow-y: clip; }
+        #t46-number-roll .cell b { position: absolute; left: 0; top: 0; display: block; font-weight: inherit; white-space: pre; }
+        #t46-number-roll .source {
+          position: absolute;
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          height: 56px;
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 28px;
+          line-height: 36px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--muted, #5f5e5b);
+          white-space: nowrap;
+        }
+        #t46-number-roll .source b { font-weight: 600; color: var(--ink, #1e1e1e); }
+        #t46-number-roll .source .dot { letter-spacing: 0; }
+        #t46-number-roll[data-fmt="16x9"] .source { left: 192px; top: 962px; }
+        #t46-number-roll[data-fmt="1x1"] .source { left: 108px; top: 912px; }
+        #t46-number-roll[data-fmt="4x5"] .source { left: 108px; top: 1156px; }
+        #t46-number-roll[data-fmt="9x16"] .source { left: 108px; top: 1484px; }
+      </style>
+
+      <div id="t46-number-roll" data-composition-id="t46-number-roll">
+        <div class="box"></div>
+        <div class="source"><b>Source</b><span class="dot">·</span><span class="text"></span></div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "t46-number-roll";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const r = W / H;
+          const fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
+          root.dataset.fmt = fmt;
+
+          const EASE = v("ease", "power3.inOut") || "power3.inOut";
+          const D = Math.max(3, Number(v("duration", 4.5)) || 4.5);
+          const box = root.querySelector(".box");
+          const source = root.querySelector(".source");
+          source.querySelector(".text").textContent = String(v("source", ""));
+          if (!source.querySelector(".text").textContent.trim()) source.style.display = "none";
+          // the type at each format, from the Paper design: [size, line height, widest line]; and the height in the box
+          // that the sentence, and the faded rows above it, have to fit
+          const TYPE = { "16x9": [116, 124, 1200], "1x1": [84, 92, 768], "4x5": [92, 100, 768], "9x16": [100, 108, 768] }[fmt];
+          const ROOM = { "16x9": 764, "1x1": 712, "4x5": 916, "9x16": 1152 }[fmt];
+
+          // the figure: what comes before its digits, the digits (with any commas, spaces or a decimal point among
+          // them), and what comes after: "48%", "$1,200", "2.5x", "10,000+"
+          const raw = String(v("number", "")).trim();
+          const m = /^(\D*)(\d(?:[\d.,   ]*\d)?)(.*)$/.exec(raw) || ["", "", "", ""];
+          const run = m[2];
+          const digits = run.replace(/\D/g, "");
+          const L = digits.length <= 15 ? digits.length : 0;
+          const N = L ? Number(digits) : 0;
+          // a decimal point is a last . or , with one or two digits after it; any other mark separates thousands. The
+          // columns from the one left of the point never go blank as the number grows (nor any, for 0.5 or 007)
+          const lastSep = Math.max(-1, ...[...run].map((ch, i) => (/\d/.test(ch) ? -1 : i)));
+          const places = lastSep >= 0 ? run.length - 1 - lastSep : 0;
+          const point = lastSep >= 0 && /[.,]/.test(run[lastSep]) && places > 0 && places < 3 ? run[lastSep] : "";
+          const pinned = run[0] === "0" ? L : point ? places + 1 : 1;
+          const POW = Array.from({ length: L + 1 }, (_, c) => 10 ** c);
+          function digitOf(i, c) {
+            return i < 0 || (c >= pinned && i < POW[c]) ? "" : String(Math.floor(i / POW[c]) % 10);
+          }
+          // where it rolls up from: a dozen steps below the number, unless it says
+          let start = Math.max(0, N - 12);
+          const from = String(v("from", "")).trim().split(point || ".").map((part) => part.replace(/\D/g, ""));
+          if (from[0] || from[1]) start = Math.round(Number(`${from[0] || 0}.${from[1] || 0}`) * (point ? 10 ** places : 1));
+          start = Math.min(N, Math.max(0, start));
+          const rolls = L > 0 && start < N;
+
+          // the roll: 1.2 s from ROLL_AT, easing out (power3); the time it passes a value, so each digit can close up as
+          // it lands; and the closing up (0.35 s, easing in and out)
+          const ROLL_AT = 0.45;
+          function valueAt(t) {
+            return start + (N - start) * (1 - Math.pow(1 - Math.min(1, Math.max(0, (t - ROLL_AT) / 1.2)), 3));
+          }
+          function timeOf(value) {
+            return ROLL_AT + 1.2 * (1 - Math.cbrt(1 - Math.min(1, Math.max(0, (value - start) / (N - start)))));
+          }
+          function tuck(t, at) {
+            const x = Math.min(1, Math.max(0, (t - at) / 0.35));
+            return x < 0.5 ? 2 * x * x : 1 - Math.pow(2 - 2 * x, 2) / 2;
+          }
+
+          // the sentence, word by word, with the figure as one of the words
+          const words = [];
+          const add = (text) => text.trim().split(/\s+/).forEach((w) => w && words.push({ text: w }));
+          add(String(v("before", "")));
+          const figIndex = L ? words.push({ fig: true }) - 1 : -1;
+          if (!L && raw) words.push({ text: raw });
+          add(String(v("after", "")));
+
+          // the figure's parts: a column for each digit and each mark between them, each with three windows (the
+          // number, then the two faded rows above it), and anything before or after the digits fixed either side. A
+          // digit's column counts from the right (0 is the units); a mark takes the column of the digit on its left
+          const fig = document.createElement("span");
+          fig.className = "fig";
+          const fixed = (text) => text && fig.appendChild(Object.assign(document.createElement("span"), { className: "fix", textContent: text }));
+          const cols = [];
+          let c = L;
+          if (L) fixed(m[1]);
+          for (const ch of L ? run : "") {
+            const digit = /\d/.test(ch);
+            if (digit) c -= 1;
+            const el = document.createElement("span");
+            el.className = "col";
+            el.innerHTML = "<span class='cell r0'><b></b><b></b></span><span class='cell r1'><b></b><b></b></span><span class='cell r2'><b></b><b></b></span>";
+            // a digit closes up once it has made its last change: it changes at every multiple of its place value
+            const last = Math.floor(N / POW[c]) * POW[c];
+            const settle = digit && rolls && last > start ? timeOf(last) : -Infinity;
+            const cells = [...el.children].map((cell) => ({ el: cell, up: cell.firstChild, dn: cell.lastChild }));
+            cols.push({ digit, c, ch, el, cells, settle, final: digit ? digitOf(N, c) : ch });
+            fig.appendChild(el);
+          }
+          if (L) fixed(m[3]);
+
+          // widths off a canvas, as HyperFrames recommends: until its start a clip is hidden and measures as zero
+          const family = String(v("fontDisplay", "Inter") || "Inter");
+          const pen = document.createElement("canvas").getContext("2d");
+          let px, lh, gap, adv, widest;
+          function widthOf(text, size) {
+            pen.font = `800 ${size}px ${family}, system-ui, sans-serif`;
+            pen.letterSpacing = `${-0.03 * size}px`;
+            return pen.measureText(text).width;
+          }
+          // the sentence wraps at the figure's final width, and gets smaller until it fits the box, with the two faded
+          // rows above it when the figure is on the first line
+          function fit() {
+            for (px = TYPE[0]; ; px -= 4) {
+              lh = Math.round((px * TYPE[1]) / TYPE[0]);
+              gap = Math.round(px * 0.26);
+              adv = { "": 0 };
+              for (const ch of "0123456789" + run) adv[ch] = widthOf(ch, px);
+              widest = Math.max(...[..."0123456789"].map((d) => adv[d]));
+              const figure = widthOf(m[1], px) + widthOf(m[3], px) + cols.reduce((sum, col) => sum + adv[col.final], 0);
+              const sizes = words.map((w) => (w.fig ? figure : widthOf(w.text, px)));
+              const lines = [];
+              let used = Infinity;
+              sizes.forEach((w, i) => {
+                if (used + gap + w > TYPE[2]) {
+                  lines.push([]);
+                  used = -gap;
+                }
+                used += gap + w;
+                lines[lines.length - 1].push(i);
+              });
+              const first = (lines[0] || []).includes(figIndex);
+              if (px <= 56 || ((lines.length + (rolls && first ? 2 : 0)) * lh <= ROOM && Math.max(0, ...sizes) <= TYPE[2])) return { lines, first };
+            }
+          }
+          let trail = false;
+          function layout() {
+            const { lines, first } = fit();
+            trail = rolls && first;
+            for (const ids of lines) {
+              const line = document.createElement("div");
+              line.className = "line";
+              line.style.cssText = `font-size:${px}px;line-height:${lh}px;height:${lh}px;gap:${gap}px`;
+              for (const i of ids) line.appendChild(words[i].fig ? fig : Object.assign(document.createElement("span"), { className: "word", textContent: words[i].text }));
+              box.appendChild(line);
+            }
+            for (const col of cols) {
+              col.el.style.height = `${lh}px`;
+              col.cells.forEach((cell, k) => (cell.el.style.cssText = `top:${-k * lh}px;height:${lh}px${k && !trail ? ";display:none" : ""}`));
+            }
+          }
+
+          // one frame of the figure at time t: each window shows the value (less one or two, in the faded rows),
+          // sliding up from one to the next where its digit changes. While the number rolls each digit takes the widest
+          // digit's room, centred, so nothing beside it jiggles; once it has landed it closes up to its own width
+          function shown(col, i) {
+            const d = digitOf(i, col.c);
+            return col.digit ? d : d ? col.ch : "";
+          }
+          function glyph(el, text, x, y) {
+            if (el.textContent !== text) el.textContent = text;
+            el.style.transform = `translate(${x.toFixed(2)}px,${y.toFixed(2)}px)`;
+          }
+          function render(t) {
+            const value = valueAt(t);
+            for (const col of cols) {
+              const s = tuck(t, col.settle);
+              const i = Math.floor(value);
+              const up = shown(col, i);
+              const dn = value > i ? shown(col, i + 1) : up;
+              const seen = up ? 1 : dn ? value - i : 0;
+              const width = col.digit ? widest * seen + (adv[col.final] - widest * seen) * s : adv[col.ch] * seen;
+              const align = col.digit ? 0.5 * (1 - s) : 0;
+              col.el.style.width = `${width.toFixed(2)}px`;
+              col.cells.forEach((cell, k) => {
+                if (k && !trail) return;
+                const j = Math.floor(value - k);
+                const f = value - k - j;
+                const a = shown(col, j);
+                const b = f > 0 ? shown(col, j + 1) : a;
+                glyph(cell.up, a, (width - adv[a]) * align, a === b ? 0 : -f * lh);
+                glyph(cell.dn, a === b ? "" : b, (width - adv[b]) * align, (1 - f) * lh);
+              });
+            }
+          }
+          const clock = { t: 0 };
+          function draw() {
+            render(clock.t);
+          }
+
+          function build() {
+            const tl = gsap.timeline({ paused: true });
+            const lines = [...box.querySelectorAll(".line")];
+            const near = cols.map((col) => col.cells[1].el);
+            const far = cols.map((col) => col.cells[2].el);
+            tl.fromTo(lines, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out", stagger: 0.07 }, 0);
+            if (cols.length) tl.fromTo(clock, { t: 0 }, { t: D, duration: D, ease: "none", onUpdate: draw }, 0);
+            if (trail) tl.fromTo(near, { opacity: 0 }, { opacity: 0.25, duration: 0.3, ease: "none" }, ROLL_AT);
+            if (trail) tl.fromTo(far, { opacity: 0 }, { opacity: 0.1, duration: 0.3, ease: "none" }, ROLL_AT + 0.08);
+            tl.fromTo(source, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "none" }, 0.9);
+            if (v("exit", "animate") !== "hold") {
+              const out = D - 0.6;
+              if (trail) tl.to(near.concat(far), { opacity: 0, duration: 0.2, ease: "none" }, out);
+              tl.to(lines, { y: -16, opacity: 0, duration: 0.35, ease: EASE, stagger: 0.04 }, out + 0.1);
+              tl.to(source, { opacity: 0, duration: 0.3, ease: "none" }, out + 0.1);
+            }
+            tl.set({}, {}, D);
+            draw();
+            window.__timelines[ID] = tl;
+          }
+
+          // the sentence is measured (off a canvas), so lay it out and build once the fonts have loaded
+          const fonts = [`800 ${TYPE[0]}px ${family}`, `600 28px ${v("fontLabel", "JetBrains Mono") || "JetBrains Mono"}`];
+          const loaded = document.fonts ? Promise.all(fonts.map((f) => document.fonts.load(f).catch(() => null))).then(() => document.fonts.ready) : Promise.resolve();
+          loaded.then(() => {
+            layout();
+            build();
+          });
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"name","type":"string","label":"Name","default":"Presenter name"},
+    {"id":"role","type":"string","label":"Role and company","default":"Job title, Company"},
+    {"id":"side","type":"enum","label":"Side (the one the presenter is not facing)","default":"left","options":[{"value":"left","label":"Left"},{"value":"right","label":"Right"}]},
+    {"id":"duration","type":"number","label":"Length","default":6,"min":2.5,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Card","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Text","default":"#1E1E1E"},
+    {"id":"muted","type":"color","label":"Muted text","default":"#5F5E5B"},
+    {"id":"accent","type":"color","label":"Accent bar","default":"#F9B336"},
+    {"id":"fontDisplay","type":"string","label":"Heading font","default":"Inter"},
+    {"id":"fontLabel","type":"string","label":"Label font","default":"JetBrains Mono"},
+    {"id":"radius","type":"string","label":"Corner rounding","default":"16px"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>W26 Name tag · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "W26",
+        "name": "Name tag",
+        "category": "widgets",
+        "free": true,
+        "summary": "Who's speaking: their name, role and company.",
+        "use": "The first time someone speaks on camera, in the lower third on the side they aren't facing. Hold it about 4 seconds; once per person is enough.",
+        "backdrop": "presenter",
+        "motion": "The accent bar draws down (0.30 s), the card wipes open to the right from it (0.40 s), then the name and role fade up 0.10 s apart. It holds, then goes out in reverse: the words fade, the card wipes back into the bar, and the bar draws back up.",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #w26-name-tag {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+        }
+        #w26-name-tag .place {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: flex-end;
+          box-sizing: border-box;
+        }
+        /* the lower third, 120 px in from the side as every widget sits */
+        #w26-name-tag[data-fmt="16x9"] .place { padding: 0 120px 160px; }
+        #w26-name-tag[data-fmt="1x1"] .place,
+        #w26-name-tag[data-fmt="4x5"] .place { padding: 64px 64px 96px; }
+        /* 9:16 keeps clear of the platform's captions (bottom 440 px) and buttons (right 196 px) */
+        #w26-name-tag[data-fmt="9x16"] .place { padding: 0 196px 440px 64px; }
+        #w26-name-tag[data-side="right"]:not([data-fmt="9x16"]) .place { justify-content: flex-end; }
+        #w26-name-tag .card {
+          position: relative;
+          box-sizing: border-box;
+          display: flex;
+          gap: 20px;
+          padding: 22px 36px 24px 24px;
+          color: var(--ink, #1e1e1e);
+          overflow-wrap: anywhere;
+          -webkit-font-smoothing: antialiased;
+        }
+        #w26-name-tag[data-fmt="16x9"] .card { max-width: 760px; }
+        #w26-name-tag .bg {
+          position: absolute;
+          inset: 0;
+          background: var(--card, #f6f3ea);
+          border-radius: calc(var(--radius, 16px) * 0.75);
+        }
+        #w26-name-tag .bar { position: relative; width: 6px; flex-shrink: 0; background: var(--accent, #f9b336); }
+        #w26-name-tag .words { position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+        #w26-name-tag .name {
+          font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
+          font-size: 40px;
+          font-weight: 800;
+          line-height: 46px;
+          letter-spacing: -0.02em;
+        }
+        #w26-name-tag .role {
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 18px;
+          line-height: 24px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--muted, #5f5e5b);
+        }
+      </style>
+
+      <div id="w26-name-tag" data-composition-id="w26-name-tag">
+        <div class="place">
+          <div class="card">
+            <div class="bg"></div>
+            <div class="bar"></div>
+            <div class="words"><div class="name"></div><div class="role"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "w26-name-tag";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const r = W / H;
+          const fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
+          root.dataset.fmt = fmt;
+          root.dataset.side = v("side", "left") === "right" ? "right" : "left";
+
+          const EASE = v("ease", "power3.inOut") || "power3.inOut";
+          const D = Math.max(2.5, Number(v("duration", 6)) || 6);
+          const q = (s) => root.querySelector(s);
+          const bg = q(".bg");
+          const bar = q(".bar");
+          const name = q(".name");
+          const role = q(".role");
+          name.textContent = String(v("name", ""));
+          role.textContent = String(v("role", ""));
+          if (!role.textContent.trim()) role.style.display = "none";
+
+          // the card's width, for the wipe: its words measured off a canvas (as HyperFrames recommends: until its start
+          // a clip is hidden and measures as zero), plus the bar and padding, up to the room the size allows
+          function cardWidth() {
+            const pen = document.createElement("canvas").getContext("2d");
+            pen.font = `800 40px ${String(v("fontDisplay", "Inter") || "Inter")}, system-ui, sans-serif`;
+            pen.letterSpacing = "-0.8px";
+            const nameW = pen.measureText(name.textContent).width;
+            pen.font = `400 18px ${String(v("fontLabel", "JetBrains Mono") || "JetBrains Mono")}, ui-monospace, monospace`;
+            pen.letterSpacing = "1.44px";
+            const roleW = role.style.display === "none" ? 0 : pen.measureText(role.textContent.toUpperCase()).width;
+            const room = { "16x9": 760, "1x1": 952, "4x5": 952, "9x16": 820 }[fmt];
+            return Math.min(room, Math.ceil(24 + 6 + 20 + Math.max(nameW, roleW) + 36));
+          }
+
+          function build() {
+            const w = cardWidth();
+            const round = `round ${getComputedStyle(bg).borderTopLeftRadius || "12px"}`;
+            // closed, the card is just the bar's strip; open, all of it
+            const shut = `inset(0px ${w - 30}px 0px 24px ${round})`;
+            const open = `inset(0px 0px 0px 0px ${round})`;
+            const tl = gsap.timeline({ paused: true });
+            tl.fromTo(bar, { scaleY: 0, transformOrigin: "50% 0%" }, { scaleY: 1, duration: 0.3, ease: EASE }, 0);
+            tl.fromTo(bg, { clipPath: shut }, { clipPath: open, duration: 0.4, ease: EASE }, 0.25);
+            tl.fromTo([name, role], { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE, stagger: 0.1 }, 0.5);
+            // out, in reverse: the words fade, the card wipes back into the bar, and the bar draws back up
+            const out = D - 0.95;
+            tl.to([role, name], { y: 12, opacity: 0, duration: 0.25, ease: EASE, stagger: 0.1 }, out);
+            tl.to(bg, { clipPath: shut, duration: 0.35, ease: EASE }, out + 0.3);
+            tl.to(bar, { scaleY: 0, duration: 0.3, ease: EASE }, out + 0.6);
+            tl.set({}, {}, D);
+            window.__timelines[ID] = tl;
+          }
+
+          // the words are measured (off a canvas), so build once the fonts have loaded
+          const fonts = [`800 40px ${v("fontDisplay", "Inter") || "Inter"}`, `400 18px ${v("fontLabel", "JetBrains Mono") || "JetBrains Mono"}`];
+          const loaded = document.fonts ? Promise.all(fonts.map((f) => document.fonts.load(f).catch(() => null))).then(() => document.fonts.ready) : Promise.resolve();
+          loaded.then(build);
+        })();
+      </script>
+    </template>
+  </body>
+</html>

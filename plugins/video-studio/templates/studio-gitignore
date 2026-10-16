@@ -1,0 +1,11 @@
+# Wyzowl Video Studio
+.studio/
+.DS_Store
+node_modules/
+
+# Rendered media and caches, re-created from source. Keep delivered files elsewhere, or in Git LFS.
+**/renders/
+**/snapshots/
+**/docs/review/
+**/.thumbnails/
+**/.waveform-cache/

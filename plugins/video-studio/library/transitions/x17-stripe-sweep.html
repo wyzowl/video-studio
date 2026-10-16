@@ -1,0 +1,101 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"angle","type":"number","label":"Angle of the stripes (degrees from upright)","default":18,"min":0,"max":40,"step":1,"unit":"°"},
+    {"id":"stripes","type":"number","label":"Number of stripes","default":5,"min":3,"max":9,"step":1},
+    {"id":"duration","type":"number","label":"Length (the cut is at 0.50 s)","default":1.1,"min":1.1,"max":1.1,"step":0.1,"unit":"s"},
+    {"id":"ink","type":"color","label":"Dark stripes","default":"#1E1E1E"},
+    {"id":"accent","type":"color","label":"Accent stripes","default":"#F9B336"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>X17 Stripe sweep · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "X17",
+        "name": "Stripe sweep",
+        "category": "transitions",
+        "free": true,
+        "kind": "cover",
+        "cut": 0.5,
+        "length": 1.1,
+        "summary": "Angled stripes in the brand's colours sweep across, each a fraction behind the last, and the cut happens behind them.",
+        "use": "Between any two scenes, footage or animation, when the video moves on to something new. Energetic and branded; keep the same angle and colours all through a video.",
+        "motion": "Angled stripes in the brand's colours sweep in from the left, each a fraction behind the last (0.50 s, easing in), until they cover the frame. The cut happens behind them, and they sweep on off to the right together, revealing scene B (0.60 s, easing out). About 1.1 s in all. Sound: a run of swishes.",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #x17-stripe-sweep {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+        }
+        #x17-stripe-sweep .stripe {
+          position: absolute;
+          top: 0;
+          height: 100%;
+        }
+      </style>
+
+      <div id="x17-stripe-sweep" data-composition-id="x17-stripe-sweep"></div>
+
+      <script>
+        (() => {
+          const ID = "x17-stripe-sweep";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null || vars[k] === "" ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const css = (k, d) => getComputedStyle(root).getPropertyValue(`--${k}`).trim() || d;
+          const colour = (k, d) => (typeof vars[k] === "string" && vars[k]) || css(k, d);
+
+          const CUT = 0.5;
+          const N = Math.max(3, Math.min(9, Math.round(Number(v("stripes", 5)) || 5)));
+          const angle = Math.max(0, Math.min(40, Number(v("angle", 18)) || 0));
+          const lean = H * Math.tan((angle * Math.PI) / 180);
+          // side by side, the stripes cover the whole frame at every height: together as wide as the frame plus their lean
+          const each = (W + lean) / N;
+          // just far enough to start and finish clear of the frame (the skew leans each stripe out by half the lean at
+          // the top and bottom), so the stripes are in view for the whole move
+          const travel = W + lean + 4;
+          const colours = [colour("accent", "#F9B336"), colour("ink", "#1E1E1E")];
+
+          const stripes = [];
+          for (let i = 0; i < N; i++) {
+            const s = document.createElement("div");
+            s.className = "stripe";
+            s.style.left = `${-lean / 2 + i * each - 1}px`;
+            s.style.width = `${each + 2}px`;
+            // the leading stripe (on the right) takes the accent; they alternate from there
+            s.style.background = colours[(N - 1 - i) % 2];
+            root.appendChild(s);
+            stripes.push(s);
+          }
+
+          const tl = gsap.timeline({ paused: true });
+          // each stripe 0.05 s behind the one ahead of it, closer together when there are many
+          const gap = Math.min(0.05, 0.25 / (N - 1));
+          stripes.forEach((s, i) => {
+            const behind = (N - 1 - i) * gap;
+            tl.fromTo(s, { x: -travel, skewX: -angle }, { x: 0, skewX: -angle, duration: CUT - behind, ease: "power2.in" }, behind);
+          });
+          tl.to(stripes, { x: travel, duration: 0.6, ease: "power2.out" }, CUT);
+          tl.set({}, {}, 1.1);
+          window.__timelines[ID] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

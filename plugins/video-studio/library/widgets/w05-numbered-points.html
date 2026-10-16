@@ -1,0 +1,202 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"eyebrow","type":"string","label":"Eyebrow","default":"3 ways to open a video"},
+    {"id":"points","type":"string","label":"Points, separated by |","default":"Start with the problem|Show how you solve it|End with one clear action"},
+    {"id":"cues","type":"string","label":"When each point becomes current (seconds, separated by |; empty: evenly)","default":""},
+    {"id":"side","type":"enum","label":"Side","default":"left","options":[{"value":"left","label":"Left"},{"value":"right","label":"Right"}]},
+    {"id":"duration","type":"number","label":"Length","default":6.5,"min":2,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Card","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Text","default":"#1E1E1E"},
+    {"id":"muted","type":"color","label":"Muted text","default":"#5F5E5B"},
+    {"id":"line","type":"color","label":"Lines","default":"#CBC8C1"},
+    {"id":"accent","type":"color","label":"Accent","default":"#F9B336"},
+    {"id":"onAccent","type":"color","label":"Text on the accent","default":"#1E1E1E"},
+    {"id":"fontDisplay","type":"string","label":"Heading font","default":"Inter"},
+    {"id":"fontBody","type":"string","label":"Body font","default":"Inter"},
+    {"id":"fontLabel","type":"string","label":"Label font","default":"JetBrains Mono"},
+    {"id":"radius","type":"string","label":"Corner rounding","default":"16px"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>W05 Numbered points · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "W05",
+        "name": "Numbered points",
+        "category": "widgets",
+        "free": true,
+        "summary": "Tips or reasons the presenter works through, one at a time.",
+        "use": "When the presenter counts through two to five points. Each point becomes current as the presenter reaches it.",
+        "backdrop": "presenter",
+        "motion": "The card rises 24 px and fades in (0.40 s), then all the points fade up muted, 0.10 s apart. As the presenter reaches each one, its number fills with the accent (0.30 s) and its words darken; the last one goes back to muted. Out: the words fade (0.20 s), then the card drops 24 px and fades (0.30 s).",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #w05-numbered-points {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+        }
+        #w05-numbered-points .place {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          box-sizing: border-box;
+        }
+        #w05-numbered-points[data-fmt="16x9"] .place { align-items: center; padding: 0 120px; }
+        #w05-numbered-points[data-fmt="1x1"] .place,
+        #w05-numbered-points[data-fmt="4x5"] .place { align-items: flex-end; padding: 64px; }
+        /* 9:16 keeps clear of the platform's captions (bottom 440 px) and buttons (right 196 px) */
+        #w05-numbered-points[data-fmt="9x16"] .place { align-items: flex-end; padding: 0 0 440px 64px; }
+        #w05-numbered-points[data-side="right"]:not([data-fmt="9x16"]) .place { justify-content: flex-end; }
+        #w05-numbered-points .card {
+          box-sizing: border-box;
+          width: 600px;
+          display: flex;
+          flex-direction: column;
+          padding: 36px 40px 22px;
+          background: var(--card, #f6f3ea);
+          border-radius: var(--radius, 16px);
+          color: var(--ink, #1e1e1e);
+          overflow-wrap: anywhere;
+          -webkit-font-smoothing: antialiased;
+        }
+        #w05-numbered-points[data-fmt="1x1"] .card,
+        #w05-numbered-points[data-fmt="4x5"] .card { width: 700px; }
+        #w05-numbered-points[data-fmt="9x16"] .card { width: 820px; }
+        #w05-numbered-points .eyebrow {
+          padding-bottom: 10px;
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 22px;
+          line-height: 28px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--muted, #5f5e5b);
+        }
+        #w05-numbered-points .row {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          padding: 16px 0;
+        }
+        #w05-numbered-points .row + .row { border-top: 2px dashed var(--line, #cbc8c1); }
+        #w05-numbered-points .n {
+          position: relative;
+          flex: none;
+          box-sizing: border-box;
+          width: 48px;
+          height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid var(--muted, #5f5e5b);
+        }
+        #w05-numbered-points .fill {
+          position: absolute;
+          inset: -2px;
+          background: var(--accent, #f9b336);
+        }
+        #w05-numbered-points .digits {
+          position: relative;
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 20px;
+          font-weight: 600;
+          line-height: 24px;
+          color: var(--muted, #5f5e5b);
+        }
+        #w05-numbered-points .text {
+          min-width: 0;
+          font-family: var(--fontBody, "Inter"), system-ui, sans-serif;
+          font-size: 30px;
+          font-weight: 600;
+          line-height: 38px;
+          color: var(--muted, #5f5e5b);
+        }
+      </style>
+
+      <div id="w05-numbered-points" data-composition-id="w05-numbered-points">
+        <div class="place">
+          <div class="card"><div class="eyebrow"></div></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "w05-numbered-points";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null || vars[k] === "" ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const r = W / H;
+          root.dataset.fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
+          root.dataset.side = v("side", "left") === "right" ? "right" : "left";
+
+          const EASE = v("ease", "power3.inOut");
+          const D = Math.max(2, Number(v("duration", 6.5)));
+          // colours as values GSAP can blend between: the variable, else the CSS property, else the default
+          const colour = (k, d) => vars[k] || getComputedStyle(root).getPropertyValue(`--${k}`).trim() || d;
+          const INK = colour("ink", "#1e1e1e");
+          const MUTED = colour("muted", "#5f5e5b");
+          const ON = colour("onAccent", "#1e1e1e");
+
+          const points = String(v("points", "Start with the problem|Show how you solve it|End with one clear action"))
+            .split("|").map((s) => s.trim()).filter(Boolean).slice(0, 5);
+          // each point becomes current in turn: on the given cues, or spread evenly between the build and the exit
+          const given = String(v("cues", "")).split("|").map(Number).filter((t) => Number.isFinite(t) && t > 0);
+          const first = 0.6 + 0.1 * points.length + 0.3;
+          const step = (D - 0.9 - first) / Math.max(1, points.length);
+          const cues = points.map((_, i) => (given[i] !== undefined ? given[i] : first + step * i));
+
+          const card = root.querySelector(".card");
+          const eyebrow = root.querySelector(".eyebrow");
+          eyebrow.textContent = String(v("eyebrow", "3 ways to open a video"));
+          const rows = points.map((text, i) => {
+            const row = document.createElement("div");
+            row.className = "row";
+            row.innerHTML = '<div class="n"><div class="fill"></div><div class="digits"></div></div><div class="text"></div>';
+            row.querySelector(".digits").textContent = String(i + 1).padStart(2, "0");
+            row.querySelector(".text").textContent = text;
+            card.appendChild(row);
+            return { row, fill: row.querySelector(".fill"), digits: row.querySelector(".digits"), text: row.querySelector(".text") };
+          });
+
+          const tl = gsap.timeline({ paused: true });
+          tl.fromTo(card, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE }, 0);
+          tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE }, 0.2);
+          tl.fromTo(rows.map((x) => x.row), { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE, stagger: 0.1 }, 0.5);
+          rows.forEach((x) => gsap.set(x.fill, { scaleY: 0, transformOrigin: "50% 100%" }));
+          rows.forEach((x, i) => {
+            const t = Math.min(cues[i], D - 1);
+            tl.to(x.fill, { scaleY: 1, opacity: 1, duration: 0.3, ease: EASE }, t);
+            tl.to(x.digits, { color: ON, duration: 0.3, ease: "none" }, t);
+            tl.to(x.text, { color: INK, duration: 0.3, ease: "none" }, t);
+            if (i > 0) {
+              const prev = rows[i - 1];
+              tl.to(prev.fill, { opacity: 0, duration: 0.3, ease: "none" }, t);
+              tl.to([prev.digits, prev.text], { color: MUTED, duration: 0.3, ease: "none" }, t);
+            }
+          });
+          const out = D - 0.5;
+          tl.to(card.children, { opacity: 0, duration: 0.2, ease: "none" }, out);
+          tl.to(card, { y: 24, opacity: 0, duration: 0.3, ease: EASE }, out + 0.1);
+          tl.set({}, {}, D);
+          window.__timelines[ID] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

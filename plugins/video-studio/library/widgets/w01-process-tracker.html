@@ -1,0 +1,263 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"statement","type":"string","label":"Statement","default":"We agree the plan before anything gets made."},
+    {"id":"steps","type":"string","label":"Steps, separated by |","default":"Plan|Design|Build|Launch"},
+    {"id":"step","type":"number","label":"Current step","default":1,"min":1,"max":5,"step":1},
+    {"id":"eyebrow","type":"string","label":"Eyebrow (empty: Step 01 of 04)","default":""},
+    {"id":"nextAt","type":"number","label":"Move to the next step at (seconds; 0 stays put)","default":0,"min":0,"step":0.1,"unit":"s"},
+    {"id":"nextStatement","type":"string","label":"Statement for the next step","default":""},
+    {"id":"side","type":"enum","label":"Side","default":"left","options":[{"value":"left","label":"Left"},{"value":"right","label":"Right"}]},
+    {"id":"duration","type":"number","label":"Length","default":6,"min":2,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Card","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Text","default":"#1E1E1E"},
+    {"id":"muted","type":"color","label":"Muted text","default":"#5F5E5B"},
+    {"id":"line","type":"color","label":"Lines","default":"#CBC8C1"},
+    {"id":"accent","type":"color","label":"Accent","default":"#F9B336"},
+    {"id":"onAccent","type":"color","label":"Text on the accent","default":"#1E1E1E"},
+    {"id":"fontDisplay","type":"string","label":"Heading font","default":"Inter"},
+    {"id":"fontBody","type":"string","label":"Body font","default":"Inter"},
+    {"id":"fontLabel","type":"string","label":"Label font","default":"JetBrains Mono"},
+    {"id":"radius","type":"string","label":"Corner rounding","default":"16px"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>W01 Process tracker · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "W01",
+        "name": "Process tracker",
+        "category": "widgets",
+        "free": true,
+        "summary": "Where we are in a sequence: steps, stages or chapters.",
+        "use": "When the presenter walks through a process or the video has chapters. Show it as each step starts; to move on, keep the card up and slide the bar to the next step.",
+        "backdrop": "presenter",
+        "motion": "The card rises 24 px and fades in (0.40 s), the statement follows a line at a time (0.10 s apart), then the current step's bar fills with the accent (0.90 s). To move on, the statement swaps and the bar slides to the next step (0.60 s). Out: the words fade (0.20 s), then the card drops 24 px and fades (0.30 s).",
+        "preview": { "nextAt": 3.2, "nextStatement": "Then we design every scene to match.", "duration": 6.4 }
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #w01-process-tracker {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+        }
+        #w01-process-tracker .place {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          box-sizing: border-box;
+        }
+        #w01-process-tracker[data-fmt="16x9"] .place { align-items: center; padding: 0 120px; }
+        #w01-process-tracker[data-fmt="1x1"] .place,
+        #w01-process-tracker[data-fmt="4x5"] .place { align-items: flex-end; padding: 64px; }
+        /* 9:16 keeps clear of the platform's captions (bottom 440 px) and buttons (right 196 px) */
+        #w01-process-tracker[data-fmt="9x16"] .place { align-items: flex-end; padding: 0 0 440px 64px; }
+        #w01-process-tracker[data-side="right"]:not([data-fmt="9x16"]) .place { justify-content: flex-end; }
+        #w01-process-tracker .card {
+          box-sizing: border-box;
+          width: 600px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          padding: 36px 40px 40px;
+          background: var(--card, #f6f3ea);
+          border-radius: var(--radius, 16px);
+          color: var(--ink, #1e1e1e);
+          overflow-wrap: anywhere;
+          -webkit-font-smoothing: antialiased;
+        }
+        #w01-process-tracker[data-fmt="1x1"] .card,
+        #w01-process-tracker[data-fmt="4x5"] .card { width: 700px; }
+        #w01-process-tracker[data-fmt="9x16"] .card { width: 820px; }
+        #w01-process-tracker .eyebrow {
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 22px;
+          line-height: 28px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--muted, #5f5e5b);
+        }
+        #w01-process-tracker .statement {
+          display: grid;
+          font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
+          font-size: 46px;
+          font-weight: 800;
+          line-height: 54px;
+          letter-spacing: -0.02em;
+        }
+        /* the statement and the next one share a cell, so the card keeps its height when they swap */
+        #w01-process-tracker .statement > div { grid-area: 1 / 1; }
+        #w01-process-tracker .next { visibility: hidden; }
+        #w01-process-tracker .ln { display: block; }
+        #w01-process-tracker .steps {
+          position: relative;
+          display: flex;
+          gap: 10px;
+          padding-top: 8px;
+        }
+        #w01-process-tracker .step {
+          flex: 1 1 0;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        #w01-process-tracker .bar { height: 6px; background: var(--line, #cbc8c1); }
+        #w01-process-tracker .name {
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 18px;
+          line-height: 24px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--muted, #5f5e5b);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        #w01-process-tracker .slider {
+          position: absolute;
+          top: 8px;
+          left: 0;
+          height: 6px;
+          background: var(--accent, #f9b336);
+          transform-origin: 0 50%;
+        }
+      </style>
+
+      <div id="w01-process-tracker" data-composition-id="w01-process-tracker">
+        <div class="place">
+          <div class="card">
+            <div class="eyebrow"></div>
+            <div class="statement"><div class="now"></div><div class="next"></div></div>
+            <div class="steps"><div class="slider"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "w01-process-tracker";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null || vars[k] === "" ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const r = W / H;
+          root.dataset.fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
+          root.dataset.side = v("side", "left") === "right" ? "right" : "left";
+
+          const EASE = v("ease", "power3.inOut");
+          const D = Math.max(2, Number(v("duration", 6)));
+          // colours as values GSAP can blend between: the variable, else the CSS property, else the default
+          const colour = (k, d) => vars[k] || getComputedStyle(root).getPropertyValue(`--${k}`).trim() || d;
+          const INK = colour("ink", "#1e1e1e");
+          const MUTED = colour("muted", "#5f5e5b");
+          const names = String(v("steps", "Plan|Design|Build|Launch")).split("|").map((s) => s.trim()).filter(Boolean).slice(0, 5);
+          const count = Math.max(1, names.length);
+          const at = Math.min(count, Math.max(1, Math.round(Number(v("step", 1))))) - 1;
+          const nextAt = Number(v("nextAt", 0));
+          const moves = nextAt > 0 && at + 1 < count && nextAt < D - 1;
+          const pad = (n) => String(n).padStart(2, "0");
+          const eyebrowFor = (i) => v("eyebrow", `Step ${pad(i + 1)} of ${pad(count)}`);
+
+          const card = root.querySelector(".card");
+          const eyebrow = root.querySelector(".eyebrow");
+          const now = root.querySelector(".now");
+          const next = root.querySelector(".next");
+          const steps = root.querySelector(".steps");
+          const slider = root.querySelector(".slider");
+          eyebrow.textContent = eyebrowFor(at);
+          now.textContent = String(v("statement", "We agree the plan before anything gets made."));
+          next.textContent = moves ? String(v("nextStatement", "")) : "";
+          const labels = names.map((name, i) => {
+            const step = document.createElement("div");
+            step.className = "step";
+            step.innerHTML = '<div class="bar"></div><div class="name"></div>';
+            step.querySelector(".name").textContent = name;
+            steps.appendChild(step);
+            return step.querySelector(".name");
+          });
+
+          // the card's inside width at each format (its width less 40 px padding each side)
+          const INNER = { "16x9": 520, "1x1": 620, "4x5": 620, "9x16": 740 }[root.dataset.fmt];
+          // a block of text, split into its lines as it will wrap, so each line can fade up on its own. The lines are
+          // worked out off a canvas, as HyperFrames recommends: until its start a clip is hidden and measures as zero
+          const pen = document.createElement("canvas").getContext("2d");
+          function lines(el) {
+            pen.font = `800 46px ${String(v("fontDisplay", "Inter") || "Inter")}, system-ui, sans-serif`;
+            pen.letterSpacing = "-0.92px";
+            const rows = [];
+            let line = "";
+            for (const word of el.textContent.trim().split(/\s+/).filter(Boolean)) {
+              const next = line ? `${line} ${word}` : word;
+              if (line && pen.measureText(next).width > INNER - 2) {
+                rows.push(line);
+                line = word;
+              } else line = next;
+            }
+            if (line) rows.push(line);
+            el.textContent = "";
+            return rows.map((text) => {
+              const ln = document.createElement("span");
+              ln.className = "ln";
+              ln.textContent = text;
+              el.appendChild(ln);
+              return ln;
+            });
+          }
+
+          function build() {
+            const nowLines = lines(now);
+            const nextLines = moves && next.textContent.trim() ? lines(next) : [];
+            // the steps share the inside width equally, 10 px apart, so the bar's place is arithmetic
+            const each = (INNER - 10 * (count - 1)) / count;
+            const place = (i) => i * (each + 10);
+            gsap.set(slider, { width: each, x: place(at), scaleX: 0 });
+            gsap.set(nextLines, { opacity: 0, y: 12 });
+            next.style.visibility = "visible";
+            labels.forEach((l, i) => gsap.set(l, { color: i === at ? INK : MUTED, fontWeight: i === at ? 600 : 400 }));
+
+            const tl = gsap.timeline({ paused: true });
+            // in
+            tl.fromTo(card, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE }, 0);
+            tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE }, 0.2);
+            tl.fromTo(nowLines, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE, stagger: 0.1 }, 0.3);
+            tl.to(slider, { scaleX: 1, duration: 0.9, ease: EASE }, 1.2);
+            // on to the next step: the statement swaps and the bar slides along
+            if (moves) {
+              tl.to(nowLines, { opacity: 0, y: -12, duration: 0.2, ease: "none", stagger: 0.05 }, nextAt);
+              tl.set(eyebrow, { textContent: eyebrowFor(at + 1) }, nextAt + 0.2);
+              tl.to(slider, { x: place(at + 1), duration: 0.6, ease: EASE }, nextAt);
+              tl.to(labels[at], { color: MUTED, fontWeight: 400, duration: 0.3, ease: "none" }, nextAt);
+              tl.to(labels[at + 1], { color: INK, fontWeight: 600, duration: 0.3, ease: "none" }, nextAt + 0.3);
+              if (nextLines.length) tl.to(nextLines, { opacity: 1, y: 0, duration: 0.4, ease: EASE, stagger: 0.1 }, nextAt + 0.25);
+            }
+            // out: the words fade, then the card drops away
+            const out = D - 0.5;
+            tl.to(card.children, { opacity: 0, duration: 0.2, ease: "none" }, out);
+            tl.to(card, { y: 24, opacity: 0, duration: 0.3, ease: EASE }, out + 0.1);
+            tl.set({}, {}, D);
+            window.__timelines[ID] = tl;
+          }
+
+          // lines are measured (off a canvas), so build once the fonts have loaded
+          const fonts = [`800 46px ${v("fontDisplay", "Inter")}`, `400 22px ${v("fontLabel", "JetBrains Mono")}`];
+          const loaded = document.fonts ? Promise.all(fonts.map((f) => document.fonts.load(f).catch(() => null))).then(() => document.fonts.ready) : Promise.resolve();
+          loaded.then(build);
+        })();
+      </script>
+    </template>
+  </body>
+</html>

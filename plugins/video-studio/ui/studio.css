@@ -1,0 +1,2424 @@
+/* Wyzowl Video Studio — page styles.
+   A production storyboard: paper, rails that frame the content, numbered scenes (timecodes), framed stills with crop
+   marks, and a title block. Each page opens on a dark header panel between the rails. Type is Inter throughout
+   (SIL OFL 1.1, bundled). */
+
+@font-face {
+  font-family: "Inter VS";
+  src: url("/ui/fonts/InterVariable-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --paper: #f6f3ea;
+  --paper-deep: #ece7da;
+  --white: #ffffff;
+  --ink: #1e1e1e;
+  --ink-800: #2a2a2a;
+  --ink-700: #3a3a3a;
+  --yellow: #f9b336;
+  --navy: #052f5f;
+  --pink: #ef476f;
+  --teal: #1b9aaa;
+  --success: #047857;
+  --warning: #b45309;
+  --error: #c02b0a;
+
+  --background: var(--paper);
+  --background-2: var(--white);
+  --background-3: var(--paper-deep);
+  --text: var(--ink);
+  --text-2: color-mix(in lab, var(--text) 66%, transparent);
+  --border: color-mix(in lab, var(--text) 20%, transparent);
+  --border-strong: color-mix(in lab, var(--text) 45%, transparent);
+  --border-width: 1px;
+
+  --font-body: "Inter VS", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-body);
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+
+  --text-display: clamp(2.625rem, 1.661rem + 4.821vw, 6rem);
+  --text-h1: clamp(2.75rem, 2.393rem + 1.786vw, 4rem);
+  --text-h2: clamp(2.125rem, 1.875rem + 1.25vw, 3rem);
+  --text-h3: clamp(1.625rem, 1.518rem + 0.536vw, 2rem);
+  --text-h4: clamp(1.3125rem, 1.259rem + 0.268vw, 1.5rem);
+  --text-large: clamp(1.125rem, 1.089rem + 0.179vw, 1.25rem);
+  --text-main: clamp(1rem, 0.964rem + 0.179vw, 1.125rem);
+  --text-small: clamp(0.875rem, 0.839rem + 0.179vw, 1rem);
+  --text-tiny: 0.75rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --section-space: clamp(3rem, 2rem + 4vw, 6rem);
+
+  --page-margin: clamp(1rem, 0.6rem + 2vw, 3rem);
+  --rail-pad: clamp(1rem, 0.7rem + 1.5vw, 2rem);
+  --max: 75rem;
+  --radius-s: 0.375rem;
+  --radius: 0.5rem;
+  --frame-inset: 0.5625rem;
+
+  --ease: cubic-bezier(0.65, 0, 0.35, 1);
+  --draw: 0.9s;
+  --draw-long: 1.6s;
+  --hover: 0.2s;
+  --grain: 0.03;
+
+  color-scheme: light;
+}
+
+/* ───────── base ───────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font: 400 var(--text-main) / 1.5 var(--font-body);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+/* film grain over everything, like the website */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: var(--grain);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+a {
+  color: inherit;
+  text-decoration-thickness: var(--border-width);
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--border-strong);
+  transition: text-decoration-color var(--hover) var(--ease);
+}
+a:hover {
+  text-decoration-color: var(--yellow);
+}
+:focus-visible {
+  outline: 2px dashed var(--text);
+  outline-offset: 3px;
+}
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+  margin: 0;
+}
+h3,
+h4 {
+  letter-spacing: -0.015em;
+}
+h1 {
+  font-size: var(--text-h1);
+}
+h2 {
+  font-size: var(--text-h2);
+}
+h3 {
+  font-size: var(--text-h3);
+}
+h4 {
+  font-size: var(--text-h4);
+}
+p {
+  margin: 0;
+}
+.display {
+  font-size: var(--text-display);
+}
+.lede {
+  font-size: var(--text-main);
+  color: var(--text-2);
+  max-width: 44rem;
+}
+.mono {
+  font-family: var(--font-mono);
+}
+.muted {
+  color: var(--text-2);
+}
+.numeric {
+  font-variant-numeric: tabular-nums;
+}
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.skip {
+  position: absolute;
+  left: var(--space-4);
+  top: -3rem;
+  z-index: 60;
+  background: var(--background-2);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--border);
+}
+.skip:focus {
+  top: var(--space-4);
+}
+
+/* ───────── layout: sections, rails, rules ───────── */
+.section {
+  --_x: calc((100% - min(100% - 2 * var(--page-margin), var(--max) + 2 * var(--rail-pad))) / 2);
+  position: relative;
+  padding-block: var(--section-space);
+  background:
+    linear-gradient(var(--border), var(--border)) left var(--_x) top 0 / var(--border-width) var(--_rail, 100%) no-repeat,
+    linear-gradient(var(--border), var(--border)) right var(--_x) top 0 / var(--border-width) var(--_rail, 100%) no-repeat;
+  background-color: var(--background);
+  color: var(--text);
+}
+.section--tight {
+  padding-block: calc(var(--section-space) * 0.6);
+}
+.section--flush-top {
+  padding-top: var(--space-6);
+}
+/* a rule opens the section: a hairline with square markers where it crosses the rails */
+.section--rule::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -3px;
+  height: 7px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--text), var(--text)) left calc(var(--_x) - 3px) top 0 / 7px 7px no-repeat,
+    linear-gradient(var(--text), var(--text)) right calc(var(--_x) - 3px) top 0 / 7px 7px no-repeat,
+    linear-gradient(var(--border), var(--border)) left 0 top 3px / 100% var(--border-width) no-repeat;
+}
+.section--dark {
+  --background: var(--ink);
+  --background-2: var(--ink-800);
+  --background-3: var(--ink-700);
+  --text: var(--paper);
+  --text-2: color-mix(in lab, var(--paper) 70%, transparent);
+  --border: color-mix(in lab, var(--paper) 20%, transparent);
+  --border-strong: color-mix(in lab, var(--paper) 45%, transparent);
+}
+.container {
+  width: min(100% - 2 * var(--page-margin), var(--max) + 2 * var(--rail-pad));
+  margin-inline: auto;
+  padding-inline: var(--rail-pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+/* The page header: a dark panel with the dot grid that fills the column between the rails, flush against the
+   masthead above and the next section's rule below. Its vertical space sits inside the panel. */
+.section--hero {
+  padding-block: 0;
+  background: none;
+  animation: none;
+}
+.section--hero > .container {
+  --background: var(--ink);
+  --background-2: var(--ink-800);
+  --background-3: var(--ink-700);
+  --text: var(--paper);
+  --text-2: color-mix(in lab, var(--paper) 70%, transparent);
+  --border: color-mix(in lab, var(--paper) 20%, transparent);
+  --border-strong: color-mix(in lab, var(--paper) 45%, transparent);
+  color: var(--text);
+  background:
+    radial-gradient(color-mix(in lab, var(--paper) 14%, transparent) 1px, transparent 1px) center top / 1.25rem 1.25rem,
+    var(--background);
+  padding-block: var(--space-8) var(--space-7);
+}
+.section--hero .lede {
+  color: var(--text-2);
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+.split {
+  display: grid;
+  gap: var(--space-6);
+}
+@media (min-width: 64rem) {
+  .split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+  }
+}
+
+/* rails draw down on first load; everything rests complete without motion */
+@property --_rail {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .section {
+    animation: rail-draw var(--draw-long) var(--ease) both;
+  }
+  @keyframes rail-draw {
+    from {
+      --_rail: 0%;
+    }
+    to {
+      --_rail: 100%;
+    }
+  }
+}
+
+/* ───────── masthead ───────── */
+.masthead {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in lab, var(--paper) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: var(--border-width) solid var(--border);
+}
+.masthead_row {
+  width: min(100% - 2 * var(--page-margin), var(--max) + 2 * var(--rail-pad));
+  margin-inline: auto;
+  padding: var(--space-3) var(--rail-pad);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+/* the Wyzowl logo (owl fixed yellow, wordmark in --logo-text) with the product name beside it */
+.wordmark {
+  --logo-text: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  text-decoration: none;
+}
+.wordmark_logo svg {
+  display: block;
+  width: 8rem;
+  height: auto;
+}
+.wordmark_product {
+  padding: 0.35rem 0 0.35rem var(--space-4);
+  border-left: var(--border-width) solid var(--border-strong);
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.nav a,
+.nav span {
+  padding: var(--space-2) 0;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+.nav a:hover,
+.nav a[aria-current="page"] {
+  border-bottom-color: var(--yellow);
+}
+.nav .is-soon {
+  color: var(--text-2);
+}
+/* small screens: the logo at half size, no product label, everything on one line */
+@media (max-width: 40rem) {
+  .masthead_row {
+    flex-wrap: nowrap;
+    gap: var(--space-3);
+    padding-block: var(--space-3);
+  }
+  .wordmark_logo svg {
+    width: 4rem;
+  }
+  .wordmark_product {
+    display: none;
+  }
+  .nav {
+    flex-wrap: nowrap;
+    gap: var(--space-3);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+  }
+}
+
+/* ───────── eyebrow: timecode scene label ───────── */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.eyebrow_index {
+  color: var(--text);
+  padding: 0.35rem 0.5rem;
+  border: var(--border-width) solid var(--border-strong);
+  background: var(--background);
+  font-variant-numeric: tabular-nums;
+}
+.eyebrow::after {
+  content: "";
+  flex: 1;
+  height: var(--border-width);
+  background: var(--border);
+}
+.eyebrow--plain::after {
+  display: none;
+}
+.breadcrumbs {
+  font: 500 var(--text-tiny) / 1.4 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.breadcrumbs a {
+  text-decoration: none;
+}
+.breadcrumbs a:hover {
+  color: var(--text);
+}
+
+/* ───────── buttons ───────── */
+.button {
+  --_bg: var(--yellow);
+  --_fg: var(--white);
+  --_bd: transparent;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: 0.7rem 1.15rem;
+  border: var(--border-width) solid var(--_bd);
+  border-radius: var(--radius-s);
+  background: var(--_bg);
+  color: var(--_fg);
+  font: 700 var(--text-small) / 1 var(--font-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--hover) var(--ease),
+    color var(--hover) var(--ease),
+    border-color var(--hover) var(--ease);
+}
+.button:hover {
+  --_bg: color-mix(in lab, var(--yellow) 82%, var(--ink));
+}
+.button--secondary {
+  --_bg: transparent;
+  --_fg: var(--text);
+  --_bd: var(--border-strong);
+}
+.button--secondary:hover {
+  --_bg: var(--background-3);
+}
+.button[disabled],
+.button[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+/* corner brackets on the one main action per view */
+.button--corners::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  pointer-events: none;
+  --_c: var(--text);
+  --_l: 0.6rem;
+  background:
+    linear-gradient(var(--_c), var(--_c)) top left / var(--_l) 1.5px,
+    linear-gradient(var(--_c), var(--_c)) top left / 1.5px var(--_l),
+    linear-gradient(var(--_c), var(--_c)) bottom right / var(--_l) 1.5px,
+    linear-gradient(var(--_c), var(--_c)) bottom right / 1.5px var(--_l);
+  background-repeat: no-repeat;
+}
+
+/* ───────── chips ───────── */
+.chip {
+  --_c: var(--text);
+  --_bg: var(--background-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: var(--radius-s);
+  background: var(--_bg);
+  color: var(--_c);
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.chip::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--_dot, var(--_c));
+  flex: none;
+}
+.chip--plain::before {
+  display: none;
+}
+.chip--raw {
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+.swatch-strip--hero {
+  height: 2.25rem;
+  max-width: 30rem;
+}
+.chip--planning {
+  --_bg: var(--background-3);
+}
+.chip--storyboard {
+  --_c: var(--navy);
+  --_bg: color-mix(in srgb, var(--navy) 12%, var(--white));
+}
+.chip--feedback {
+  --_c: color-mix(in lab, var(--pink) 72%, var(--ink));
+  --_bg: color-mix(in srgb, var(--pink) 14%, var(--white));
+}
+.chip--production {
+  --_c: color-mix(in lab, var(--teal) 70%, var(--ink));
+  --_bg: color-mix(in srgb, var(--teal) 14%, var(--white));
+}
+.chip--draft {
+  --_c: var(--ink);
+  --_bg: color-mix(in srgb, var(--yellow) 30%, var(--white));
+  --_dot: var(--yellow);
+}
+.chip--delivered {
+  --_c: var(--paper);
+  --_bg: var(--ink);
+  --_dot: var(--yellow);
+}
+.chip--soon {
+  --_bg: transparent;
+  --_c: var(--text-2);
+  border: var(--border-width) dashed var(--border-strong);
+}
+.chip--swatch::before {
+  background: var(--_dot);
+  outline: var(--border-width) solid var(--border);
+}
+
+/* ───────── cards ───────── */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  overflow: clip;
+}
+.card_body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  flex: 1;
+}
+.card_title {
+  font-size: var(--text-h4);
+}
+.card_link {
+  text-decoration: none;
+}
+.card_link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.card:has(.card_link:hover) {
+  border-color: var(--border-strong);
+}
+.grid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--_min, 17rem)), 1fr));
+}
+
+/* ───────── frames: storyboard panels for stills ───────── */
+.frame {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.frame_stage {
+  position: relative;
+  padding: var(--frame-inset);
+  --_crop: 0.75rem;
+  --_c: var(--text);
+}
+.frame_stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--_c), var(--_c)) top left / var(--_crop) var(--border-width),
+    linear-gradient(var(--_c), var(--_c)) top left / var(--border-width) var(--_crop),
+    linear-gradient(var(--_c), var(--_c)) top right / var(--_crop) var(--border-width),
+    linear-gradient(var(--_c), var(--_c)) top right / var(--border-width) var(--_crop),
+    linear-gradient(var(--_c), var(--_c)) bottom left / var(--_crop) var(--border-width),
+    linear-gradient(var(--_c), var(--_c)) bottom left / var(--border-width) var(--_crop),
+    linear-gradient(var(--_c), var(--_c)) bottom right / var(--_crop) var(--border-width),
+    linear-gradient(var(--_c), var(--_c)) bottom right / var(--border-width) var(--_crop);
+  background-repeat: no-repeat;
+}
+.frame_media {
+  position: relative;
+  aspect-ratio: var(--ratio, 16 / 9);
+  overflow: clip;
+  background: var(--background-3);
+  display: grid;
+  place-items: center;
+}
+.frame_media > img,
+.frame_media > video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: scale 0.6s var(--ease);
+}
+.frame_media > .frame_contain {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 12%;
+}
+a.frame_stage:hover .frame_media > img {
+  scale: 1.04;
+}
+.frame_media--player {
+  background: #000;
+}
+.frame_media > video.player_video {
+  object-fit: contain;
+}
+.frame_empty {
+  font: 500 var(--text-tiny) / 1.4 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  text-align: center;
+  padding: var(--space-4);
+}
+.frame_caption {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+  padding-inline: var(--frame-inset);
+}
+.frame_time {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* ───────── title block: the storyboard spec sheet ───────── */
+/* cells wrap and grow to fill each row, so a short last row never leaves an empty slot */
+.titleblock {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--border-width);
+  background: var(--border);
+  border: var(--border-width) solid var(--border);
+}
+.titleblock_cell {
+  flex: 1 1 9.5rem;
+  background: var(--background);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.titleblock dt {
+  font: 500 var(--text-tiny) / 1.2 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.titleblock dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* ───────── dashboard: timeline of videos ───────── */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-6);
+  position: relative;
+  --_date: 7.5rem;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  top: 0.4rem;
+  bottom: 0;
+  left: calc(var(--_date) + var(--space-5) / 2);
+  width: var(--border-width);
+  background: var(--border);
+}
+.timeline_item {
+  display: grid;
+  grid-template-columns: var(--_date) minmax(0, 1fr);
+  gap: var(--space-5);
+  position: relative;
+}
+.timeline_item::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--_date) + var(--space-5) / 2 - 3px);
+  top: 0.35rem;
+  width: 7px;
+  height: 7px;
+  background: var(--text);
+}
+.timeline_date {
+  text-align: right;
+  font: 500 var(--text-tiny) / 1.4 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  padding-top: 0.1rem;
+}
+@media (max-width: 40rem) {
+  .timeline {
+    --_date: 0rem;
+    padding-left: var(--space-5);
+  }
+  .timeline::before {
+    left: 3px;
+  }
+  .timeline_item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+  .timeline_item::before {
+    left: calc(-1 * var(--space-5));
+  }
+  .timeline_date {
+    text-align: left;
+  }
+}
+.video-card {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-4);
+  background: var(--background-2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+}
+@media (min-width: 52rem) {
+  .video-card {
+    grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+.video-card_body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+.video-card_title {
+  font-size: var(--text-h4);
+}
+.video-card_status {
+  color: var(--text-2);
+  font-size: var(--text-small);
+}
+
+/* ───────── brand cards ───────── */
+.brand-card_panel {
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  background: var(--_panel, var(--background-3));
+  border-bottom: var(--border-width) solid var(--border);
+}
+.brand-card_panel img {
+  max-width: 62%;
+  max-height: 46%;
+  object-fit: contain;
+}
+.brand-card_panel span {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: var(--text-h3);
+  color: var(--_panel-text, var(--text));
+}
+.swatch-strip {
+  display: flex;
+  height: 1.25rem;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-s);
+  overflow: clip;
+}
+.swatch-strip span {
+  flex: 1;
+}
+
+/* ───────── brand page ───────── */
+.swatches {
+  --_min: 14rem;
+}
+.swatch {
+  border-radius: var(--radius);
+  overflow: clip;
+  border: var(--border-width) solid var(--border);
+  background: var(--background-2);
+}
+.swatch_colour {
+  aspect-ratio: 4 / 3;
+  background: var(--_c);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border-bottom: var(--border-width) solid var(--border);
+}
+.swatch_sample {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font: 700 1.5rem / 1 var(--font-body);
+}
+.swatch_sample small {
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.swatch_body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.swatch_hex {
+  font: 600 var(--text-small) / 1 var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.specimen {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--background-2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+}
+@media (min-width: 52rem) {
+  .specimen {
+    grid-template-columns: 11rem minmax(0, 1fr);
+  }
+}
+.specimen_glyph {
+  font-size: 6.5rem;
+  line-height: 0.9;
+}
+.specimen_sample {
+  font-size: var(--text-h3);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.specimen_meta {
+  font: 500 var(--text-tiny) / 1.6 var(--font-mono);
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+}
+.logo-panel {
+  --ratio: 16 / 9;
+}
+.rules-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-3);
+}
+.rules-list li {
+  display: grid;
+  grid-template-columns: 0.5rem minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: baseline;
+}
+.rules-list li::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--text);
+  translate: 0 -0.1em;
+}
+.ease-row {
+  display: grid;
+  gap: var(--space-2);
+}
+.ease-track {
+  position: relative;
+  height: 1.5rem;
+  border-bottom: var(--border-width) solid var(--border);
+}
+.ease-dot {
+  position: absolute;
+  bottom: 0.25rem;
+  left: 0;
+  width: 1rem;
+  height: 1rem;
+  background: var(--text);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ease-dot {
+    animation: ease-demo 2.6s var(--_ease, var(--ease)) infinite alternate;
+  }
+  @keyframes ease-demo {
+    0%,
+    12% {
+      left: 0;
+    }
+    88%,
+    100% {
+      left: calc(100% - 1rem);
+    }
+  }
+}
+
+/* ───────── storyboard page ───────── */
+.scene {
+  scroll-margin-top: 5rem;
+}
+.scene_head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+/* frames at a size that's easy to review: at most 300 px wide and 400 px tall (--_fmax keeps the shape), a scene's
+   frames on one row, so they sit above what the scene says. They shrink a little to fit; past that the row scrolls
+   sideways (a swipe on a phone), a frame at a time. A click opens one full size (ui/page.js) */
+.scene_frames {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  padding-bottom: var(--space-2);
+}
+.scene_frames > .frame {
+  flex: 0 1 calc(var(--_fmax, 300px) + 2 * var(--frame-inset));
+  min-width: min(calc(0.7 * var(--_fmax, 300px)), 72vw);
+  scroll-snap-align: start;
+}
+.frame_stage--zoom {
+  cursor: zoom-in;
+}
+.scene_grid {
+  display: grid;
+  gap: var(--space-6);
+}
+@media (min-width: 64rem) {
+  .scene_grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+.script {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--text);
+  background: var(--background-2);
+  display: grid;
+  gap: var(--space-2);
+}
+.script_label,
+.field-label {
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.script_text {
+  font-size: var(--text-large);
+  line-height: 1.4;
+  white-space: pre-line;
+}
+/* a review control: its label sits just above the box, not on its border */
+.review {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.review_legend {
+  float: left;
+  width: 100%;
+  padding: 0;
+  margin: 0 0 var(--space-2);
+}
+.review_box {
+  clear: both;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background-2);
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-3);
+}
+.review_options {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  overflow: clip;
+}
+.review_option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: var(--space-2);
+  font: 600 var(--text-small) / 1.1 var(--font-body);
+  text-align: center;
+  cursor: pointer;
+  border-left: var(--border-width) solid var(--border);
+  transition: background-color var(--hover) var(--ease), color var(--hover) var(--ease);
+}
+.review_option:first-child {
+  border-left: 0;
+}
+.review_option input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.review_option:has(input:focus-visible) {
+  outline: 2px dashed var(--text);
+  outline-offset: -4px;
+}
+.review_option:hover {
+  background: var(--background-3);
+}
+.review_option:has(input:checked) {
+  background: var(--ink);
+  color: var(--paper);
+}
+.review_option--approved:has(input:checked) {
+  background: var(--success);
+  color: var(--white);
+}
+.review_option--feedback:has(input:checked) {
+  background: var(--pink);
+  color: var(--white);
+}
+.review_note {
+  display: grid;
+  gap: var(--space-2);
+}
+.review_note[hidden] {
+  display: none;
+}
+textarea {
+  width: 100%;
+  min-height: 7rem;
+  resize: vertical;
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--background-3);
+  color: var(--text);
+  font: 400 var(--text-main) / 1.5 var(--font-body);
+}
+textarea:focus {
+  background: var(--white);
+}
+.review_hint {
+  font-size: var(--text-small);
+  color: var(--text-2);
+}
+.scene.is-approved .eyebrow_index {
+  background: var(--success);
+  border-color: var(--success);
+  color: var(--white);
+}
+.scene.is-feedback .eyebrow_index {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: var(--white);
+}
+/* the floating save bar: dark, so it stands out as it passes over the paper */
+.reviewbar {
+  --background: var(--ink);
+  --text: var(--paper);
+  --text-2: color-mix(in lab, var(--paper) 72%, transparent);
+  --border: color-mix(in lab, var(--paper) 20%, transparent);
+  --border-strong: color-mix(in lab, var(--paper) 45%, transparent);
+  position: sticky;
+  bottom: var(--space-4);
+  z-index: 30;
+  width: min(100% - 2 * var(--page-margin), 52rem);
+  margin: var(--space-6) auto var(--space-4);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--background);
+  color: var(--text);
+  border-radius: var(--radius);
+  box-shadow: 0 1rem 2.5rem -0.75rem color-mix(in lab, var(--ink) 60%, transparent);
+}
+.reviewbar_counts {
+  flex: 1 1 11rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.reviewbar .button {
+  flex: none;
+}
+@media (max-width: 40rem) {
+  .reviewbar {
+    bottom: var(--space-2);
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+    gap: var(--space-2);
+  }
+  .reviewbar_counts {
+    gap: 0.15rem var(--space-3);
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+  }
+  .reviewbar .button {
+    min-height: 2.5rem;
+    padding: 0.55rem 0.9rem;
+  }
+  .reviewbar_message {
+    font-size: var(--text-tiny);
+  }
+}
+.reviewbar_counts b {
+  font-variant-numeric: tabular-nums;
+}
+/* shown while Claude waits in the background for this review (studio.mjs wait) */
+.reviewbar_claude {
+  color: var(--yellow);
+}
+.reviewbar_claude::before {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-right: 0.5em;
+  border-radius: 50%;
+  background: currentColor;
+}
+.reviewbar_claude[hidden] {
+  display: none;
+}
+.reviewbar_message {
+  flex-basis: 100%;
+  font-size: var(--text-small);
+}
+.reviewbar_message:empty {
+  display: none;
+}
+.reviewbar_message.is-error {
+  color: #ffab9a;
+}
+
+/* video review page: player beside the notes on wide screens; "Add a note" heads the notes */
+.review-layout {
+  display: grid;
+  gap: var(--space-6);
+}
+@media (min-width: 64rem) {
+  .review-layout {
+    grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+    align-items: start;
+  }
+  .review-side {
+    position: sticky;
+    top: 5rem;
+  }
+}
+.review-side_add {
+  display: flex;
+}
+.player_tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.chapter {
+  padding: 0.4rem 0.6rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: transparent;
+  color: var(--text);
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.chapter:hover {
+  background: var(--background-3);
+}
+.notes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.notes:empty {
+  display: none;
+}
+.note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: start;
+  padding: var(--space-3);
+  background: var(--background-2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+}
+.note textarea {
+  min-height: 4.5rem;
+}
+@media (max-width: 40rem) {
+  .note {
+    grid-template-columns: auto 1fr auto;
+  }
+  .note textarea {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+.note_time {
+  padding: 0.5rem 0.55rem;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: var(--ink);
+  color: var(--paper);
+  font: 600 var(--text-tiny) / 1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.note_remove {
+  padding: 0.2rem 0.45rem;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: transparent;
+  color: var(--text-2);
+  font: 400 1.4rem / 1 var(--font-body);
+  cursor: pointer;
+}
+.note_remove:hover {
+  background: var(--background-3);
+  color: var(--text);
+}
+.callout {
+  border-left: 2px solid var(--yellow);
+  padding: var(--space-3) var(--space-4);
+  background: var(--background-3);
+  font-size: var(--text-small);
+  display: grid;
+  gap: var(--space-2);
+}
+/* placeholders: what a new, empty studio shows until there's a real video or brand */
+.placeholder {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: var(--border-width) dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: transparent;
+}
+.placeholder_panel {
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  border-bottom: var(--border-width) dashed var(--border-strong);
+  color: var(--text-2);
+  font: 500 var(--text-tiny) / 1.4 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: var(--space-4);
+}
+.placeholder_plus {
+  display: block;
+  font: 300 2.5rem / 1 var(--font-body);
+  margin-bottom: var(--space-2);
+}
+.placeholder .card_body p {
+  color: var(--text-2);
+}
+.video-card--placeholder {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--border-strong);
+}
+.video-card--placeholder .frame_media {
+  background: transparent;
+  border: var(--border-width) dashed var(--border-strong);
+}
+code,
+kbd {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--background-3);
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+}
+
+/* live updates: a bar under the masthead when a page changes while it has unsaved input, or a newer version appears */
+.live-bar {
+  position: fixed;
+  z-index: 45;
+  top: 4.75rem;
+  left: 50%;
+  translate: -50% 0;
+  width: min(100% - 2 * var(--page-margin), 40rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--radius);
+  box-shadow: 0 1rem 2.5rem -0.75rem color-mix(in lab, var(--ink) 60%, transparent);
+  font-size: var(--text-small);
+}
+.live-bar .button {
+  min-height: 2.25rem;
+  padding: 0.5rem 0.9rem;
+}
+
+/* ───────── the library: items playing live in a brand and a size (scripts/lib/library.mjs) ───────── */
+/* a menu of the categories beside the chosen one's items; on small screens, a row of tabs above them */
+.library {
+  display: grid;
+  gap: var(--space-6);
+}
+.library_main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+.libnav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.libnav_link {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: var(--space-3);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--background-2);
+  text-decoration: none;
+  transition: background-color var(--hover) var(--ease);
+}
+.libnav_link:hover {
+  background: var(--background-3);
+}
+.libnav_letter {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  font: 600 var(--text-tiny) / 1 var(--font-mono);
+}
+.libnav_name {
+  font-weight: 600;
+  font-size: var(--text-small);
+}
+.libnav_meta {
+  display: none;
+  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+}
+.libnav_link[aria-current="page"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.libnav_link[aria-current="page"] .libnav_letter {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: var(--ink);
+}
+.libnav_link[aria-current="page"] .libnav_meta {
+  color: color-mix(in lab, var(--paper) 70%, transparent);
+}
+@media (min-width: 52rem) {
+  .library {
+    grid-template-columns: 15rem minmax(0, 1fr);
+    align-items: start;
+  }
+  .libnav {
+    position: sticky;
+    top: 6rem;
+  }
+  .libnav ul {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: var(--border-width);
+    background: var(--border);
+    border: var(--border-width) solid var(--border);
+  }
+  .libnav_link {
+    padding: var(--space-3) var(--space-4);
+    border: 0;
+    border-radius: 0;
+  }
+  .libnav_letter {
+    grid-row: span 2;
+    width: 2rem;
+    height: 2rem;
+  }
+  .libnav_meta {
+    display: block;
+  }
+}
+/* a category with nothing in it yet */
+.libempty {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-3);
+  min-height: 16rem;
+  padding: var(--space-6);
+  border: var(--border-width) dashed var(--border-strong);
+  border-radius: var(--radius);
+  text-align: center;
+  color: var(--text-2);
+}
+.libempty p {
+  max-width: 30rem;
+}
+.libempty_label,
+.gframe--empty span {
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.gframe--empty {
+  display: grid;
+  place-items: center;
+  color: color-mix(in lab, var(--paper) 55%, transparent);
+}
+.gcontrols {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4) var(--space-6);
+}
+.gcontrol {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.gcontrol legend {
+  padding: 0;
+  margin-bottom: var(--space-2);
+}
+.gselect {
+  position: relative;
+  display: inline-grid;
+  max-width: 100%;
+}
+.gselect::after {
+  content: "";
+  position: absolute;
+  right: 0.95rem;
+  top: 50%;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+.gselect select {
+  min-height: 2.75rem;
+  max-width: 100%;
+  padding: 0.55rem 2.6rem 0.55rem 0.85rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--background-2);
+  color: var(--text);
+  font: 500 var(--text-small) / 1.2 var(--font-body);
+  appearance: none;
+  cursor: pointer;
+}
+.gselect select:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+.seg {
+  display: inline-flex;
+  max-width: 100%;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  overflow: hidden;
+}
+.seg label {
+  position: relative;
+  display: block;
+}
+.seg input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.seg span {
+  display: block;
+  min-width: 3.4rem;
+  padding: 0.85rem 0.75rem;
+  text-align: center;
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.06em;
+}
+.seg label + label span {
+  border-left: var(--border-width) solid var(--border-strong);
+}
+.seg label:hover input:not(:checked) + span {
+  background: var(--background-3);
+}
+.seg input:checked + span {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.seg input:focus-visible + span {
+  outline: 2px solid var(--yellow);
+  outline-offset: -4px;
+}
+.ggrid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--_min, 22rem)), 1fr));
+}
+.ggrid--tall {
+  --_min: 17rem;
+}
+/* a frame keeps the item's shape and at most --_h of height */
+.gframe {
+  position: relative;
+  width: min(100%, calc(var(--_h, 30rem) * var(--ar, 1.7778)));
+  max-width: 100%;
+  aspect-ratio: var(--ratio, 16 / 9);
+  margin-inline: auto;
+  background: #1d2024;
+  overflow: hidden;
+}
+.gframe iframe {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+}
+/* a locked paid item: a still of it */
+.gframe img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.code--locked {
+  background: var(--background-3);
+}
+/* a locked card: faded, so it's plainly not yours yet but still shows what it does, under a "Paid upgrade" badge
+   (at full strength, above the card's link) that leads to the full library */
+.gitem--locked > .gitem_media,
+.gitem--locked > .card_body {
+  opacity: 0.5;
+}
+.gitem--locked:has(.card_link:hover) > .gitem_media,
+.gitem--locked:has(.card_link:hover) > .card_body {
+  opacity: 0.65;
+}
+.gitem_upgrade {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 1;
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--radius-s);
+  background: var(--yellow);
+  color: var(--ink);
+  font: 600 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: 0 1px 0 rgba(29, 32, 36, 0.25);
+}
+.gitem_upgrade:hover {
+  background: color-mix(in srgb, var(--yellow) 82%, var(--white));
+}
+.gitem_upgrade:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+/* the full library, above the cards: what it adds, and the licence key */
+[data-licence-panel] {
+  scroll-margin-top: 6rem;
+}
+[data-licence-panel] .button {
+  justify-self: start;
+}
+.libpaid_problem {
+  font-weight: 600;
+}
+.libpaid_result:empty {
+  display: none;
+}
+.libkey {
+  display: grid;
+  gap: var(--space-2);
+}
+.libkey_get {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--text-2);
+}
+.libkey_row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.libkey input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.85rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--background-2);
+  color: var(--text);
+  font: 500 var(--text-small) / 1.2 var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.libkey input::placeholder {
+  text-transform: none;
+}
+.libkey input:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+.gitem_media {
+  display: flex;
+  justify-content: center;
+  background: #1d2024;
+  border-bottom: var(--border-width) solid var(--border);
+}
+.gitem_media .gframe {
+  --_h: 26rem;
+}
+.code {
+  display: inline-block;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-s);
+  background: var(--yellow);
+  color: var(--ink);
+  font: 600 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.06em;
+}
+/* an item's page: large, then every size */
+.gstage {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-5);
+  background: #1d2024;
+}
+.gstage .gframe {
+  --_h: min(68vh, 40rem);
+}
+.gstage_tools {
+  margin-top: var(--space-4);
+}
+.gsizes_title {
+  margin: var(--space-7) 0 var(--space-4);
+}
+.gsizes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-5);
+}
+.gsize {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+  max-width: 100%;
+  text-decoration: none;
+}
+/* a fixed width: in this shrink-to-fit strip, the frame's usual min(100%, …) has nothing to resolve against */
+.gsize .gframe {
+  --_h: 12rem;
+  width: calc(var(--_h) * var(--ar, 1.7778));
+  margin: 0;
+}
+.gsize span {
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+}
+.gsize:hover .gframe {
+  outline: 2px solid var(--border-strong);
+  outline-offset: 4px;
+}
+.gsize[aria-current] .gframe {
+  outline: 2px solid var(--yellow);
+  outline-offset: 4px;
+}
+.gsize[aria-current] span {
+  color: var(--text);
+}
+.table-wrap {
+  overflow-x: auto;
+}
+.fields {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--background-2);
+  border: var(--border-width) solid var(--border);
+  font-size: var(--text-small);
+}
+.fields th,
+.fields td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: var(--border-width) solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+.fields thead th {
+  font: 500 var(--text-tiny) / 1.2 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  background: var(--background-3);
+}
+.fields tbody th {
+  font-weight: 600;
+}
+.fields td.mono {
+  font-size: var(--text-tiny);
+  color: var(--text-2);
+}
+.styleset {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  gap: var(--border-width);
+  background: var(--border);
+  border: var(--border-width) solid var(--border);
+}
+.styleset_item {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--background-2);
+}
+.styleset_value {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.swatch-dot {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: var(--border-width) solid var(--border-strong);
+}
+
+/* footer */
+.footer .titleblock_cell {
+  background: var(--background);
+}
+.footer_note {
+  font: 500 var(--text-tiny) / 1.5 var(--font-mono);
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+}
+
+@media print {
+  body::after,
+  .masthead,
+  .reviewbar {
+    display: none;
+  }
+}
+
+/* ───────── a long block (the request in a video's brief): its first lines, faded, and "Show all" (ui/page.js) ───────── */
+.is-clamped {
+  max-height: var(--_clamp, 12rem);
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+.readmore--block {
+  justify-self: start;
+  align-self: flex-start;
+}
+
+/* ───────── hero descriptions: past 50 words, "Read more" opens the rest (ui/page.js) ───────── */
+.readmore {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: var(--border-width);
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--yellow);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.readmore:hover {
+  color: var(--yellow);
+}
+
+/* titles that open a video's overview */
+.title-link {
+  text-decoration: none;
+}
+.title-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--yellow);
+}
+
+/* ───────── sharing outside the studio: a version's PDF (or video) download, and where feedback goes ───────── */
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+.share .button {
+  flex: none;
+}
+.share .button[aria-busy="true"] {
+  cursor: progress;
+  opacity: 0.7;
+}
+.share_note {
+  flex: 1 1 16rem;
+  max-width: 34rem;
+  font-size: var(--text-small);
+  color: var(--text-2);
+}
+.share_note:empty {
+  display: none;
+}
+.share_note a,
+.share_reveal {
+  color: var(--text);
+}
+.share_note.is-error {
+  color: #ff9a85;
+}
+.share_reveal {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--yellow);
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+.share_reveal:hover {
+  color: var(--yellow);
+}
+
+/* ───────── stages: a video's storyboards on one row, its drafts on the next ───────── */
+.stages {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.stages_items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.stages_group {
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.stages_item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  padding: 0.3rem 0.6rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color var(--hover) var(--ease);
+}
+a.stages_item:hover {
+  border-color: var(--yellow);
+}
+.stages_item[aria-current="page"] {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--background);
+}
+/* a dot for where each version stands: approved, feedback, waiting for review, not reviewed */
+.stages_item[class*="stages_item--"]::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--_dot);
+}
+.stages_item--approved {
+  --_dot: var(--teal);
+}
+.stages_item--feedback {
+  --_dot: var(--pink);
+}
+.stages_item--ready {
+  --_dot: var(--yellow);
+}
+.stages_item--none {
+  --_dot: var(--border-strong);
+}
+
+/* ───────── a video's overview ───────── */
+/* what's happening now, and the one thing to do next */
+.now {
+  margin-top: var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  background: var(--background-3);
+  border-left: 2px solid var(--yellow);
+}
+.now--done {
+  border-left-color: var(--teal);
+}
+.now_text {
+  flex: 1 1 20rem;
+  display: grid;
+  gap: var(--space-1);
+}
+.now_text strong {
+  font-size: var(--text-large);
+  font-weight: 700;
+}
+.now_text p {
+  color: var(--text-2);
+  font-size: var(--text-small);
+}
+.now_pulse {
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--yellow);
+}
+.chip--working {
+  --_c: var(--ink);
+  --_bg: color-mix(in srgb, var(--yellow) 30%, var(--white));
+  --_dot: var(--yellow);
+}
+.chip--working::before {
+  border-radius: 50%;
+}
+@keyframes pulse-ring {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--yellow) 65%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 0.7rem transparent;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .now_pulse,
+  .chip--working::before {
+    animation: pulse-ring 1.6s var(--ease) infinite;
+  }
+}
+/* the timeline of stages, brief to final video */
+.timeline--stages {
+  gap: var(--space-5);
+}
+.timeline_item--pending::before {
+  background: var(--yellow);
+}
+.stage-card {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--background-2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+}
+@media (min-width: 52rem) {
+  .stage-card:has(.frame) {
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+.stage-card--pending {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--border-strong);
+}
+.stage-card_body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-1);
+}
+.stage-card_title {
+  font-size: var(--text-h4);
+}
+.stage-card_meta {
+  font: 500 var(--text-tiny) / 1.4 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.stage-card_actions {
+  margin-top: var(--space-1);
+}
+/* the brief: what the user asked for, in their own words, then Claude's summary and notes */
+.brief {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-1);
+  max-width: 48rem;
+}
+.brief_part,
+.brief_notes {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.brief_notes {
+  gap: var(--space-4);
+}
+.brief_text {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.brief_text p,
+.brief_text ul,
+.brief_text ol {
+  margin: 0;
+}
+.brief_text ul,
+.brief_text ol {
+  padding-left: 1.25rem;
+}
+.brief_quote {
+  margin: 0;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--yellow);
+  background: var(--background-3);
+}
+
+/* ───────── the frame viewer: one storyboard frame full size, as large as the window allows (ui/page.js) ───────── */
+.viewer {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+  display: none;
+}
+.viewer[open] {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr) 3.5rem;
+  align-items: center;
+}
+/* a literal colour: ::backdrop doesn't see the page's custom properties in every browser */
+.viewer::backdrop {
+  background: rgba(22, 22, 22, 0.94);
+}
+.viewer_figure {
+  grid-column: 2;
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+}
+.viewer_img {
+  display: block;
+  height: auto;
+  max-width: 100%;
+  background: var(--ink-800);
+  box-shadow: 0 1.5rem 4rem -1rem #000;
+}
+.viewer_caption {
+  display: flex;
+  gap: var(--space-4);
+  font: 500 var(--text-tiny) / 1.4 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in lab, var(--paper) 75%, transparent);
+}
+.viewer_count {
+  color: var(--yellow);
+  white-space: nowrap;
+}
+.viewer_step,
+.viewer_close {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: var(--border-width) solid color-mix(in lab, var(--paper) 35%, transparent);
+  border-radius: 50%;
+  background: color-mix(in lab, var(--ink) 60%, transparent);
+  color: var(--paper);
+  font: 400 1.6rem / 1 var(--font-body);
+  cursor: pointer;
+  justify-self: center;
+}
+.viewer_step:hover,
+.viewer_close:hover {
+  border-color: var(--yellow);
+  color: var(--yellow);
+}
+.viewer_step--prev {
+  grid-column: 1;
+  grid-row: 1;
+}
+.viewer_step--next {
+  grid-column: 3;
+  grid-row: 1;
+}
+.viewer_close {
+  position: fixed;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: 1;
+}
+
+.viewer_step[hidden] {
+  display: none;
+}
+
+/* ───────── the script page: a row per beat, # | voiceover (or text on screen) | action on screen (ui/script.js) ───────── */
+.scriptsheet_length {
+  display: grid;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--yellow);
+  background: var(--background-3);
+  font-size: var(--text-small);
+}
+/* the bold-text note sits in the same box as the rule and word count, under them */
+.scriptsheet_legend {
+  color: var(--text-2);
+}
+.scriptsheet_legend:not(:first-child) {
+  margin-top: var(--space-2);
+}
+.scriptsheet_legend:empty,
+.scriptsheet_length:not(:has(p:not(:empty))) {
+  display: none;
+}
+.scriptsheet_table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--background-2);
+  border: var(--border-width) solid var(--border);
+}
+.scriptsheet_table th,
+.scriptsheet_table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: var(--border-width) solid var(--border);
+  vertical-align: top;
+  text-align: left;
+}
+.scriptsheet_table thead th {
+  font: 500 var(--text-tiny) / 1.2 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  background: var(--background-3);
+}
+.scriptsheet_table tbody th.scriptsheet_n {
+  width: 3.5rem;
+  font: 600 var(--text-small) / 1.6 var(--font-mono);
+  color: var(--text-2);
+}
+.scriptsheet_table td {
+  width: 50%;
+}
+.scriptsheet_cell {
+  position: relative;
+  transition: background-color var(--hover) var(--ease);
+}
+.scriptsheet_cell:not(:has(textarea:disabled)) {
+  cursor: pointer;
+}
+/* hover: the deeper paper of the table's header */
+.scriptsheet_cell:not(:has(textarea:disabled)):hover {
+  background: var(--background-3);
+}
+/* a cell with a note: a pink edge, as feedback is pink everywhere */
+.scriptsheet_cell.has-note {
+  box-shadow: inset 3px 0 0 var(--pink);
+}
+.scriptsheet_text {
+  line-height: 1.55;
+  padding-right: 3.25rem;
+}
+.scriptsheet_text strong {
+  font-weight: 800;
+}
+/* "+ Note": quiet until the cell is hovered or it's focused; a click anywhere on the cell does the same */
+.scriptsheet_add {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  padding: 0.2rem 0.45rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--background-2);
+  color: var(--text-2);
+  font: 500 var(--text-tiny) / 1.2 var(--font-mono);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--hover) var(--ease);
+}
+.scriptsheet_cell:hover .scriptsheet_add,
+.scriptsheet_add:focus-visible,
+.scriptsheet_cell.is-open .scriptsheet_add {
+  opacity: 1;
+}
+.scriptsheet_cell.is-open .scriptsheet_add {
+  display: none;
+}
+@media (hover: none) {
+  .scriptsheet_add {
+    opacity: 1;
+  }
+}
+.scriptsheet_note:not(:empty) {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.scriptsheet_note textarea {
+  min-height: 4.5rem;
+  cursor: text;
+}
+.scriptsheet_note_remove {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--text-small);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+.scriptsheet_note_remove:hover {
+  color: var(--text);
+}
+.scriptsheet_decision {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 48rem;
+}
+/* on a phone each row stacks: its number, then each column under its own label */
+@media (max-width: 48rem) {
+  .scriptsheet_table thead {
+    display: none;
+  }
+  .scriptsheet_table,
+  .scriptsheet_table tbody,
+  .scriptsheet_table tr,
+  .scriptsheet_table th,
+  .scriptsheet_table td {
+    display: block;
+    width: auto;
+  }
+  .scriptsheet_table tr {
+    border-bottom: var(--border-width) solid var(--border-strong);
+  }
+  .scriptsheet_table tbody th.scriptsheet_n {
+    width: auto;
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  .scriptsheet_table tbody th.scriptsheet_n::before {
+    content: "Row ";
+  }
+  .scriptsheet_table td {
+    border-bottom: 0;
+  }
+  .scriptsheet_table td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: var(--space-1);
+    font: 500 var(--text-tiny) / 1.2 var(--font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+}
+
+/* a library item named in a script or storyboard ("[W03]"): opens the item in the video's brand and size */
+.itemchip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  margin: 0 0.1em;
+  padding: 0.1em 0.5em 0.1em 0.15em;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--background-2);
+  font-size: 0.9em;
+  font-weight: 600;
+  line-height: 1.5;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.itemchip b {
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  background: var(--yellow);
+  color: var(--ink);
+  font: 600 0.8em / 1.3 var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.itemchip:hover {
+  border-color: var(--text);
+}

@@ -1,0 +1,635 @@
+#!/usr/bin/env node
+// Wyzowl Video Studio helper.
+//   node studio.mjs init <folder> [--name "My Studio"] [--hyperframes 0.8.149]   create (or update) a studio folder
+//   node studio.mjs context                    the studio as markdown, for Claude
+//   node studio.mjs hook                       SessionStart hook output (JSON)
+//   node studio.mjs url [path]                 start the page server if needed and print the page's address
+//   node studio.mjs open [path]                the same, then open it in the default web browser
+//   node studio.mjs show [path]                how Claude should show the page: beside the chat, a card, and waiting
+//   node studio.mjs wait <path>                wait until the user finishes reviewing a script, storyboard or video
+//                                              (Claude runs it in the background: finishing wakes Claude to carry on)
+//   node studio.mjs ready                      the page waiting for the user's review, as JSON, for the band above
+//                                              Claude's message box (hooks/bar.tsx)
+//   node studio.mjs pdf <path>                 make the PDF of a script or storyboard version, to share outside the
+//                                              studio (as its page's Download PDF does), and print where it's saved
+//   node studio.mjs library [code] [--brand b] the library's items; with a code, how to use that item in a video,
+//                                              with its settings for a brand and the size (--size 9x16) filled in;
+//                                              with --still <seconds> --out <file.png> [--set key=value …], a
+//                                              transparent still of it at that moment, to lay over a storyboard frame
+//                                              (`gallery` is the same command, its name before 0.3.0)
+//   node studio.mjs library check [--force]    ask the Wyzowl site for new paid items now (the studio also asks once a
+//                                              day, when a session starts); --force downloads the pack again
+//   node studio.mjs licence [<key>]            with a key, unlock the full library on this Mac; without, its state
+//   node studio.mjs install cutout             download the presenter cut-out model (about 168 MB, once), for text
+//                                              behind the presenter
+//   node studio.mjs serve [--port 4747]        run the page server in the foreground
+//   node studio.mjs stop                       stop the page server
+//   node studio.mjs page-ready                 PostToolUse hook: reads the hook's JSON on stdin; when Claude has written
+//                                              a page's data file, tells Claude the page is ready to show
+// --studio <folder> picks the studio. By default it's the studio containing the current folder; for pages it falls
+// back to the user's most recent studio. Only one studio's page server runs at a time.
+import { spawn, spawnSync } from "node:child_process";
+import { existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import {
+  PLUGIN_ROOT,
+  claudeWaiting,
+  findStudio,
+  formatDateTime,
+  listBrands,
+  listVideos,
+  pageForFile,
+  pluginVersion,
+  readJSON,
+  readStudio,
+  readBrand,
+  registeredStudios,
+  registerStudio,
+  resolvePage,
+  reviewState,
+  setWaiting,
+} from "./lib/studio.mjs";
+import { showInstructions } from "./lib/show.mjs";
+import { EXTRAS, newer } from "./lib/extras.mjs";
+import { CATEGORIES, SIZES, BRAND_VARS, BUNDLED_FONTS, libraryItems, libraryItem, lockedItems, findItem, contentVariables, brandStyle, itemLayer } from "./lib/library.mjs";
+import { catalogue, checkDue, checkLibrary, installedPack, licence } from "./lib/paid.mjs";
+
+const SELF = fileURLToPath(import.meta.url);
+const PORT = 4747;
+const PORTS = Array.from({ length: 10 }, (_, i) => PORT + i);
+const argv = process.argv.slice(2);
+const opt = (k, d = null) => {
+  const i = argv.indexOf(k);
+  return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[i + 1] : d;
+};
+const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1].startsWith("--")));
+const [cmd = "context", arg] = positional;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// commands whose output is shown inside slash commands: they always exit 0 and explain any problem in words
+const FRIENDLY = new Set(["context", "open", "url", "show"]);
+const NOT_A_STUDIO = "Not inside a Wyzowl Video Studio folder (no studio.json here or above).";
+
+function here() {
+  return opt("--studio") ? resolve(opt("--studio")) : findStudio(process.env.CLAUDE_PROJECT_DIR || process.cwd());
+}
+
+/** The studio to act on. Pages may fall back to the user's most recent studio. */
+function studioRoot({ forPages = false } = {}) {
+  const root = here() || (forPages ? registeredStudios()[0]?.path : null);
+  if (root) return root;
+  const known = registeredStudios()[0];
+  console.log(
+    known
+      ? `${NOT_A_STUDIO} Your studio is ${known.path}: open Claude Code in that folder to work on videos.`
+      : `${NOT_A_STUDIO} Run /video-studio:setup to create a studio.`,
+  );
+  process.exit(FRIENDLY.has(cmd) ? 0 : 2);
+}
+
+async function status(port) {
+  try {
+    // AbortSignal.timeout doesn't keep Node running after a refused connection, as a plain setTimeout would
+    const res = await fetch(`http://127.0.0.1:${port}/api/status`, { signal: AbortSignal.timeout(600) });
+    const body = await res.json();
+    return body?.ok && body.studio ? { ...body, port } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Every studio page server running on this Mac (there should be at most one). */
+async function runningServers() {
+  return (await Promise.all(PORTS.map(status))).filter(Boolean);
+}
+
+async function stopServer(s) {
+  try {
+    process.kill(s.pid);
+  } catch {}
+  for (let i = 0; i < 20 && (await status(s.port)); i++) await sleep(100);
+}
+
+/** One page server at a time: reuse this studio's if it's current, otherwise stop the others and start ours. */
+async function ensureServer(root) {
+  let mine = null;
+  for (const s of await runningServers()) {
+    if (!mine && s.studio === root && s.plugin === pluginVersion()) mine = s;
+    else await stopServer(s);
+  }
+  if (mine) return `http://127.0.0.1:${mine.port}/`;
+  mkdirSync(join(root, ".studio"), { recursive: true });
+  const log = openSync(join(root, ".studio", "server.log"), "a");
+  const child = spawn(process.execPath, [SELF, "serve", "--studio", root], { detached: true, stdio: ["ignore", log, log] });
+  child.unref();
+  for (let i = 0; i < 60; i++) {
+    await sleep(100);
+    const st = readJSON(join(root, ".studio", "server.json"));
+    if (st?.pid === child.pid && (await status(st.port))) return st.url;
+  }
+  throw new Error(`The page server didn't start. See ${join(root, ".studio", "server.log")}`);
+}
+
+const pageUrl = (base, path) => (path ? base.replace(/\/$/, "") + (path.startsWith("/") ? path : `/${path}`) : base);
+
+async function main() {
+  if (cmd === "init") {
+    if (!arg) throw new Error('usage: studio.mjs init <folder> [--name "My Studio"] [--hyperframes <version>]');
+    return init(resolve(arg));
+  }
+
+  if (cmd === "serve") {
+    const root = studioRoot();
+    const { createStudioServer } = await import("./lib/server.mjs");
+    const server = createStudioServer(root);
+    for (const port of PORTS) {
+      const ok = await new Promise((done, fail) => {
+        server.once("error", (e) => (e.code === "EADDRINUSE" ? done(false) : fail(e)));
+        server.listen(port, "127.0.0.1", () => done(true));
+      });
+      if (!ok) continue;
+      const url = `http://127.0.0.1:${port}/`;
+      const stateFile = join(root, ".studio", "server.json");
+      mkdirSync(join(root, ".studio"), { recursive: true });
+      writeFileSync(stateFile, JSON.stringify({ pid: process.pid, port, url, plugin: pluginVersion(), startedAt: new Date().toISOString() }, null, 2));
+      console.log(`Wyzowl Video Studio pages for ${root}: ${url}`);
+      const cleanup = () => {
+        if (readJSON(stateFile)?.pid === process.pid) rmSync(stateFile, { force: true });
+        process.exit(0);
+      };
+      process.on("SIGTERM", cleanup);
+      process.on("SIGINT", cleanup);
+      return;
+    }
+    throw new Error(`No free port between ${PORTS[0]} and ${PORTS.at(-1)}`);
+  }
+
+  if (cmd === "url" || cmd === "open") {
+    const root = studioRoot({ forPages: true });
+    const url = pageUrl(await ensureServer(root), arg);
+    if (cmd === "open" && process.platform === "darwin") spawnSync("open", [url]);
+    console.log(url);
+    return;
+  }
+
+  if (cmd === "stop") {
+    const servers = await runningServers();
+    for (const s of servers) await stopServer(s);
+    console.log(servers.length ? "Page server stopped." : "No page server was running.");
+    return;
+  }
+
+  if (cmd === "show") return show();
+  if (cmd === "ready") return ready();
+  if (cmd === "pdf") return pdf();
+  if ((cmd === "library" || cmd === "gallery") && arg === "check") return libraryCheck();
+  if (cmd === "library" || cmd === "gallery") return library();
+  if (cmd === "licence" || cmd === "license") return licenceCommand();
+  if (cmd === "install") return install();
+  if (cmd === "wait") return waitForReview();
+  if (cmd === "hook") return hook();
+  if (cmd === "page-ready") return pageReady().catch(() => {}); // a hook: never in the way, silent on any problem
+  if (cmd === "context") return context();
+  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, pdf, library, install, serve, stop, page-ready`);
+}
+
+function init(root) {
+  const created = [];
+  const kept = [];
+  for (const d of ["brands", "videos", ".studio"]) {
+    if (!existsSync(join(root, d))) created.push(`${d}/`);
+    mkdirSync(join(root, d), { recursive: true });
+  }
+  const studioPath = join(root, "studio.json");
+  const prev = readJSON(studioPath, {});
+  const next = {
+    name: opt("--name") || prev.name || "Video Studio",
+    created: prev.created || new Date().toISOString(),
+    plugin: pluginVersion(),
+    hyperframes: opt("--hyperframes") || prev.hyperframes || null,
+    schema: 1,
+  };
+  writeFileSync(studioPath, `${JSON.stringify(next, null, 2)}\n`);
+  (prev.created ? kept : created).push("studio.json");
+  const copy = (template, name) => {
+    const target = join(root, name);
+    if (existsSync(target)) return kept.push(name);
+    writeFileSync(target, readFileSync(join(PLUGIN_ROOT, "templates", template), "utf8"));
+    created.push(name);
+  };
+  copy("studio-CLAUDE.md", "CLAUDE.md");
+  copy("studio-gitignore", ".gitignore");
+  registerStudio(root, next.name);
+  console.log(JSON.stringify({ studio: root, ...next, filesCreated: created, filesKept: kept }, null, 2));
+}
+
+async function describe(root) {
+  const studio = readStudio(root);
+  const brands = listBrands(root);
+  const videos = listVideos(root);
+  const server = (await runningServers()).find((s) => s.studio === root) || null;
+  return { studio, brands, videos, server };
+}
+
+async function context() {
+  const root = studioRoot();
+  const { studio, brands, videos, server } = await describe(root);
+  const lines = [
+    `## Studio: ${studio.name}`,
+    `- Folder: ${root}`,
+    `- HyperFrames version for new videos: ${studio.hyperframes || "not set (run /video-studio:setup)"}`,
+    `- Plugin: Wyzowl Video Studio ${pluginVersion()} at ${PLUGIN_ROOT}`,
+    `- Pages: ${server ? `http://127.0.0.1:${server.port}/ (running)` : "not running (they start when a page is shown)"}`,
+    `- Brands (${brands.length}): ${brands.length ? brands.map((b) => `${b.slug} (${b.name})`).join(", ") : "none yet"}`,
+    `- Videos (${videos.length})${videos.length ? ", newest first:" : ": none yet"}`,
+    ...videos.slice(0, 12).map((v) => `  - ${v.slug}: “${v.title}” · brand ${v.brand || "—"} · ${v.type} · ${v.size.label} · ${v.status.label}`),
+  ];
+  console.log(lines.join("\n"));
+}
+
+async function hook() {
+  const root = here();
+  if (!root) return; // not a studio: stay silent
+  const { studio, brands, videos } = await describe(root);
+  const warn = [];
+  const node = Number(process.versions.node.split(".")[0]);
+  if (node < 20) warn.push(`Node.js ${process.versions.node} is old; 20 or newer is needed`);
+  if (spawnSync("ffmpeg", ["-version"], { stdio: "ignore" }).status !== 0) warn.push("ffmpeg is missing");
+  if (!existsSync(join(root, ".claude", "skills", "hyperframes", "SKILL.md"))) warn.push("the HyperFrames skills aren't installed in this studio");
+  if (!studio.hyperframes) warn.push("no HyperFrames version is set");
+  const open = videos.filter((v) => v.status.key !== "delivered");
+  // the full library's daily check, in the background so the session never waits on the network
+  if (checkDue()) {
+    try {
+      spawn(process.execPath, [SELF, "library", "check", "--quiet"], { detached: true, stdio: "ignore" }).unref();
+    } catch {}
+  }
+  // after an update: say so once, and offer the downloads the new version brings
+  let update = "";
+  const was = studio.plugin;
+  const now = pluginVersion();
+  if (was && newer(now, was)) {
+    const missing = EXTRAS.filter((x) => newer(x.since, was) && !x.installed());
+    update = `Wyzowl Video Studio was updated from ${was} to ${now}.`;
+    if (missing.length) {
+      update += ` The update can use downloads that aren't on this Mac yet: ${missing.map((x) => `${x.name} (${x.size}), to ${x.what}`).join("; ")}. Tell the user at the start of your reply and ask whether to download them now; if they agree, run ${missing.map((x) => x.command(studio.hyperframes || "latest")).join(", then ")}. Otherwise they can add them later with /video-studio:setup.`;
+    }
+    // remembered, so it's said once
+    try {
+      const file = join(root, "studio.json");
+      writeFileSync(file, `${JSON.stringify({ ...readJSON(file, {}), plugin: now }, null, 2)}\n`);
+    } catch {}
+  }
+  const context = [
+    `Wyzowl Video Studio: this folder is a video studio (${root}).`,
+    `Plugin files: ${PLUGIN_ROOT} (helpers in scripts/, review tools in scripts/tools/, score kit in scripts/score-kit/).`,
+    `HyperFrames for new videos: ${studio.hyperframes || "not set"}. Brands: ${brands.map((b) => b.slug).join(", ") || "none"}. Videos: ${videos.length} (${open.length} in progress${open[0] ? `; latest: ${open[0].slug}, ${open[0].status.label.toLowerCase()}` : ""}).`,
+    "For any video work here, follow the video-studio production skill (with the storyboard and brand-kit skills). New videos: /video-studio:new-video. New brands: /video-studio:new-brand. Pages: /video-studio:dashboard.",
+    warn.length ? `Setup problems: ${warn.join("; ")}. Suggest /video-studio:setup before making videos.` : "",
+    update,
+  ]
+    .filter(Boolean)
+    .join("\n");
+  console.log(JSON.stringify({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: context } }));
+}
+
+/** PostToolUse hook: Claude has just written a file. If it's the data file behind a page (a brand.json, or a shared
+    storyboard.json or review.json), start the page server and tell Claude to show the page now. Stays quiet when the
+    page is already on screen (it refreshes itself) or Claude was told about it in the last few minutes. */
+async function pageReady() {
+  const input = JSON.parse(readFileSync(0, "utf8") || "{}");
+  const given = input.tool_input?.file_path;
+  if (typeof given !== "string" || !given) return;
+  const file = resolve(input.cwd || process.cwd(), given);
+  const root = findStudio(dirname(file));
+  if (!root) return;
+  const page = pageForFile(root, file);
+  if (!page) return;
+
+  const base = await ensureServer(root);
+  const open = (await status(Number(new URL(base).port)))?.open || [];
+  // the server lists pages by their decoded paths
+  const target = decodeURIComponent(page.path).replace(/\/$/, "");
+  if (open.some((o) => String(o.path).replace(/\/$/, "") === target)) return;
+
+  const shownFile = join(root, ".studio", "shown.json");
+  const now = Date.now();
+  const shown = Object.fromEntries(Object.entries(readJSON(shownFile, {})).filter(([, t]) => now - t < 86400e3));
+  const key = `${input.session_id || "-"} ${page.path}`;
+  if (now - (shown[key] || 0) < 5 * 60e3) return;
+  shown[key] = now;
+  writeFileSync(shownFile, JSON.stringify(shown, null, 2));
+
+  const unsaved = open.filter((o) => o.unsaved).map((o) => pageUrl(base, encodeURI(o.path)));
+  const context = showInstructions(root, base, page, { unsaved });
+  console.log(JSON.stringify({ hookSpecificOutput: { hookEventName: "PostToolUse", additionalContext: context } }));
+}
+
+/** How Claude should show a page right now (`show`), starting the page server if needed. */
+async function show() {
+  const root = studioRoot({ forPages: true });
+  const page = resolvePage(root, arg || "/");
+  if (!page) {
+    console.log(`There's no page at ${arg} yet. Pages: / (the dashboard), /brands/<brand>/, /videos/<project>/, /videos/<project>/script/, /videos/<project>/storyboard/, /videos/<project>/review/, and the library /library/ (a category: /library/data/; an item: /library/widgets/w03/).`);
+    return;
+  }
+  const base = await ensureServer(root);
+  const here = decodeURIComponent(page.path).replace(/\/$/, "");
+  const open = (await status(Number(new URL(base).port)))?.open || [];
+  const unsaved = open.filter((o) => o.unsaved && String(o.path).replace(/\/$/, "") !== here).map((o) => pageUrl(base, encodeURI(o.path)));
+  console.log(showInstructions(root, base, page, { unsaved }));
+}
+
+/** `wait`: block until the user saves their review of a script, storyboard or video, print what they decided and
+    exit. Claude runs it in the background, so saving wakes Claude to carry on without the user having to come back to
+    the chat. */
+async function waitForReview() {
+  const root = studioRoot({ forPages: true });
+  const page = resolvePage(root, arg || "");
+  if (!page || !["script", "storyboard", "review"].includes(page.kind)) {
+    throw new Error("usage: studio.mjs wait /videos/<project>/storyboard/v<N>/ (or /videos/<project>/review/v<N>/)");
+  }
+  const what = `${{ script: "script", storyboard: "storyboard", review: "video" }[page.kind]} v${page.version} of ${page.project}`;
+  if (!page.latest) return console.log(`${what} isn't the latest version, so there's nothing to wait for.`);
+  if (claudeWaiting(root, page.path)) return console.log(`Already waiting for the review of ${what}.`);
+
+  setWaiting(root, page.path, process.pid);
+  process.on("exit", () => {
+    const mine = readJSON(join(root, ".studio", "waiting.json"), {})[decodeURIComponent(page.path)]?.pid === process.pid;
+    if (mine) setWaiting(root, page.path, null);
+  });
+  for (const signal of ["SIGTERM", "SIGINT", "SIGHUP"]) process.on(signal, () => process.exit(0));
+
+  const latestPath = page.path.replace(/v\d+\/$/, "");
+  for (;;) {
+    const latest = resolvePage(root, latestPath);
+    if (latest && latest.version > page.version) return console.log(`${what} was replaced by v${latest.version}, so this wait has stopped.`);
+    const state = reviewState(root, page);
+    if (state.finished && state.savedAfter) return console.log(describeReview(page, state));
+    await sleep(1000);
+  }
+}
+
+/** `ready`: the newest script, storyboard or video waiting for the user's review, or null, as JSON: what the band above
+    Claude's message box (hooks/bar.tsx) offers to open. */
+function ready() {
+  const root = studioRoot();
+  const waiting = listVideos(root)
+    .filter((v) => ["script", "storyboard", "review"].includes(v.status.key))
+    .sort((a, b) => b.updated - a.updated)[0];
+  if (!waiting) return console.log(JSON.stringify({ page: null }));
+  const stage = { script: waiting.script, storyboard: waiting.storyboard, review: waiting.review }[waiting.status.key];
+  const what = `${{ script: "script", storyboard: "storyboard", review: "video" }[waiting.status.key]} v${stage.version}`;
+  const page = {
+    path: stage.url,
+    text: `${what[0].toUpperCase()}${what.slice(1)} of ${waiting.title} is ready for your review`,
+    button: `Open ${what}`,
+  };
+  console.log(JSON.stringify({ page }));
+}
+
+/** `pdf`: the PDF of a script or storyboard version, made by the page server as its Download PDF button does. It's
+    saved in the version's folder; the path is printed so Claude can hand it over. */
+async function pdf() {
+  const root = studioRoot();
+  const page = resolvePage(root, arg || "");
+  if (!page || !["script", "storyboard"].includes(page.kind)) {
+    throw new Error("usage: studio.mjs pdf /videos/<project>/script/v<N>/ (or /videos/<project>/storyboard/v<N>/)");
+  }
+  const res = await fetch(pageUrl(await ensureServer(root), `${page.path}download`));
+  if (!res.ok) throw new Error(await res.text());
+  await res.arrayBuffer();
+  const file = decodeURIComponent(res.headers.get("x-studio-file") || "");
+  if (!file) throw new Error(`The PDF was made, but it couldn't be saved in ${page.kind}/v${page.version}/ of ${page.project}.`);
+  console.log(join(root, file));
+}
+
+/** `library`: every library item; or, with a code, how to use that item in a video: the block to copy, a host clip
+    for index.html with the brand's settings and the item's own words filled in, and what it needs. */
+async function library() {
+  if (!arg) {
+    const lines = [];
+    for (const [category, c] of Object.entries(CATEGORIES)) {
+      const items = libraryItems(category);
+      lines.push(`## ${c.title}`);
+      if (!items.length) lines.push(`None yet: design ${c.one}s for the video from scratch.`);
+      for (const item of items) {
+        const layer = item.category === "transitions" ? "" : `, ${itemLayer(item)}`;
+        lines.push(`- ${item.code} ${item.name} (${item.free ? "free" : "full library"}${layer}): ${item.summary}`);
+      }
+    }
+    lines.push(
+      "",
+      "Items combine: layer them (a full frame item as the base, items over footage on top) or run them one after another.",
+      "For one item: node studio.mjs library <code> --brand <brand> --size <16x9|1x1|4x5|9x16>",
+    );
+    const locked = lockedItems();
+    if (locked.length) {
+      lines.push(
+        "",
+        `The full library has ${locked.length} more items, locked on this Mac until a licence key unlocks them (node studio.mjs licence <key>). Suggest only the items above; if the user asks for something only a locked item does, say it's in the full library.`,
+      );
+    }
+    return console.log(lines.join("\n"));
+  }
+  const item = libraryItem(arg);
+  if (!item) {
+    const locked = findItem(arg);
+    if (locked?.locked) {
+      const buy = catalogue().buy;
+      return console.log(
+        `${locked.code} ${locked.name} (${CATEGORIES[locked.category].title}) is in the full library, locked on this Mac: ${locked.summary}\nTo use it, the user needs a licence key${buy ? ` (from ${buy})` : ""}; then: node studio.mjs licence <key>. Until then, suggest one of the items in: node studio.mjs library`,
+      );
+    }
+    throw new Error(`There's no library item "${arg}". Run: node studio.mjs library`);
+  }
+  const root = here();
+  const slug = opt("--brand");
+  const brand = root && slug ? readBrand(root, slug) : null;
+  if (slug && !brand) throw new Error(`There's no brand "${slug}" in this studio.`);
+  const size = SIZES[opt("--size")] ? opt("--size") : "16x9";
+  const S = SIZES[size];
+  if (opt("--still") !== null) return libraryStill(item, { root, slug, size, at: Number(opt("--still")), out: opt("--out") });
+  const style = brandStyle(brand);
+  const content = Object.fromEntries(contentVariables(item).map((d) => [d.id, d.default]));
+  // only the brand settings the block actually uses
+  const uses = (k) => item.template.includes(`--${k}`) || item.template.includes(`"${k}"`);
+  const values = { ...content, ...Object.fromEntries(BRAND_VARS.filter(uses).map((k) => [k, style.vars[k]])) };
+  // every font the block names: the brand's three, and any of its own (D72's handwriting)
+  const fonts = [...new Set(Object.keys(values).filter((k) => /^font[A-Z]/.test(k) && values[k]).map((k) => String(values[k]).replace(/^"|"$/g, "")))];
+  const media = contentVariables(item).filter((d) => /(Video|Image)$/.test(d.id));
+  // where each font's file is: the brand kit's own, else the plugin's bundled copy
+  const fontSource = (family) => {
+    const own = (brand?.fonts || []).find((x) => x?.family === family && x.file);
+    if (own) return `${family} (${join(root, "brands", brand.slug, own.file)})`;
+    if (BUNDLED_FONTS[family]) return `${family} (copy ${BUNDLED_FONTS[family]} into the project)`;
+    return `${family} (installed on this Mac, or add its file to the brand kit)`;
+  };
+  const json = JSON.stringify(values).replace(/'/g, "&#39;");
+  const styled = brand ? `${brand.name}'s` : "the studio's own; pass --brand for a brand's";
+  let steps;
+  if (item.category === "transitions" && item.recipe) {
+    // a transition that moves both scenes works on the main timeline, as HyperFrames transitions do
+    const keep = item.id === "x05-pull-back" ? ` + keep (how long A stays on B's screen, ${content.keep ?? 3} s by default)` : "";
+    steps = [
+      `1. Copy everything inside the <template> of ${item.file} (its layer and script) into index.html, after both scenes and before the main timeline's script. Once is enough for any number of uses.`,
+      `2. Scene A and scene B are full-frame elements in index.html, B after A in the page (so B draws on top). Give the transition plain wrappers, not timed media: wrap a video clip in a full-frame div. The scenes overlap: B starts at T, the transition's start, and A ends at T + ${item.length} s${keep}. The cut is at T + ${item.cut} s.`,
+      `3. On the main timeline, before it's registered:`,
+      `StudioTransitions["${item.id}"](tl, { at: T, a: "#scene-a", b: "#scene-b", vars: ${JSON.stringify(values)} });`,
+      `4. Set its options in vars (the brand settings are ${styled}).`,
+    ];
+  } else if (item.category === "transitions") {
+    steps = [
+      `1. Copy the block into the project: cp "${item.file}" compositions/${item.id}.html`,
+      `2. Add a clip for it to index.html after both scenes (so it's on top), starting at T, the transition's start, and ${item.length} s long:`,
+      `<div id="${item.id}-slot" data-composition-id="${item.id}" data-composition-src="compositions/${item.id}.html" data-start="T" data-duration="${item.length}" data-track-index="9" data-width="${S.w}" data-height="${S.h}"`,
+      `  data-variable-values='${json}'></div>`,
+      `3. The cut happens behind it at T + ${item.cut} s: end scene A's clip and start scene B's there. The brand settings are ${styled}. For another use, add another clip with its own id.`,
+    ];
+  } else {
+    steps = [
+      `1. Copy the block into the project: cp "${item.file}" compositions/${item.id}.html`,
+      `2. Add a clip for it to index.html, at the time it plays. Its duration variable must match data-duration:`,
+      `<div id="${item.id}-slot" data-composition-id="${item.id}" data-composition-src="compositions/${item.id}.html" data-start="0" data-duration="${content.duration ?? 6}" data-track-index="2" data-width="${S.w}" data-height="${S.h}"`,
+      `  data-variable-values='${json}'></div>`,
+      `3. Change the words and options in data-variable-values (the brand settings are ${styled}). To use it twice in one video, copy it under a new id and change "${item.id}" everywhere in the copy.${"exit" in content ? ' If a transition follows, set exit to "hold", so it stays whole until the transition takes it away.' : ""}`,
+      itemLayer(item) === "over footage"
+        ? `4. It sits over footage (it's transparent), so it combines: put its clip after whatever it goes over in index.html (later clips draw on top; data-track-index is only Studio's row, so give each item playing at once its own).`
+        : `4. It fills the frame, so it's a scene's base: items that sit over footage (widgets, captions) can go on top of it, after it in index.html (later clips draw on top; data-track-index is only Studio's row, so give each item playing at once its own).`,
+    ];
+  }
+  // the next step's number (the clip's own lines aren't steps)
+  const next = () => steps.filter((line) => /^\d+\. /.test(line)).length + 1;
+  if (fonts.length) steps.push(`${next()}. Fonts: index.html needs an @font-face for each, as for the rest of the video: ${fonts.map(fontSource).join("; ")}.`);
+  if (media.length)
+    steps.push(
+      `${next()}. Media: in the copy, write each file as the src of its element (${media.map((d) => d.id).join(", ")}: the elements with data-var-src="…"), and delete the media elements you don't use, so check stays clean.${item.id.startsWith("t01") ? " The cut-out is the same footage with the background removed: npx hyperframes remove-background <footage.mp4> -o <footage>_cutout.webm. Cut both to the moment it plays; their sound stays on the main track." : " Their sound stays on the main track."}`,
+    );
+  const out = [
+    `${item.code} ${item.name} (${CATEGORIES[item.category].title}${item.free ? ", free" : ""}): ${item.summary}`,
+    `When: ${item.use}`,
+    `Motion: ${item.motion}`,
+    "",
+    ...steps,
+    "",
+    "What the item takes (id: label, default):",
+    ...contentVariables(item).map((d) => `- ${d.id}: ${d.label} (${d.type === "enum" ? (d.options || []).map((o) => o.value).join(" | ") : JSON.stringify(d.default)})`),
+  ];
+  console.log(out.join("\n"));
+}
+
+/** `library check`: ask the Wyzowl site for the current pack now (the session-start hook runs it once a day, quietly). */
+async function libraryCheck() {
+  const result = await checkLibrary({ force: argv.includes("--force") });
+  if (argv.includes("--quiet")) return;
+  console.log(describeLicence(result));
+}
+
+/** `licence <key>` unlocks the full library on this Mac; `licence` alone says where things stand. */
+async function licenceCommand() {
+  if (arg) return console.log(describeLicence(await checkLibrary({ key: arg })));
+  const l = licence();
+  const pack = installedPack();
+  const locked = lockedItems().length;
+  if (!l?.key) return console.log(`No licence key on this Mac. ${locked ? `${locked} paid items are locked. ` : ""}With a key: node studio.mjs licence <key>`);
+  console.log(
+    [
+      `Licence ${l.key.replace(/^(.{4}).*(.{4})$/, "$1…$2")}: ${l.status}${l.message ? ` (${l.message})` : ""}.`,
+      pack ? `Full library: version ${pack.version}, ${pack.items} items, unpacked ${formatDateTime(pack.installed)}.` : "No paid items on this Mac.",
+      l.checked ? `Last checked ${formatDateTime(l.checked)}.` : "Not checked yet.",
+    ].join(" "),
+  );
+}
+
+function describeLicence(r) {
+  if (r.status === "ok") return `The full library is unlocked on this Mac: version ${r.version}, ${r.items} items${r.updated ? " (just downloaded)" : ", up to date"}.`;
+  return r.message || `The check didn't work (${r.status}).`;
+}
+
+/** `library <code> --still <seconds> --out <file.png>`: the item at that moment, in a brand and size, on a transparent
+    background (no stand-in), the video's full size: for a storyboard frame to show it as it will look. `--set
+    key=value` (repeatable) fills in its words and options. */
+async function libraryStill(item, { root, slug, size, at, out }) {
+  if (!root) throw new Error(NOT_A_STUDIO);
+  if (!out || !Number.isFinite(at)) throw new Error("usage: studio.mjs library <code> --still <seconds> --out <file.png> [--brand b] [--size 16x9] [--set key=value …]");
+  const sets = {};
+  argv.forEach((a, i) => {
+    if (a !== "--set" || !argv[i + 1]) return;
+    const [key, ...rest] = argv[i + 1].split("=");
+    const d = item.variables.find((x) => x.id === key);
+    if (!d) throw new Error(`${item.code} has no "${key}". It takes: ${item.variables.map((x) => x.id).join(", ")}`);
+    sets[key] = d.type === "number" ? Number(rest.join("=")) : rest.join("=");
+  });
+  const p = new URLSearchParams({ size, at: String(at), bg: "none" });
+  if (slug) p.set("brand", slug);
+  if (Object.keys(sets).length) p.set("vars", JSON.stringify(sets));
+  const base = await ensureServer(root);
+  const { findChrome } = await import("./lib/chrome.mjs");
+  const { puppeteer, executablePath } = findChrome();
+  const S = SIZES[size];
+  const browser = await puppeteer.launch({ executablePath, headless: true, args: ["--force-color-profile=srgb", "--hide-scrollbars"] });
+  try {
+    const page = await browser.newPage();
+    await page.setViewport({ width: S.w, height: S.h, deviceScaleFactor: 1 });
+    await page.goto(pageUrl(base, `/library/preview/${item.code.toLowerCase()}?${p}`), { waitUntil: "networkidle0", timeout: 60000 });
+    await page.waitForFunction(() => document.documentElement.dataset.ready === "1", { timeout: 20000 });
+    mkdirSync(dirname(resolve(out)), { recursive: true });
+    await page.screenshot({ path: resolve(out), omitBackground: true });
+  } finally {
+    await browser.close();
+  }
+  console.log(resolve(out));
+}
+
+/** `install cutout`: download HyperFrames' presenter cut-out model now (about 168 MB, once), rather than the first
+    time a video needs it: run the background remover once on a small test image. */
+function install() {
+  if (arg !== "cutout") throw new Error("usage: studio.mjs install cutout");
+  const extra = EXTRAS.find((x) => x.id === "cutout");
+  if (extra.installed()) return console.log("Presenter cut-outs are already set up on this Mac.");
+  const root = here();
+  const hf = (root && readStudio(root).hyperframes) || "latest";
+  const dir = mkdtempSync(join(tmpdir(), "video-studio-cutout-"));
+  try {
+    const made = spawnSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", "color=c=gray:s=64x64", "-frames:v", "1", join(dir, "test.png")]);
+    if (made.status !== 0) throw new Error("ffmpeg couldn't make the test image. Is ffmpeg installed? Run /video-studio:setup.");
+    console.log(`Downloading the presenter cut-out model (${extra.size}, once)…`);
+    const run = spawnSync("npx", ["--yes", `hyperframes@${hf}`, "remove-background", join(dir, "test.png"), "-o", join(dir, "out.png")], { stdio: "inherit" });
+    // the model is what matters; the test image itself needn't come out well
+    if (!extra.installed()) throw new Error(`The download didn't finish${run.status ? " (the background remover stopped with an error)" : ""}. Check the internet connection and try again.`);
+    console.log("Presenter cut-outs are set up: Claude can now put text behind the presenter.");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+/** What the user decided, and what Claude should do next. */
+function describeReview(page, { dir, feedback, summary: s }) {
+  const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+  const saved = formatDateTime(Date.parse(feedback.savedAt)) || "just now";
+  const next = `Saving it was their go-ahead, so carry on now without waiting for them to message you: read ${join(dir, "feedback.json")} and follow`;
+  if (page.kind === "script") {
+    const detail = s.approved
+      ? `they approved the script${s.notes ? `, with ${plural(s.notes, "note")} to treat as small last tweaks` : ""}`
+      : `they asked for changes: ${plural(s.notes, "note")}${s.hasGeneral ? " and a general comment" : ""}`;
+    return `The user has finished reviewing script v${page.version} of ${page.project} (saved ${saved}): ${detail}. ${next} the script skill ("When the review comes in").`;
+  }
+  if (page.kind === "storyboard") {
+    const detail = s.allApproved ? "every scene is approved" : `${s.approved} approved, ${s.feedback} with feedback${s.hasGeneral ? ", and general notes asking for changes" : ""}`;
+    return `The user has finished reviewing storyboard v${page.version} of ${page.project} (saved ${saved}): ${detail}. ${next} the storyboard skill ("When the review comes in").`;
+  }
+  const detail = s.approved
+    ? `they approved the video${s.notes ? `, with ${plural(s.notes, "note")} to treat as small last tweaks` : ""}`
+    : `they asked for changes: ${plural(s.notes, "note")}${s.hasGeneral ? " and a general comment" : ""}`;
+  return `The user has finished reviewing video v${page.version} of ${page.project} (saved ${saved}): ${detail}. ${next} stage 8 (video review) of the production skill.`;
+}
+
+main().catch((err) => {
+  if (FRIENDLY.has(cmd)) {
+    console.log(`Problem: ${err.message}`);
+    process.exit(0);
+  }
+  console.error(err.message);
+  process.exit(1);
+});

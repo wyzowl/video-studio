@@ -1,0 +1,179 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"eyebrow","type":"string","label":"Eyebrow","default":"Every launch video needs"},
+    {"id":"items","type":"string","label":"Items, separated by |","default":"A clear message|A short script|A strong first line|One clear next step"},
+    {"id":"ticks","type":"string","label":"When each item ticks (seconds, separated by |; empty: 0.40 s apart)","default":""},
+    {"id":"side","type":"enum","label":"Side","default":"left","options":[{"value":"left","label":"Left"},{"value":"right","label":"Right"}]},
+    {"id":"duration","type":"number","label":"Length","default":6,"min":2,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Card","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Text","default":"#1E1E1E"},
+    {"id":"muted","type":"color","label":"Muted text","default":"#5F5E5B"},
+    {"id":"line","type":"color","label":"Lines","default":"#CBC8C1"},
+    {"id":"accent","type":"color","label":"Accent","default":"#F9B336"},
+    {"id":"onAccent","type":"color","label":"Text on the accent","default":"#1E1E1E"},
+    {"id":"fontDisplay","type":"string","label":"Heading font","default":"Inter"},
+    {"id":"fontBody","type":"string","label":"Body font","default":"Inter"},
+    {"id":"fontLabel","type":"string","label":"Label font","default":"JetBrains Mono"},
+    {"id":"radius","type":"string","label":"Corner rounding","default":"16px"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>W02 Checklist · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "W02",
+        "name": "Checklist",
+        "category": "widgets",
+        "free": true,
+        "summary": "What's included, what to prepare, or the points a section covers.",
+        "use": "When the presenter lists things. Time each tick to the moment it's said; without a voiceover the rows tick 0.40 s apart.",
+        "backdrop": "presenter",
+        "motion": "The card rises 24 px and fades in (0.40 s) with its eyebrow. Then each row ticks in: the circle scales in (0.25 s), the tick draws (0.30 s) and the words fade up. Out: the words fade (0.20 s), then the card drops 24 px and fades (0.30 s).",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #w02-checklist {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+        }
+        #w02-checklist .place {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          box-sizing: border-box;
+        }
+        #w02-checklist[data-fmt="16x9"] .place { align-items: center; padding: 0 120px; }
+        #w02-checklist[data-fmt="1x1"] .place,
+        #w02-checklist[data-fmt="4x5"] .place { align-items: flex-end; padding: 64px; }
+        /* 9:16 keeps clear of the platform's captions (bottom 440 px) and buttons (right 196 px) */
+        #w02-checklist[data-fmt="9x16"] .place { align-items: flex-end; padding: 0 0 440px 64px; }
+        #w02-checklist[data-side="right"]:not([data-fmt="9x16"]) .place { justify-content: flex-end; }
+        #w02-checklist .card {
+          box-sizing: border-box;
+          width: 600px;
+          display: flex;
+          flex-direction: column;
+          padding: 36px 40px 22px;
+          background: var(--card, #f6f3ea);
+          border-radius: var(--radius, 16px);
+          color: var(--ink, #1e1e1e);
+          overflow-wrap: anywhere;
+          -webkit-font-smoothing: antialiased;
+        }
+        #w02-checklist[data-fmt="1x1"] .card,
+        #w02-checklist[data-fmt="4x5"] .card { width: 700px; }
+        #w02-checklist[data-fmt="9x16"] .card { width: 820px; }
+        #w02-checklist .eyebrow {
+          padding-bottom: 10px;
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 22px;
+          line-height: 28px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--muted, #5f5e5b);
+        }
+        #w02-checklist .row {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          padding: 16px 0;
+        }
+        #w02-checklist .row + .row { border-top: 2px dashed var(--line, #cbc8c1); }
+        #w02-checklist .tick {
+          flex: none;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--accent, #f9b336);
+        }
+        #w02-checklist .tick svg { display: block; width: 20px; height: 16px; overflow: visible; }
+        #w02-checklist .tick path {
+          fill: none;
+          stroke: var(--card, #f6f3ea);
+          stroke-width: 3.5;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+          stroke-dasharray: 1;
+        }
+        #w02-checklist .text {
+          min-width: 0;
+          font-family: var(--fontBody, "Inter"), system-ui, sans-serif;
+          font-size: 30px;
+          font-weight: 600;
+          line-height: 38px;
+        }
+      </style>
+
+      <div id="w02-checklist" data-composition-id="w02-checklist">
+        <div class="place">
+          <div class="card"><div class="eyebrow"></div></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "w02-checklist";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null || vars[k] === "" ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const r = W / H;
+          root.dataset.fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
+          root.dataset.side = v("side", "left") === "right" ? "right" : "left";
+
+          const EASE = v("ease", "power3.inOut");
+          const D = Math.max(2, Number(v("duration", 6)));
+          const items = String(v("items", "A clear message|A short script|A strong first line|One clear next step"))
+            .split("|").map((s) => s.trim()).filter(Boolean).slice(0, 5);
+          const given = String(v("ticks", "")).split("|").map(Number).filter((t) => Number.isFinite(t) && t > 0);
+          const times = items.map((_, i) => (given[i] !== undefined ? given[i] : given.length ? given[given.length - 1] + 0.4 * (i - given.length + 1) : 0.5 + 0.4 * i));
+
+          const card = root.querySelector(".card");
+          const eyebrow = root.querySelector(".eyebrow");
+          eyebrow.textContent = String(v("eyebrow", "Every launch video needs"));
+          const rows = items.map((text) => {
+            const row = document.createElement("div");
+            row.className = "row";
+            row.innerHTML = '<div class="tick"><svg viewBox="0 0 26 20" aria-hidden="true"><path pathLength="1" d="M2 10.5L9.5 18L24 2"/></svg></div><div class="text"></div>';
+            row.querySelector(".text").textContent = text;
+            card.appendChild(row);
+            return row;
+          });
+
+          const tl = gsap.timeline({ paused: true });
+          tl.fromTo(card, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE }, 0);
+          tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE }, 0.2);
+          rows.forEach((row, i) => {
+            const t = Math.min(times[i], D - 1.2);
+            tl.fromTo(row.querySelector(".tick"), { scale: 0 }, { scale: 1, duration: 0.25, ease: "back.out(1.7)" }, t);
+            tl.fromTo(row.querySelector("path"), { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.3, ease: EASE }, t + 0.1);
+            tl.fromTo(row.querySelector(".text"), { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE }, t + 0.05);
+          });
+          const out = D - 0.5;
+          tl.to(card.children, { opacity: 0, duration: 0.2, ease: "none" }, out);
+          tl.to(card, { y: 24, opacity: 0, duration: 0.3, ease: EASE }, out + 0.1);
+          tl.set({}, {}, D);
+          window.__timelines[ID] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

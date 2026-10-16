@@ -1,0 +1,280 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"screenImage","type":"string","label":"Screenshot in front (image file in the project)","default":""},
+    {"id":"screenVideo","type":"string","label":"Screen recording in front, instead of a screenshot (video file)","default":""},
+    {"id":"leftImage","type":"string","label":"Screenshot behind, on the left or at the top (image file)","default":""},
+    {"id":"rightImage","type":"string","label":"Screenshot behind, on the right or at the bottom (image file)","default":""},
+    {"id":"address","type":"string","label":"Address in the front window","default":"yourproduct.com"},
+    {"id":"leftAddress","type":"string","label":"Address in the left or top window","default":"yourproduct.com/reports"},
+    {"id":"rightAddress","type":"string","label":"Address in the right or bottom window","default":"yourproduct.com/settings"},
+    {"id":"duration","type":"number","label":"Length","default":6,"min":3,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Background","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Window outlines","default":"#1E1E1E"},
+    {"id":"muted","type":"color","label":"Address text","default":"#5F5E5B"},
+    {"id":"line","type":"color","label":"Browser dots","default":"#CBC8C1"},
+    {"id":"accent","type":"color","label":"Stand-in highlights","default":"#F9B336"},
+    {"id":"onAccent","type":"color","label":"Text on the accent","default":"#1E1E1E"},
+    {"id":"fontLabel","type":"string","label":"Label font","default":"JetBrains Mono"},
+    {"id":"radius","type":"string","label":"Corner rounding","default":"16px"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>L15 Floating screenshots · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "L15",
+        "name": "Floating screenshots",
+        "category": "layouts",
+        "free": true,
+        "summary": "Three screenshots fanned out in depth: one in front, two tilted behind it.",
+        "use": "To show a product's range in one shot, under the voiceover: several pages or features at once. Use clean screenshots taken at the same size (1440 × 900 or larger), and put the one that matters in front.",
+        "backdrop": "none",
+        "motion": "The screenshots slide in one after another and settle into the fan (0.60 s each, easing out, 0.12 s apart), then drift slowly apart for depth, the front one growing 2% over the scene. Out: they slide away in reverse order (0.40 s).",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #l15-floating-screenshots {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          background: var(--card, #f6f3ea);
+        }
+        /* a browser window; --k is its size against the 980-wide front window at 16:9 */
+        #l15-floating-screenshots .win {
+          position: absolute;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          background: #ffffff;
+          border: 2px solid var(--ink, #1e1e1e);
+          border-radius: var(--radius, 16px);
+        }
+        #l15-floating-screenshots .front { box-shadow: 0 40px 80px rgba(30, 30, 30, 0.22); }
+        #l15-floating-screenshots .back { box-shadow: 0 30px 60px rgba(30, 30, 30, 0.18); }
+        #l15-floating-screenshots .bar {
+          flex: none;
+          box-sizing: border-box;
+          height: calc(var(--k) * 34.5px);
+          display: flex;
+          align-items: center;
+          gap: calc(var(--k) * 13.5px);
+          padding: 0 calc(var(--k) * 12px);
+          background: #ffffff;
+          border-bottom: 2px solid var(--ink, #1e1e1e);
+        }
+        #l15-floating-screenshots .dots { display: flex; gap: calc(var(--k) * 6px); }
+        #l15-floating-screenshots .dots i { display: block; width: calc(var(--k) * 9px); height: calc(var(--k) * 9px); border-radius: 50%; background: var(--line, #cbc8c1); }
+        #l15-floating-screenshots .address {
+          padding: calc(var(--k) * 3px) calc(var(--k) * 10.5px);
+          border-radius: calc(var(--k) * 6px);
+          background: var(--card, #f6f3ea);
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: calc(var(--k) * 12px);
+          line-height: calc(var(--k) * 15px);
+          color: var(--muted, #5f5e5b);
+          white-space: nowrap;
+        }
+        #l15-floating-screenshots .view { position: relative; flex: 1; overflow: hidden; background: #ffffff; }
+        #l15-floating-screenshots .rec,
+        #l15-floating-screenshots .shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; }
+        /* the windows behind sit back, under a veil of the background */
+        #l15-floating-screenshots .veil { position: absolute; inset: 0; background: var(--card, #f6f3ea); opacity: 0.38; }
+        /* the stand-in dashboard, when there's no screenshot */
+        #l15-floating-screenshots .dash {
+          --u: calc(var(--k) * 0.8532);
+          --tint: color-mix(in srgb, var(--ink, #1e1e1e) 8%, var(--card, #f6f3ea));
+          --bar: color-mix(in srgb, var(--ink, #1e1e1e) 12%, var(--card, #f6f3ea));
+          position: absolute;
+          inset: 0;
+          display: flex;
+          background: #ffffff;
+        }
+        #l15-floating-screenshots .dash.light { --card: #f6f3ea; --ink: #1e1e1e; --line: #cbc8c1; }
+        #l15-floating-screenshots .dash i { display: block; flex: none; }
+        #l15-floating-screenshots .dash .side {
+          flex: none;
+          box-sizing: border-box;
+          width: calc(var(--u) * 211.2px);
+          display: flex;
+          flex-direction: column;
+          gap: calc(var(--u) * 5.3px);
+          padding: calc(var(--u) * 26.4px) calc(var(--u) * 15.8px);
+          background: var(--card, #f6f3ea);
+          border-right: 2px solid var(--tint);
+        }
+        #l15-floating-screenshots .dash .brand { display: flex; align-items: center; gap: calc(var(--u) * 8.8px); padding: 0 calc(var(--u) * 8.8px) calc(var(--u) * 15.8px); }
+        #l15-floating-screenshots .dash .logo { width: calc(var(--u) * 26.4px); height: calc(var(--u) * 26.4px); border-radius: calc(var(--u) * 7px); background: var(--ink, #1e1e1e); }
+        #l15-floating-screenshots .dash .name { width: calc(var(--u) * 84.5px); height: calc(var(--u) * 10.6px); border-radius: calc(var(--u) * 5.3px); background: var(--ink, #1e1e1e); }
+        #l15-floating-screenshots .dash .nav { display: flex; align-items: center; gap: calc(var(--u) * 10.6px); padding: calc(var(--u) * 8.8px) calc(var(--u) * 10.6px); border-radius: calc(var(--u) * 8.8px); }
+        #l15-floating-screenshots .dash .nav.on { background: var(--tint); }
+        #l15-floating-screenshots .dash .ic { width: calc(var(--u) * 15.8px); height: calc(var(--u) * 15.8px); border-radius: calc(var(--u) * 4.4px); background: var(--line, #cbc8c1); }
+        #l15-floating-screenshots .dash .tx { height: calc(var(--u) * 8.8px); border-radius: calc(var(--u) * 4.4px); background: var(--line, #cbc8c1); }
+        #l15-floating-screenshots .dash .on .ic,
+        #l15-floating-screenshots .dash .on .tx { background: var(--ink, #1e1e1e); }
+        #l15-floating-screenshots .dash .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: calc(var(--u) * 24.6px); padding: calc(var(--u) * 31.7px) calc(var(--u) * 35.2px); }
+        #l15-floating-screenshots .dash .head { display: flex; align-items: center; justify-content: space-between; }
+        #l15-floating-screenshots .dash .titles { display: flex; flex-direction: column; gap: calc(var(--u) * 10.6px); }
+        #l15-floating-screenshots .dash .h1 { width: calc(var(--u) * 228.8px); height: calc(var(--u) * 17.6px); border-radius: calc(var(--u) * 5.3px); background: var(--ink, #1e1e1e); }
+        #l15-floating-screenshots .dash .h2 { width: calc(var(--u) * 316.8px); height: calc(var(--u) * 8.8px); border-radius: calc(var(--u) * 4.4px); background: var(--line, #cbc8c1); }
+        #l15-floating-screenshots .dash .cta { display: flex; align-items: center; justify-content: center; width: calc(var(--u) * 132px); height: calc(var(--u) * 38.7px); border-radius: calc(var(--u) * 10.6px); background: var(--accent, #f9b336); }
+        #l15-floating-screenshots .dash .cta i { width: calc(var(--u) * 61.6px); height: calc(var(--u) * 8.8px); border-radius: calc(var(--u) * 4.4px); background: var(--onAccent, #1e1e1e); }
+        #l15-floating-screenshots .back .dash .cta { background: color-mix(in srgb, var(--ink, #1e1e1e) 25%, var(--card, #f6f3ea)); }
+        #l15-floating-screenshots .back .dash .cta i { background: var(--ink, #1e1e1e); }
+        #l15-floating-screenshots .dash .stats { display: flex; gap: calc(var(--u) * 17.6px); }
+        #l15-floating-screenshots .dash .stat { flex: 1; display: flex; flex-direction: column; gap: calc(var(--u) * 12.3px); padding: calc(var(--u) * 19.4px); border-radius: calc(var(--u) * 12.3px); background: var(--card, #f6f3ea); }
+        #l15-floating-screenshots .dash .k { height: calc(var(--u) * 8.8px); border-radius: calc(var(--u) * 4.4px); background: var(--line, #cbc8c1); }
+        #l15-floating-screenshots .dash .n { height: calc(var(--u) * 22.9px); border-radius: calc(var(--u) * 5.3px); background: var(--ink, #1e1e1e); }
+        #l15-floating-screenshots .dash .c { width: calc(var(--u) * 47.5px); height: calc(var(--u) * 15.8px); border-radius: calc(var(--u) * 7.9px); background: var(--tint); }
+        #l15-floating-screenshots .dash .chart { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: calc(var(--u) * 19.4px); padding: calc(var(--u) * 22.9px); border-radius: calc(var(--u) * 12.3px); background: var(--card, #f6f3ea); }
+        #l15-floating-screenshots .dash .t { width: calc(var(--u) * 123.2px); height: calc(var(--u) * 10.6px); border-radius: calc(var(--u) * 5.3px); background: var(--ink, #1e1e1e); }
+        #l15-floating-screenshots .dash .bars { flex: 1; min-height: 0; display: flex; align-items: flex-end; gap: calc(var(--u) * 10.6px); }
+        #l15-floating-screenshots .dash .bars i { flex: 1; border-radius: calc(var(--u) * 5.3px) calc(var(--u) * 5.3px) 0 0; background: var(--bar); }
+        #l15-floating-screenshots .dash .bars i.key { background: var(--accent, #f9b336); }
+        /* each size gets its own fan: across the frame at 16:9, down it at 4:5 and 9:16, corner to corner at 1:1 */
+        #l15-floating-screenshots[data-fmt="16x9"] .front { left: 470px; top: 230px; width: 980px; height: 620px; --k: 1; }
+        #l15-floating-screenshots[data-fmt="16x9"] .left { left: 90px; top: 300px; width: 820px; height: 519px; --k: 0.8367; }
+        #l15-floating-screenshots[data-fmt="16x9"] .right { left: 1010px; top: 300px; width: 820px; height: 519px; --k: 0.8367; }
+        #l15-floating-screenshots[data-fmt="9x16"] .front { left: 70px; top: 662px; width: 940px; height: 595px; --k: 0.9592; }
+        #l15-floating-screenshots[data-fmt="9x16"] .left { left: 40px; top: 300px; width: 800px; height: 506px; --k: 0.8163; }
+        #l15-floating-screenshots[data-fmt="9x16"] .right { left: 240px; top: 1120px; width: 800px; height: 506px; --k: 0.8163; }
+        #l15-floating-screenshots[data-fmt="4x5"] .front { left: 110px; top: 403px; width: 860px; height: 544px; --k: 0.8776; }
+        #l15-floating-screenshots[data-fmt="4x5"] .left { left: 40px; top: 200px; width: 700px; height: 443px; --k: 0.7143; }
+        #l15-floating-screenshots[data-fmt="4x5"] .right { left: 340px; top: 800px; width: 700px; height: 443px; --k: 0.7143; }
+        #l15-floating-screenshots[data-fmt="1x1"] .front { left: 130px; top: 300px; width: 820px; height: 519px; --k: 0.8367; }
+        #l15-floating-screenshots[data-fmt="1x1"] .left { left: 40px; top: 160px; width: 680px; height: 430px; --k: 0.6939; }
+        #l15-floating-screenshots[data-fmt="1x1"] .right { left: 360px; top: 520px; width: 680px; height: 430px; --k: 0.6939; }
+      </style>
+
+      <div id="l15-floating-screenshots" data-composition-id="l15-floating-screenshots">
+        <div class="win back left">
+          <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="address"></span></div>
+          <div class="view"><img class="shot" data-var-src="leftImage" alt="" /></div>
+          <i class="veil"></i>
+        </div>
+        <div class="win back right">
+          <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="address"></span></div>
+          <div class="view"><img class="shot" data-var-src="rightImage" alt="" /></div>
+          <i class="veil"></i>
+        </div>
+        <div class="win front">
+          <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="address"></span></div>
+          <div class="view">
+            <img class="shot" data-var-src="screenImage" alt="" />
+            <video id="l15-floating-screenshots-rec" class="clip rec" data-var-src="screenVideo" data-start="0" data-track-index="0" muted playsinline></video>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "l15-floating-screenshots";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null || vars[k] === "" ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const r = W / H;
+          root.dataset.fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
+
+          const D = Math.max(3, Number(v("duration", 6)) || 6);
+          const q = (s) => root.querySelector(s);
+          const front = q(".front");
+          const left = q(".left");
+          const right = q(".right");
+          q(".front .address").textContent = String(v("address", "yourproduct.com"));
+          q(".left .address").textContent = String(v("leftAddress", "yourproduct.com/reports"));
+          q(".right .address").textContent = String(v("rightAddress", "yourproduct.com/settings"));
+
+          // a brand with light text (on a dark background) can't use it on a white screen: its stand-in keeps the default
+          // dark text and light panels, and takes only the accent
+          function lightText() {
+            const ink = (typeof vars.ink === "string" && vars.ink) || getComputedStyle(root).getPropertyValue("--ink").trim();
+            const pen = document.createElement("canvas").getContext("2d");
+            pen.fillStyle = "#1e1e1e";
+            pen.fillStyle = ink || "#1e1e1e";
+            const rgb = (/^#(\w\w)(\w\w)(\w\w)$/.exec(pen.fillStyle) || []).slice(1).map((h) => parseInt(h, 16) / 255);
+            const [r, g, b] = rgb.map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+            return rgb.length === 3 && 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.4;
+          }
+          const light = lightText();
+          // real screenshots when they're given (as variables, or as the src of a copy); otherwise a plain dashboard
+          // stands in, with the accent only in front
+          const given = (k, sel) => Boolean(v(k, "") || q(sel).getAttribute("src"));
+          const hasRec = given("screenVideo", ".front .rec");
+          q(".front .rec").style.display = hasRec ? "" : "none";
+          const windows = [
+            [front, ".front", "screenImage", !hasRec],
+            [left, ".left", "leftImage", true],
+            [right, ".right", "rightImage", true],
+          ];
+          for (const [win, sel, k, canShow] of windows) {
+            const shot = win.querySelector(".shot");
+            const hasShot = canShow && given(k, `${sel} .shot`);
+            shot.style.display = hasShot ? "" : "none";
+            if (hasShot && !shot.getAttribute("src")) shot.setAttribute("src", v(k, ""));
+            if (hasShot || (win === front && hasRec)) continue;
+            const back = win !== front;
+            const dash = document.createElement("div");
+            dash.className = light ? "dash light" : "dash";
+            const nav = [96.8, 79.2, 105.6, 70.4, 88, 61.6]
+              .map((w, i) => `<span class="nav${i === 1 ? " on" : ""}"><i class="ic"></i><i class="tx" style="width:calc(var(--u) * ${w}px)"></i></span>`)
+              .join("");
+            const stats = [[70.4, 105.6], [84.5, 91.5], [61.6, 116.2]]
+              .map(([a, b]) => `<span class="stat"><i class="k" style="width:calc(var(--u) * ${a}px)"></i><i class="n" style="width:calc(var(--u) * ${b}px)"></i><i class="c"></i></span>`)
+              .join("");
+            const heights = back ? [52, 40, 61, 47, 58, 44, 63, 50, 57, 46, 55, 49] : [42, 58, 50, 66, 48, 72, 60, 78, 92, 70, 64, 84];
+            const bars = heights.map((h, i) => `<i${!back && i === 8 ? ' class="key"' : ""} style="height:${h}%"></i>`).join("");
+            dash.innerHTML = `<div class="side"><span class="brand"><i class="logo"></i><i class="name"></i></span>${nav}</div><div class="main"><div class="head"><span class="titles"><i class="h1"></i><i class="h2"></i></span><span class="cta"><i></i></span></div><div class="stats">${stats}</div><div class="chart"><i class="t"></i><div class="bars">${bars}</div></div></div>`;
+            win.querySelector(".view").appendChild(dash);
+          }
+
+          // the fan: the windows behind tilt 7° about their top left corners, as in the design
+          gsap.set(left, { rotation: -7, transformOrigin: "0% 0%" });
+          gsap.set(right, { rotation: 7, transformOrigin: "0% 0%" });
+          gsap.set(front, { transformOrigin: "50% 50%" });
+
+          const tl = gsap.timeline({ paused: true });
+          // in: one after another, each settling into the fan
+          const IN = [
+            [left, { x: -160, y: 80, rotation: -14 }, { x: 0, y: 0, rotation: -7 }],
+            [right, { x: 160, y: 80, rotation: 14 }, { x: 0, y: 0, rotation: 7 }],
+            [front, { y: 140 }, { y: 0 }],
+          ];
+          IN.forEach(([el, from, to], i) => {
+            const at = 0.1 + i * 0.12;
+            tl.fromTo(el, from, { ...to, duration: 0.6, ease: "power3.out" }, at);
+            tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "none" }, at);
+          });
+          // then a slow drift for depth: the front window grows 2% and the ones behind ease apart
+          const settled = 0.1 + 2 * 0.12 + 0.6;
+          const out = D - 0.65;
+          const drift = Math.max(0.1, out - settled);
+          tl.to(front, { scale: 1.02, duration: drift, ease: "sine.inOut" }, settled);
+          tl.to(left, { x: -12, scale: 1.01, duration: drift, ease: "sine.inOut" }, settled);
+          tl.to(right, { x: 12, scale: 1.01, duration: drift, ease: "sine.inOut" }, settled);
+          // out: away in reverse order
+          [front, right, left].forEach((el, i) => {
+            tl.to(el, { y: 160, duration: 0.4, ease: "power3.in" }, out + i * 0.08);
+            tl.to(el, { opacity: 0, duration: 0.2, ease: "none" }, out + i * 0.08 + 0.2);
+          });
+          tl.set({}, {}, D);
+          window.__timelines[ID] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

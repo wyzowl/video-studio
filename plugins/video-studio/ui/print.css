@@ -1,0 +1,327 @@
+/* Wyzowl Video Studio — print documents: the PDFs of a script or storyboard, shared outside the studio
+   (scripts/lib/print.mjs). White A4 pages in the studio's type: Inter, mono labels and the yellow rule. */
+
+@font-face {
+  font-family: "Inter VS";
+  src: url("/ui/fonts/InterVariable-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+/* each document sets its own size and the left of the footer (its title) */
+@page {
+  margin: 14mm 15mm 16mm;
+  @bottom-left {
+    font: 500 6.5pt / 1.3 "Inter VS", system-ui, sans-serif;
+    color: #77746c;
+    vertical-align: top;
+    padding-top: 5mm;
+  }
+  @bottom-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font: 500 6.5pt / 1.3 "Inter VS", system-ui, sans-serif;
+    color: #77746c;
+    vertical-align: top;
+    padding-top: 5mm;
+  }
+}
+
+:root {
+  --ink: #1e1e1e;
+  --ink-2: #66635d;
+  --line: #dcd8ce;
+  --line-strong: #aaa69c;
+  --paper: #f6f3ea;
+  --paper-deep: #ece7da;
+  --yellow: #f9b336;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  color: var(--ink);
+  font: 400 9pt / 1.5 "Inter VS", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* opened in a browser rather than printed: the page on a desk */
+@media screen {
+  html {
+    background: #e7e3da;
+  }
+  body {
+    width: 210mm;
+    margin: 8mm auto;
+    padding: 14mm 15mm 16mm;
+  }
+  body.doc--landscape {
+    width: 297mm;
+  }
+}
+
+p {
+  margin: 0;
+}
+b,
+strong {
+  font-weight: 700;
+}
+
+/* ───────── the head: what it is, the title, the summary and the facts ───────── */
+.doc_head {
+  padding-bottom: 4mm;
+  margin-bottom: 4mm;
+  border-bottom: 1.5pt solid var(--ink);
+}
+.doc_eyebrow,
+.doc_label,
+.doc_facts dt {
+  font: 500 6.5pt / 1.2 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.doc_eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 2.5mm;
+  margin-bottom: 3mm;
+}
+.doc_index {
+  display: inline-block;
+  padding: 1.1mm 1.5mm;
+  border: 0.75pt solid var(--line-strong);
+  color: var(--ink);
+  font: 600 7pt / 1 var(--mono);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+.doc_head h1 {
+  margin: 0;
+  font-size: 22pt;
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.doc_summary {
+  max-width: 165mm;
+  margin-bottom: 4mm;
+  font-size: 9.5pt;
+  line-height: 1.55;
+}
+.doc--landscape .doc_summary {
+  max-width: 230mm;
+}
+.doc_facts {
+  display: flex;
+  margin: 0 0 5mm;
+  border: 0.75pt solid var(--line);
+}
+.doc_facts > div {
+  flex: 1 1 auto;
+  padding: 2mm 3mm;
+}
+.doc_facts > div + div {
+  border-left: 0.75pt solid var(--line);
+}
+.doc_facts dt {
+  margin-bottom: 0.8mm;
+}
+.doc_facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* notes, and the rule and word count: the yellow edge of the studio's callouts */
+.doc_note,
+.doc_rule {
+  margin-bottom: 4mm;
+  padding: 2.6mm 4mm;
+  border-left: 2pt solid var(--yellow);
+  background: var(--paper);
+  break-inside: avoid;
+}
+.doc_note strong {
+  display: block;
+  margin-bottom: 0.8mm;
+}
+.doc_legend {
+  color: var(--ink-2);
+}
+.doc_legend:not(:first-child) {
+  margin-top: 1.5mm;
+}
+
+/* ───────── the script: # | voiceover (or text on screen) | action on screen ───────── */
+.doc_table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 0.75pt solid var(--line);
+}
+.doc_table thead {
+  display: table-header-group;
+}
+.doc_table tr {
+  break-inside: avoid;
+}
+.doc_table th,
+.doc_table td {
+  padding: 2.4mm 3mm;
+  border-bottom: 0.75pt solid var(--line);
+  vertical-align: top;
+  text-align: left;
+}
+.doc_table td {
+  width: 50%;
+  border-left: 0.75pt solid var(--line);
+}
+.doc_table thead th {
+  font: 500 6.5pt / 1.2 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  background: var(--paper-deep);
+}
+.doc_table thead th + th {
+  border-left: 0.75pt solid var(--line);
+}
+.doc_table tbody th.doc_n {
+  font: 600 8pt / 1.5 var(--mono);
+  color: var(--ink-2);
+}
+.doc_table .doc_n {
+  width: 9mm;
+}
+.doc_table strong {
+  font-weight: 800;
+}
+
+/* ───────── the storyboard: a block per scene. Landscape frames run across the page with the words below them; taller
+   frames sit on the left with the words beside them ───────── */
+.doc_scene {
+  margin-top: 4mm;
+  padding-top: 4mm;
+  border-top: 0.75pt solid var(--line);
+  break-inside: avoid;
+}
+.doc_scene_head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2.5mm;
+  margin-bottom: 3mm;
+}
+.doc_scene_head h2 {
+  margin: 0;
+  font-size: 11.5pt;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.doc_when,
+.doc_time {
+  font: 500 7pt / 1.2 var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.doc_tag {
+  padding: 0.9mm 1.4mm;
+  border: 0.75pt solid var(--line-strong);
+  font: 500 6pt / 1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.doc_scene_body {
+  display: grid;
+  gap: 4mm 7mm;
+  align-items: start;
+}
+.doc_scene--side .doc_scene_body {
+  grid-template-columns: 172mm minmax(0, 1fr);
+}
+.doc_scene_body > :only-child {
+  grid-column: 1 / -1;
+}
+.doc_frames {
+  display: grid;
+  gap: 3.5mm 4mm;
+  align-content: start;
+}
+.doc_frame {
+  margin: 0;
+  min-width: 0;
+}
+.doc_frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border: 0.75pt solid #c9c4b7;
+  background: var(--paper);
+}
+.doc_frame figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2mm;
+  margin-top: 1.2mm;
+  font-size: 6.8pt;
+  line-height: 1.35;
+  color: var(--ink-2);
+}
+.doc_scene_words,
+.doc_said,
+.doc_happens {
+  display: grid;
+  gap: 3mm;
+  align-content: start;
+}
+/* below a row of frames: what's said (or shown) beside what happens */
+.doc_scene--across .doc_scene_words {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 3mm 7mm;
+}
+.doc_scene--across .doc_scene_words > :only-child {
+  grid-column: 1 / -1;
+}
+.doc_label {
+  display: block;
+  margin-bottom: 0.8mm;
+}
+.doc_muted {
+  color: var(--ink-2);
+}
+
+/* ───────── the end: how to reply ───────── */
+.doc_reply {
+  margin-top: 6mm;
+  padding: 3.5mm 4.5mm;
+  border: 0.75pt solid var(--line-strong);
+  break-inside: avoid;
+}
+.doc_reply h2 {
+  margin: 0 0 1mm;
+  font-size: 10.5pt;
+  font-weight: 700;
+}
+
+/* a library item named in the script: its name, as a small tag */
+.doc_item {
+  display: inline-block;
+  padding: 0 1.2mm;
+  border: 0.75pt solid var(--line-strong);
+  border-radius: 1mm;
+  font: 600 0.82em / 1.4 var(--mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}

@@ -1,0 +1,290 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"eyebrow","type":"string","label":"Eyebrow (where the figures come from)","default":"Customer survey 2026"},
+    {"id":"title","type":"string","label":"Title: the takeaway, in a sentence","default":"Email is how most customers want to hear from us (64%), with text a close second (61%)"},
+    {"id":"subtitle","type":"string","label":"What was measured","default":"Preferred ways to get updates · customers, multiple choice"},
+    {"id":"bars","type":"string","label":"Bars, as JSON: [{\"label\":\"Email\",\"value\":64}, …] (up to 8)","default":"[{\"label\":\"Email\",\"value\":64},{\"label\":\"Text message\",\"value\":61},{\"label\":\"App notification\",\"value\":47},{\"label\":\"Phone call\",\"value\":38},{\"label\":\"Social media\",\"value\":33},{\"label\":\"Post\",\"value\":21}]"},
+    {"id":"highlight","type":"number","label":"Bar in the accent colour (1 is the first; 0 for none)","default":1,"min":0,"step":1},
+    {"id":"prefix","type":"string","label":"Before each value, such as $ or £","default":""},
+    {"id":"suffix","type":"string","label":"After each value, such as % or k","default":"%"},
+    {"id":"max","type":"number","label":"Scale maximum (0 works it out: 100 for percentages, else the largest value)","default":0,"min":0},
+    {"id":"source","type":"string","label":"Source","default":"Example figures"},
+    {"id":"exit","type":"enum","label":"At the end","default":"animate","options":[{"value":"animate","label":"Animate out"},{"value":"hold","label":"Hold, for a transition"}]},
+    {"id":"duration","type":"number","label":"Length","default":7,"min":3.5,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Background","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Text and bars","default":"#1E1E1E"},
+    {"id":"muted","type":"color","label":"Muted text","default":"#5F5E5B"},
+    {"id":"accent","type":"color","label":"Accent","default":"#F9B336"},
+    {"id":"fontDisplay","type":"string","label":"Heading font","default":"Inter"},
+    {"id":"fontBody","type":"string","label":"Body font","default":"Inter"},
+    {"id":"fontLabel","type":"string","label":"Label font","default":"JetBrains Mono"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>D01 Bar chart · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "D01",
+        "name": "Bar chart",
+        "category": "data",
+        "free": true,
+        "summary": "Full-frame bars that grow in turn, with the takeaway as the title.",
+        "use": "When a few things are compared on one measure: survey answers, channels, products. The bar that matters takes the accent; the title says what the chart shows.",
+        "motion": "The title fades up (0.40 s) and the axis draws top to bottom (0.40 s) as the labels fade in. Bars grow from the axis in turn (0.90 s each, 0.10 s apart), each value counting up with its bar. Out: values and labels fade (0.30 s), then the bars shrink back to the axis together (0.40 s).",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #d01-bar-chart {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          background: var(--card, #f6f3ea);
+          color: var(--ink, #1e1e1e);
+          -webkit-font-smoothing: antialiased;
+        }
+        #d01-bar-chart .box {
+          position: absolute;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          gap: 40px;
+        }
+        #d01-bar-chart[data-fmt="16x9"] .box { left: 192px; top: 72px; width: 1536px; height: 864px; padding: 56px 72px 44px; }
+        #d01-bar-chart[data-fmt="1x1"] .box { left: 108px; top: 96px; width: 864px; height: 792px; padding: 44px 48px 36px; }
+        #d01-bar-chart[data-fmt="4x5"] .box { left: 108px; top: 120px; width: 864px; height: 1008px; padding: 52px 48px 40px; }
+        #d01-bar-chart[data-fmt="9x16"] .box { left: 108px; top: 200px; width: 864px; height: 1260px; padding: 60px 48px 48px; }
+        #d01-bar-chart .head { display: flex; flex-direction: column; gap: 14px; }
+        #d01-bar-chart[data-fmt="1x1"] .head { gap: 12px; }
+        #d01-bar-chart[data-fmt="9x16"] .head { gap: 16px; }
+        #d01-bar-chart .eyebrow {
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 24px;
+          line-height: 32px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--muted, #5f5e5b);
+        }
+        #d01-bar-chart .title {
+          max-width: 1300px;
+          font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
+          font-weight: 800;
+          font-size: 50px;
+          line-height: 58px;
+          letter-spacing: -0.02em;
+        }
+        #d01-bar-chart .subtitle {
+          font-family: var(--fontBody, "Inter"), system-ui, sans-serif;
+          font-size: 26px;
+          line-height: 36px;
+          color: var(--muted, #5f5e5b);
+        }
+        #d01-bar-chart[data-fmt="1x1"] .eyebrow,
+        #d01-bar-chart[data-fmt="4x5"] .eyebrow { font-size: 20px; line-height: 28px; }
+        #d01-bar-chart[data-fmt="9x16"] .eyebrow { font-size: 22px; line-height: 30px; }
+        #d01-bar-chart[data-fmt="1x1"] .title { font-size: 40px; line-height: 46px; }
+        #d01-bar-chart[data-fmt="4x5"] .title { font-size: 44px; line-height: 50px; }
+        #d01-bar-chart[data-fmt="9x16"] .title { font-size: 50px; line-height: 56px; }
+        #d01-bar-chart[data-fmt="1x1"] .subtitle,
+        #d01-bar-chart[data-fmt="4x5"] .subtitle { font-size: 22px; line-height: 30px; }
+        #d01-bar-chart[data-fmt="9x16"] .subtitle { font-size: 24px; line-height: 34px; }
+
+        /* the bars: labels beside them at 16:9, above them at the other sizes */
+        #d01-bar-chart .bars { position: relative; display: flex; flex-direction: column; flex-shrink: 0; }
+        #d01-bar-chart[data-fmt="16x9"] .bars { width: 1392px; }
+        #d01-bar-chart:not([data-fmt="16x9"]) .bars { width: 768px; }
+        #d01-bar-chart .axis { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink, #1e1e1e); }
+        #d01-bar-chart .row { display: flex; }
+        #d01-bar-chart[data-fmt="16x9"] .row { align-items: center; min-height: 68px; gap: 26px; }
+        #d01-bar-chart:not([data-fmt="16x9"]) .row { flex-direction: column; }
+        #d01-bar-chart .label {
+          font-family: var(--fontBody, "Inter"), system-ui, sans-serif;
+          font-weight: 500;
+        }
+        #d01-bar-chart[data-fmt="16x9"] .label { flex: 0 0 400px; font-size: 30px; line-height: 36px; }
+        #d01-bar-chart:not([data-fmt="16x9"]) .label { padding-left: 16px; }
+        #d01-bar-chart .track { display: flex; align-items: center; gap: 16px; }
+        #d01-bar-chart:not([data-fmt="16x9"]) .track { gap: 14px; padding-left: 2px; }
+        #d01-bar-chart .bar { flex-shrink: 0; width: 0; background: var(--ink, #1e1e1e); }
+        #d01-bar-chart .bar.key { background: var(--accent, #f9b336); }
+        #d01-bar-chart[data-fmt="16x9"] .bar { height: 44px; }
+        #d01-bar-chart .val {
+          font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
+          font-weight: 800;
+          letter-spacing: -0.01em;
+          font-variant-numeric: tabular-nums;
+          white-space: nowrap;
+        }
+        #d01-bar-chart[data-fmt="16x9"] .val { font-size: 32px; line-height: 36px; }
+        /* 1:1, 4:5 and 9:16: label, bar height, value, the gap under the label, the space between rows */
+        #d01-bar-chart[data-fmt="1x1"] .label { font-size: 22px; line-height: 28px; }
+        #d01-bar-chart[data-fmt="1x1"] .row { gap: 6px; padding-bottom: 14px; }
+        #d01-bar-chart[data-fmt="1x1"] .bar { height: 26px; }
+        #d01-bar-chart[data-fmt="1x1"] .val { font-size: 24px; line-height: 28px; }
+        #d01-bar-chart[data-fmt="4x5"] .label { font-size: 26px; line-height: 32px; }
+        #d01-bar-chart[data-fmt="4x5"] .row { gap: 8px; padding-bottom: 20px; }
+        #d01-bar-chart[data-fmt="4x5"] .bar { height: 36px; }
+        #d01-bar-chart[data-fmt="4x5"] .val { font-size: 28px; line-height: 32px; }
+        #d01-bar-chart[data-fmt="9x16"] .label { font-size: 28px; line-height: 34px; }
+        #d01-bar-chart[data-fmt="9x16"] .row { gap: 10px; padding-bottom: 28px; }
+        #d01-bar-chart[data-fmt="9x16"] .bar { height: 44px; }
+        #d01-bar-chart[data-fmt="9x16"] .val { font-size: 32px; line-height: 36px; }
+        #d01-bar-chart:not([data-fmt="16x9"]) .row:last-child { padding-bottom: 0; }
+
+        #d01-bar-chart .source {
+          position: absolute;
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          height: 56px;
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 28px;
+          line-height: 36px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--muted, #5f5e5b);
+          white-space: nowrap;
+        }
+        #d01-bar-chart .source b { font-weight: 600; color: var(--ink, #1e1e1e); }
+        #d01-bar-chart .source .dot { letter-spacing: 0; }
+        #d01-bar-chart[data-fmt="16x9"] .source { left: 192px; top: 962px; }
+        #d01-bar-chart[data-fmt="1x1"] .source { left: 108px; top: 912px; }
+        #d01-bar-chart[data-fmt="4x5"] .source { left: 108px; top: 1156px; }
+        #d01-bar-chart[data-fmt="9x16"] .source { left: 108px; top: 1484px; }
+      </style>
+
+      <div id="d01-bar-chart" data-composition-id="d01-bar-chart">
+        <div class="box">
+          <div class="head"><div class="eyebrow"></div><div class="title"></div><div class="subtitle"></div></div>
+          <div class="bars"><div class="axis"></div></div>
+        </div>
+        <div class="source"><b>Source</b><span class="dot">·</span><span class="text"></span></div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "d01-bar-chart";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const r = W / H;
+          const fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
+          root.dataset.fmt = fmt;
+
+          const EASE = v("ease", "power3.inOut") || "power3.inOut";
+          const D = Math.max(3.5, Number(v("duration", 7)) || 7);
+          const q = (s) => root.querySelector(s);
+          const text = (s, k) => {
+            q(s).textContent = String(v(k, ""));
+            if (!q(s).textContent.trim()) q(s).style.display = "none";
+          };
+          text(".eyebrow", "eyebrow");
+          text(".title", "title");
+          text(".subtitle", "subtitle");
+          q(".source .text").textContent = String(v("source", ""));
+          if (!q(".source .text").textContent.trim()) q(".source").style.display = "none";
+
+          // the figures: [{label, value}], up to eight, drawn to scale from zero
+          let data = [];
+          try {
+            const given = JSON.parse(String(v("bars", "[]")));
+            if (Array.isArray(given)) data = given;
+          } catch (err) {}
+          data = data
+            .map((d) => ({ label: String(d && d.label != null ? d.label : ""), value: Number(d && d.value) }))
+            .filter((d) => Number.isFinite(d.value))
+            .slice(0, 8);
+          const prefix = String(v("prefix", ""));
+          const suffix = String(v("suffix", "%"));
+          const decimals = Math.max(0, ...data.map((d) => (String(d.value).split(".")[1] || "").length));
+          const format = new Intl.NumberFormat("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+          // a value as it's shown; the bars' counts call it on each frame, so it only formats (nothing is measured)
+          function show(n) {
+            return prefix + format.format(n) + suffix;
+          }
+          const largest = Math.max(0, ...data.map((d) => d.value));
+          const given = Number(v("max", 0)) || 0;
+          const top = given > 0 ? given : suffix.trim() === "%" && largest <= 100 ? 100 : largest || 1;
+          const key = Math.round(Number(v("highlight", 1)) || 0) - 1;
+
+          const bars = q(".bars");
+          const rows = data.map((d, i) => {
+            const row = document.createElement("div");
+            row.className = "row";
+            row.innerHTML = '<div class="label"></div><div class="track"><div class="bar"></div><div class="val"></div></div>';
+            row.querySelector(".label").textContent = d.label;
+            row.querySelector(".val").textContent = show(d.value);
+            if (i === key) row.querySelector(".bar").classList.add("key");
+            bars.appendChild(row);
+            return { row, label: row.querySelector(".label"), bar: row.querySelector(".bar"), val: row.querySelector(".val"), value: d.value, count: { n: 0 } };
+          });
+
+          // text widths off a canvas, as HyperFrames recommends: nothing in the page is measured, so this works while
+          // the clip is still hidden (until its start, a clip measures as zero)
+          const pen = document.createElement("canvas").getContext("2d");
+          function textWidth(text, font, spacing) {
+            pen.font = font;
+            pen.letterSpacing = spacing;
+            return pen.measureText(text).width;
+          }
+          // widths: the room left after the labels and the widest value
+          function measure() {
+            const size = { "16x9": 32, "1x1": 24, "4x5": 28, "9x16": 32 }[fmt];
+            const font = `800 ${size}px ${String(v("fontDisplay", "Inter") || "Inter")}, system-ui, sans-serif`;
+            const wide = Math.max(0, ...rows.map((b) => textWidth(show(b.value), font, `${-0.01 * size}px`)));
+            // the axis sits just left of where the bars start: after the 400 px labels and their 24 px gap at 16:9
+            const axisX = fmt === "16x9" ? 400 + 24 : 0;
+            q(".axis").style.left = `${axisX}px`;
+            const room = (fmt === "16x9" ? 1392 : 768) - (axisX + 2) - (fmt === "16x9" ? 16 : 14) - wide - 8;
+            for (const b of rows) b.width = Math.max(0, (b.value / top) * room);
+            for (const b of rows) b.val.textContent = show(0);
+          }
+
+          function build() {
+            const tl = gsap.timeline({ paused: true });
+            const head = [q(".eyebrow"), q(".title"), q(".subtitle")];
+            tl.fromTo(head, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE, stagger: 0.08 }, 0);
+            tl.fromTo(q(".axis"), { scaleY: 0, transformOrigin: "50% 0%" }, { scaleY: 1, duration: 0.4, ease: EASE }, 0.3);
+            tl.fromTo(rows.map((b) => b.label), { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "none", stagger: 0.05 }, 0.4);
+            rows.forEach((b, i) => {
+              const at = 0.7 + i * 0.1;
+              tl.fromTo(b.bar, { width: 0 }, { width: b.width, duration: 0.9, ease: EASE }, at);
+              tl.fromTo(b.val, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "none" }, at);
+              tl.fromTo(b.count, { n: 0 }, { n: b.value, duration: 0.9, ease: EASE, onUpdate: () => (b.val.textContent = show(b.count.n)) }, at);
+            });
+            tl.fromTo(q(".source"), { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "none" }, 0.8);
+            if (v("exit", "animate") !== "hold") {
+              const out = D - 0.7;
+              tl.to(rows.flatMap((b) => [b.val, b.label]), { opacity: 0, duration: 0.3, ease: "none" }, out);
+              tl.to(rows.map((b) => b.bar), { width: 0, duration: 0.4, ease: EASE }, out + 0.3);
+            }
+            tl.set({}, {}, D);
+            window.__timelines[ID] = tl;
+          }
+
+          // the values are measured (off a canvas), so build once the fonts have loaded
+          const fonts = [`800 32px ${v("fontDisplay", "Inter") || "Inter"}`, `500 30px ${v("fontBody", "Inter") || "Inter"}`];
+          const loaded = document.fonts ? Promise.all(fonts.map((f) => document.fonts.load(f).catch(() => null))).then(() => document.fonts.ready) : Promise.resolve();
+          loaded.then(() => {
+            measure();
+            build();
+          });
+        })();
+      </script>
+    </template>
+  </body>
+</html>

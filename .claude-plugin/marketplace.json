@@ -1,0 +1,19 @@
+{
+  "name": "wyzowl",
+  "owner": {
+    "name": "Wyzowl",
+    "url": "https://wyzowl.com"
+  },
+  "metadata": {
+    "description": "Wyzowl's plugins for Claude Code."
+  },
+  "plugins": [
+    {
+      "name": "video-studio",
+      "description": "Wyzowl Video Studio: make animated videos with Claude Code and HyperFrames. A guided brief, reusable brand kits, a storyboard you approve scene by scene, a scored review loop, and local rendering.",
+      "source": "./plugins/video-studio",
+      "category": "productivity",
+      "homepage": "https://github.com/wyzowl/video-studio"
+    }
+  ]
+}

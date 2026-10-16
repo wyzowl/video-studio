@@ -1,0 +1,325 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"screenVideo","type":"string","label":"Screen recording (video file in the project)","default":""},
+    {"id":"screenImage","type":"string","label":"Screenshot, if there is no recording (image file)","default":""},
+    {"id":"presenterVideo","type":"string","label":"Presenter footage (video file; its sound stays on the main track)","default":""},
+    {"id":"presenter","type":"enum","label":"Presenter","default":"show","options":[{"value":"show","label":"Show the presenter"},{"value":"hide","label":"Laptop only, centred"}]},
+    {"id":"cues","type":"string","label":"Highlights: JSON list of {at, x, y, w, h, zoom, until}, with x, y, w and h as fractions of the screen","default":""},
+    {"id":"duration","type":"number","label":"Length","default":7,"min":2,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Background","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Outlines","default":"#1E1E1E"},
+    {"id":"line","type":"color","label":"Stand-in screen details","default":"#CBC8C1"},
+    {"id":"accent","type":"color","label":"Highlight","default":"#F9B336"},
+    {"id":"onAccent","type":"color","label":"Text on the accent","default":"#1E1E1E"},
+    {"id":"radius","type":"string","label":"Corner rounding","default":"16px"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>L07 Laptop demo · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "L07",
+        "name": "Laptop demo",
+        "category": "layouts",
+        "free": true,
+        "summary": "A screen recording on a laptop, next to the presenter.",
+        "use": "For product demos that should feel like a real device: a web app, a dashboard, a tool. Record the screen at 1440 × 900 (16:10), cut out waiting and loading, and point things out with a highlight. Leave the presenter out for a voiceover video.",
+        "backdrop": "none",
+        "motion": "The laptop rises into place (0.50 s, easing out) and the recording fades up on its screen, as the presenter's window opens out from the centre (0.45 s). On a cue the cursor glides to what matters and the highlight draws round it (0.40 s), pushing in for small details (0.60 s). Out: the highlight fades, the presenter's window closes and the laptop drops away (0.40 s).",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #l07-laptop-demo {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          background: var(--card, #f6f3ea);
+        }
+        /* the laptop, drawn at 16:9 size (1300 × 770) and scaled as a whole at the other sizes */
+        #l07-laptop-demo .laptop { position: absolute; width: 1300px; height: 770px; transform-origin: 0 0; }
+        #l07-laptop-demo .rise { position: absolute; inset: 0; }
+        #l07-laptop-demo .lid {
+          position: absolute;
+          left: 60px;
+          top: 0;
+          box-sizing: border-box;
+          width: 1180px;
+          height: 740px;
+          padding: 18px;
+          border-radius: 28px 28px 10px 10px;
+          background: #1e1e1e;
+        }
+        #l07-laptop-demo .camera { position: absolute; left: 587px; top: 6px; width: 6px; height: 6px; border-radius: 50%; background: #3a3a3a; }
+        #l07-laptop-demo .glass { position: relative; width: 1144px; height: 704px; border-radius: 10px; overflow: hidden; background: #121418; }
+        #l07-laptop-demo .zoom { position: absolute; inset: 0; background: #ffffff; }
+        #l07-laptop-demo .rec,
+        #l07-laptop-demo .shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; }
+        #l07-laptop-demo .base { position: absolute; left: 0; top: 740px; width: 1300px; height: 30px; border-radius: 4px 4px 26px 26px; background: #383a3f; }
+        #l07-laptop-demo .notch { position: absolute; left: 550px; top: 0; width: 200px; height: 10px; border-radius: 0 0 10px 10px; background: #2a2c30; }
+        /* the stand-in dashboard, when there's no recording */
+        #l07-laptop-demo .dash {
+          --u: 1;
+          --tint: color-mix(in srgb, var(--ink, #1e1e1e) 8%, var(--card, #f6f3ea));
+          --bar: color-mix(in srgb, var(--ink, #1e1e1e) 12%, var(--card, #f6f3ea));
+          position: absolute;
+          inset: 0;
+          display: flex;
+          background: #ffffff;
+        }
+        #l07-laptop-demo .dash.light { --card: #f6f3ea; --ink: #1e1e1e; --line: #cbc8c1; }
+        #l07-laptop-demo .dash i { display: block; flex: none; }
+        #l07-laptop-demo .dash .side {
+          flex: none;
+          box-sizing: border-box;
+          width: calc(var(--u) * 211.2px);
+          display: flex;
+          flex-direction: column;
+          gap: calc(var(--u) * 5.3px);
+          padding: calc(var(--u) * 26.4px) calc(var(--u) * 15.8px);
+          background: var(--card, #f6f3ea);
+          border-right: 2px solid var(--tint);
+        }
+        #l07-laptop-demo .dash .brand { display: flex; align-items: center; gap: calc(var(--u) * 8.8px); padding: 0 calc(var(--u) * 8.8px) calc(var(--u) * 15.8px); }
+        #l07-laptop-demo .dash .logo { width: calc(var(--u) * 26.4px); height: calc(var(--u) * 26.4px); border-radius: calc(var(--u) * 7px); background: var(--ink, #1e1e1e); }
+        #l07-laptop-demo .dash .name { width: calc(var(--u) * 84.5px); height: calc(var(--u) * 10.6px); border-radius: calc(var(--u) * 5.3px); background: var(--ink, #1e1e1e); }
+        #l07-laptop-demo .dash .nav { display: flex; align-items: center; gap: calc(var(--u) * 10.6px); padding: calc(var(--u) * 8.8px) calc(var(--u) * 10.6px); border-radius: calc(var(--u) * 8.8px); }
+        #l07-laptop-demo .dash .nav.on { background: var(--tint); }
+        #l07-laptop-demo .dash .ic { width: calc(var(--u) * 15.8px); height: calc(var(--u) * 15.8px); border-radius: calc(var(--u) * 4.4px); background: var(--line, #cbc8c1); }
+        #l07-laptop-demo .dash .tx { height: calc(var(--u) * 8.8px); border-radius: calc(var(--u) * 4.4px); background: var(--line, #cbc8c1); }
+        #l07-laptop-demo .dash .on .ic,
+        #l07-laptop-demo .dash .on .tx { background: var(--ink, #1e1e1e); }
+        #l07-laptop-demo .dash .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: calc(var(--u) * 24.6px); padding: calc(var(--u) * 31.7px) calc(var(--u) * 35.2px); }
+        #l07-laptop-demo .dash .head { display: flex; align-items: center; justify-content: space-between; }
+        #l07-laptop-demo .dash .titles { display: flex; flex-direction: column; gap: calc(var(--u) * 10.6px); }
+        #l07-laptop-demo .dash .h1 { width: calc(var(--u) * 228.8px); height: calc(var(--u) * 17.6px); border-radius: calc(var(--u) * 5.3px); background: var(--ink, #1e1e1e); }
+        #l07-laptop-demo .dash .h2 { width: calc(var(--u) * 316.8px); height: calc(var(--u) * 8.8px); border-radius: calc(var(--u) * 4.4px); background: var(--line, #cbc8c1); }
+        #l07-laptop-demo .dash .cta { display: flex; align-items: center; justify-content: center; width: calc(var(--u) * 132px); height: calc(var(--u) * 38.7px); border-radius: calc(var(--u) * 10.6px); background: var(--accent, #f9b336); }
+        #l07-laptop-demo .dash .cta i { width: calc(var(--u) * 61.6px); height: calc(var(--u) * 8.8px); border-radius: calc(var(--u) * 4.4px); background: var(--onAccent, #1e1e1e); }
+        #l07-laptop-demo .dash .stats { display: flex; gap: calc(var(--u) * 17.6px); }
+        #l07-laptop-demo .dash .stat { flex: 1; display: flex; flex-direction: column; gap: calc(var(--u) * 12.3px); padding: calc(var(--u) * 19.4px); border-radius: calc(var(--u) * 12.3px); background: var(--card, #f6f3ea); }
+        #l07-laptop-demo .dash .k { height: calc(var(--u) * 8.8px); border-radius: calc(var(--u) * 4.4px); background: var(--line, #cbc8c1); }
+        #l07-laptop-demo .dash .n { height: calc(var(--u) * 22.9px); border-radius: calc(var(--u) * 5.3px); background: var(--ink, #1e1e1e); }
+        #l07-laptop-demo .dash .c { width: calc(var(--u) * 47.5px); height: calc(var(--u) * 15.8px); border-radius: calc(var(--u) * 7.9px); background: var(--tint); }
+        #l07-laptop-demo .dash .chart { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: calc(var(--u) * 19.4px); padding: calc(var(--u) * 22.9px); border-radius: calc(var(--u) * 12.3px); background: var(--card, #f6f3ea); }
+        #l07-laptop-demo .dash .t { width: calc(var(--u) * 123.2px); height: calc(var(--u) * 10.6px); border-radius: calc(var(--u) * 5.3px); background: var(--ink, #1e1e1e); }
+        #l07-laptop-demo .dash .bars { flex: 1; min-height: 0; display: flex; align-items: flex-end; gap: calc(var(--u) * 10.6px); }
+        #l07-laptop-demo .dash .bars i { flex: 1; border-radius: calc(var(--u) * 5.3px) calc(var(--u) * 5.3px) 0 0; background: var(--bar); }
+        #l07-laptop-demo .dash .bars i.key { background: var(--accent, #f9b336); }
+        /* the highlight and the cursor ride on the screen, so they zoom with it */
+        #l07-laptop-demo .box { position: absolute; overflow: visible; }
+        #l07-laptop-demo .box rect { fill: none; stroke: var(--accent, #f9b336); stroke-width: 5; stroke-dasharray: 1; }
+        #l07-laptop-demo .cursor { position: absolute; left: 0; top: 0; width: 38px; height: 41px; overflow: visible; }
+        /* the presenter's window */
+        #l07-laptop-demo .ring { position: absolute; box-sizing: border-box; }
+        #l07-laptop-demo .presenter {
+          position: relative;
+          box-sizing: border-box;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          border: 2px solid var(--ink, #1e1e1e);
+          border-radius: var(--radius, 16px);
+          background: #1d2024;
+        }
+        #l07-laptop-demo .standin { position: absolute; inset: 0; background: #1d2024; }
+        #l07-laptop-demo .standin svg { position: absolute; left: 50%; bottom: 0; height: 84%; width: auto; transform: translateX(-50%); }
+        #l07-laptop-demo .cam { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        /* each size gets its own arrangement: beside the presenter at 16:9, above them at 4:5 and 9:16, with the
+           presenter in the corner at 1:1 */
+        #l07-laptop-demo[data-fmt="16x9"] .laptop { left: 56px; top: 155px; }
+        #l07-laptop-demo[data-fmt="16x9"] .ring { left: 1388px; top: 56px; width: 476px; height: 968px; }
+        #l07-laptop-demo[data-fmt="4x5"] .laptop { left: 40px; top: 40px; transform: scale(0.76923); }
+        #l07-laptop-demo[data-fmt="4x5"] .ring { left: 40px; top: 672px; width: 1000px; height: 638px; }
+        #l07-laptop-demo[data-fmt="9x16"] .laptop { left: 40px; top: 160px; transform: scale(0.76923); }
+        #l07-laptop-demo[data-fmt="9x16"] .ring { left: 40px; top: 792px; width: 1000px; height: 1088px; }
+        #l07-laptop-demo[data-fmt="1x1"] .laptop { left: 40px; top: 150px; transform: scale(0.76923); }
+        #l07-laptop-demo[data-fmt="1x1"] .ring {
+          left: 700px;
+          top: 620px;
+          width: 316px;
+          height: 396px;
+          padding: 8px;
+          background: var(--card, #f6f3ea);
+          border-radius: calc(var(--radius, 16px) + 8px);
+        }
+        /* the laptop on its own, centred */
+        #l07-laptop-demo[data-solo] .ring { display: none; }
+        #l07-laptop-demo[data-solo][data-fmt="16x9"] .laptop { left: 310px; }
+        #l07-laptop-demo[data-solo][data-fmt="4x5"] .laptop { top: 379px; }
+        #l07-laptop-demo[data-solo][data-fmt="9x16"] .laptop { top: 664px; }
+        #l07-laptop-demo[data-solo][data-fmt="1x1"] .laptop { top: 244px; }
+      </style>
+
+      <div id="l07-laptop-demo" data-composition-id="l07-laptop-demo">
+        <div class="laptop">
+          <div class="rise">
+            <div class="lid">
+              <div class="glass">
+                <div class="zoom">
+                  <img class="shot" data-var-src="screenImage" alt="" />
+                  <video id="l07-laptop-demo-rec" class="clip rec" data-var-src="screenVideo" data-start="0" data-track-index="0" muted playsinline></video>
+                  <svg class="cursor" viewBox="0 0 30 32" aria-hidden="true"><path d="M2 2 L2 25 L8 19 L12.5 28.5 L17 26.5 L12.5 17.5 L21 17.5 Z" fill="#1E1E1E" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round" /></svg>
+                </div>
+              </div>
+              <i class="camera"></i>
+            </div>
+            <div class="base"><i class="notch"></i></div>
+          </div>
+        </div>
+        <div class="ring">
+          <div class="presenter">
+            <div class="standin">
+              <svg viewBox="0 0 1000 1100" aria-hidden="true"><path fill="#33373E" d="M500 40C590 40 665 110 668 230C671 330 640 410 585 452L583 540C700 560 820 600 880 660C935 715 965 800 975 1100L25 1100C35 800 65 715 120 660C180 600 300 560 417 540L415 452C360 410 329 330 332 230C335 110 410 40 500 40Z" /></svg>
+            </div>
+            <video id="l07-laptop-demo-cam" class="clip cam" data-var-src="presenterVideo" data-start="0" data-track-index="1" muted playsinline></video>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "l07-laptop-demo";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null || vars[k] === "" ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const r = W / H;
+          const fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
+          root.dataset.fmt = fmt;
+          const solo = v("presenter", "show") === "hide";
+          if (solo) root.dataset.solo = "";
+
+          const EASE = v("ease", "power3.inOut");
+          const D = Math.max(2, Number(v("duration", 7)) || 7);
+          const q = (s) => root.querySelector(s);
+          const laptop = q(".rise");
+          const zoom = q(".zoom");
+          const cursor = q(".cursor");
+          const ring = q(".ring");
+
+          // real media when it's given (as a variable, or as the src of a copy); otherwise the stand-ins (a plain
+          // dashboard, a silhouette) show through
+          const given = (k, sel) => Boolean(v(k, "") || q(sel).getAttribute("src"));
+          const hasRec = given("screenVideo", ".rec");
+          const hasShot = !hasRec && given("screenImage", ".shot");
+          const hasCam = given("presenterVideo", ".cam");
+          q(".rec").style.display = hasRec ? "" : "none";
+          q(".shot").style.display = hasShot ? "" : "none";
+          if (hasShot && !q(".shot").getAttribute("src")) q(".shot").setAttribute("src", v("screenImage", ""));
+          q(".cam").style.display = hasCam ? "" : "none";
+          q(".standin").style.display = hasCam ? "none" : "";
+
+          // a brand with light text (on a dark background) can't use it on a white screen: its stand-in keeps the default
+          // dark text and light panels, and takes only the accent
+          function lightText() {
+            const ink = (typeof vars.ink === "string" && vars.ink) || getComputedStyle(root).getPropertyValue("--ink").trim();
+            const pen = document.createElement("canvas").getContext("2d");
+            pen.fillStyle = "#1e1e1e";
+            pen.fillStyle = ink || "#1e1e1e";
+            const rgb = (/^#(\w\w)(\w\w)(\w\w)$/.exec(pen.fillStyle) || []).slice(1).map((h) => parseInt(h, 16) / 255);
+            const [r, g, b] = rgb.map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+            return rgb.length === 3 && 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.4;
+          }
+          // the stand-in dashboard: a sidebar, a title with a button, three figures and a bar chart
+          const CTA = { x: 976.8, y: 31.7, w: 132, h: 38.7 };
+          if (!hasRec && !hasShot) {
+            const dash = document.createElement("div");
+            dash.className = lightText() ? "dash light" : "dash";
+            const nav = [96.8, 79.2, 105.6, 70.4, 88, 61.6]
+              .map((w, i) => `<span class="nav${i === 1 ? " on" : ""}"><i class="ic"></i><i class="tx" style="width:calc(var(--u) * ${w}px)"></i></span>`)
+              .join("");
+            const stats = [[70.4, 105.6], [84.5, 91.5], [61.6, 116.2]]
+              .map(([k, n]) => `<span class="stat"><i class="k" style="width:calc(var(--u) * ${k}px)"></i><i class="n" style="width:calc(var(--u) * ${n}px)"></i><i class="c"></i></span>`)
+              .join("");
+            const bars = [42, 58, 50, 66, 48, 72, 60, 78, 92, 70, 64, 84].map((h, i) => `<i${i === 8 ? ' class="key"' : ""} style="height:${h}%"></i>`).join("");
+            dash.innerHTML = `<div class="side"><span class="brand"><i class="logo"></i><i class="name"></i></span>${nav}</div><div class="main"><div class="head"><span class="titles"><i class="h1"></i><i class="h2"></i></span><span class="cta"><i></i></span></div><div class="stats">${stats}</div><div class="chart"><i class="t"></i><div class="bars">${bars}</div></div></div>`;
+            zoom.insertBefore(dash, zoom.firstChild);
+          }
+
+          // the laptop's screen is 1144 × 704 at every size (the laptop scales as a whole)
+          const VW = 1144;
+          const VH = 704;
+
+          // highlights: given as fractions of the screen; on the stand-in, its button
+          let cues = [];
+          try {
+            cues = JSON.parse(v("cues", "[]"));
+          } catch (err) {}
+          if (!Array.isArray(cues)) cues = [];
+          if (!cues.length && !hasRec && !hasShot) cues = [{ at: 1.5, x: CTA.x / VW, y: CTA.y / VH, w: CTA.w / VW, h: CTA.h / VH, zoom: 1.5 }];
+          cues = cues
+            .filter((c) => c && [c.at, c.x, c.y, c.w, c.h].every((n) => Number.isFinite(Number(n))))
+            .map((c) => ({ ...c, at: Number(c.at), zoom: Number(c.zoom) > 1 ? Math.min(2, Number(c.zoom)) : 1 }))
+            .sort((a, b) => a.at - b.at);
+
+          // the presenter's window opens out from the point nearest the centre of the frame
+          const RING = { "16x9": [1388, 56, 476, 968], "4x5": [40, 672, 1000, 638], "9x16": [40, 792, 1000, 1088], "1x1": [700, 620, 316, 396] }[fmt];
+          const radius = parseFloat(getComputedStyle(q(".presenter")).borderTopLeftRadius) || 16;
+          const ringRadius = parseFloat(getComputedStyle(ring).borderTopLeftRadius) || radius;
+          const [rx, ry, rw, rh] = RING;
+          const px = Math.min(Math.max(W / 2, rx), rx + rw) - rx;
+          const py = Math.min(Math.max(H / 2, ry), ry + rh) - ry;
+          const shut = `inset(${py}px ${rw - px}px ${rh - py}px ${px}px round ${ringRadius}px)`;
+          const open = `inset(0px 0px 0px 0px round ${ringRadius}px)`;
+
+          const tl = gsap.timeline({ paused: true });
+          // the laptop rises into place and the recording fades up on its screen
+          tl.fromTo(laptop, { y: 140 }, { y: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+          tl.fromTo(laptop, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "none" }, 0.1);
+          tl.fromTo(zoom, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "none" }, 0.45);
+          if (!solo) tl.fromTo(ring, { clipPath: shut }, { clipPath: open, duration: 0.45, ease: EASE }, 0.1);
+
+          gsap.set(cursor, { opacity: 0, x: VW * 0.62, y: VH * 0.86 });
+          const outAt = D - 0.85;
+          cues.forEach((c, i) => {
+            const until = Math.min(c.until !== undefined ? Number(c.until) : cues[i + 1] ? cues[i + 1].at - 0.1 : outAt, outAt);
+            if (!(c.at < until)) return;
+            const bx = c.x * VW - 10;
+            const by = c.y * VH - 10;
+            const bw = c.w * VW + 20;
+            const bh = c.h * VH + 20;
+            const box = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            box.setAttribute("class", "box");
+            box.setAttribute("width", bw);
+            box.setAttribute("height", bh);
+            box.style.left = `${bx}px`;
+            box.style.top = `${by}px`;
+            box.innerHTML = `<rect x="2.5" y="2.5" width="${bw - 5}" height="${bh - 5}" rx="14" pathLength="1" />`;
+            zoom.insertBefore(box, cursor);
+            // the cursor's tip glides to the lower right of what's pointed out, and the highlight draws round it
+            tl.to(cursor, { opacity: 1, duration: 0.2, ease: "none" }, c.at - 0.2);
+            tl.to(cursor, { x: (c.x + c.w * 0.72) * VW - 2.5, y: (c.y + c.h * 0.7) * VH - 2.5, duration: 0.4, ease: EASE }, c.at);
+            tl.fromTo(box.firstChild, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.4, ease: EASE }, c.at);
+            if (c.zoom > 1 && until - c.at > 2) {
+              tl.set(zoom, { transformOrigin: `${(c.x + c.w / 2) * VW}px ${(c.y + c.h / 2) * VH}px` }, c.at);
+              tl.to(zoom, { scale: c.zoom, duration: 0.6, ease: EASE }, c.at + 0.6);
+              tl.to(zoom, { scale: 1, duration: 0.6, ease: EASE }, until - 0.7);
+            }
+            tl.to(box, { opacity: 0, duration: 0.2, ease: "none" }, until);
+          });
+          tl.to(cursor, { opacity: 0, duration: 0.2, ease: "none" }, outAt);
+          if (!solo) tl.to(ring, { clipPath: shut, duration: 0.45, ease: EASE }, D - 0.65);
+          // out: the laptop drops away
+          tl.to(laptop, { y: 140, duration: 0.4, ease: "power3.in" }, D - 0.45);
+          tl.to(laptop, { opacity: 0, duration: 0.15, ease: "none" }, D - 0.2);
+          tl.set({}, {}, D);
+          window.__timelines[ID] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

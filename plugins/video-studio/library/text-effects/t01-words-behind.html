@@ -1,0 +1,196 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"keyword","type":"string","label":"Keyword (one word)","default":"FOCUS"},
+    {"id":"footageVideo","type":"string","label":"Presenter footage (video file; its sound stays on the main track)","default":""},
+    {"id":"cutoutVideo","type":"string","label":"Cut-out of the presenter (transparent video of the same footage)","default":""},
+    {"id":"headTop","type":"number","label":"Top of the head at its highest in the scene (px from the top; the word then sits so the head covers at most half of it)","default":0,"min":0,"step":1,"unit":"px"},
+    {"id":"push","type":"number","label":"Push in over the scene","default":4,"min":0,"max":10,"step":0.5,"unit":"%"},
+    {"id":"duration","type":"number","label":"Length","default":5,"min":2,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Card","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Text","default":"#1E1E1E"},
+    {"id":"muted","type":"color","label":"Muted text","default":"#5F5E5B"},
+    {"id":"line","type":"color","label":"Lines","default":"#CBC8C1"},
+    {"id":"accent","type":"color","label":"Accent","default":"#F9B336"},
+    {"id":"onAccent","type":"color","label":"Text on the accent","default":"#1E1E1E"},
+    {"id":"onVideo","type":"color","label":"Keyword colour","default":"#F6F3EA"},
+    {"id":"fontDisplay","type":"string","label":"Heading font","default":"Inter"},
+    {"id":"fontBody","type":"string","label":"Body font","default":"Inter"},
+    {"id":"fontLabel","type":"string","label":"Label font","default":"JetBrains Mono"},
+    {"id":"radius","type":"string","label":"Corner rounding","default":"16px"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>T01 Words behind · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "T01",
+        "name": "Words behind",
+        "category": "text-effects",
+        "free": true,
+        "summary": "A big keyword sits behind the presenter, so their head breaks through it.",
+        "use": "When the presenter fills the frame and one word sums up the moment, such as a step's name. The head covers at most half of the letters, so the word stays readable. It needs a cut-out of the presenter: the same footage with the background removed, made on the Mac.",
+        "backdrop": "none",
+        "motion": "Each letter slides up 40 px and fades in (0.50 s, 0.04 s apart). The footage and the cut-out push in 4% together over the scene. Out: the keyword sinks back behind the presenter (0.40 s, letters 0.03 s apart).",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #t01-words-behind {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          background: #1d2024;
+        }
+        /* the footage, the keyword, then the cut-out of the presenter on top: the same size, crop and position */
+        #t01-words-behind .layer { position: absolute; inset: 0; transform-origin: 50% 50%; }
+        #t01-words-behind .layer video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        #t01-words-behind .standin { position: absolute; }
+        #t01-words-behind .footage .standin-ground { position: absolute; inset: 0; background: #1d2024; }
+        #t01-words-behind[data-fmt="16x9"] .standin { left: 505px; top: 80px; width: 909px; height: 1000px; }
+        #t01-words-behind[data-fmt="1x1"] .standin { left: 95px; top: 100px; width: 891px; height: 980px; }
+        #t01-words-behind[data-fmt="4x5"] .standin { left: -26px; top: 105px; width: 1132px; height: 1245px; }
+        #t01-words-behind[data-fmt="9x16"] .standin { left: -285px; top: 105px; width: 1650px; height: 1815px; }
+        #t01-words-behind .word {
+          position: absolute;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: center;
+          color: var(--onVideo, #f6f3ea);
+          font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
+          font-weight: 900;
+          letter-spacing: -0.04em;
+          white-space: nowrap;
+        }
+        #t01-words-behind .word span { display: inline-block; }
+        /* its letters start 64 px from the top at 16:9 (80 px at 4:5, 96 px at 9:16) */
+        #t01-words-behind[data-fmt="16x9"] .word { top: 6px; font-size: 420px; line-height: 420px; }
+        #t01-words-behind[data-fmt="1x1"] .word { top: 27px; font-size: 270px; line-height: 270px; }
+        #t01-words-behind[data-fmt="4x5"] .word { top: 43px; font-size: 270px; line-height: 270px; }
+        #t01-words-behind[data-fmt="9x16"] .word { top: 59px; font-size: 270px; line-height: 270px; }
+      </style>
+
+      <div id="t01-words-behind" data-composition-id="t01-words-behind">
+        <div class="layer footage">
+          <div class="standin-ground"></div>
+          <svg class="standin" viewBox="0 0 1000 1100" preserveAspectRatio="none" aria-hidden="true"><path fill="#33373E" d="M500 40C590 40 665 110 668 230C671 330 640 410 585 452L583 540C700 560 820 600 880 660C935 715 965 800 975 1100L25 1100C35 800 65 715 120 660C180 600 300 560 417 540L415 452C360 410 329 330 332 230C335 110 410 40 500 40Z" /></svg>
+          <video id="t01-words-behind-footage" class="clip" data-var-src="footageVideo" data-start="0" data-track-index="0" muted playsinline></video>
+        </div>
+        <div class="word"></div>
+        <div class="layer cutout">
+          <svg class="standin" viewBox="0 0 1000 1100" preserveAspectRatio="none" aria-hidden="true"><path fill="#33373E" d="M500 40C590 40 665 110 668 230C671 330 640 410 585 452L583 540C700 560 820 600 880 660C935 715 965 800 975 1100L25 1100C35 800 65 715 120 660C180 600 300 560 417 540L415 452C360 410 329 330 332 230C335 110 410 40 500 40Z" /></svg>
+          <video id="t01-words-behind-cutout" class="clip" data-var-src="cutoutVideo" data-start="0" data-track-index="2" muted playsinline></video>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "t01-words-behind";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null || vars[k] === "" ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const r = W / H;
+          root.dataset.fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
+
+          const EASE = v("ease", "power3.inOut");
+          const D = Math.max(2, Number(v("duration", 5)));
+          const push = Math.max(0, Math.min(10, Number(v("push", 4)))) / 100;
+          const q = (s) => root.querySelector(s);
+          const layers = [q(".footage"), q(".cutout")];
+
+          // real footage when it's given (as a variable, or as the src of a copy); otherwise the silhouette stands in
+          // for both the footage and its cut-out
+          const real = Boolean(v("footageVideo", "") || q("#t01-words-behind-footage").getAttribute("src"));
+          const cut = Boolean(v("cutoutVideo", "") || q("#t01-words-behind-cutout").getAttribute("src"));
+          q("#t01-words-behind-footage").style.display = real ? "" : "none";
+          q("#t01-words-behind-cutout").style.display = cut ? "" : "none";
+          root.querySelectorAll(".standin, .standin-ground").forEach((el) => (el.style.display = real ? "none" : ""));
+
+          const word = q(".word");
+          const letters = [...String(v("keyword", "FOCUS")).trim()].map((ch) => {
+            const s = document.createElement("span");
+            s.textContent = ch === " " ? " " : ch;
+            word.appendChild(s);
+            return s;
+          });
+
+          function build() {
+            const ctx = document.createElement("canvas").getContext("2d");
+            const family = getComputedStyle(word).fontFamily;
+            // a size's cap height, and how deep its baseline sits in a line as tall as the font size
+            const metrics = (px) => {
+              ctx.font = `900 ${px}px ${family}`;
+              const m = ctx.measureText("H");
+              const asc = m.fontBoundingBoxAscent || px * 0.97;
+              const desc = m.fontBoundingBoxDescent || px * 0.24;
+              return { cap: m.actualBoundingBoxAscent || px * 0.73, base: (px - (asc + desc)) / 2 + asc };
+            };
+            let size = parseFloat(getComputedStyle(word).fontSize);
+            let mt = metrics(size);
+            // where the design puts the tops of the letters
+            const capTop = parseFloat(getComputedStyle(word).top) + mt.base - mt.cap;
+            const resize = (px) => {
+              size = px;
+              word.style.fontSize = `${px}px`;
+              word.style.lineHeight = `${px}px`;
+              mt = metrics(px);
+            };
+            // a long word shrinks to fit the width
+            const room = W * 0.92;
+            if (word.scrollWidth > room) resize(Math.floor((size * room) / word.scrollWidth));
+            let baseline = capTop + mt.cap;
+
+            // The head covers at most half the letters, so the word stays readable: by the end of the push-in it
+            // reaches 40% of the way into them. The push carries everything away from the centre of the frame.
+            const k = 1 + push;
+            const after = (y) => H / 2 + (y - H / 2) * k;
+            const before = (y) => H / 2 + (y - H / 2) / k;
+            const headTop = Math.max(0, Number(v("headTop", 0)) || 0);
+            if (real && headTop > 0) {
+              // real footage: the letters sit to suit the head, smaller if there isn't room above it
+              const margin = H * 0.03;
+              const head = after(headTop);
+              if (head - margin < 0.6 * mt.cap) resize(Math.max(48, Math.floor((size * (head - margin)) / (0.6 * mt.cap))));
+              baseline = Math.max(margin + mt.cap, head + 0.4 * mt.cap);
+            }
+            word.style.top = `${baseline - mt.base}px`;
+            if (!real) {
+              // the stand-in's head (its top is 40/1100 of the silhouette's height) sits to suit the letters
+              const top = before(baseline - 0.4 * mt.cap);
+              root.querySelectorAll("svg.standin").forEach((svg) => {
+                svg.style.top = `${top - (40 / 1100) * parseFloat(getComputedStyle(svg).height)}px`;
+              });
+            }
+
+            const tl = gsap.timeline({ paused: true });
+            tl.fromTo(layers, { scale: 1 }, { scale: 1 + push, duration: D, ease: "none" }, 0);
+            tl.fromTo(letters, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: EASE, stagger: 0.04 }, 0.2);
+            tl.to(letters, { y: 40, opacity: 0, duration: 0.4, ease: EASE, stagger: 0.03 }, Math.max(1.4, D - 0.4 - 0.03 * letters.length - 0.1));
+            tl.set({}, {}, D);
+            window.__timelines[ID] = tl;
+          }
+
+          // the word is measured, so build once the font has loaded
+          const loaded = document.fonts
+            ? document.fonts.load(`900 420px ${v("fontDisplay", "Inter")}`).catch(() => null).then(() => document.fonts.ready)
+            : Promise.resolve();
+          loaded.then(build);
+        })();
+      </script>
+    </template>
+  </body>
+</html>

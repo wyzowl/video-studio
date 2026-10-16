@@ -1,0 +1,141 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"inset","type":"number","label":"How far in from the edges the squares first appear (0 works it out)","default":0,"min":0,"step":4,"unit":"px"},
+    {"id":"duration","type":"number","label":"Length (the cut is at 0.75 s)","default":1.6,"min":1.6,"max":1.6,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Background around the closing frame","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Squares","default":"#1E1E1E"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>X01 Corner squares · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "X01",
+        "name": "Corner squares",
+        "category": "transitions",
+        "free": true,
+        "kind": "cover",
+        "cut": 0.75,
+        "length": 1.6,
+        "summary": "Four corner squares close in on the centre, cropping scene A away, meet, then open out on scene B.",
+        "use": "Between any two scenes, as a calm, designed hand-over: chapters, or a move from the presenter to a chart. It crops and never scales, so footage stays sharp.",
+        "motion": "Four squares appear at the corners (0.20 s) and the frame crops in to them (0.30 s). The squares close on the centre, cropping scene A as they go (0.35 s), meet in a tight cluster and hold for two frames while A swaps for B, then open out to scene B's corners (0.45 s). Last, the crop runs out to the edges as the squares fade (0.30 s). About 1.6 s in all. Sound: an optional soft tick on the meet.",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #x01-corner-squares {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+        }
+        #x01-corner-squares .matte {
+          position: absolute;
+          background: var(--card, #f6f3ea);
+        }
+        #x01-corner-squares .square {
+          position: absolute;
+          width: 16px;
+          height: 16px;
+          margin: -8px 0 0 -8px;
+          background: var(--ink, #1e1e1e);
+        }
+      </style>
+
+      <div id="x01-corner-squares" data-composition-id="x01-corner-squares">
+        <div class="matte top"></div>
+        <div class="matte bottom"></div>
+        <div class="matte left"></div>
+        <div class="matte right"></div>
+        <div class="square"></div>
+        <div class="square"></div>
+        <div class="square"></div>
+        <div class="square"></div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "x01-corner-squares";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null || vars[k] === "" ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const EASE = v("ease", "power3.inOut") || "power3.inOut";
+          const squares = [...root.querySelectorAll(".square")];
+          const [top, bottom, left, right] = [".top", ".bottom", ".left", ".right"].map((s) => root.querySelector(s));
+
+          // the open frame: its left, top, right and bottom edges, which the squares sit on and the mattes surround
+          const m = Number(v("inset", 0)) > 0 ? Number(v("inset", 0)) : W > H ? 72 : 64;
+          const cx = W / 2;
+          const cy = H / 2;
+          const full = { l: 0, t: 0, r: W, b: H };
+          const inset = { l: m, t: m, r: W - m, b: H - m };
+          const shut = { l: cx, t: cy, r: cx, b: cy };
+          const frame = { ...full };
+          // where each square sits: on the frame's corners, or tight round the centre when it shuts (2 px apart)
+          const cluster = { on: 0 };
+          // sets the mattes and squares from the frame on each frame of the timeline (it only writes styles)
+          function apply() {
+            const { l, t, r, b } = frame;
+            // the mattes overlap by a pixel where they meet, so no hairline of the scene shows between them; when the
+            // frame is fully open they're off the frame altogether
+            const o = l > 0 || t > 0 || r < W || b < H ? 1 : 0;
+            top.style.cssText = `left:0;top:0;width:${W}px;height:${t ? t + o : 0}px`;
+            bottom.style.cssText = `left:0;top:${b - o}px;width:${W}px;height:${H - b ? H - b + o : 0}px`;
+            left.style.cssText = `left:0;top:${t}px;width:${l ? l + o : 0}px;height:${Math.max(0, b - t)}px`;
+            right.style.cssText = `left:${r - o}px;top:${t}px;width:${W - r ? W - r + o : 0}px;height:${Math.max(0, b - t)}px`;
+            const k = cluster.on;
+            const near = [
+              [cx - 10, cy - 10],
+              [cx + 10, cy - 10],
+              [cx - 10, cy + 10],
+              [cx + 10, cy + 10],
+            ];
+            const corners = [
+              [l, t],
+              [r, t],
+              [l, b],
+              [r, b],
+            ];
+            squares.forEach((s, i) => {
+              s.style.left = `${corners[i][0] + (near[i][0] - corners[i][0]) * k}px`;
+              s.style.top = `${corners[i][1] + (near[i][1] - corners[i][1]) * k}px`;
+            });
+          }
+          apply();
+
+          const tl = gsap.timeline({ paused: true });
+          const move = (to, duration, ease, at) => tl.to(frame, { ...to, duration, ease, onUpdate: apply }, at);
+          // squares in at the corners of the inset frame, and the frame crops in to them
+          tl.set(frame, { ...full, onUpdate: apply }, 0);
+          tl.fromTo(squares, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.2, ease: "back.out(2)", stagger: 0.03 }, 0);
+          move(inset, 0.3, EASE, 0.1);
+          // close on the centre, cropping scene A; the squares draw together into the cluster as they arrive
+          move(shut, 0.35, EASE, 0.4);
+          tl.to(cluster, { on: 1, duration: 0.35, ease: EASE, onUpdate: apply }, 0.4);
+          // the cut at 0.75, held two frames; then open out to scene B's corners
+          tl.to(cluster, { on: 0, duration: 0.45, ease: EASE, onUpdate: apply }, 0.85);
+          move(inset, 0.45, EASE, 0.85);
+          // the crop runs out to the edges as the squares go
+          move(full, 0.3, EASE, 1.3);
+          tl.to(squares, { scale: 0, opacity: 0, duration: 0.25, ease: "power2.in" }, 1.32);
+          tl.set({}, {}, 1.6);
+          window.__timelines[ID] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

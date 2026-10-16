@@ -1,0 +1,96 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"screenX","type":"number","label":"Where scene A lands in scene B: left edge (px)","default":480,"min":0,"step":1,"unit":"px"},
+    {"id":"screenY","type":"number","label":"Where scene A lands in scene B: top edge (px)","default":270,"min":0,"step":1,"unit":"px"},
+    {"id":"screenWidth","type":"number","label":"Width of that place (px; its height keeps the video’s shape)","default":960,"min":40,"step":1,"unit":"px"},
+    {"id":"screenRadius","type":"number","label":"Corner rounding of that place","default":0,"min":0,"step":1,"unit":"px"},
+    {"id":"keep","type":"number","label":"How long scene A stays there after the move","default":3,"min":0,"step":0.1,"unit":"s"},
+    {"id":"duration","type":"number","label":"Length of the move (the cut is at 0.40 s)","default":0.9,"min":0.9,"max":0.9,"step":0.1,"unit":"s"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>X05 Pull back · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "X05",
+        "name": "Pull back",
+        "category": "transitions",
+        "free": true,
+        "kind": "both",
+        "cut": 0.4,
+        "length": 0.9,
+        "summary": "The camera pulls back from scene A until it sits in place as one part of scene B: a screen, a card, a photo on a wall.",
+        "use": "When scene B shows where scene A lives: the presenter becomes the video on a laptop, a demo shrinks onto a phone, a photo lands in a frame. It reads as going back or zooming out.",
+        "motion": "The camera pulls straight back from scene A, at a steady rate of zoom (0.60 s, easing in and out), until A sits in place as one part of scene B. A keeps playing the whole time, and stays there for as long as you choose. About 0.9 s in all. Sound: a soft air move, no hit.",
+        "preview": { "sceneB": "device" }
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <!-- Goes in index.html after both scenes. -->
+      <div id="x05-pull-back" data-transition-id="x05-pull-back" style="position: absolute; inset: 0; pointer-events: none"></div>
+
+      <script>
+        // X05 Pull back, on the main timeline: StudioTransitions["x05-pull-back"](tl, { at, a, b, vars }).
+        // at: when it starts (s). a, b: scene A and scene B (elements or selectors), both full frame; B comes after A in
+        // the page. vars: screenX, screenY and screenWidth (px: where A lands in B, the video's shape), screenRadius, keep
+        // (s: how long A stays there; end A's clip then too) and ease.
+        (window.StudioTransitions = window.StudioTransitions || {})["x05-pull-back"] = function (tl, o) {
+          const ID = "x05-pull-back";
+          const layer = document.getElementById(ID);
+          const pick = (x) => (typeof x === "string" ? document.querySelector(x) : x);
+          const A = pick(o.a);
+          const B = pick(o.b);
+          if (!layer || !A || !B) return;
+          const vars = o.vars || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null || vars[k] === "" ? d : vars[k]);
+          // the frame's size: the video's data-width and data-height, or the page's in the library's previews
+          const host = layer.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || layer.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || layer.offsetHeight || 1080;
+          const T = Number(o.at) || 0;
+          const EASE = v("ease", "power3.inOut") || "power3.inOut";
+
+          // the place in B where A lands, with the video's shape
+          const L = { x: Number(v("screenX", W * 0.25)), y: Number(v("screenY", H * 0.2)), w: Math.max(40, Number(v("screenWidth", W * 0.5))) };
+          L.h = (L.w * H) / W;
+          const round = Math.max(0, Number(v("screenRadius", 0)) || 0);
+          const keep = Math.max(0, Number(v("keep", 3)) || 0);
+
+          // the camera: at the start it's zoomed in on that place, so A fills the frame; it zooms out about the one point
+          // that stays still until B is at its normal size. B's offset and scale, and A's, are all straight-line in the
+          // zoom, so tweening each with the same ease keeps A fixed to its place in B on every frame. The ease makes the
+          // zoom change at a steady rate (by the same factor in each moment, as a camera does), shaped by the brand's ease
+          const zoom = W / L.w;
+          if (!(zoom > 1.0001)) return;
+          const fx = (zoom * L.x) / (zoom - 1);
+          const fy = (zoom * L.y) / (zoom - 1);
+          const shape = gsap.parseEase(EASE) || gsap.parseEase("power3.inOut");
+          const steady = (p) => (zoom - Math.pow(zoom, 1 - shape(p))) / (zoom - 1);
+          const move = { duration: 0.6, ease: steady, immediateRender: false };
+
+          // B is open where A sits (an even-odd hole in its own coordinates, so it moves with B), and B's own frame round
+          // that place, such as a laptop's bezel, overlaps A's edges
+          const r = Math.min(round, L.w / 2, L.h / 2);
+          const hole =
+            `M0 0H${W}V${H}H0Z` +
+            `M${L.x + r} ${L.y}H${L.x + L.w - r}A${r} ${r} 0 0 1 ${L.x + L.w} ${L.y + r}V${L.y + L.h - r}A${r} ${r} 0 0 1 ${L.x + L.w - r} ${L.y + L.h}` +
+            `H${L.x + r}A${r} ${r} 0 0 1 ${L.x} ${L.y + L.h - r}V${L.y + r}A${r} ${r} 0 0 1 ${L.x + r} ${L.y}Z`;
+          tl.set(B, { clipPath: `path(evenodd, "${hole}")` }, T);
+          tl.fromTo(B, { x: fx * (1 - zoom), y: fy * (1 - zoom), scale: zoom, transformOrigin: "0px 0px" }, { x: 0, y: 0, scale: 1, ...move }, T);
+          tl.fromTo(A, { x: 0, y: 0, scale: 1, transformOrigin: "0px 0px" }, { x: L.x, y: L.y, scale: L.w / W, ...move }, T);
+          // A's corners round as it lands (in its own coordinates, so divided by its final size)
+          if (r > 0) tl.fromTo(A, { clipPath: "inset(0px round 0px)" }, { clipPath: `inset(0px round ${(r * W) / L.w}px)`, ...move }, T);
+          // when A has had its time on B's screen, B closes up again; end A's clip at the same moment
+          tl.set(B, { clipPath: "none" }, T + 0.9 + keep);
+        };
+      </script>
+    </template>
+  </body>
+</html>

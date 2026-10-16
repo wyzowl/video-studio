@@ -1,0 +1,202 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"lead","type":"string","label":"Lead line","default":"Keep it"},
+    {"id":"word","type":"string","label":"The word that slams in","default":"simple."},
+    {"id":"caption","type":"string","label":"Caption line, as Label · words (leave empty for none)","default":"Part 2 · Getting set up"},
+    {"id":"marks","type":"enum","label":"Impact marks","default":"show","options":[{"value":"show","label":"Show"},{"value":"hide","label":"Hide"}]},
+    {"id":"exit","type":"enum","label":"At the end","default":"animate","options":[{"value":"animate","label":"Animate out"},{"value":"hold","label":"Hold, for a transition"}]},
+    {"id":"duration","type":"number","label":"Length","default":3.5,"min":2,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Background","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Text","default":"#1E1E1E"},
+    {"id":"muted","type":"color","label":"Muted text","default":"#5F5E5B"},
+    {"id":"accent","type":"color","label":"Impact marks","default":"#F9B336"},
+    {"id":"fontDisplay","type":"string","label":"Heading font","default":"Inter"},
+    {"id":"fontLabel","type":"string","label":"Label font","default":"JetBrains Mono"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>T10 Punch · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "T10",
+        "name": "Punch",
+        "category": "text-effects",
+        "free": true,
+        "summary": "A word slams in big, then settles, after a short lead line.",
+        "use": "For the one word a scene turns on: the promise, the benefit, the point to remember. Full screen, in the brand; keep the lead line to a few words, and use the caption line for a series or chapter name.",
+        "motion": "The lead line fades up (0.40 s), then the word slams in at 140% scale and settles with a 3° tilt, overshooting to 96% before landing at 100% (0.35 s in all). The impact marks flash in as it lands (0.20 s), and the caption fades up. Out: the lead line, marks and caption fade (0.30 s) as the word eases back.",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #t10-punch {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          background: var(--card, #f6f3ea);
+          color: var(--ink, #1e1e1e);
+          -webkit-font-smoothing: antialiased;
+        }
+        #t10-punch .box {
+          position: absolute;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          gap: 8px;
+        }
+        #t10-punch[data-fmt="16x9"] .box { left: 192px; top: 72px; width: 1536px; height: 864px; padding: 56px 72px 60px; }
+        #t10-punch[data-fmt="1x1"] .box { left: 108px; top: 96px; width: 864px; height: 792px; padding: 44px 48px 48px; }
+        #t10-punch[data-fmt="4x5"] .box { left: 108px; top: 120px; width: 864px; height: 1008px; padding: 52px 48px 52px; }
+        #t10-punch[data-fmt="9x16"] .box { left: 108px; top: 200px; width: 864px; height: 1260px; padding: 60px 48px 60px; }
+        #t10-punch .lead {
+          font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+        }
+        #t10-punch .row { display: flex; align-items: flex-start; gap: 4px; }
+        #t10-punch .word {
+          font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
+          font-weight: 900;
+          letter-spacing: -0.05em;
+          white-space: nowrap;
+          transform-origin: 50% 50%;
+        }
+        #t10-punch .marks { flex-shrink: 0; overflow: visible; }
+        #t10-punch .marks path { fill: none; stroke: var(--accent, #f9b336); stroke-width: 12; stroke-linecap: square; }
+        #t10-punch .caption {
+          position: absolute;
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          height: 56px;
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 28px;
+          line-height: 36px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--muted, #5f5e5b);
+          white-space: nowrap;
+        }
+        #t10-punch .caption b { font-weight: 600; color: var(--ink, #1e1e1e); }
+        #t10-punch .caption .dot { letter-spacing: 0; }
+        #t10-punch[data-fmt="16x9"] .caption { left: 192px; top: 962px; }
+        #t10-punch[data-fmt="1x1"] .caption { left: 108px; top: 912px; }
+        #t10-punch[data-fmt="4x5"] .caption { left: 108px; top: 1156px; }
+        #t10-punch[data-fmt="9x16"] .caption { left: 108px; top: 1484px; }
+      </style>
+
+      <div id="t10-punch" data-composition-id="t10-punch">
+        <div class="box">
+          <div class="lead"></div>
+          <div class="row">
+            <div class="word"></div>
+            <svg class="marks" viewBox="0 0 130 130" aria-hidden="true"><path d="M14 84L62 62M24 46L58 8M52 112L106 106" /></svg>
+          </div>
+        </div>
+        <div class="caption"><b></b><span class="dot">·</span><span class="text"></span></div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "t10-punch";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const r = W / H;
+          const fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
+          root.dataset.fmt = fmt;
+
+          const EASE = v("ease", "power3.inOut") || "power3.inOut";
+          const D = Math.max(2, Number(v("duration", 3.5)) || 3.5);
+          const q = (s) => root.querySelector(s);
+          const lead = q(".lead");
+          const word = q(".word");
+          const marks = q(".marks");
+          lead.textContent = String(v("lead", ""));
+          word.textContent = String(v("word", ""));
+          if (!lead.textContent.trim()) lead.style.display = "none";
+          if (v("marks", "show") === "hide") marks.style.display = "none";
+          // the caption line: "Part 2 · Getting set up" sets the label in bold, then the words
+          const caption = q(".caption");
+          const [label, ...rest] = String(v("caption", "")).split("·").map((part) => part.trim());
+          q(".caption b").textContent = rest.length ? label : "";
+          q(".caption .text").textContent = rest.length ? rest.join(" · ") : label;
+          if (!rest.length) q(".caption b").style.display = q(".caption .dot").style.display = "none";
+          if (!q(".caption .text").textContent && !q(".caption b").textContent) caption.style.display = "none";
+
+          // the type at each format: [lead size, lead line, word size, word line, marks size, inside width]
+          const [leadPx, leadLine, wordPx, wordLine, marksPx, inner] = {
+            "16x9": [96, 104, 330, 300, 130, 1392],
+            "1x1": [72, 80, 210, 196, 92, 768],
+            "4x5": [72, 80, 220, 204, 96, 768],
+            "9x16": [76, 84, 230, 212, 100, 768],
+          }[fmt];
+          lead.style.fontSize = `${leadPx}px`;
+          lead.style.lineHeight = `${leadLine}px`;
+          marks.style.width = marks.style.height = `${marksPx}px`;
+          function setWord(px) {
+            word.style.fontSize = `${px}px`;
+            word.style.lineHeight = `${Math.round((px * wordLine) / wordPx)}px`;
+          }
+          setWord(wordPx);
+
+          // a long word gets smaller until it fits beside the marks. Measured off a canvas, as HyperFrames recommends:
+          // until its start a clip is hidden and measures as zero
+          function fit() {
+            const pen = document.createElement("canvas").getContext("2d");
+            const family = String(v("fontDisplay", "Inter") || "Inter");
+            const room = inner - (marks.style.display === "none" ? 0 : marksPx + 4) - 8;
+            let px = wordPx;
+            for (;;) {
+              pen.font = `900 ${px}px ${family}, system-ui, sans-serif`;
+              pen.letterSpacing = `${-0.05 * px}px`;
+              if (px <= 72 || pen.measureText(word.textContent).width <= room) break;
+              px -= 6;
+            }
+            setWord(px);
+          }
+
+          function build() {
+            const tl = gsap.timeline({ paused: true });
+            tl.fromTo(lead, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE }, 0);
+            // the slam: in big and straight, speeding up as it tilts into a small overshoot, then landing (0.35 s in all)
+            tl.fromTo(word, { opacity: 0 }, { opacity: 1, duration: 0.06, ease: "none" }, 0.35);
+            tl.fromTo(word, { scale: 1.4, rotation: 0 }, { scale: 0.96, rotation: -3, duration: 0.2, ease: "power3.in" }, 0.35);
+            tl.to(word, { scale: 1, duration: 0.15, ease: "power2.out" }, 0.55);
+            tl.fromTo(marks, { scale: 0.5, opacity: 0, transformOrigin: "0% 100%" }, { scale: 1, opacity: 1, duration: 0.2, ease: "back.out(2.5)" }, 0.53);
+            tl.fromTo(caption, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "none" }, 0.8);
+            if (v("exit", "animate") !== "hold") {
+              const out = D - 0.45;
+              tl.to([lead, marks, caption], { opacity: 0, duration: 0.3, ease: "none" }, out);
+              tl.to(word, { opacity: 0, scale: 0.96, duration: 0.3, ease: EASE }, out + 0.05);
+            }
+            tl.set({}, {}, D);
+            window.__timelines[ID] = tl;
+          }
+
+          // the word is measured (off a canvas), so build once the fonts have loaded
+          const fonts = [`900 ${wordPx}px ${v("fontDisplay", "Inter") || "Inter"}`, `800 ${leadPx}px ${v("fontDisplay", "Inter") || "Inter"}`, `600 28px ${v("fontLabel", "JetBrains Mono") || "JetBrains Mono"}`];
+          const loaded = document.fonts ? Promise.all(fonts.map((f) => document.fonts.load(f).catch(() => null))).then(() => document.fonts.ready) : Promise.resolve();
+          loaded.then(() => {
+            fit();
+            build();
+          });
+        })();
+      </script>
+    </template>
+  </body>
+</html>

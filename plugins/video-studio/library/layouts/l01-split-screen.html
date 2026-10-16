@@ -1,0 +1,291 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"screenVideo","type":"string","label":"Screen recording (video file in the project)","default":""},
+    {"id":"screenImage","type":"string","label":"Screenshot, if there is no recording (image file)","default":""},
+    {"id":"address","type":"string","label":"Address in the browser bar","default":"example.com"},
+    {"id":"presenterVideo","type":"string","label":"Presenter footage (video file; its sound stays on the main track)","default":""},
+    {"id":"cues","type":"string","label":"Highlights: JSON list of {at, x, y, w, h, zoom, until}, with x, y, w and h as fractions of the screen","default":""},
+    {"id":"duration","type":"number","label":"Length","default":7,"min":2,"step":0.1,"unit":"s"},
+    {"id":"card","type":"color","label":"Background","default":"#F6F3EA"},
+    {"id":"ink","type":"color","label":"Window outlines","default":"#1E1E1E"},
+    {"id":"muted","type":"color","label":"Address text","default":"#5F5E5B"},
+    {"id":"line","type":"color","label":"Browser dots","default":"#CBC8C1"},
+    {"id":"accent","type":"color","label":"Highlight","default":"#F9B336"},
+    {"id":"onAccent","type":"color","label":"Text on the accent","default":"#1E1E1E"},
+    {"id":"fontDisplay","type":"string","label":"Heading font","default":"Inter"},
+    {"id":"fontBody","type":"string","label":"Body font","default":"Inter"},
+    {"id":"fontLabel","type":"string","label":"Label font","default":"JetBrains Mono"},
+    {"id":"radius","type":"string","label":"Corner rounding","default":"16px"},
+    {"id":"ease","type":"string","label":"Ease for moves (GSAP)","default":"power3.inOut"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>L01 Split screen · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "L01",
+        "name": "Split screen",
+        "category": "layouts",
+        "free": true,
+        "summary": "Demos and walkthroughs: a screen recording in a browser window next to the presenter.",
+        "use": "When the presenter shows a website, app or tool. Record the screen in a clean browser at 1440 × 900 or larger, cut out waiting and loading, and keep it at normal speed (1.5× at most). Point things out with a highlight, and zoom in for small details.",
+        "backdrop": "none",
+        "motion": "Both windows open out from the centre of the frame (0.45 s). When something is pointed out, the cursor glides to it and the highlight draws round it (0.40 s); for small details the screen pushes in to 150–200% towards it (0.60 s) and back. Out: the highlight and cursor fade (0.20 s), then the windows close to the centre (0.45 s).",
+        "preview": {}
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #l01-split-screen {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          background: var(--card, #f6f3ea);
+        }
+        #l01-split-screen .win {
+          position: absolute;
+          box-sizing: border-box;
+          border: 2px solid var(--ink, #1e1e1e);
+          border-radius: var(--radius, 16px);
+          overflow: hidden;
+        }
+        #l01-split-screen .screen { display: flex; flex-direction: column; background: #ffffff; }
+        #l01-split-screen .bar {
+          flex: none;
+          box-sizing: border-box;
+          height: 46px;
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          padding: 0 16px;
+          background: #ffffff;
+          border-bottom: 2px solid var(--ink, #1e1e1e);
+        }
+        #l01-split-screen .dots { display: flex; gap: 8px; }
+        #l01-split-screen .dots i { display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--line, #cbc8c1); }
+        #l01-split-screen .address {
+          padding: 4px 14px;
+          border-radius: 8px;
+          background: var(--card, #f6f3ea);
+          font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 16px;
+          line-height: 20px;
+          color: var(--muted, #5f5e5b);
+          white-space: nowrap;
+        }
+        #l01-split-screen .view { position: relative; flex: 1; overflow: hidden; background: #ffffff; }
+        #l01-split-screen .zoom { position: absolute; inset: 0; }
+        #l01-split-screen .rec,
+        #l01-split-screen .shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; }
+        /* the stand-in website, when there's no recording */
+        #l01-split-screen .site { position: absolute; inset: 0; display: flex; flex-direction: column; background: #ffffff; }
+        #l01-split-screen .site.light { --ink: #1e1e1e; }
+        #l01-split-screen .site i { display: block; flex: none; }
+        #l01-split-screen .nav { flex: none; display: flex; align-items: center; gap: 14px; height: 84px; padding: 0 40px; border-bottom: 2px solid #eeeeee; }
+        #l01-split-screen .nav .logo { width: 34px; height: 34px; border-radius: 10px; background: var(--accent, #f9b336); }
+        #l01-split-screen .nav .name { width: 118px; height: 14px; border-radius: 7px; background: var(--ink, #1e1e1e); }
+        #l01-split-screen .links { margin-left: auto; display: flex; gap: 28px; }
+        #l01-split-screen .links i { width: 66px; height: 10px; border-radius: 5px; background: #d8d8d8; }
+        #l01-split-screen .navcta { box-sizing: border-box; width: 112px; height: 40px; margin-left: 12px; border-radius: 10px; border: 2px solid var(--ink, #1e1e1e); }
+        #l01-split-screen .hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+        #l01-split-screen .hero .h { height: 52px; border-radius: 12px; background: var(--ink, #1e1e1e); }
+        #l01-split-screen .hero .h.a { width: 60%; }
+        #l01-split-screen .hero .h.b { width: 42%; }
+        #l01-split-screen .hero .p { height: 16px; border-radius: 8px; background: #d4d4d4; }
+        #l01-split-screen .hero .p.a { width: 48%; margin-top: 16px; }
+        #l01-split-screen .hero .p.b { width: 36%; }
+        #l01-split-screen .ctas { display: flex; gap: 16px; margin-top: 24px; }
+        #l01-split-screen .cta { width: 200px; height: 60px; border-radius: 12px; background: var(--accent, #f9b336); }
+        #l01-split-screen .ghost { box-sizing: border-box; width: 180px; height: 60px; border-radius: 12px; border: 2px solid var(--ink, #1e1e1e); }
+        #l01-split-screen .cards { flex: none; box-sizing: border-box; height: 26%; display: flex; gap: 24px; padding: 0 40px 40px; }
+        #l01-split-screen .cards i { flex: 1; border-radius: 14px; background: #f2f2f2; }
+        /* the highlight and the cursor ride on the screen, so they zoom with it */
+        #l01-split-screen .box { position: absolute; overflow: visible; }
+        #l01-split-screen .box rect { fill: none; stroke: var(--accent, #f9b336); stroke-width: 5; stroke-dasharray: 1; }
+        #l01-split-screen .cursor { position: absolute; left: 0; top: 0; width: 38px; height: 41px; overflow: visible; }
+        #l01-split-screen .ring { position: absolute; box-sizing: border-box; }
+        #l01-split-screen .presenter { position: relative; width: 100%; height: 100%; background: #1d2024; }
+        #l01-split-screen .standin { position: absolute; inset: 0; background: #1d2024; }
+        #l01-split-screen .standin svg { position: absolute; left: 50%; bottom: 0; height: 84%; width: auto; transform: translateX(-50%); }
+        #l01-split-screen .cam { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        /* each size gets its own arrangement */
+        #l01-split-screen[data-fmt="16x9"] .screen { left: 56px; top: 56px; width: 1300px; height: 968px; }
+        #l01-split-screen[data-fmt="16x9"] .ring { left: 1388px; top: 56px; width: 476px; height: 968px; }
+        #l01-split-screen[data-fmt="4x5"] .screen { left: 40px; top: 40px; width: 1000px; height: 700px; }
+        #l01-split-screen[data-fmt="4x5"] .ring { left: 40px; top: 764px; width: 1000px; height: 546px; }
+        #l01-split-screen[data-fmt="9x16"] .screen { left: 40px; top: 160px; width: 1000px; height: 760px; }
+        #l01-split-screen[data-fmt="9x16"] .ring { left: 40px; top: 944px; width: 1000px; height: 936px; }
+        #l01-split-screen[data-fmt="1x1"] .screen { left: 40px; top: 40px; width: 1000px; height: 1000px; }
+        #l01-split-screen[data-fmt="1x1"] .ring {
+          left: 700px;
+          top: 620px;
+          width: 316px;
+          height: 396px;
+          padding: 8px;
+          background: var(--card, #f6f3ea);
+          border-radius: calc(var(--radius, 16px) + 8px);
+        }
+      </style>
+
+      <div id="l01-split-screen" data-composition-id="l01-split-screen">
+        <div class="screen win">
+          <div class="bar"><div class="dots"><i></i><i></i><i></i></div><div class="address"></div></div>
+          <div class="view">
+            <div class="zoom">
+              <div class="site">
+                <div class="nav"><i class="logo"></i><i class="name"></i><span class="links"><i></i><i></i><i></i></span><i class="navcta"></i></div>
+                <div class="hero"><i class="h a"></i><i class="h b"></i><i class="p a"></i><i class="p b"></i><span class="ctas"><i class="cta"></i><i class="ghost"></i></span></div>
+                <div class="cards"><i></i><i></i><i></i></div>
+              </div>
+              <img class="shot" data-var-src="screenImage" alt="" />
+              <video id="l01-split-screen-rec" class="clip rec" data-var-src="screenVideo" data-start="0" data-track-index="0" muted playsinline></video>
+              <svg class="cursor" viewBox="0 0 30 32" aria-hidden="true"><path d="M2 2 L2 25 L8 19 L12.5 28.5 L17 26.5 L12.5 17.5 L21 17.5 Z" fill="#1E1E1E" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round" /></svg>
+            </div>
+          </div>
+        </div>
+        <div class="ring">
+          <div class="presenter win">
+            <div class="standin">
+              <svg viewBox="0 0 1000 1100" aria-hidden="true"><path fill="#33373E" d="M500 40C590 40 665 110 668 230C671 330 640 410 585 452L583 540C700 560 820 600 880 660C935 715 965 800 975 1100L25 1100C35 800 65 715 120 660C180 600 300 560 417 540L415 452C360 410 329 330 332 230C335 110 410 40 500 40Z" /></svg>
+            </div>
+            <video id="l01-split-screen-cam" class="clip cam" data-var-src="presenterVideo" data-start="0" data-track-index="1" muted playsinline></video>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const ID = "l01-split-screen";
+          const root = document.getElementById(ID);
+          const vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null || vars[k] === "" ? d : vars[k]);
+          // the frame's size: the clip's own data-width and data-height in a video (its layout isn't settled when this
+          // runs), or the page's in the library's previews
+          const host = root.parentElement && root.parentElement.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || root.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || root.offsetHeight || 1080;
+          const r = W / H;
+          root.dataset.fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
+
+          const EASE = v("ease", "power3.inOut");
+          const D = Math.max(2, Number(v("duration", 7)));
+          const q = (s) => root.querySelector(s);
+          const screen = q(".screen");
+          const ring = q(".ring");
+          const view = q(".view");
+          const zoom = q(".zoom");
+          const cursor = q(".cursor");
+          q(".address").textContent = String(v("address", "example.com"));
+
+          // real media when it's given (as a variable, or as the src of a copy); otherwise the stand-ins (a plain
+          // website, a silhouette) show through
+          const given = (k, sel) => Boolean(v(k, "") || q(sel).getAttribute("src"));
+          const hasRec = given("screenVideo", ".rec");
+          const hasShot = !hasRec && given("screenImage", ".shot");
+          const hasCam = given("presenterVideo", ".cam");
+          q(".rec").style.display = hasRec ? "" : "none";
+          q(".shot").style.display = hasShot ? "" : "none";
+          if (hasShot && !q(".shot").getAttribute("src")) q(".shot").setAttribute("src", v("screenImage", ""));
+          q(".site").style.display = hasRec || hasShot ? "none" : "";
+          // a brand with light text (on a dark background) can't use it on a white screen: the stand-in website keeps the
+          // default dark text, and takes only the accent
+          function lightText() {
+            const ink = (typeof vars.ink === "string" && vars.ink) || getComputedStyle(root).getPropertyValue("--ink").trim();
+            const pen = document.createElement("canvas").getContext("2d");
+            pen.fillStyle = "#1e1e1e";
+            pen.fillStyle = ink || "#1e1e1e";
+            const rgb = (/^#(\w\w)(\w\w)(\w\w)$/.exec(pen.fillStyle) || []).slice(1).map((h) => parseInt(h, 16) / 255);
+            const [r, g, b] = rgb.map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+            return rgb.length === 3 && 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.4;
+          }
+          if (lightText()) q(".site").classList.add("light");
+          q(".cam").style.display = hasCam ? "" : "none";
+          q(".standin").style.display = hasCam ? "none" : "";
+
+          const VW = view.offsetWidth;
+          const VH = view.offsetHeight;
+          // a position inside the screen, without the transforms the page around it may have
+          const within = (el) => {
+            let x = 0;
+            let y = 0;
+            for (let n = el; n && n !== view; n = n.offsetParent) {
+              x += n.offsetLeft;
+              y += n.offsetTop;
+            }
+            return { x, y, w: el.offsetWidth, h: el.offsetHeight };
+          };
+
+          // highlights: given as fractions of the screen; on the stand-in, its call-to-action button
+          let cues = [];
+          try {
+            cues = JSON.parse(v("cues", "[]"));
+          } catch (err) {}
+          if (!Array.isArray(cues)) cues = [];
+          if (!cues.length && !hasRec && !hasShot) {
+            const b = within(q(".site .cta"));
+            cues = [{ at: 1.4, x: b.x / VW, y: b.y / VH, w: b.w / VW, h: b.h / VH, zoom: 1.5 }];
+          }
+          cues = cues
+            .filter((c) => c && [c.at, c.x, c.y, c.w, c.h].every((n) => Number.isFinite(Number(n))))
+            .map((c) => ({ ...c, at: Number(c.at), zoom: Number(c.zoom) > 1 ? Math.min(2, Number(c.zoom)) : 1 }))
+            .sort((a, b) => a.at - b.at);
+
+          const radius = parseFloat(getComputedStyle(screen).borderTopLeftRadius) || 16;
+          const ringRadius = parseFloat(getComputedStyle(ring).borderTopLeftRadius) || radius;
+          // a window opens out from the point nearest the centre of the frame
+          const shut = (el, rad) => {
+            const x = Math.min(Math.max(W / 2, el.offsetLeft), el.offsetLeft + el.offsetWidth) - el.offsetLeft;
+            const y = Math.min(Math.max(H / 2, el.offsetTop), el.offsetTop + el.offsetHeight) - el.offsetTop;
+            return `inset(${y}px ${el.offsetWidth - x}px ${el.offsetHeight - y}px ${x}px round ${rad}px)`;
+          };
+          const open = (rad) => `inset(0px 0px 0px 0px round ${rad}px)`;
+
+          const tl = gsap.timeline({ paused: true });
+          tl.fromTo(screen, { clipPath: shut(screen, radius) }, { clipPath: open(radius), duration: 0.45, ease: EASE }, 0.1);
+          tl.fromTo(ring, { clipPath: shut(ring, ringRadius) }, { clipPath: open(ringRadius), duration: 0.45, ease: EASE }, 0.1);
+
+          gsap.set(cursor, { opacity: 0, x: VW * 0.62, y: VH * 0.86 });
+          const outAt = D - 0.85;
+          cues.forEach((c, i) => {
+            const until = Math.min(c.until !== undefined ? Number(c.until) : cues[i + 1] ? cues[i + 1].at - 0.1 : outAt, outAt);
+            if (!(c.at < until)) return;
+            const bx = c.x * VW - 12;
+            const by = c.y * VH - 12;
+            const bw = c.w * VW + 24;
+            const bh = c.h * VH + 24;
+            const box = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            box.setAttribute("class", "box");
+            box.setAttribute("width", bw);
+            box.setAttribute("height", bh);
+            box.style.left = `${bx}px`;
+            box.style.top = `${by}px`;
+            box.innerHTML = `<rect x="2.5" y="2.5" width="${bw - 5}" height="${bh - 5}" rx="14" pathLength="1" />`;
+            zoom.insertBefore(box, cursor);
+            // the cursor's tip glides to the lower right of what's pointed out, and the highlight draws round it
+            tl.to(cursor, { opacity: 1, duration: 0.2, ease: "none" }, c.at - 0.2);
+            tl.to(cursor, { x: (c.x + c.w * 0.72) * VW - 2.5, y: (c.y + c.h * 0.7) * VH - 2.5, duration: 0.4, ease: EASE }, c.at);
+            tl.fromTo(box.firstChild, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.4, ease: EASE }, c.at);
+            if (c.zoom > 1 && until - c.at > 2) {
+              tl.set(zoom, { transformOrigin: `${(c.x + c.w / 2) * VW}px ${(c.y + c.h / 2) * VH}px` }, c.at);
+              tl.to(zoom, { scale: c.zoom, duration: 0.6, ease: EASE }, c.at + 0.6);
+              tl.to(zoom, { scale: 1, duration: 0.6, ease: EASE }, until - 0.7);
+            }
+            tl.to(box, { opacity: 0, duration: 0.2, ease: "none" }, until);
+          });
+          tl.to(cursor, { opacity: 0, duration: 0.2, ease: "none" }, outAt);
+          tl.to(screen, { clipPath: shut(screen, radius), duration: 0.45, ease: EASE }, D - 0.65);
+          tl.to(ring, { clipPath: shut(ring, ringRadius), duration: 0.45, ease: EASE }, D - 0.65);
+          tl.set({}, {}, D);
+          window.__timelines[ID] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

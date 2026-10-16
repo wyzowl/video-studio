@@ -1,0 +1,101 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"pointX","type":"number","label":"Where the circle opens, across (px from the left)","default":960,"min":0,"step":1,"unit":"px"},
+    {"id":"pointY","type":"number","label":"Where the circle opens, down (px from the top)","default":307,"min":0,"step":1,"unit":"px"},
+    {"id":"duration","type":"number","label":"Length (the cut is at 0.42 s)","default":0.65,"min":0.65,"max":0.65,"step":0.05,"unit":"s"},
+    {"id":"accent","type":"color","label":"Ring","default":"#F9B336"}
+  ]'
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>X19 Iris from a point · Wyzowl Video Studio</title>
+    <!-- For the studio's library; HyperFrames ignores everything outside the template. -->
+    <script type="application/json" id="studio-item">
+      {
+        "code": "X19",
+        "name": "Iris from a point",
+        "category": "transitions",
+        "free": true,
+        "kind": "both",
+        "cut": 0.42,
+        "length": 0.65,
+        "summary": "A circle opens from the thing that matters, a face, a button or a number, showing scene B inside it, led by a thin accent ring.",
+        "use": "When the next scene grows out of something in this one: from the presenter's face to what they're talking about, or from a button to the screen it opens. Pick the point on the cut.",
+        "motion": "A circle opens from the point that matters, showing scene B inside it, led by a thin accent ring (0.50 s, easing in and out). The cut is the moment the circle covers the frame; the ring carries on out past the edges. About 0.65 s in all. Sound: a soft rising tone.",
+        "preview": { "point": "face" }
+      }
+    </script>
+  </head>
+  <body>
+    <template>
+      <style>
+        #x19-iris-from-a-point {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+        }
+        #x19-iris-from-a-point .ring {
+          position: absolute;
+          box-sizing: border-box;
+          border-style: solid;
+          border-radius: 50%;
+        }
+      </style>
+
+      <!-- Goes in index.html after both scenes, so the ring sits above them. -->
+      <div id="x19-iris-from-a-point" data-transition-id="x19-iris-from-a-point"></div>
+
+      <script>
+        // X19 Iris from a point, on the main timeline: StudioTransitions["x19-iris-from-a-point"](tl, { at, a, b, vars }).
+        // at: when it starts (s). a, b: scene A and scene B (elements or selectors); B comes after A in the page, so it
+        // draws on top. vars: pointX and pointY (px, where the circle opens) and accent (the ring's colour).
+        (window.StudioTransitions = window.StudioTransitions || {})["x19-iris-from-a-point"] = function (tl, o) {
+          const ID = "x19-iris-from-a-point";
+          const layer = document.getElementById(ID);
+          const pick = (x) => (typeof x === "string" ? document.querySelector(x) : x);
+          const B = pick(o.b);
+          if (!layer || !B) return;
+          const vars = o.vars || {};
+          const v = (k, d) => (vars[k] === undefined || vars[k] === null || vars[k] === "" ? d : vars[k]);
+          // the frame's size: the video's data-width and data-height, or the page's in the library's previews
+          const host = layer.closest("[data-width][data-height]");
+          const W = Number(host && host.getAttribute("data-width")) || layer.offsetWidth || 1920;
+          const H = Number(host && host.getAttribute("data-height")) || layer.offsetHeight || 1080;
+          const T = Number(o.at) || 0;
+          const px = Math.max(0, Math.min(W, Number(v("pointX", W / 2))));
+          const py = Math.max(0, Math.min(H, Number(v("pointY", H / 2))));
+          // far enough to cover the frame from the point: the distance to its farthest corner
+          const far = Math.max(Math.hypot(px, py), Math.hypot(W - px, py), Math.hypot(px, H - py), Math.hypot(W - px, H - py));
+          const thick = Math.max(4, Math.round(W / 320));
+          const lead = thick * 2;
+
+          const ring = document.createElement("div");
+          ring.className = "ring";
+          ring.style.borderColor = v("accent", "#F9B336");
+          ring.style.borderWidth = `${thick}px`;
+          ring.style.opacity = "0";
+          layer.appendChild(ring);
+
+          const iris = { r: 0 };
+          const apply = () => {
+            B.style.clipPath = `circle(${iris.r.toFixed(1)}px at ${px}px ${py}px)`;
+            const d = 2 * (iris.r + lead);
+            ring.style.left = `${px - d / 2}px`;
+            ring.style.top = `${py - d / 2}px`;
+            ring.style.width = `${d}px`;
+            ring.style.height = `${d}px`;
+          };
+          tl.set(B, { clipPath: `circle(0px at ${px}px ${py}px)` }, T);
+          tl.set(ring, { opacity: 1 }, T);
+          // the radius passes the farthest corner at 0.42 s, the cut, and carries on to 1.35 times it by 0.65 s
+          tl.fromTo(iris, { r: 0 }, { r: far * 1.35, duration: 0.65, ease: "power2.inOut", onUpdate: apply }, T);
+          tl.to(ring, { opacity: 0, duration: 0.15, ease: "none" }, T + 0.5);
+          tl.set(B, { clipPath: "none" }, T + 0.65);
+        };
+      </script>
+    </template>
+  </body>
+</html>
