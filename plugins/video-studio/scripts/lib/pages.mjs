@@ -820,20 +820,22 @@ export function projectPage(studio, slug) {
   <div class="container">
     <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/#videos">Videos</a> / ${esc(video.title)}</p>
     ${eyebrow(tc(0), "Video")}
-    <div class="split">
-      <div class="stack">
-        <h1>${esc(video.title)}</h1>
-        ${lede(intro)}
-        ${stagesNav(studio, slug)}
+    <div class="hero_head">
+      <h1>${esc(video.title)}</h1>
+      <div class="split split--top">
+        <div class="stack">
+          ${lede(intro)}
+          ${stagesNav(studio, slug)}
+        </div>
+        <dl class="titleblock">
+          ${cell("Brand", brand?.name || video.brand || "")}
+          ${cell("Size", `${video.size.label} · ${video.size.px}`)}
+          ${cell("Length", video.length || "")}
+          ${cell("For", video.destination || "")}
+          ${cell("Voiceover", VOICEOVER[brief.voiceover] || brief.voiceover || "")}
+          ${cell("Created", formatDate(video.created))}
+        </dl>
       </div>
-      <dl class="titleblock">
-        ${cell("Brand", brand?.name || video.brand || "")}
-        ${cell("Size", `${video.size.label} · ${video.size.px}`)}
-        ${cell("Length", video.length || "")}
-        ${cell("For", video.destination || "")}
-        ${cell("Voiceover", VOICEOVER[brief.voiceover] || brief.voiceover || "")}
-        ${cell("Created", formatDate(video.created))}
-      </dl>
     </div>
     ${nowPanel(video)}
   </div>
@@ -890,21 +892,23 @@ export function scriptPage(studio, slug, version) {
   <div class="container">
     <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/#videos">Videos</a> / <a href="/videos/${enc(slug)}/">${esc(video.title)}</a> / Script v${v}</p>
     ${eyebrow(`V${v}`, "Script")}
-    <div class="split">
-      <div class="stack">
-        <h1>${esc(sc.title || video.title)}</h1>
-        ${lede(sc.summary)}
-        ${stagesNav(studio, slug, `script-${v}`)}
-        ${share({ href: `/videos/${enc(slug)}/script/v${v}/download`, label: "Download PDF", pdf: true, note: latest ? SHARE_NOTE : "" })}
+    <div class="hero_head">
+      <h1>${esc(sc.title || video.title)}</h1>
+      <div class="split split--top">
+        <div class="stack">
+          ${lede(sc.summary)}
+          ${stagesNav(studio, slug, `script-${v}`)}
+          ${share({ href: `/videos/${enc(slug)}/script/v${v}/download`, label: "Download PDF", pdf: true, note: latest ? SHARE_NOTE : "" })}
+        </div>
+        <dl class="titleblock">
+          ${cell("Brand", brand?.name || video.brand || "")}
+          ${cell("Size", `${size.label} · ${size.px}`)}
+          ${cell("Length", length ? `About ${timecode(length.seconds)} (${length.words} words)` : video.length)}
+          ${cell("Rows", String(rows.length))}
+          ${cell("Version", `v${v}`)}
+          ${cell("Created", sc.created ? formatDate(Date.parse(sc.created)) : "")}
+        </dl>
       </div>
-      <dl class="titleblock">
-        ${cell("Brand", brand?.name || video.brand || "")}
-        ${cell("Size", `${size.label} · ${size.px}`)}
-        ${cell("Length", length ? `About ${timecode(length.seconds)} (${length.words} words)` : video.length)}
-        ${cell("Rows", String(rows.length))}
-        ${cell("Version", `v${v}`)}
-        ${cell("Created", sc.created ? formatDate(Date.parse(sc.created)) : "")}
-      </dl>
     </div>
     ${
       latest
@@ -1074,26 +1078,28 @@ export function storyboardPage(studio, slug, version) {
   <div class="container">
     <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/#videos">Videos</a> / <a href="/videos/${enc(slug)}/">${esc(video.title)}</a> / Storyboard v${v}</p>
     ${eyebrow(`V${v}`, "Storyboard")}
-    <div class="split">
-      <div class="stack">
-        <h1>${esc(sb.title || video.title)}</h1>
-        ${lede(sb.summary)}
-        ${stagesNav(studio, slug, `storyboard-${v}`)}
-        ${share({
-          href: `${base}download`,
-          label: "Download PDF",
-          pdf: true,
-          note: latest ? `To share outside the studio. Put feedback that comes back on the scenes it's about (choose Feedback), or in <a href="#n-general">Anything else?</a>, then save.` : "",
-        })}
+    <div class="hero_head">
+      <h1>${esc(sb.title || video.title)}</h1>
+      <div class="split split--top">
+        <div class="stack">
+          ${lede(sb.summary)}
+          ${stagesNav(studio, slug, `storyboard-${v}`)}
+          ${share({
+            href: `${base}download`,
+            label: "Download PDF",
+            pdf: true,
+            note: latest ? `To share outside the studio. Put feedback that comes back on the scenes it's about (choose Feedback), or in <a href="#n-general">Anything else?</a>, then save.` : "",
+          })}
+        </div>
+        <dl class="titleblock">
+          ${cell("Brand", brand?.name || video.brand || "")}
+          ${cell("Size", `${size.label} · ${size.px}`)}
+          ${cell("Length", total ? `${timecode(total)} (${(+total).toFixed(1)} s)` : video.length)}
+          ${cell("Scenes", String(scenes.length))}
+          ${cell("Version", `v${v}`)}
+          ${cell("Created", sb.created ? formatDate(Date.parse(sb.created)) : "")}
+        </dl>
       </div>
-      <dl class="titleblock">
-        ${cell("Brand", brand?.name || video.brand || "")}
-        ${cell("Size", `${size.label} · ${size.px}`)}
-        ${cell("Length", total ? `${timecode(total)} (${(+total).toFixed(1)} s)` : video.length)}
-        ${cell("Scenes", String(scenes.length))}
-        ${cell("Version", `v${v}`)}
-        ${cell("Created", sb.created ? formatDate(Date.parse(sb.created)) : "")}
-      </dl>
     </div>
     ${
       latest
@@ -1156,21 +1162,23 @@ export function reviewPage(studio, slug, version) {
   <div class="container">
     <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/#videos">Videos</a> / <a href="/videos/${enc(slug)}/">${esc(video.title)}</a> / Video v${v}</p>
     ${eyebrow(`V${v}`, "Video review")}
-    <div class="split">
-      <div class="stack">
-        <h1>${esc(rv.title || video.title)}</h1>
-        ${lede(rv.summary)}
-        ${stagesNav(studio, slug, `review-${v}`)}
-        ${bytes ? share({ href: `/videos/${enc(slug)}/review/v${v}/download`, label: `Download video (${fileSize(bytes)})`, note: latest ? SHARE_NOTE : "" }) : ""}
+    <div class="hero_head">
+      <h1>${esc(rv.title || video.title)}</h1>
+      <div class="split split--top">
+        <div class="stack">
+          ${lede(rv.summary)}
+          ${stagesNav(studio, slug, `review-${v}`)}
+          ${bytes ? share({ href: `/videos/${enc(slug)}/review/v${v}/download`, label: `Download video (${fileSize(bytes)})`, note: latest ? SHARE_NOTE : "" }) : ""}
+        </div>
+        <dl class="titleblock">
+          ${cell("Brand", brand?.name || video.brand || "")}
+          ${cell("Size", `${size.label} · ${size.px}`)}
+          ${cell("Length", rv.duration ? `${timecode(rv.duration)} (${(+rv.duration).toFixed(1)} s)` : video.length)}
+          ${cell("Video", `v${v}`)}
+          ${cell("Shared", rv.created ? formatDate(Date.parse(rv.created)) : "")}
+          ${cell("File", rv.video ? rv.video.split("/").pop() : "")}
+        </dl>
       </div>
-      <dl class="titleblock">
-        ${cell("Brand", brand?.name || video.brand || "")}
-        ${cell("Size", `${size.label} · ${size.px}`)}
-        ${cell("Length", rv.duration ? `${timecode(rv.duration)} (${(+rv.duration).toFixed(1)} s)` : video.length)}
-        ${cell("Video", `v${v}`)}
-        ${cell("Shared", rv.created ? formatDate(Date.parse(rv.created)) : "")}
-        ${cell("File", rv.video ? rv.video.split("/").pop() : "")}
-      </dl>
     </div>
     ${
       latest

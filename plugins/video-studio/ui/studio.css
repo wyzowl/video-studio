@@ -284,6 +284,16 @@ p {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: end;
   }
+  /* a video's pages (its overview and reviews): the title across the top, then the description and the facts side by
+     side, from the top */
+  .split.split--top {
+    align-items: start;
+  }
+}
+.hero_head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 /* rails draw down on first load; everything rests complete without motion */
