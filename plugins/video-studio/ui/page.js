@@ -7,7 +7,23 @@
 // - "Download PDF" waits while the studio makes the PDF, then downloads it, and offers the copy it keeps in Finder.
 // - The library: a brand, size or type reloads the page with it; previews play only while they're on screen; "Play
 //   from the start" restarts them; "Copy" buttons copy their text.
+// - A library item named in a script or storyboard shows itself playing while its chip is hovered or focused.
+// - The masthead's height (and a storyboard's scene strip's) keeps jumps and focus clear of them.
 (() => {
+  // ───────── the sticky bars ─────────
+  // The masthead stays at the top, and a storyboard's scene strip under it: studio.css keeps jumps, focus and the strip
+  // itself clear of them by their heights.
+  const masthead = document.querySelector(".masthead");
+  const strip = document.querySelector(".scenestrip");
+  const measure = () => {
+    const root = document.documentElement.style;
+    if (masthead) root.setProperty("--masthead-h", `${masthead.offsetHeight}px`);
+    if (strip) root.setProperty("--strip-h", `${strip.offsetHeight}px`);
+  };
+  measure();
+  if ("ResizeObserver" in window) [masthead, strip].forEach((el) => el && new ResizeObserver(measure).observe(el));
+  else addEventListener("resize", measure);
+
   // ───────── read more ─────────
   document.addEventListener("click", (event) => {
     const button = event.target.closest(".readmore");
@@ -283,4 +299,129 @@
       setTimeout(() => (button.textContent = label), 2000);
     }),
   );
+
+  // ───────── a library item, on its chip ─────────
+  // A chip ("W03 Big number") shows the item playing in the video's brand and size while it's hovered or focused, with
+  // what the item is for: above the chip, or below it when there's no room. Moving away or Esc closes it; the pointer
+  // can move onto it without it closing. On a touch screen the first tap shows it and a second opens the item.
+  const chips = document.querySelectorAll("a.itemchip[data-pop]");
+  if (chips.length) {
+    const pop = document.createElement("div");
+    pop.className = "itempop";
+    pop.id = "itempop";
+    pop.setAttribute("role", "tooltip");
+    pop.hidden = true;
+    pop.innerHTML = `<div class="itempop_frame"><iframe title="Preview" tabindex="-1" aria-hidden="true"></iframe></div><div class="itempop_text"><p class="itempop_name"><b></b><span></span></p><p class="itempop_summary"></p></div>`;
+    document.body.append(pop);
+    const box = pop.querySelector(".itempop_frame");
+    const frame = pop.querySelector("iframe");
+    const summary = pop.querySelector(".itempop_summary");
+    const still = matchMedia("(prefers-reduced-motion: reduce)");
+    const chipOf = (el) => (el instanceof Element ? el.closest("a.itemchip[data-pop]") : null);
+    let chip = null;
+    let pointer = "mouse";
+    let showing = 0;
+    let hiding = 0;
+    frame.addEventListener("load", () => box.classList.add("is-ready"));
+    // a click on it opens the item, as the chip does
+    pop.addEventListener("click", () => chip && window.open(chip.href, "_blank", "noopener"));
+
+    // above the chip, centred on it, clear of the masthead (and the scene strip); below it when there's no room
+    const place = () => {
+      if (!chip) return;
+      const r = chip.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > innerHeight) return hide(true);
+      const gap = 8;
+      const ceiling = Math.max(0, ...[masthead, strip].filter(Boolean).map((el) => el.getBoundingClientRect().bottom)) + gap;
+      const w = pop.offsetWidth;
+      const h = pop.offsetHeight;
+      let top = r.top - gap - h;
+      pop.dataset.side = "above";
+      if (top < ceiling) {
+        top = Math.max(ceiling, Math.min(r.bottom + gap, innerHeight - h - gap));
+        pop.dataset.side = "below";
+      }
+      pop.style.top = `${Math.round(top)}px`;
+      pop.style.left = `${Math.round(Math.min(Math.max(gap, r.left + r.width / 2 - w / 2), innerWidth - w - gap))}px`;
+    };
+
+    const show = (target) => {
+      clearTimeout(showing);
+      clearTimeout(hiding);
+      if (target === chip && !pop.hidden) return;
+      chip?.removeAttribute("aria-describedby");
+      chip = target;
+      const d = target.dataset;
+      const ratio = Number(d.ratio) || 16 / 9;
+      box.style.setProperty("--ratio", String(ratio));
+      box.style.setProperty("--ar", String(ratio));
+      pop.querySelector(".itempop_name b").textContent = d.code || "";
+      pop.querySelector(".itempop_name span").textContent = d.name || "";
+      summary.textContent = d.summary || "";
+      summary.hidden = !d.summary;
+      // a new item loads; the same one again plays from the start
+      if (frame.getAttribute("src") !== d.pop) {
+        box.classList.remove("is-ready");
+        frame.setAttribute("src", d.pop);
+      } else if (!still.matches) tell(frame, "replay");
+      pop.hidden = false;
+      place(); // (its layout, before the class, lets it fade in)
+      pop.classList.add("is-open");
+      target.setAttribute("aria-describedby", pop.id);
+    };
+
+    function hide(now = false) {
+      clearTimeout(showing);
+      clearTimeout(hiding);
+      const close = () => {
+        if (!chip) return;
+        chip.removeAttribute("aria-describedby");
+        chip = null;
+        pop.classList.remove("is-open");
+        tell(frame, "pause");
+        setTimeout(() => !chip && (pop.hidden = true), 160);
+      };
+      if (now) close();
+      else hiding = setTimeout(close, 120);
+    }
+
+    addEventListener("pointerdown", (e) => (pointer = e.pointerType || "mouse"), { capture: true, passive: true });
+    document.addEventListener("pointerover", (e) => {
+      pointer = e.pointerType || "mouse";
+      if (pointer === "touch") return;
+      const target = chipOf(e.target);
+      if (target) {
+        clearTimeout(hiding);
+        if (target === chip) return;
+        clearTimeout(showing);
+        // a moment's pause first, so passing over a chip doesn't flash it; straight away when one is already open
+        showing = setTimeout(() => show(target), chip ? 0 : 140);
+      } else if (pop.contains(e.target)) clearTimeout(hiding);
+    });
+    document.addEventListener("pointerout", (e) => {
+      if ((e.pointerType || "mouse") === "touch") return;
+      const from = chipOf(e.target) || (pop.contains(e.target) ? pop : null);
+      const to = e.relatedTarget;
+      if (!from || (to instanceof Node && (from.contains(to) || pop.contains(to) || chipOf(to) === chip))) return;
+      clearTimeout(showing);
+      if (chip) hide();
+    });
+    document.addEventListener("focusin", (e) => {
+      const target = chipOf(e.target);
+      if (target && pointer !== "touch") show(target);
+    });
+    document.addEventListener("focusout", (e) => {
+      if (chip && chipOf(e.target) === chip && !chip.matches(":hover")) hide();
+    });
+    document.addEventListener("click", (e) => {
+      const target = chipOf(e.target);
+      if (target && pointer === "touch" && target !== chip) {
+        e.preventDefault();
+        show(target);
+      } else if (chip && !target && !pop.contains(e.target)) hide(true);
+    });
+    document.addEventListener("keydown", (e) => e.key === "Escape" && chip && hide(true));
+    addEventListener("scroll", () => chip && requestAnimationFrame(place), { passive: true });
+    addEventListener("resize", () => chip && place());
+  }
 })();

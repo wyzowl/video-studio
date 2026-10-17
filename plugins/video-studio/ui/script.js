@@ -1,16 +1,20 @@
 // Script review: a note on any cell (a row's voiceover or text on screen, or its action on screen), general notes,
-// then the decision: Approve script, unless there are notes (they switch it to Changes needed). Saving posts the review
-// to the studio server, which writes feedback.json beside the script, then opens the video's overview.
+// then the decision: Approve script, unless there are notes (they switch it to Changes needed). The save button says
+// which ("Approve and save" or "Send changes"), and "Next note" steps through the cells with notes. Saving posts the
+// review to the studio server, which writes feedback.json beside the script, then opens the video's overview.
 (() => {
   const state = JSON.parse(document.getElementById("script-state").textContent);
   const general = document.querySelector("[data-general]");
   const saveBtn = document.querySelector("[data-save]");
   const message = document.querySelector("[data-message]");
   const countEl = document.querySelector('[data-count="notes"]');
+  const countWord = document.querySelector("[data-count-word]");
   const decisionLabel = document.querySelector("[data-decision-label]");
   const hint = document.querySelector("[data-decision-hint]");
   const radios = [...document.querySelectorAll('input[name="decision"]')];
+  const jump = document.querySelector("[data-next-note]");
   const LABEL = { approved: "Approve", changes: "Changes needed" };
+  const SAVE = { approved: "Approve and save", changes: "Send changes" };
   const HINT = {
     approved: "Claude will make the storyboard. Any notes are treated as small last tweaks.",
     changes: "Claude will make the changes in your notes and share a new version of the script.",
@@ -53,6 +57,8 @@
   function count() {
     const n = [...notes.values()].filter((t) => t.trim()).length;
     countEl.textContent = String(n);
+    countWord.textContent = n === 1 ? "note" : "notes";
+    if (jump) jump.hidden = n === 0;
     const any = n + (general?.value.trim() ? 1 : 0);
     if (following && noted === 0 && any > 0) setDecision("changes");
     if (following && noted > 0 && any === 0) setDecision("approved");
@@ -115,6 +121,7 @@
     const d = decision();
     decisionLabel.textContent = LABEL[d];
     hint.textContent = HINT[d];
+    if (state.latest && saveBtn) saveBtn.textContent = SAVE[d];
   }
 
   // restore what was saved
@@ -134,6 +141,25 @@
   count();
   showDecision();
   following = true;
+
+  // "Next note": to the next cell with a note, in the middle of the window, lit for a moment. After a jump it goes on
+  // from that one; once the page has been scrolled by hand, from the first note below the middle of the window.
+  let lastJump = null;
+  const byHand = () => (lastJump = null);
+  addEventListener("wheel", byHand, { passive: true });
+  addEventListener("touchmove", byHand, { passive: true });
+  jump?.addEventListener("click", () => {
+    const cells = [...document.querySelectorAll(".scriptsheet_cell.has-note")];
+    if (!cells.length) return;
+    const at = cells.indexOf(lastJump);
+    const next = at >= 0 ? cells[(at + 1) % cells.length] : cells.find((c) => c.getBoundingClientRect().top > innerHeight * 0.55) || cells[0];
+    lastJump = next;
+    next.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    next.classList.remove("is-flash");
+    void next.offsetWidth; // restarts the light if it's still on
+    next.classList.add("is-flash");
+    setTimeout(() => next.classList.remove("is-flash"), 1500);
+  });
 
   if (!state.latest) {
     general && (general.disabled = true);
@@ -172,7 +198,6 @@
       return;
     }
     saveBtn.disabled = true;
-    const label = saveBtn.textContent;
     saveBtn.textContent = "Saving…";
     try {
       const res = await fetch("/api/script", {
@@ -209,7 +234,7 @@
       say(`Couldn't save: ${err.message}. Is the studio server still running? In Claude Code, run /video-studio:dashboard and try again.`, true);
     } finally {
       saveBtn.disabled = false;
-      saveBtn.textContent = label;
+      showDecision();
     }
   });
 })();

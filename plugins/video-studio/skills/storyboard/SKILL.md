@@ -7,8 +7,9 @@ description: Make the scene-by-scene storyboard that a Wyzowl Video Studio user 
 
 The storyboard is the plan the user signs off before anything is built: every scene with 1–5 frames, its timing and
 words, and what happens. The studio's review page shows it; every scene starts **Approved**, the user switches any
-that needs changing to **Feedback** (with a note) and presses **Save feedback**, which writes `feedback.json` beside the storyboard. Nothing is built until
-every scene is approved.
+that needs changing to **Feedback** (with a note) and saves (the button says **Approve and save**, or **Send
+feedback** once there's feedback), which writes `feedback.json` beside the storyboard. Nothing is built until every
+scene is approved.
 
 `PLUGIN` is this plugin's folder ("Plugin files" in the session-start note).
 
@@ -64,8 +65,8 @@ videos/<project>/storyboard/v<N>/
    its address, so the frames must be rendered and checked first.
 6. **Share it:** show the page `/videos/<project>/storyboard/v1/` (see "Showing a page" in the production skill):
    beside the chat, with its card, then wait for the review in the background. Say in one sentence how to review:
-   every scene starts Approved, so switch any that needs changing to Feedback with a note, then press Save feedback,
-   and you'll take it from there. End your turn.
+   every scene starts Approved, so switch any that needs changing to Feedback with a note, then press Send feedback
+   (Approve and save, if every scene is right), and you'll take it from there. End your turn.
 
 ## From footage
 

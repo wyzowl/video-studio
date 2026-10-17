@@ -69,8 +69,9 @@ videos/<project>/script/v<N>/
    show it.
 10. **Share it** (production skill, "Showing a page"): beside the chat, with its card and link, then wait for the
     review in the background. Say in one sentence how to review: read it, click any cell to leave a note (that
-    switches the decision to Changes needed), then press Save review. Mention any library items you've suggested: each
-    is a link on the page to see it in the video's brand. End your turn.
+    switches the decision to Changes needed), then press Send changes (Approve and save, with no notes). Mention any
+    library items you've suggested: hovering one on the page shows it playing in the video's brand, and a click opens
+    it. End your turn.
 
 ## Library items
 

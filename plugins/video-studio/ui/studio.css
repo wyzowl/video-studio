@@ -84,6 +84,12 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* jumps and focus land clear of the sticky masthead, a storyboard's scene strip and the save bar (ui/page.js
+     measures the first two) */
+  scroll-padding-top: calc(var(--masthead-h, 3.6rem) + var(--strip-h, 0px) + var(--space-2));
+}
+html:has(.reviewbar) {
+  scroll-padding-bottom: 7.5rem;
 }
 body {
   margin: 0;
@@ -161,6 +167,10 @@ p {
   font-size: var(--text-main);
   color: var(--text-2);
   max-width: 44rem;
+}
+/* a video's description on its pages: a sentence or two */
+.lede--short {
+  font-size: var(--text-small);
 }
 .mono {
   font-family: var(--font-mono);
@@ -294,6 +304,60 @@ p {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+/* under a review page's hero: what changed and how to review, side by side, each closed until it's opened */
+.hero_notes {
+  display: grid;
+  gap: var(--space-4);
+  align-items: start;
+}
+@media (min-width: 52rem) {
+  .hero_notes--two {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+/* ───────── a fold: a box that's closed until it's opened (a <details>) ───────── */
+.fold {
+  display: block;
+}
+.fold > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  list-style: none;
+  cursor: pointer;
+}
+.fold > summary::-webkit-details-marker {
+  display: none;
+}
+.fold > summary::after {
+  content: "Open ↓";
+  content: "Open ↓" / "";
+  flex: none;
+  padding: 0.3rem 0.5rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  transition: border-color var(--hover) var(--ease), color var(--hover) var(--ease);
+}
+.fold[open] > summary::after {
+  content: "Close ↑";
+  content: "Close ↑" / "";
+}
+.fold > summary:hover::after {
+  border-color: var(--yellow);
+  color: var(--text);
+}
+.fold[open] > summary {
+  margin-bottom: var(--space-3);
+}
+.fold > :not(summary) + :not(summary) {
+  margin-top: var(--space-2);
 }
 
 /* rails draw down on first load; everything rests complete without motion */
@@ -685,6 +749,48 @@ a.frame_stage:hover .frame_media > img {
 
 /* ───────── title block: the storyboard spec sheet ───────── */
 /* cells wrap and grow to fill each row, so a short last row never leaves an empty slot */
+/* the dashboard: every review waiting for the user, under its description */
+.waiting {
+  display: grid;
+  gap: var(--space-2);
+}
+.waiting_items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.waiting_item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  min-width: 0;
+  padding: 0.35rem 0.75rem 0.35rem 0.35rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--background-2);
+  font-size: var(--text-small);
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color var(--hover) var(--ease);
+}
+.waiting_item:hover {
+  border-color: var(--yellow);
+}
+.waiting_item b {
+  flex: none;
+  padding: 0.2em 0.45em;
+  border-radius: 3px;
+  background: var(--yellow);
+  color: var(--ink);
+  font: 600 var(--text-tiny) / 1.2 var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.waiting_item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .titleblock {
   margin: 0;
   display: flex;
@@ -958,8 +1064,67 @@ a.frame_stage:hover .frame_media > img {
 }
 
 /* ───────── storyboard page ───────── */
-.scene {
-  scroll-margin-top: 5rem;
+/* the scene strip: every scene's number and how it's marked, kept under the masthead; a click jumps to the scene */
+.scenestrip {
+  --_x: calc((100% - min(100% - 2 * var(--page-margin), var(--max) + 2 * var(--rail-pad))) / 2);
+  position: sticky;
+  top: var(--masthead-h, 3.6rem);
+  z-index: 35;
+  background:
+    linear-gradient(var(--border), var(--border)) left var(--_x) top 0 / var(--border-width) 100% no-repeat,
+    linear-gradient(var(--border), var(--border)) right var(--_x) top 0 / var(--border-width) 100% no-repeat,
+    color-mix(in lab, var(--paper) 92%, transparent);
+  backdrop-filter: blur(8px);
+  transition: box-shadow var(--hover) var(--ease);
+}
+.scenestrip.is-stuck {
+  box-shadow: 0 var(--border-width) 0 var(--border);
+}
+.scenestrip_row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.scenestrip_row::-webkit-scrollbar {
+  display: none;
+}
+.scenestrip_row > .field-label {
+  flex: none;
+  margin-right: var(--space-2);
+}
+.scenestrip_item {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.5rem;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-s);
+  background: var(--background);
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  transition: border-color var(--hover) var(--ease), background-color var(--hover) var(--ease);
+}
+.scenestrip_item:hover {
+  border-color: var(--text);
+}
+.scenestrip_item[aria-current="true"] {
+  border-color: var(--text);
+  background: var(--background-2);
+  box-shadow: inset 0 -2px 0 var(--yellow);
+}
+.scenestrip_dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--success);
+}
+.scenestrip_item.is-feedback .scenestrip_dot {
+  background: var(--pink);
 }
 .scene_head {
   display: flex;
@@ -1007,6 +1172,11 @@ a.frame_stage:hover .frame_media > img {
   display: grid;
   gap: var(--space-2);
 }
+/* "What happens": the scene in detail, on the deeper paper, closed until it's opened */
+.scene_more {
+  padding: var(--space-3) var(--space-4);
+  background: var(--background-3);
+}
 .script_label,
 .field-label {
   font: 500 var(--text-tiny) / 1 var(--font-mono);
@@ -1015,7 +1185,7 @@ a.frame_stage:hover .frame_media > img {
   color: var(--text-2);
 }
 .script_text {
-  font-size: var(--text-large);
+  font-size: var(--text-main);
   line-height: 1.4;
   white-space: pre-line;
 }
@@ -1163,15 +1333,24 @@ textarea:focus {
   flex: none;
 }
 @media (max-width: 40rem) {
+  /* a phone: the counts on a line of their own, the buttons together on the right under them */
   .reviewbar {
     bottom: var(--space-2);
     padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
     gap: var(--space-2);
   }
   .reviewbar_counts {
+    flex-basis: 100%;
     gap: 0.15rem var(--space-3);
     font-size: 0.6875rem;
     letter-spacing: 0.04em;
+  }
+  .reviewbar .button,
+  .reviewbar_jump {
+    margin-left: auto;
+  }
+  .reviewbar_jump:not([hidden]) + .button {
+    margin-left: 0;
   }
   .reviewbar .button {
     min-height: 2.5rem;
@@ -1183,6 +1362,37 @@ textarea:focus {
 }
 .reviewbar_counts b {
   font-variant-numeric: tabular-nums;
+}
+/* "Next note": to each row with a note in turn (ui/script.js) */
+.reviewbar_jump {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.8rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: transparent;
+  color: var(--text);
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color var(--hover) var(--ease), color var(--hover) var(--ease);
+}
+.reviewbar_jump:hover {
+  border-color: var(--yellow);
+  color: var(--yellow);
+}
+.reviewbar_jump[hidden] {
+  display: none;
+}
+@media (max-width: 40rem) {
+  .reviewbar_jump {
+    min-height: 2.5rem;
+    padding: 0.5rem 0.6rem;
+  }
 }
 /* shown while Claude waits in the background for this review (studio.mjs wait) */
 .reviewbar_claude {
@@ -1860,6 +2070,8 @@ kbd {
 @media print {
   body::after,
   .masthead,
+  .scenestrip,
+  .itempop,
   .reviewbar {
     display: none;
   }
@@ -2244,6 +2456,19 @@ a.stages_item:hover {
 }
 
 /* ───────── the script page: a row per beat, # | voiceover (or text on screen) | action on screen (ui/script.js) ───────── */
+/* the script (its length, the table and what was cut from the footage): at most 1000px wide, centred; a table of more
+   than three columns takes the full width */
+.scriptsheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: 62.5rem;
+  margin-inline: auto;
+}
+.scriptsheet:has(.scriptsheet_table thead th:nth-child(4)) {
+  max-width: none;
+}
 .scriptsheet_length {
   display: grid;
   gap: var(--space-1);
@@ -2288,6 +2513,7 @@ a.stages_item:hover {
   width: 3.5rem;
   font: 600 var(--text-small) / 1.6 var(--font-mono);
   color: var(--text-2);
+  white-space: nowrap;
 }
 .scriptsheet_table td {
   width: 50%;
@@ -2303,9 +2529,33 @@ a.stages_item:hover {
 .scriptsheet_cell:not(:has(textarea:disabled)):hover {
   background: var(--background-3);
 }
-/* a cell with a note: a pink edge, as feedback is pink everywhere */
+/* a cell with a note: a pink edge, as feedback is pink everywhere, and a pink dot by the row's number */
 .scriptsheet_cell.has-note {
   box-shadow: inset 3px 0 0 var(--pink);
+}
+.scriptsheet_table tr:has(.has-note) > .scriptsheet_n {
+  color: var(--pink);
+}
+.scriptsheet_table tr:has(.has-note) > .scriptsheet_n::after {
+  content: "";
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-left: 0.3rem;
+  border-radius: 50%;
+  background: var(--pink);
+  vertical-align: 0.1em;
+}
+/* the note "Next note" jumped to, lit for a moment */
+@media (prefers-reduced-motion: no-preference) {
+  .scriptsheet_cell.is-flash {
+    animation: note-flash 1.4s var(--ease);
+  }
+  @keyframes note-flash {
+    from {
+      background-color: color-mix(in lab, var(--yellow) 30%, transparent);
+    }
+  }
 }
 .scriptsheet_text {
   line-height: 1.55;
@@ -2444,4 +2694,91 @@ a.stages_item:hover {
 }
 .itemchip:hover {
   border-color: var(--text);
+}
+/* hovering (or focusing) a chip shows the item playing, in the video's brand and size, with what it's for
+   (ui/page.js); on a touch screen the first tap shows it and the second opens the item */
+.itempop {
+  --background: var(--ink);
+  --background-2: var(--ink-800);
+  --text: var(--paper);
+  --text-2: color-mix(in lab, var(--paper) 72%, transparent);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 45;
+  width: min(20rem, calc(100vw - 2rem));
+  padding: var(--space-2);
+  display: grid;
+  gap: var(--space-2);
+  background: var(--background);
+  color: var(--text);
+  border-radius: var(--radius);
+  box-shadow: 0 1rem 2.5rem -0.75rem color-mix(in lab, var(--ink) 60%, transparent);
+  opacity: 0;
+  transform: translateY(0.25rem);
+  transition: opacity 0.15s var(--ease), transform 0.15s var(--ease);
+  pointer-events: none;
+}
+.itempop[data-side="below"] {
+  transform: translateY(-0.25rem);
+}
+.itempop.is-open {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.itempop[hidden] {
+  display: none;
+}
+.itempop_frame {
+  position: relative;
+  width: min(100%, calc(16rem * var(--ar, 1.7778)));
+  aspect-ratio: var(--ratio, 16 / 9);
+  max-width: 100%;
+  margin-inline: auto;
+  overflow: hidden;
+  border-radius: var(--radius-s);
+  background: var(--background-2);
+}
+.itempop_frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+}
+.itempop_frame.is-ready iframe {
+  opacity: 1;
+}
+.itempop_text {
+  display: grid;
+  gap: var(--space-1);
+  padding: 0 var(--space-1) var(--space-1);
+  font-size: var(--text-small);
+  line-height: 1.4;
+}
+.itempop_name {
+  font-weight: 600;
+}
+.itempop_name b {
+  margin-right: 0.4em;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  background: var(--yellow);
+  color: var(--ink);
+  font: 600 0.8em / 1.3 var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.itempop_summary {
+  color: var(--text-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .itempop,
+  .itempop_frame iframe {
+    transition: none;
+  }
 }

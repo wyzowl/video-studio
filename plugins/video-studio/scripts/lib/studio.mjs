@@ -85,7 +85,8 @@ export function frontMatter(text) {
     const kv = /^([A-Za-z0-9_-]+):\s*(.*)$/.exec(line);
     if (!kv) continue;
     let v = kv[2].trim();
-    if (/^(".*"|'.*')$/.test(v)) v = v.slice(1, -1);
+    if (/^".*"$/.test(v)) v = v.slice(1, -1).replace(/\\(["\\])/g, "$1");
+    else if (/^'.*'$/.test(v)) v = v.slice(1, -1).replace(/''/g, "'");
     out[kv[1]] = v;
   }
   return out;

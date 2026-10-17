@@ -1,6 +1,6 @@
 // Video review: watch the video, pin notes to moments in it, then the decision: Approve video, unless there are notes
-// (they switch it to Changes needed), and save. Saving posts the review to the studio server, which writes
-// feedback.json beside the review.
+// (they switch it to Changes needed), and save: the button says which ("Approve and save" or "Send changes"). Saving
+// posts the review to the studio server, which writes feedback.json beside the review.
 (() => {
   const state = JSON.parse(document.getElementById("review-state").textContent);
   const player = document.querySelector("[data-player]");
@@ -12,10 +12,12 @@
   const saveBtn = document.querySelector("[data-save]");
   const message = document.querySelector("[data-message]");
   const countEl = document.querySelector('[data-count="notes"]');
+  const countWord = document.querySelector("[data-count-word]");
   const decisionLabel = document.querySelector("[data-decision-label]");
   const hint = document.querySelector("[data-decision-hint]");
   const radios = [...document.querySelectorAll('input[name="decision"]')];
   const LABEL = { approved: "Approve", changes: "Changes needed" };
+  const SAVE = { approved: "Approve and save", changes: "Send changes" };
   const HINT = {
     approved: "Claude will make the final video. Any notes are treated as small last tweaks.",
     changes: "Claude will make the changes in your notes and share a new version.",
@@ -92,6 +94,7 @@
     );
     empty.hidden = notes.length > 0;
     countEl.textContent = String(notes.length);
+    countWord.textContent = notes.length === 1 ? "note" : "notes";
   }
 
   // The decision is Approve unless there are notes: the first note switches it to Changes needed, and removing the last
@@ -114,6 +117,7 @@
     const d = decision();
     decisionLabel.textContent = LABEL[d];
     hint.textContent = HINT[d];
+    if (state.latest && saveBtn) saveBtn.textContent = SAVE[d];
   }
 
   // restore what was saved
@@ -176,7 +180,6 @@
       return;
     }
     saveBtn.disabled = true;
-    const label = saveBtn.textContent;
     saveBtn.textContent = "Saving…";
     try {
       const res = await fetch("/api/review", {
@@ -204,7 +207,7 @@
       say(`Couldn't save: ${err.message}. Is the studio server still running? In Claude Code, run /video-studio:dashboard and try again.`, true);
     } finally {
       saveBtn.disabled = false;
-      saveBtn.textContent = label;
+      showDecision();
     }
   });
 })();

@@ -1,5 +1,7 @@
 // Storyboard review: each scene is Approved unless it's marked Feedback (with a note). General notes ask for changes
-// too. Saving posts the review to the studio server, which writes feedback.json next to the storyboard.
+// too. The save button says which ("Approve and save" or "Send feedback"), and the scene strip shows each scene's mark
+// and the one on screen. Saving posts the review to the studio server, which writes feedback.json next to the
+// storyboard.
 (() => {
   const state = JSON.parse(document.getElementById("storyboard-state").textContent);
   const saveBtn = document.querySelector("[data-save]");
@@ -28,6 +30,13 @@
     section.classList.toggle("is-feedback", status === "feedback");
     const note = section.querySelector(".review_note");
     if (note) note.hidden = status !== "feedback";
+    const item = document.querySelector(`[data-strip="${esc(id)}"]`);
+    if (item) {
+      item.classList.toggle("is-approved", status === "approved");
+      item.classList.toggle("is-feedback", status === "feedback");
+      const said = item.querySelector("[data-strip-state]");
+      if (said) said.textContent = status === "feedback" ? ", feedback" : ", approved";
+    }
   }
 
   function tally() {
@@ -37,7 +46,14 @@
       const el = countEl(k);
       if (el) el.textContent = String(t[k]);
     }
+    showSave(t);
     return t;
+  }
+
+  // what saving does: approves the storyboard, or sends the feedback for a new version
+  function showSave(t) {
+    if (!state.latest || !saveBtn) return;
+    saveBtn.textContent = t.feedback || general?.value.trim() ? "Send feedback" : "Approve and save";
   }
 
   function say(text, isError = false) {
@@ -58,6 +74,37 @@
   }
   if (fb && fb.general && general) general.value = fb.general;
   tally();
+
+  // the scene strip: the scene on screen is the last whose top has passed a quarter of the way down the window, under
+  // the strip; it scrolls along the strip to stay in view. A line shows under the strip once it's stuck.
+  const strip = document.querySelector(".scenestrip");
+  if (strip) {
+    const row = strip.querySelector(".scenestrip_row");
+    const items = new Map([...strip.querySelectorAll("[data-strip]")].map((a) => [a.dataset.strip, a]));
+    const sections = state.scenes.map((s) => sectionEl(s.id)).filter(Boolean);
+    const masthead = document.querySelector(".masthead");
+    let queued = false;
+    let shown = null;
+    const mark = () => {
+      queued = false;
+      const top = strip.getBoundingClientRect();
+      strip.classList.toggle("is-stuck", top.top <= (masthead?.offsetHeight || 0) + 1);
+      let current = null;
+      for (const sec of sections) if (sec.getBoundingClientRect().top <= top.bottom + innerHeight * 0.25) current = sec;
+      if (current && current.getBoundingClientRect().bottom <= top.bottom) current = null; // past the last scene
+      const on = current ? items.get(current.dataset.scene) : null;
+      items.forEach((a) => (a === on ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current")));
+      if (on && on !== shown) {
+        const r = on.getBoundingClientRect();
+        const box = row.getBoundingClientRect();
+        if (r.left < box.left || r.right > box.right) row.scrollLeft += r.left - box.left - (box.width - r.width) / 2;
+      }
+      shown = on;
+    };
+    addEventListener("scroll", () => !queued && (queued = true) && requestAnimationFrame(mark), { passive: true });
+    addEventListener("resize", mark);
+    mark();
+  }
 
   // earlier versions are read-only
   if (!state.latest) {
@@ -83,7 +130,10 @@
   );
   // general notes ask for changes, like a scene's feedback, so the bar shows when there are some
   const generalCount = document.querySelector("[data-general-count]");
-  general?.addEventListener("input", () => generalCount && (generalCount.hidden = !general.value.trim()));
+  general?.addEventListener("input", () => {
+    if (generalCount) generalCount.hidden = !general.value.trim();
+    tally();
+  });
   window.addEventListener("beforeunload", (e) => {
     if (!dirty) return;
     e.preventDefault();
@@ -104,7 +154,6 @@
       scenes[s.id] = status === "feedback" ? { status, note: noteEl(s.id).value.trim() } : { status };
     }
     saveBtn.disabled = true;
-    const label = saveBtn.textContent;
     saveBtn.textContent = "Saving…";
     try {
       const res = await fetch("/api/feedback", {
@@ -132,7 +181,7 @@
       say(`Couldn't save: ${err.message}. Is the studio server still running? In Claude Code, run /video-studio:dashboard and try again.`, true);
     } finally {
       saveBtn.disabled = false;
-      saveBtn.textContent = label;
+      tally();
     }
   });
 })();

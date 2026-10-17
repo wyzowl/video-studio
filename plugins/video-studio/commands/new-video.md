@@ -81,6 +81,9 @@ Then a second panel:
      follow-ups, each after the question it answers. Copy their words exactly, however long: nothing tidied,
      shortened or corrected, and their own line breaks kept (don't wrap long lines). Quote their writing with `> ` at the start of every line
      (a line of its own, `>`, between their paragraphs), so nothing they wrote reads as a heading.
+   - **description** (in the front matter) says what the video is, in one or two short sentences: the video's pages
+     show it under the title. Plain words, no quotes or line breaks, such as "A 45-second explainer that shows new
+     customers how to book their first delivery."
    - **Intent** is your summary: what the video is for and how it should feel, in a short paragraph.
    - **Assets**, **Customizations** and **Notes** are your notes from starting it: the files it uses, anything about
      it that departs from the brand or the usual way, and anything else to remember.
@@ -99,6 +102,7 @@ Then a second panel:
    destination: <website | youtube | social | presentation | …>
    length: <~45s>
    language: en
+   description: "<what the video is, in one or two short sentences>"
    message: "<what the viewer should take away, in one line>"
    audience: "<who it's for>"
    created: <ISO date and time>

@@ -59,7 +59,8 @@ out of footage), Claude tells you once and offers to fetch it.
 ## Requirements
 
 - **macOS.** Tested on Apple silicon. Windows and Linux aren't supported yet: setup stops on them with a message.
-- **Claude Code**, kept up to date. The band above the message box uses plugin features from Claude Code 2.1.295.
+- **Claude Code**, kept up to date. The band above the message box and the answer box use plugin features from
+  Claude Code 2.1.295.
 - **About 6 GB of disk space** for HyperFrames' browser and models, plus 0.3–1.5 GB per video.
 - Setup installs the rest: Node.js, ffmpeg and git (through Homebrew), the HyperFrames skills, the LottieFiles
   motion-design skill, and the on-device transcription model.
@@ -106,9 +107,13 @@ video is waiting for your review, it says so, with a button that opens it (for e
 says **Working on a video?** with **Open dashboard**. The button opens the page beside the chat, opening the browser
 panel if it's closed. Close the band with its × and it stays away until something new is waiting.
 
-You don't need to go back to the chat when you've finished a review. When you press **Save feedback** or **Save
-review**, Claude picks it up straight away and carries on: a script or video is approved unless you've added notes,
-and so is each storyboard scene unless you've marked it **Feedback**. This works while that Claude Code session is
+When Claude has worked on something, its final message, the one to read and act on, sits in a box with a yellow
+border, so it's easy to find after a long run of steps. Plain replies look as usual.
+
+You don't need to go back to the chat when you've finished a review. When you press **Approve and save** (it says
+**Send changes**, or **Send feedback** on a storyboard, once there are notes), Claude picks it up straight away and
+carries on: a script or video is approved unless you've added notes, and so is each storyboard scene unless you've
+marked it **Feedback**. This works while that Claude Code session is
 open; otherwise, tell Claude you've saved.
 
 To get feedback from someone outside the studio, such as a client, send them a download.
@@ -180,8 +185,8 @@ Claude opens a page as soon as it writes the file behind it (`brand.json`, `scri
 plugin hook gives Claude the page's address at that moment. It stays quiet when the page is already open, so later
 edits don't pull the browser away from what you're looking at.
 
-The band above the message box is a hooks module of the plugin (`hooks/bar.tsx`), shown only in sessions inside a
-studio.
+The band above the message box (`hooks/bar.tsx`) and the answer box (`hooks/answer-box.tsx`) make up the plugin's
+hooks module (`hooks/index.tsx`), and show only in sessions inside a studio.
 
 After showing a script, storyboard or video, Claude waits for your review with a small background task
 (`studio.mjs wait`). While it waits, the page's save bar says "Claude starts when you save". Saving the review ends
@@ -198,8 +203,8 @@ plugins/video-studio/             the plugin: commands, skills, hook, scripts, p
 ## Development
 
 - Validate: `claude plugin validate plugins/video-studio` and `claude plugin validate .`
-- Test the band above the message box: `claude plugin test plugins/video-studio` (`tests/bar.test.tsx`, on the
-  terminal and desktop surfaces).
+- Test the band above the message box and the answer box: `claude plugin test plugins/video-studio`
+  (`tests/bar.test.tsx` and `tests/answer-box.test.tsx`, on the terminal and desktop surfaces).
 - Try the pages on a scratch studio:
   `node plugins/video-studio/scripts/studio.mjs init /tmp/test-studio`, then
   `node plugins/video-studio/scripts/studio.mjs open --studio /tmp/test-studio`.

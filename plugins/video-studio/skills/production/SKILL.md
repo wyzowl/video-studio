@@ -113,7 +113,8 @@ page server; only one studio's server runs at a time). Follow what it says:
    link, such as `[Open storyboard v2 ↗](address)`, never a bare address. The link opens the page in their browser;
    the card can't hold a working link, since the app opens nothing from a card. Without show_widget, the link alone.
 3. For a script, storyboard or video, wait for the review in the background: `studio.mjs wait <path>` with
-   run_in_background. Tell the user to press Save when they're done and you'll take it from there, then end your turn.
+   run_in_background. Tell the user to save their review when they're done (the button at the foot of the page) and
+   you'll take it from there, then end your turn.
 
 When the wait finishes, you're woken with the review. Saving a review is the user's go-ahead (each page saves a
 decision: a script or video is approved unless there are notes, and so is each storyboard scene unless it's marked

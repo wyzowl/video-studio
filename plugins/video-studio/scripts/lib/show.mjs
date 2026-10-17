@@ -104,7 +104,7 @@ export function showInstructions(root, base, page, { unsaved = [] } = {}) {
       ` With no Browser pane, run: ${helper} open ${page.path} ${studio}`,
     `2. Show them a card for the page, with the link that opens it right under it. If you have the show_widget tool (Claude desktop app), call it with title "${id}" and exactly this widget_code:\n${pageCard(root, page)}\nThen, directly under the card in your message (or alone, without show_widget), write this labelled link, which opens the page in their browser (the card itself can't hold a working link): [${link} ↗](${url})`,
     waits &&
-      `3. Wait for their review in the background: run ${helper} wait ${page.path} ${studio} with run_in_background. Tell them to press ${page.kind === "storyboard" ? "Save feedback" : "Save review"} when they're done and you'll take it from there, then end your turn. When the wait finishes you're woken with their review. Saving it was their go-ahead, so carry on straight away.`,
+      `3. Wait for their review in the background: run ${helper} wait ${page.path} ${studio} with run_in_background. Tell them to press Approve and save when they're done (it says ${page.kind === "storyboard" ? "Send feedback" : "Send changes"} once there are notes) and you'll take it from there, then end your turn. When the wait finishes you're woken with their review. Saving it was their go-ahead, so carry on straight away.`,
   ];
   return [
     `Wyzowl Video Studio: ${page.label} is ready to show: ${url}`,
