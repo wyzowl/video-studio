@@ -3,10 +3,12 @@
 //   node render-frames.mjs videos/<p>/storyboard/v1/frames.html videos/<p>/storyboard/v1/frames [--scale 0.5] [--only s01-1,s02-1]
 // Size each [data-frame] element to the video (for example 1920×1080) in the page's own CSS, and keep frames still:
 // no animations or transitions. --scale sets the pixel density of the PNGs (0.5 halves them; the default).
+// While a storyboard is under way on the video's pages, each frame shows there as it's made (lib/progress.mjs).
 import { mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { findChrome } from "./lib/chrome.mjs";
+import { inVideo, report } from "./lib/progress.mjs";
 
 const argv = process.argv.slice(2);
 const opt = (k, d) => {
@@ -44,12 +46,21 @@ try {
   await page.setViewport({ width: Math.max(...frames.map((f) => f.w)), height: Math.max(...frames.map((f) => f.h)), deviceScaleFactor: scale });
   mkdirSync(OUT, { recursive: true });
   const written = [];
-  for (const f of frames) {
-    if (only && !only.includes(f.id)) continue;
+  const todo = frames.filter((f) => !only || only.includes(f.id));
+  for (const f of todo) {
     const el = await page.$(`[data-frame="${f.id}"]`);
     const file = join(OUT, `${f.id}.png`);
     await el.screenshot({ path: file });
     written.push({ id: f.id, file, width: Math.round(f.w * scale), height: Math.round(f.h * scale) });
+    // the storyboard under way shows each new frame, and how many are done
+    report(OUT, (q, at) => {
+      if (q.stage !== "storyboard") return q;
+      q.step = "frames";
+      q.count = { unit: "frames", done: written.length, total: todo.length };
+      const src = inVideo(at, file);
+      q.frames = [...(q.frames || []).filter((x) => x.src !== src), { src, caption: f.id }].slice(-12);
+      return q;
+    });
   }
   console.log(JSON.stringify(written, null, 2));
 } finally {

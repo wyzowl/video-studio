@@ -8,6 +8,7 @@
 // - The library: a brand, size or type reloads the page with it; previews play only while they're on screen; "Play
 //   from the start" restarts them; "Copy" buttons copy their text.
 // - A library item named in a script or storyboard shows itself playing while its chip is hovered or focused.
+// - While Claude makes something for a video, the panel on its overview follows the work as it happens.
 // - The masthead's height (and a storyboard's scene strip's) keeps jumps and focus clear of them.
 (() => {
   // ───────── the sticky bars ─────────
@@ -299,6 +300,44 @@
       setTimeout(() => (button.textContent = label), 2000);
     }),
   );
+
+  // ───────── work in progress ─────────
+  // While Claude makes something for a video, its overview shows the work as it happens: the steps, the count under way,
+  // the newest frames and, in a video's review loop, Video Studio's own scores. The panel asks the studio every 1.5
+  // seconds while the page is on screen and redraws only the parts that changed. When the work ends, live.js reloads
+  // the page with what's new.
+  document.querySelectorAll("[data-progress]").forEach((panel) => {
+    let busy = false;
+    const timer = setInterval(async () => {
+      if (busy || document.visibilityState !== "visible") return;
+      busy = true;
+      try {
+        const res = await fetch(`/api/progress?video=${encodeURIComponent(panel.dataset.progress)}`, { cache: "no-store" });
+        const state = await res.json();
+        if (!state.active) return clearInterval(timer);
+        panel.classList.toggle("is-quiet", Boolean(state.quiet));
+        const have = [...panel.querySelectorAll(":scope > [data-part]")];
+        if (have.length !== state.parts.length || have.some((el, i) => el.dataset.part !== state.parts[i].name)) panel.innerHTML = state.parts.map((x) => x.html).join("");
+        else
+          state.parts.forEach((x, i) => {
+            const el = have[i];
+            if (el.dataset.sig === x.sig) return;
+            // the count's bar moves on rather than being drawn again, so it glides
+            const next = Object.assign(document.createElement("template"), { innerHTML: x.html }).content.firstElementChild;
+            const bar = el.querySelector(".making_bar span");
+            if (x.name === "count" && bar && next.querySelector(".making_bar span")) {
+              bar.style.width = next.querySelector(".making_bar span").style.width;
+              el.querySelector(".making_bar").setAttribute("aria-valuenow", next.querySelector(".making_bar").getAttribute("aria-valuenow"));
+              el.querySelector("p").textContent = next.querySelector("p").textContent;
+              el.dataset.sig = x.sig;
+            } else el.replaceWith(next);
+          });
+      } catch {
+      } finally {
+        busy = false;
+      }
+    }, 1500);
+  });
 
   // ───────── a library item, on its chip ─────────
   // A chip ("W03 Big number") shows the item playing in the video's brand and size while it's hovered or focused, with

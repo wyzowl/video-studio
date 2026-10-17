@@ -20,6 +20,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { inVideo, report } from "../lib/progress.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
@@ -342,6 +343,13 @@ async function scan() {
     };
     clips.push(entry);
     console.log(entry.speech ? `${entry.words} words` : clip.audio ? "no speech" : "no sound");
+    // a script under way shows how far the scan has got
+    report(PROJECT, (q) => {
+      if (q.stage !== "script") return q;
+      q.step = "scan";
+      q.count = { unit: "clips", done: clips.length, total: files.length };
+      return q;
+    });
   }
   // the video's size: the most common one among the clips with speech (else all), as the footage is shot
   const pool = clips.some((c) => c.speech) ? clips.filter((c) => c.speech) : clips;
@@ -374,6 +382,14 @@ function still() {
   const out = opt("--out") || fail("--out <file.png> is needed");
   mkdirSync(dirname(resolve(out)), { recursive: true });
   ff(["-ss", seconds(at).toFixed(3), "-i", clipPath(clip), "-frames:v", "1", "-vf", `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h}`, resolve(out)]);
+  // a storyboard under way shows each still as it's picked
+  report(out, (q, here) => {
+    if (q.stage !== "storyboard") return q;
+    q.step = "frames";
+    const src = inVideo(here, out);
+    q.frames = [...(q.frames || []).filter((x) => x.src !== src), { src, caption: basename(out).replace(/\.[a-z0-9]+$/i, "") }].slice(-12);
+    return q;
+  });
   console.log(resolve(out));
 }
 
@@ -435,6 +451,10 @@ function clip() {
   mkdirSync(dirname(resolve(out)), { recursive: true });
   ff([...args, "-filter_complex", graph.join(";"), "-map", `[${last}]`, "-map", "[ac]", "-c:v", "libx264", "-preset", "veryfast", "-crf", "30", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart", resolve(out)]);
   const made = probe(resolve(out));
+  report(out, (q) => {
+    if (q.stage === "storyboard") q.step = "clips";
+    return q;
+  });
   console.log(`${resolve(out)} (${tc(made?.duration || 0)}, ${w}×${h})`);
 }
 

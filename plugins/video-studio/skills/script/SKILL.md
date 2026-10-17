@@ -26,6 +26,10 @@ videos/<project>/script/v<N>/
 
 ## Write version 1
 
+Mark the work on the video's overview as you go (production skill, "Work in progress"): start with
+`node PLUGIN/scripts/studio.mjs progress <project> script 1 brief`, then mark `draft` as you start writing and
+`length` as you check it. For a footage video, the scan marks `scan` by itself.
+
 1. **Know the story first.** Read the brief (`BRIEF.md`): who it's for, the one message, the call to action, the
    length and the tone. If something that changes the story is missing, ask before writing.
 2. **Where the words come from:**
@@ -124,7 +128,8 @@ on without asking them to confirm. Read `feedback.json`: `decision` (`approved` 
 - **Approved:** carry any notes into the next stages as small last tweaks, and say how you applied them. Then go on:
   for an AI voiceover, make it from the approved voiceover (production skill, stage 3); then the storyboard
   (storyboard skill), from the approved script.
-- **Changes needed:** write version N+1.
+- **Changes needed:** write version N+1. Start it on the overview (`studio.mjs progress <project> script <N+1>
+  notes`), then mark `draft` and `length` as you go.
   1. Leave `v<N>` and its feedback as they are. Apply every note: a note's `row` is the number the user saw in
      `v<N>`, and rows may move in the new version.
   2. Write `script/v<N+1>/script.json` with `"version"` N+1 and `"changes"`: a sentence or two on what changed and

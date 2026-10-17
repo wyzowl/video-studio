@@ -2280,6 +2280,272 @@ a.stages_item:hover {
     animation: pulse-ring 1.6s var(--ease) infinite;
   }
 }
+
+/* ───────── work in progress, on a video's overview while Claude makes something (ui/page.js keeps it up to date) ─────────
+   What's being made, the stage's steps, the count under way, the newest frames and, in a video's review loop, Video
+   Studio's own scores beside them, then what's being fixed. */
+.making {
+  margin-top: var(--space-6);
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--background-3);
+  border-left: 2px solid var(--yellow);
+}
+.making > [data-part] {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+@media (min-width: 64rem) {
+  .making {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  }
+  .making > [data-part="frames"] {
+    grid-column: 1;
+  }
+  .making > [data-part="scores"] {
+    grid-column: 2;
+  }
+  .making:not(:has(> [data-part="scores"])) > [data-part="frames"] {
+    grid-column: 1 / -1;
+  }
+}
+.making.is-quiet {
+  border-left-color: var(--border-strong);
+}
+.making_head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+}
+.making_title {
+  flex: 1 1 20rem;
+  display: grid;
+  gap: var(--space-1);
+}
+.making_title strong {
+  font-size: var(--text-large);
+  font-weight: 700;
+}
+.making_title p {
+  color: var(--text-2);
+  font-size: var(--text-small);
+}
+.making_time,
+.making_progress p {
+  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.making_steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.making_steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.6rem;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-s);
+  color: var(--text-2);
+}
+.making_steps li.is-done {
+  color: var(--text);
+}
+.making_steps li.is-done::before {
+  content: "✓";
+}
+.making_steps li.is-now {
+  color: var(--ink);
+  background: var(--yellow);
+  border-color: var(--yellow);
+}
+.making.is-quiet .making_steps li.is-now {
+  color: var(--text);
+  background: transparent;
+  border-color: var(--border-strong);
+}
+.making_steps li.is-end {
+  border-style: dashed;
+}
+.making_progress {
+  display: grid;
+  gap: var(--space-2);
+}
+.making_bar {
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in lab, var(--paper) 14%, transparent);
+  overflow: hidden;
+}
+.making_bar span {
+  display: block;
+  height: 100%;
+  background: var(--yellow);
+  transition: width 1.2s linear;
+}
+.making_frames,
+.making_scores,
+.making_fixing {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+}
+.making h3 {
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+}
+/* the newest frames: six to a row (three on a phone); tall videos' frames sit narrower */
+.making_strip {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.making_strip--portrait {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+@media (max-width: 40rem) {
+  .making_strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .making_strip--portrait {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.making_strip figure {
+  margin: 0;
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.making_strip img {
+  width: 100%;
+  border-radius: 3px;
+  background: var(--background-2);
+}
+.making_strip figcaption {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 500 var(--text-tiny) / 1.2 var(--font-mono);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.making_scores ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+.making_scores li {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr) 1.5rem 3.5rem;
+  align-items: center;
+  gap: var(--space-3);
+}
+.making_scores li span {
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+/* each score's bar, with a mark at 8, the score every one must reach */
+.making_scores li i {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: color-mix(in lab, var(--paper) 12%, transparent);
+}
+.making_scores li i::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--v) * 10%);
+  border-radius: 4px;
+  background: color-mix(in lab, var(--paper) 70%, transparent);
+}
+.making_scores li.is-low i::before {
+  background: var(--yellow);
+}
+.making_scores li i::after {
+  content: "";
+  position: absolute;
+  left: 80%;
+  top: -4px;
+  bottom: -4px;
+  width: 1px;
+  background: var(--paper);
+}
+.making_scores li b {
+  font: 600 var(--text-small) / 1 var(--font-mono);
+  text-align: right;
+}
+.making_scores li.is-low b {
+  color: var(--yellow);
+}
+.making_scores li small {
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.making_fixing ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--text-small);
+}
+.making_fixing li {
+  display: grid;
+  grid-template-columns: minmax(7rem, 9.5rem) minmax(0, 1fr);
+  gap: var(--space-3);
+}
+.making_fixing b {
+  font: 500 var(--text-tiny) / 1.6 var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--yellow);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 40rem) {
+  .making {
+    padding: var(--space-4);
+  }
+  .making_scores li {
+    grid-template-columns: 6rem minmax(0, 1fr) 1.25rem;
+  }
+  .making_scores li small {
+    display: none;
+  }
+  .making_fixing li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}
+.making_note {
+  font-size: var(--text-small);
+  color: var(--text-2);
+  padding-top: var(--space-4);
+  border-top: var(--border-width) solid var(--border);
+}
+@media (prefers-reduced-motion: reduce) {
+  .making_bar span {
+    transition: none;
+  }
+}
 /* the timeline of stages, brief to final video */
 .timeline--stages {
   gap: var(--space-5);

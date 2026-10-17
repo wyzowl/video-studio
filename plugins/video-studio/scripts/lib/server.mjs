@@ -25,7 +25,7 @@ import {
   claudeWaiting,
   markWorking,
 } from "./studio.mjs";
-import { dashboardPage, brandPage, projectPage, scriptPage, storyboardPage, reviewPage, libraryPage, itemPage, page404 } from "./pages.mjs";
+import { dashboardPage, brandPage, projectPage, scriptPage, storyboardPage, reviewPage, libraryPage, itemPage, page404, progressState } from "./pages.mjs";
 import { scriptPrint, storyboardPrint } from "./print.mjs";
 import { CATEGORIES, libraryItem, previewDocument, SIZES } from "./library.mjs";
 import { renderPdf, shareName, attachment } from "./pdf.mjs";
@@ -98,6 +98,11 @@ export function createStudioServer(root) {
         return json(res, 200, { ...pageStamp(studioRoot, page), waiting: claudeWaiting(studioRoot, page) });
       }
       const studio = readStudio(studioRoot);
+      // what Claude is making for a video, for the panel on its overview (ui/page.js asks every 1.5 seconds while it shows)
+      if (path === "/api/progress") {
+        const slug = url.searchParams.get("video") || "";
+        return json(res, 200, PROJECT.test(slug) ? progressState(studio, slug) : { active: false });
+      }
       if (path === "/" || path === "/index.html") return html(res, 200, dashboardPage(studio));
       if (path.startsWith("/ui/")) return file(req, res, uiRoot, path.slice(4));
 

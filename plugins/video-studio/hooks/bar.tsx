@@ -1,9 +1,10 @@
 // Wyzowl Video Studio's band above Claude's message box, in a session inside a studio (a folder with studio.json).
 // When a script, storyboard or video is waiting for the person's review it says so, with a button that opens that page;
-// otherwise "Working on a video?" with "Open dashboard". The button opens the page beside the chat (the desktop
-// app's browser pane, opened if it's closed) or in the web browser.
-// What's waiting is checked when the session starts and after each of Claude's turns, never on a timer.
-// Dismissed, the band stays away until something new is waiting.
+// while Claude makes something it says what, and the step it's on, with "Watch", which opens the video's overview
+// (where it shows as it happens); otherwise "Working on a video?" with "Open dashboard". The button opens the page
+// beside the chat (the desktop app's browser pane, opened if it's closed) or in the web browser.
+// What's waiting is checked when the session starts, after each of Claude's turns and after each studio tool Claude
+// runs (they mark the steps), never on a timer. Dismissed, the band stays away until something new is waiting.
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 import type { ReadyPage } from '../types'
@@ -32,14 +33,18 @@ async function helper($: EngineInterface, studio: string, args: string[]): Promi
   return run?.exitCode === 0 ? run.stdout.trim() : ''
 }
 
-/** What's waiting for the person's review now (studio.mjs ready), into the band's state. */
+/** What's waiting for the person's review now, or else what Claude is making (studio.mjs ready), into the band's state. */
 async function checkReady($: EngineInterface, studio: string): Promise<void> {
   let page: ReadyPage | null = null
   try {
-    page = JSON.parse(await helper($, studio, ['ready'])).page ?? null
+    const now = JSON.parse(await helper($, studio, ['ready']))
+    page = now.page ?? now.making ?? null
   } catch {}
   await update($, readyAt, () => page)
 }
+
+// the studio's own tools, which move a stage under way on: what the band says may have changed
+const STUDIO_TOOL = /studio\.mjs|render-frames\.mjs|sheets\.mjs|footage\.mjs/
 
 /** Starts the studio's page server if needed and opens a page: beside the chat, or in the web browser. */
 async function openPage($: EngineInterface, studio: string, path: string): Promise<void> {
@@ -68,6 +73,14 @@ export const register: Register = on => {
     if (studio && e.agentId === undefined) $.clock.after(0, () => void checkReady($, studio).catch(() => {}))
     return next(e)
   })
+
+  // after each studio tool Claude runs, see what it's making now ("Claude is making storyboard v3: make the frames")
+  on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
+    const ran = await next(e)
+    const studio = await read($, studioAt)
+    if (studio && STUDIO_TOOL.test(String(e.command ?? ''))) $.clock.after(0, () => void checkReady($, studio).catch(() => {}))
+    return ran
+  }).catch(($, e, next) => next(e))
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const studio = await read($, studioAt)

@@ -8,8 +8,16 @@
 //   node studio.mjs show [path]                how Claude should show the page: beside the chat, a card, and waiting
 //   node studio.mjs wait <path>                wait until the user finishes reviewing a script, storyboard or video
 //                                              (Claude runs it in the background: finishing wakes Claude to carry on)
-//   node studio.mjs ready                      the page waiting for the user's review, as JSON, for the band above
-//                                              Claude's message box (hooks/bar.tsx)
+//   node studio.mjs ready                      the page waiting for the user's review, and what Claude is making, as
+//                                              JSON, for the band above Claude's message box (hooks/bar.tsx)
+//   node studio.mjs progress <video> <stage> <version> <step>
+//                                              start a stage on the video's pages (script, storyboard, video or
+//                                              final), at a step; then `progress <video> <step>` for each next step.
+//                                              --round <n>, --scores hook=8,phone=6,… and --fix "<where>: <what>"
+//                                              (up to five) give a review round's scores and what's being fixed;
+//                                              --end ends the stage without its result
+//   node studio.mjs render [HF render options]  `HF render …` with the project's HyperFrames, run from the video's
+//                                              folder, that also shows the render's progress on the video's pages
 //   node studio.mjs pdf <path>                 make the PDF of a script or storyboard version, to share outside the
 //                                              studio (as its page's Download PDF does), and print where it's saved
 //   node studio.mjs library [code] [--brand b] the library's items; with a code, how to use that item in a video,
@@ -45,6 +53,7 @@ import {
   readJSON,
   readStudio,
   readBrand,
+  readBrief,
   registeredStudios,
   registerStudio,
   resolvePage,
@@ -52,6 +61,7 @@ import {
   setWaiting,
 } from "./lib/studio.mjs";
 import { showInstructions } from "./lib/show.mjs";
+import { SCORES, STAGES, endStage, readProgress, startStage, stageTitle, stepsFor, stepsNow, updateProgress, videoAt } from "./lib/progress.mjs";
 import { EXTRAS, newer } from "./lib/extras.mjs";
 import { CATEGORIES, SIZES, BRAND_VARS, BUNDLED_FONTS, libraryItems, libraryItem, lockedItems, findItem, contentVariables, brandStyle, itemLayer } from "./lib/library.mjs";
 import { catalogue, checkDue, checkLibrary, installedPack, licence } from "./lib/paid.mjs";
@@ -182,6 +192,8 @@ async function main() {
 
   if (cmd === "show") return show();
   if (cmd === "ready") return ready();
+  if (cmd === "progress") return progressCommand();
+  if (cmd === "render") return renderCommand();
   if (cmd === "pdf") return pdf();
   if ((cmd === "library" || cmd === "gallery") && arg === "check") return libraryCheck();
   if (cmd === "library" || cmd === "gallery") return library();
@@ -191,7 +203,7 @@ async function main() {
   if (cmd === "hook") return hook();
   if (cmd === "page-ready") return pageReady().catch(() => {}); // a hook: never in the way, silent on any problem
   if (cmd === "context") return context();
-  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, pdf, library, install, serve, stop, page-ready`);
+  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, pdf, library, install, serve, stop, page-ready`);
 }
 
 function init(root) {
@@ -371,22 +383,170 @@ async function waitForReview() {
   }
 }
 
-/** `ready`: the newest script, storyboard or video waiting for the user's review, or null, as JSON: what the band above
-    Claude's message box (hooks/bar.tsx) offers to open. */
+/** `ready`, as JSON: the newest script, storyboard or video waiting for the user's review (`page`), and what Claude is
+    making (`making`: the video it's working on now, with the step it's on), each or both null. The band above Claude's
+    message box (hooks/bar.tsx) offers to open the one to review, or else to watch the one being made. */
 function ready() {
   const root = studioRoot();
-  const waiting = listVideos(root)
-    .filter((v) => ["script", "storyboard", "review"].includes(v.status.key))
-    .sort((a, b) => b.updated - a.updated)[0];
-  if (!waiting) return console.log(JSON.stringify({ page: null }));
-  const stage = { script: waiting.script, storyboard: waiting.storyboard, review: waiting.review }[waiting.status.key];
-  const what = `${{ script: "script", storyboard: "storyboard", review: "video" }[waiting.status.key]} v${stage.version}`;
-  const page = {
-    path: stage.url,
-    text: `${what[0].toUpperCase()}${what.slice(1)} of ${waiting.title} is ready for your review`,
-    button: `Open ${what}`,
+  const videos = listVideos(root);
+  const waiting = videos.filter((v) => ["script", "storyboard", "review"].includes(v.status.key) && !v.progress).sort((a, b) => b.updated - a.updated)[0];
+  let page = null;
+  if (waiting) {
+    const stage = { script: waiting.script, storyboard: waiting.storyboard, review: waiting.review }[waiting.status.key];
+    const what = `${{ script: "script", storyboard: "storyboard", review: "video" }[waiting.status.key]} v${stage.version}`;
+    page = { path: stage.url, text: `${what[0].toUpperCase()}${what.slice(1)} of ${waiting.title} is ready for your review`, button: `Open ${what}` };
+  }
+  const busy = videos.filter((v) => v.progress && !v.progress.quiet).sort((a, b) => Date.parse(b.progress.updated) - Date.parse(a.progress.updated))[0];
+  let making = null;
+  if (busy) {
+    const p = busy.progress;
+    const { steps, at } = stepsNow(p, readBrief(root, busy.slug));
+    const count = p.count?.total ? `, ${p.count.done} of ${p.count.total}` : "";
+    making = { path: `/videos/${encodeURIComponent(busy.slug)}/`, text: `${stageTitle(p)} of ${busy.title}: ${steps[at].label.toLowerCase()}${count}`, button: "Watch" };
+  }
+  console.log(JSON.stringify({ page, making }));
+}
+
+/** Every value given for an option that may be repeated (`--fix a --fix b`). */
+const opts = (k) => argv.flatMap((a, i) => (a === k && argv[i + 1] && !argv[i + 1].startsWith("--") ? [argv[i + 1]] : []));
+
+/** `progress <video> <stage> <version> <step>` starts a stage on the video's pages; `progress <video> <step>` moves it
+    on. A review round's scores (`--scores hook=8,…`, with `--round`) and what's being fixed (`--fix "<where>: <what>"`)
+    show beside the newest frames. `--end` ends the stage without its result. */
+function progressCommand() {
+  const root = studioRoot();
+  const [, slug, ...rest] = positional;
+  const usage = `usage: studio.mjs progress <video> <${STAGES.join("|")}> <version> <step>, then studio.mjs progress <video> <step> [--round <n>] [--scores ${Object.keys(SCORES).map((k) => `${k}=<1-10>`).join(",")}] [--fix "<where>: <what>"] | --end`;
+  if (!slug || (!rest.length && !argv.some((a) => ["--end", "--round", "--scores", "--fix"].includes(a)))) throw new Error(usage);
+  if (!existsSync(join(root, "videos", slug, "BRIEF.md")) && !existsSync(join(root, "videos", slug))) throw new Error(`There's no video "${slug}" in this studio.`);
+  if (argv.includes("--end")) {
+    endStage(root, slug);
+    return console.log(`${slug}: the stage under way has ended.`);
+  }
+  // a step is one of its stage's, so the pages name it
+  const brief = readBrief(root, slug);
+  const starting = STAGES.includes(rest[0]);
+  const stage = starting ? { stage: rest[0], version: Number(rest[1]) } : readProgress(root, slug);
+  const named = starting ? rest[2] : rest[0];
+  if (stage && named) {
+    const keys = stepsFor(stage, brief).map((x) => x.key);
+    if (!keys.includes(named)) throw new Error(`"${named}" isn't a step of ${stage.stage === "final" ? "the final video" : `${stage.stage} v${stage.version}`}. Its steps: ${keys.join(", ")}.`);
+  }
+  let p = starting
+    ? startStage(root, slug, rest[0], Number(rest[1]), rest[2] || "")
+    : updateProgress(root, slug, (q) => {
+        if (rest[0]) q.step = rest[0];
+        return q;
+      });
+  if (!p) throw new Error(`No stage is under way for "${slug}". Start one first: studio.mjs progress ${slug} <${STAGES.join("|")}> <version> <step>`);
+  const round = opt("--round");
+  const scores = opt("--scores");
+  const fixes = opts("--fix");
+  if (round || scores || fixes.length) {
+    const given = {};
+    for (const pair of (scores || "").split(",").filter(Boolean)) {
+      const [k, v] = pair.split("=").map((x) => x.trim());
+      if (!Object.hasOwn(SCORES, k) || !(Number(v) >= 1 && Number(v) <= 10)) throw new Error(`Scores are ${Object.keys(SCORES).join(", ")}, each from 1 to 10: "${pair}" isn't one.`);
+      given[k] = Number(v);
+    }
+    p = updateProgress(root, slug, (q) => {
+      if (round) q.round = Number(round);
+      if (scores) {
+        const r = Number(round) || q.round || 1;
+        // a new round's scores: the last round's stay to compare, and its fixes are done
+        if (q.scores && q.scores.round < r) {
+          q.previous = q.scores;
+          delete q.fixing;
+        }
+        q.scores = { round: r, ...given };
+      }
+      if (fixes.length)
+        q.fixing = fixes.slice(0, 5).map((f) => {
+          const i = f.indexOf(": ");
+          return i > 0 ? { where: f.slice(0, i).trim(), what: f.slice(i + 2).trim() } : { where: "", what: f.trim() };
+        });
+      return q;
+    });
+  }
+  const { steps, at } = stepsNow(p, brief);
+  console.log(`${slug}: ${stageTitle(p).replace(/^Claude is /, "")}, ${steps[at].label.toLowerCase()}${p.round ? ` (round ${p.round})` : ""}. Its overview shows it: /videos/${slug}/`);
+}
+
+/** The HyperFrames version a video's folder renders with: its package.json's render script, or the studio's. */
+function hyperframesPin(dir, root) {
+  const script = readJSON(join(dir, "package.json"))?.scripts?.render || "";
+  return /hyperframes@([0-9][\w.-]*)/.exec(script)?.[1] || readStudio(root).hyperframes || null;
+}
+
+/** `render`: `HF render …` for the video whose folder this is (its pinned HyperFrames), with HyperFrames' own output as
+    it comes, that also puts the render's progress on the video's pages while a stage is under way: the frames rendered
+    and the time left. A draft's round comes from its name (`…_draft_r2.mp4`); in the final stage it's the final
+    render. */
+async function renderCommand() {
+  const at = videoAt(process.cwd());
+  if (!at) throw new Error("Run `studio.mjs render` from the video's folder (videos/<video>/ in a studio).");
+  const pin = hyperframesPin(at.dir, at.root);
+  if (!pin) throw new Error(`No HyperFrames version for "${at.slug}": its package.json has no render script and studio.json no "hyperframes".`);
+  const from = argv.indexOf("render") + 1;
+  const args = argv.slice(from).filter((a, i, all) => a !== "--" && a !== "--studio" && all[i - 1] !== "--studio");
+  const outIdx = args.findIndex((a) => a === "--output" || a === "-o");
+  const output = outIdx >= 0 ? args[outIdx + 1] || "" : (args.find((a) => /^(--output|-o)=/.test(a)) || "").replace(/^[^=]*=/, "");
+  const round = Number(/_r(\d+)\.[a-z0-9]+$/i.exec(output)?.[1]) || null;
+  const size = /_(\d+x\d+)(?:_v\d+)?\.[a-z0-9]+$/i.exec(output)?.[1] || null;
+  const since = new Date().toISOString();
+  let last = 0;
+  let phase = "";
+  // the pace is measured from the first frame, as setting up counts for part of HyperFrames' percentage
+  let first = null;
+  const note = (count, force = false) => {
+    if (!force && count.phase === phase && Date.now() - last < 500) return;
+    last = Date.now();
+    phase = count.phase;
+    try {
+      updateProgress(at.root, at.slug, (q) => {
+        q.step = q.stage === "final" ? "master" : "render";
+        if (round && q.stage === "video") q.round = round;
+        q.count = { unit: "frames", since, ...(q.stage === "final" && size ? { size } : {}), ...count };
+        return q;
+      });
+    } catch {}
   };
-  console.log(JSON.stringify({ page }));
+  note({ done: 0, total: 0, pct: 0, phase: "setup" }, true);
+  const child = spawn("npx", ["--yes", `hyperframes@${pin}`, "render", ...args], { cwd: process.cwd(), stdio: ["inherit", "pipe", "pipe"] });
+  const watch = (stream, out) => {
+    let rest = "";
+    stream.on("data", (chunk) => {
+      out.write(chunk);
+      const lines = (rest + chunk.toString("utf8")).split("\n");
+      rest = lines.pop();
+      for (const line of lines) {
+        const m = /@hf-progress (\{.*\})\s*$/.exec(line);
+        if (!m) continue;
+        try {
+          const e = JSON.parse(m[1]);
+          if (e.code === "capture") {
+            first ||= { pct0: e.pct, t0: new Date().toISOString() };
+            note({ done: e.done, total: e.total, pct: e.pct, phase: "capture", ...first });
+          }
+          else if (Number.isFinite(e.pct)) note({ pct: e.pct, phase: e.code, ...(first || {}), ...(e.code === "encode" ? { done: e.done, total: e.total } : {}) });
+        } catch {}
+      }
+    });
+  };
+  watch(child.stdout, process.stdout);
+  watch(child.stderr, process.stderr);
+  const code = await new Promise((done) => child.on("close", (c) => done(c ?? 1)));
+  if (code === 0) note({ pct: 100, phase: "done" }, true);
+  else {
+    // a render that stopped leaves no count behind: Claude renders again once it has fixed what stopped it
+    try {
+      updateProgress(at.root, at.slug, (q) => {
+        delete q.count;
+        return q;
+      });
+    } catch {}
+  }
+  process.exitCode = code;
 }
 
 /** `pdf`: the PDF of a script or storyboard version, made by the page server as its Download PDF button does. It's

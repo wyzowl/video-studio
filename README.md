@@ -103,12 +103,17 @@ desktop app, in the built-in browser beside the chat. In the chat it adds a card
 it that opens the page in your normal browser (in the terminal, the link alone).
 
 In a studio session, a band above Claude's message box keeps the studio one click away. When a script, storyboard or
-video is waiting for your review, it says so, with a button that opens it (for example **Open storyboard v2**). Otherwise it
-says **Working on a video?** with **Open dashboard**. The button opens the page beside the chat, opening the browser
+video is waiting for your review, it says so, with a button that opens it (for example **Open storyboard v2**). While
+Claude makes something, it says what, with **Watch**. Otherwise it says **Working on a video?** with **Open dashboard**. The button opens the page beside the chat, opening the browser
 panel if it's closed. Close the band with its × and it stays away until something new is waiting.
 
 When Claude has worked on something, its final message, the one to read and act on, sits in a box with a yellow
 border, so it's easy to find after a long run of steps. Plain replies look as usual.
+
+While Claude makes a script, a storyboard or a version of the video, the video's overview shows the work as it
+happens, so you always know something is going on: the stage's steps, the frames rendered and the time left, the
+newest frames and, while it checks a version of the video, Video Studio's own scores and what it's fixing next.
+Nothing there is for review yet: the page for that opens when it's ready.
 
 You don't need to go back to the chat when you've finished a review. When you press **Approve and save** (it says
 **Send changes**, or **Send feedback** on a storyboard, once there are notes), Claude picks it up straight away and

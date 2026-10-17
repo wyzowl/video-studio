@@ -26,6 +26,10 @@ videos/<project>/storyboard/v<N>/
 
 ## Make version 1
 
+Mark the work on the video's overview as you go (production skill, "Work in progress"): start with
+`node PLUGIN/scripts/studio.mjs progress <project> storyboard 1 plan` (or `voice` first, while you make or time the
+voiceover), and mark `check` when you look over the frames; rendering them marks `frames` by itself.
+
 1. **Plan the scenes** from the approved script (script skill) and the timing: usually 3–12, each roughly 2–8
    seconds. The script's rows are the beats, and their `scene` numbers group them into scenes; carry each scene's
    voiceover or text on screen over exactly as approved, and use its action on screen for what happens. With a
@@ -94,6 +98,8 @@ go-ahead: carry on without asking them to confirm. Read `feedback.json`.
 - **Feedback on some scenes, or general notes** (the page counts general notes as asking for changes; feedback from
   someone outside the studio is often pasted there, naming scenes by number): make the next version. If the general
   notes turn out to ask for nothing (just praise, say), tell the user and go to the build stage instead.
+  0. Start it on the overview: `studio.mjs progress <project> storyboard <N+1> notes`, then `plan`, and `check` as
+     you look over the re-rendered frames.
   1. Copy `v<N>` to `v<N+1>` (leave `v<N>` and its feedback untouched) and delete the copy's `feedback.json` and
      any PDF (a download's copy). The copy stays out of sight until its `storyboard.json` says `"version": N+1`.
   2. Apply every note in the copy's `frames.html`. A general note can touch several scenes.

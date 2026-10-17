@@ -5,6 +5,7 @@ import { homedir } from "node:os";
 import { join, resolve, dirname, extname, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CATEGORIES } from "./categories.mjs";
+import { readProgress, stageTitle, stepsNow } from "./progress.mjs";
 
 export const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 export const STUDIO_FILE = "studio.json";
@@ -392,6 +393,9 @@ export function readVideo(root, slug) {
 
   // Claude picked up a finished review and is working on the next step (until that step's result appears)
   const working = workingOn(root, slug, { sc: latestSc?.version, sb: latestSb?.version, rv: latestRv?.version, delivered: Boolean(master) });
+  // what Claude is making now (lib/progress.mjs): the stage it marked or, until it marks one, the stage that follows the
+  // review it picked up, at its first step
+  const progress = readProgress(root, slug) || nextStage(working, { sb: latestSb?.version, rv: latestRv?.version });
 
   const rel = (p) => (p ? `/videos/${encodeURIComponent(slug)}/${p.slice(dir.length + 1).split("/").map(encodeURIComponent).join("/")}` : null);
   const updated = Math.max(
@@ -414,8 +418,9 @@ export function readVideo(root, slug) {
     destination: brief.destination || null,
     created,
     updated,
-    status: { key: status, label: statusLabel(status, storyboard, review, working, script) },
+    status: { key: status, label: progress ? progressLabel(progress, brief) : statusLabel(status, storyboard, review, working, script) },
     working,
+    progress,
     script,
     storyboard,
     review,
@@ -423,6 +428,25 @@ export function readVideo(root, slug) {
     draft: draft ? { name: draft.name, url: rel(draft.path) } : null,
     thumbnail: poster ? rel(poster.path) : review?.poster || storyboard?.firstFrame || null,
   };
+}
+
+/** The stage that follows a review Claude picked up, as a stage under way at its first step (until Claude marks one). */
+function nextStage(w, latest) {
+  if (!w) return null;
+  const [stage, version] =
+    {
+      script: w.outcome === "approved" ? ["storyboard", (latest.sb || 0) + 1] : ["script", w.version + 1],
+      storyboard: w.outcome === "approved" ? ["video", (latest.rv || 0) + 1] : ["storyboard", w.version + 1],
+      review: w.outcome === "approved" ? ["final", w.version] : ["video", w.version + 1],
+    }[w.stage] || [];
+  if (!stage) return null;
+  return { stage, version, step: "", started: w.since, updated: w.since, inferred: true, quiet: Date.now() - Date.parse(w.since) > 20 * 60e3 };
+}
+
+/** A video's status while Claude makes something: what, and the step it's on ("Claude is making video v2 · Draft render"). */
+function progressLabel(p, brief) {
+  const { steps, at } = stepsNow(p, brief);
+  return `${stageTitle(p)} · ${steps[at].label}`;
 }
 
 function statusLabel(key, sb, rv, working, sc) {
@@ -479,7 +503,9 @@ export function pageStamp(root, path) {
     // working note. Draft renders are left out, so the page doesn't reload while a draft is being made.
     const dir = join(root, "videos", m[1]);
     const video = readVideo(root, m[1]);
-    const parts = [mtime(join(dir, "BRIEF.md")), video?.master?.name || "", video?.working?.since || ""];
+    // a stage starting or ending reloads it (the panel of work in progress updates itself in between: ui/page.js)
+    const p = video?.progress;
+    const parts = [mtime(join(dir, "BRIEF.md")), video?.master?.name || "", video?.working?.since || "", p ? `${p.stage}${p.version}${p.inferred ? "?" : ""}` : ""];
     for (const v of scriptVersions(root, m[1])) {
       const d = join(dir, "script", `v${v}`);
       parts.push(`c${v}:${mtime(join(d, "script.json"))}:${mtime(join(d, "feedback.json"))}`);

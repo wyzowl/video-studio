@@ -20,7 +20,7 @@ type Page = typeof STORYBOARD | null
  * answers what `waiting()` returns, and whose `url` answers the page's address), the browser pane, and the engine's
  * own empty band. Returns what the helper ran and what the pane opened.
  */
-function world(on: On, waiting: () => Page = () => null, inStudio = true) {
+function world(on: On, waiting: () => Page = () => null, inStudio = true, making: () => Page = () => null) {
   const runs: string[][] = []
   const opened: string[] = []
   on('session.start', ($, e) => ({ cwd: e.cwd }))
@@ -32,9 +32,11 @@ function world(on: On, waiting: () => Page = () => null, inStudio = true) {
     const argv = [...e.argv]
     runs.push(argv)
     const at = argv.indexOf('url')
-    const stdout = argv.includes('ready') ? JSON.stringify({ page: waiting() }) : at >= 0 ? `http://127.0.0.1:4747${argv[at + 1]}\n` : ''
+    const stdout = argv.includes('ready') ? JSON.stringify({ page: waiting(), making: making() }) : at >= 0 ? `http://127.0.0.1:4747${argv[at + 1]}\n` : ''
     return { value: { exitCode: 0, stdout, stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }
   })
+  on('tool.call', () => ({ isError: true as const, result: 'not run in a test' }))
+  on('turn.start', ($, e) => ({ turnId: e.turnId }))
   on('mcp.call', ($, e) => {
     opened.push(`${e.server} ${e.tool} ${String(e.args.url)}`)
     return { value: { content: [], isError: false } }
@@ -98,6 +100,28 @@ test('after a turn the band shows what is waiting now, and a dismissed band come
   await turnEnds($)
   await clock.advance(0)
   expect((await ui.find({ key: 'open' }))?.text).toBe('Open video v1')
+})
+
+test('while Claude makes something the band says what, after each studio tool, and Watch opens its overview', async ($, on) => {
+  const MAKING = { path: '/videos/intro/', text: 'Claude is making storyboard v3 of Intro: make the frames, 7 of 14', button: 'Watch' }
+  let making: Page = null
+  const { opened } = world(on, () => null, true, () => making)
+  const clock = mock.clock(on)
+  await start($)
+  const ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  expect((await ui.find({ key: 'open' }))?.text).toBe('Open dashboard')
+  // Claude renders the storyboard's frames: once the tool has run, the band follows the work
+  making = MAKING
+  await $.tool.call({ tool: 'Bash', tool_use_id: 'u1', command: 'node /plugin/scripts/render-frames.mjs videos/intro/storyboard/v3/frames.html videos/intro/storyboard/v3/frames', description: 'frames' })
+  await clock.advance(0)
+  expect(await ui.find({ text: MAKING.text })).toBeDefined()
+  await ui.press({ key: 'open' })
+  expect(opened).toEqual(['Claude_Browser preview_start http://127.0.0.1:4747/videos/intro/'])
+  // any other command leaves the band as it is
+  making = null
+  await $.tool.call({ tool: 'Bash', tool_use_id: 'u2', command: 'ls', description: 'list' })
+  await clock.advance(0)
+  expect(await ui.find({ text: MAKING.text })).toBeDefined()
 })
 
 test('outside a studio there is no band, and nothing runs', async ($, on) => {

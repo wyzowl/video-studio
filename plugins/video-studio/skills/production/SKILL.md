@@ -11,8 +11,10 @@ the **storyboard** (before anything is built) and the **video** (before the fina
 
 **Paths.** `PLUGIN` means this plugin's folder: the session-start note calls it "Plugin files", and commands see it as
 `${CLAUDE_PLUGIN_ROOT}`. `HF` means `npx --yes hyperframes@<pin>`, where `<pin>` is the version in the project's
-`package.json`. Use `npm run check` and `npm run render -- …` where they exist. Bare `npx hyperframes` runs the newest
-release instead of the pin: don't use it. New projects use the `hyperframes` version in `studio.json`.
+`package.json`. Use `npm run check` where it exists. Render with `node PLUGIN/scripts/studio.mjs render -- …` (the
+same options as `HF render`), from the video's folder: it runs the pinned `HF render` and shows the render's progress
+on the video's overview ("Work in progress" below). Bare `npx hyperframes` runs the newest release instead of the pin:
+don't use it. New projects use the `hyperframes` version in `studio.json`.
 
 ## Stages
 
@@ -36,7 +38,9 @@ release instead of the pin: don't use it. New projects use the `hyperframes` ver
    - **Footage** (`type: footage`): the cut's own speech is the clock. Each kept range plays at its own pace, and
      everything else is timed to the scan's word times, moved to where each range sits in the cut.
 4. **Storyboard.** Follow the video-studio:storyboard skill. Build nothing until every scene is approved.
-5. **Build.** One `index.html` with a pure `render(t)` on one paused GSAP clock, or `src/` plus a build script that
+5. **Build.** Start it on the overview (`studio.mjs progress <project> video 1 build`, "Work in progress" below), then
+   mark `check` and each round's steps as you go. One `index.html` with a pure `render(t)` on one paused GSAP clock, or
+   `src/` plus a build script that
    generates `index.html` for bigger films. Reuse the approved storyboard frames' layouts. `HF check` must show
    0 errors. Check stills with `HF snapshot --at <times>` before the first render. A footage video is built as clips
    instead ("Footage videos" below).
@@ -57,7 +61,7 @@ release instead of the pin: don't use it. New projects use the `hyperframes` ver
      `review.json` (never write it yourself).
      `approved` means go to stage 9, treating any notes as small last tweaks. `changes` means apply every note (times
      are seconds into the video: look at each moment), run the review loop again, and share the result as review
-     v<N+1>.
+     v<N+1>: start it on the overview with `studio.mjs progress <project> video <N+1> notes`.
 9. **Master and deliverables**, only after the user approves the video. See "Deliverables". Then show the video's
    overview `/videos/<project>/`, where the final video now sits at the end of its stages.
 10. **Other sizes**, only after sign-off and only when asked: separate compositions in the same project that reuse the
@@ -123,6 +127,31 @@ notes on the video", "Video approved") before the wait finishes, carry on the sa
 
 Open pages refresh themselves when their files change, keeping anything the user hasn't saved, and an older
 script, storyboard or video offers the newer one. There's no need to reopen a page after an edit.
+
+## Work in progress
+
+While you make a script, a storyboard, a version of the video or the final video, its overview shows the work as it
+happens: the stage's steps, a count for the slow ones, the newest frames and, in the review loop, Video Studio's own
+scores. So the user can always see that something is happening, mark the work as you go:
+
+- **Start each stage** as you begin it: `node PLUGIN/scripts/studio.mjs progress <project> <stage> <version> <step>`.
+  The stage is `script`, `storyboard`, `video` (a version for review) or `final` (once the video is approved, with
+  the approved version's number).
+- **Mark each next step** as you start it: `studio.mjs progress <project> <step>`. The steps, in order:
+  - script: `brief` (v1) or `notes` (later versions), `scan` (footage), `draft`, `length`;
+  - storyboard: `notes` (later versions), `voice` (making or timing the voiceover), `plan`, `frames`, `clips`
+    (footage), `check`;
+  - video: `notes` (later versions), `build`, `check`, `render`, `sheets`, `scores`, `fixes`;
+  - final: `master`, `extras`.
+- **The tools mark their own steps and counts:** `render-frames.mjs` (the frames as they're made), `footage.mjs` (the
+  scan, stills and rough cuts), `studio.mjs render` (frames rendered and the time left) and `sheets.mjs` (the newest
+  key frames, or the poster).
+- **After scoring a round,** give the scores and what you'll fix, in one call: `studio.mjs progress <project> fixes
+  --round 1 --scores hook=8,phone=6,motion=7,variety=8,composition=8,brand=9,sync=7 --fix "12.4–13.0 s: the whip
+  pan lands a beat late" --fix "Phone size: the source line is too small to read"`. Up to five fixes, each
+  `<where>: <what>`, in plain words: the user reads them.
+- Writing the stage's result (`script.json`, `storyboard.json`, `review.json`, or the final video's web copy) ends
+  it. If you stop a stage without one, end it: `studio.mjs progress <project> --end`.
 
 Pages: `/` (dashboard), `/brands/<slug>/` (a brand), `/videos/<project>/` (a video's overview: what's happening now
 and every script, storyboard and video), `/videos/<project>/script/` (latest script),
@@ -261,8 +290,9 @@ Only when the brief says `voiceover: ai`. Use HyperFrames' built-in voices unles
 
 ## Deliverables
 
-- `renders/<project>_<size>.mp4`, the 60 fps master: `HF render --quality delivery --fps 60`. `<size>` is `16x9`,
-  `1x1`, `4x5`, `9x16` or `WxH`.
+- `renders/<project>_<size>.mp4`, the 60 fps master: `node PLUGIN/scripts/studio.mjs render -- --quality delivery
+  --fps 60 --output renders/<project>_<size>.mp4`, after `studio.mjs progress <project> final <version> master`.
+  `<size>` is `16x9`, `1x1`, `4x5`, `9x16` or `WxH`.
 - `node PLUGIN/scripts/tools/sheets.mjs renders/<project>_<size>.mp4 --deliver` makes the `_web.mp4` copy (H.264,
   CRF 19, faststart), `poster.png` and `contact.png`.
 - `docs/review_log.md` and `docs/motion_audit.md`.

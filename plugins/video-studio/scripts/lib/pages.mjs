@@ -33,6 +33,7 @@ import {
 } from "./studio.mjs";
 import { CATEGORIES, SIZES, BRAND_VARS, libraryItems, libraryItem, lockedItems, findItem, brokenItems, contentVariables, brandStyle } from "./library.mjs";
 import { catalogue, installedPack, licence } from "./paid.mjs";
+import { SCORES, stageTitle, stepsNow } from "./progress.mjs";
 
 export const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -279,7 +280,7 @@ export function dashboardPage(studio) {
   <article class="video-card">
     ${frame({ src: v.thumbnail, ratio: v.size.ratio, href: overview, empty: "Frames appear with the storyboard", portrait })}
     <div class="video-card_body">
-      <div class="row"><span class="chip chip--${CHIP[key] || "planning"}">${esc(v.status.label)}</span></div>
+      <div class="row"><span class="chip chip--${v.progress ? "working" : CHIP[key] || "planning"}">${esc(v.status.label)}</span></div>
       <h3 class="video-card_title"><a class="title-link" href="${overview}">${esc(v.title)}</a></h3>
       <div class="row">${brandChip}<span class="chip chip--plain">${esc(v.type === "footage" ? "Footage" : "Animated")}</span><span class="chip chip--plain">${esc(v.size.label)}</span>${v.length ? `<span class="chip chip--plain chip--raw">${esc(v.length)}</span>` : ""}</div>
       <p class="video-card_status">Updated ${esc(formatDateTime(v.updated))} · <span class="mono">videos/${esc(v.slug)}</span></p>
@@ -736,6 +737,139 @@ function nowPanel(video) {
   return panel("waiting", "Planning", "The script comes next, and appears here for your review.");
 }
 
+// ───────── work in progress ─────────
+
+const clockTime = (iso) => new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+const sig = (text) => {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
+  return (h >>> 0).toString(36);
+};
+
+/** What the stage under way is made from ("From your 2 notes on video v1."). */
+function progressFrom(video, p) {
+  const notes = (n, what) => (n ? `From your ${n} note${n === 1 ? "" : "s"} on ${what}.` : `From your notes on ${what}.`);
+  if (p.stage === "script") return p.version > 1 ? notes(video.script?.notes, `script v${p.version - 1}`) : "From your brief.";
+  if (p.stage === "storyboard") {
+    if (p.version === 1) return "From the approved script.";
+    const n = video.storyboard?.feedback;
+    return n ? `From your feedback on ${n} scene${n === 1 ? "" : "s"} of storyboard v${p.version - 1}.` : `From your feedback on storyboard v${p.version - 1}.`;
+  }
+  if (p.stage === "video") return p.version > 1 ? notes(video.review?.notes, `video v${p.version - 1}`) : "From the approved storyboard.";
+  return `From the approved video v${p.version}.`;
+}
+
+/** How long is left of a count, from its pace so far ("about 40 s left"). */
+function timeLeft(c, now = Date.now()) {
+  if (c.phase === "done") return "";
+  const from = c.t0 ? { at: Date.parse(c.t0), pct: c.pct0 || 0 } : c.since ? { at: Date.parse(c.since), pct: 0 } : null;
+  const pct = Number.isFinite(c.pct) ? c.pct : c.total ? (100 * c.done) / c.total : null;
+  if (!from || pct == null || pct - from.pct < 3 || pct >= 100) return "";
+  const left = ((100 - pct) * (now - from.at)) / (pct - from.pct) / 1000;
+  if (!Number.isFinite(left) || left < 1) return "";
+  return left < 60 ? `about ${Math.max(5, Math.round(left / 5) * 5)} s left` : `about ${Math.round(left / 60)} min left`;
+}
+
+/** The parts of the panel of work in progress ([{ name, sig, html }]), so ui/page.js redraws only the ones that changed:
+    what's being made and from what, the stage's steps, the count under way, the newest frames, and in a video's review
+    loop Video Studio's own scores and what's being fixed. */
+export function progressParts(video, p, brief) {
+  const { steps, at } = stepsNow(p, brief);
+  const quiet = p.quiet ? Math.round((Date.now() - Date.parse(p.updated || p.started)) / 60e3) : 0;
+  const parts = [];
+  const add = (name, html) => html && parts.push({ name, sig: sig(html), html: `<div data-part="${name}" data-sig="${sig(html)}">${html}</div>` });
+
+  add(
+    "head",
+    `<div class="making_head">${quiet ? "" : `<span class="now_pulse" aria-hidden="true"></span>`}<div class="making_title"><strong>${esc(stageTitle(p))}</strong><p>${esc(progressFrom(video, p))} This page updates as it works.</p></div><p class="making_time">Started ${esc(clockTime(p.started))}${quiet ? ` · no news for ${quiet} min` : ""}</p></div>`,
+  );
+  add(
+    "steps",
+    `<ol class="making_steps">${steps
+      .map((s, i) => `<li class="${i < at ? "is-done" : i === at ? "is-now" : ""}${s.key === "ready" ? " is-end" : ""}"${i === at ? ' aria-current="step"' : ""}>${esc(s.label)}${i === at && p.count?.pct != null && p.count.phase !== "done" ? ` <b>${Math.round(p.count.pct)}%</b>` : ""}</li>`)
+      .join("")}</ol>`,
+  );
+
+  const c = p.count;
+  if (c && (c.total || Number.isFinite(c.pct))) {
+    const pct = Math.max(0, Math.min(100, Number.isFinite(c.pct) ? c.pct : (100 * c.done) / c.total));
+    const words = [];
+    if (p.stage === "video" && p.round) words.push(`Round ${p.round}`);
+    if (p.step === "render" || p.step === "master") {
+      words.push(p.step === "master" ? `Final render${c.size ? ` ${c.size.replace("x", ":")}` : ""}` : `Draft r${p.round || 1}`);
+      words.push({ setup: "getting ready", capture: c.total ? `${c.done} of ${c.total} frames` : "rendering", encode: "encoding", assemble: "putting it together", done: "done" }[c.phase] || "rendering");
+    } else if (c.total) words.push(`${c.done} of ${c.total} ${c.unit || "done"}`);
+    const left = timeLeft(c);
+    if (left) words.push(left);
+    add("count", `<div class="making_progress"><div class="making_bar" role="progressbar" aria-label="${esc(steps[at].label)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}"><span style="width: ${pct.toFixed(1)}%"></span></div><p>${esc(words.join(" · "))}</p></div>`);
+  }
+
+  const frames = (p.frames || []).filter((f) => f?.src);
+  if (frames.length) {
+    const dir = join(video.root || "", "videos", video.slug);
+    const url = (src) => `/videos/${enc(video.slug)}/${String(src).split("/").map(enc).join("/")}?v=${Math.round(statSync(join(dir, src), { throwIfNoEntry: false })?.mtimeMs || 0)}`;
+    const title =
+      p.stage === "storyboard"
+        ? "Frames so far"
+        : p.stage === "final"
+          ? "The poster"
+          : `Newest frames${/_r(\d+)$/.test(p.framesFrom || "") ? ` · draft r${/_r(\d+)$/.exec(p.framesFrom)[1]}` : ""}`;
+    const shown = p.stage === "storyboard" ? frames.slice(-12) : frames.slice(0, 6);
+    const shape = video.size.h > video.size.w ? "portrait" : video.size.h === video.size.w ? "square" : "landscape";
+    add(
+      "frames",
+      `<section class="making_frames"><h3 class="field-label">${esc(title)}</h3><div class="making_strip making_strip--${shape}">${shown
+        .map((f) => `<figure><img src="${esc(url(f.src))}" alt="${esc(f.caption || "")}" loading="lazy" decoding="async">${f.caption ? `<figcaption>${esc(f.caption)}</figcaption>` : ""}</figure>`)
+        .join("")}</div></section>`,
+    );
+  }
+
+  if (p.stage === "video" && p.scores) {
+    const was = p.previous || {};
+    add(
+      "scores",
+      `<section class="making_scores"><h3 class="field-label">Video Studio's own scores · round ${esc(p.scores.round || 1)} · aim 8+</h3><ul>${Object.entries(SCORES)
+        .filter(([k]) => Number.isFinite(p.scores[k]))
+        .map(([k, label]) => {
+          const v = p.scores[k];
+          const before = Number.isFinite(was[k]) && was[k] !== v ? `<small>was ${was[k]}</small>` : "";
+          return `<li class="${v < 8 ? "is-low" : ""}"><span>${esc(label)}</span><i style="--v: ${v}" aria-hidden="true"></i><b>${v}</b>${before}</li>`;
+        })
+        .join("")}</ul></section>`,
+    );
+  }
+  if (p.stage === "video" && p.fixing?.length) {
+    add(
+      "fixing",
+      `<section class="making_fixing"><h3 class="field-label">Fixing in round ${esc((p.scores?.round || p.round || 1) + 1)}</h3><ol>${p.fixing.map((f) => `<li><b>${esc(f.where || "")}</b><span>${esc(f.what || "")}</span></li>`).join("")}</ol></section>`,
+    );
+  }
+
+  const note = quiet
+    ? `There's been no news from Claude for ${quiet} minutes. If it has stopped, ask it to carry on.`
+    : {
+        script: "The script comes to you as soon as it's written and its length is checked.",
+        storyboard: "Frames as they're made: nothing to review yet. The storyboard comes to you once every frame is made and checked.",
+        video: "Video Studio's own checks, as it works: nothing to review yet. The video comes to you once every score is 8 or more.",
+        final: "The final video appears here as soon as it's ready.",
+      }[p.stage];
+  add("note", `<p class="making_note">${esc(note)}</p>`);
+  return parts;
+}
+
+/** The panel of work in progress on a video's overview, in place of where it stands (ui/page.js keeps it up to date). */
+function progressPanel(video, brief) {
+  const parts = progressParts(video, video.progress, brief);
+  return `<div class="making${video.progress.quiet ? " is-quiet" : ""}" data-progress="${esc(video.slug)}" role="region" aria-label="Work in progress">${parts.map((x) => x.html).join("")}</div>`;
+}
+
+/** For /api/progress: whether a stage is under way for a video, and the panel's parts. */
+export function progressState(studio, slug) {
+  const video = readVideo(studio.root, slug);
+  if (!video?.progress) return { active: false };
+  return { active: true, quiet: Boolean(video.progress.quiet), parts: progressParts({ ...video, root: studio.root }, video.progress, readBrief(studio.root, slug)) };
+}
+
 /** A video's overview: where it stands, and every stage from the brief to the final video, to move between them. */
 export function projectPage(studio, slug) {
   const video = /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(slug) ? readVideo(studio.root, slug) : null;
@@ -827,19 +961,16 @@ export function projectPage(studio, slug) {
       }),
     );
   }
-  if (video.working) {
-    // what Claude is making from the review it picked up
-    const w = video.working;
-    const next = {
-      script: w.outcome === "approved" ? `Storyboard v${(sbVersions.at(-1) || 0) + 1}` : `Script v${w.version + 1}`,
-      storyboard: w.outcome === "approved" ? `Video v${(rvVersions.at(-1) || 0) + 1}` : `Storyboard v${w.version + 1}`,
-      review: w.outcome === "approved" ? "Final video" : `Video v${w.version + 1}`,
-    }[w.stage];
+  if (video.progress) {
+    // what Claude is making now
+    const p = video.progress;
+    const next = { script: `Script v${p.version}`, storyboard: `Storyboard v${p.version}`, video: `Video v${p.version}`, final: "Final video" }[p.stage];
+    const { steps, at } = stepsNow(p, brief);
     items.push(
       stageItem({
         title: next,
         chip: `<span class="chip chip--working">Claude is working on it</span>`,
-        text: `Started ${formatDateTime(Date.parse(w.since))}. It appears here when it's ready.`,
+        text: `Started ${formatDateTime(Date.parse(p.started))}. Now: ${steps[at].label.toLowerCase()}. It appears here when it's ready.`,
         pending: true,
       }),
     );
@@ -873,7 +1004,7 @@ export function projectPage(studio, slug) {
         </dl>
       </div>
     </div>
-    ${nowPanel(video)}
+    ${video.progress ? progressPanel({ ...video, root: studio.root }, brief) : nowPanel(video)}
   </div>
 </section>
 <section class="section section--rule">

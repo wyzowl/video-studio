@@ -10,10 +10,13 @@
 //     "poster": 61.5,                          the poster frame
 //     "contact": [0.8, 2.6, …] }               optional: the 30 contact-sheet beats (default: keys, resampled)
 // Deliver mode keeps a revision suffix: renders/<p>_16x9_v2.mp4 → poster_v2.png, contact_v2.png.
+// While a stage is under way on the video's pages, its newest key frames (or the poster) show there
+// (lib/progress.mjs): review sheets also make small copies of the key frames, in thumbs/.
 import { spawn } from "node:child_process";
 import { readFileSync, mkdirSync, rmSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname, basename } from "node:path";
+import { inVideo, readProgress, report, videoAt } from "../lib/progress.mjs";
 
 const argv = process.argv.slice(2);
 const deliver = argv.includes("--deliver");
@@ -40,6 +43,13 @@ if (deliver) {
   await pool(T.map((t, i) => grab(t, join(tmp, `c_${String(i).padStart(2, "0")}.png`), 384)));
   await ff(["-pattern_type", "glob", "-i", join(tmp, "c_*.png"), "-vf", `tile=6x${Math.ceil(T.length / 6)}:padding=3:color=0x888888`, join(D, `contact${V}.png`)]);
   rmSync(tmp, { recursive: true });
+  report(IN, (q, at) => {
+    if (q.stage !== "final") return q;
+    q.step = "extras";
+    delete q.count;
+    q.frames = [{ src: inVideo(at, join(D, `poster${V}.png`)), caption: "Poster" }];
+    return q;
+  });
   console.log(`web: ${join(D, base + "_web.mp4")} · poster: ${join(D, `poster${V}.png`)} · contact: ${join(D, `contact${V}.png`)}`);
 } else {
   mkdirSync(OUT, { recursive: true });
@@ -58,6 +68,21 @@ if (deliver) {
   for (const [name] of strips) {
     await ff(["-pattern_type", "glob", "-i", join(OUT, `_s_${name}_*.png`), "-vf", "scale=320:-1,tile=6x2:padding=4:color=0x555555", join(OUT, `strip_${name}.png`)]);
     for (let k = 0; k < 12; k++) rmSync(join(OUT, `_s_${name}_${String(k).padStart(2, "0")}.png`));
+  }
+  // the video under way shows these key frames as its newest, from small copies
+  const at = videoAt(OUT);
+  if (!only.length && at && readProgress(at.root, at.slug)?.stage === "video") {
+    mkdirSync(join(OUT, "thumbs"), { recursive: true });
+    const keys = pick(B.keys.map((t, i) => ({ t, i })), 6);
+    await pool(keys.map(({ i }) => () => ff(["-i", join(OUT, `k_${String(i).padStart(2, "0")}.png`), "-vf", "scale=480:-1", "-q:v", "4", join(OUT, "thumbs", `k_${String(i).padStart(2, "0")}.jpg`)])));
+    const clock = (t) => `${String(Math.floor(t / 60)).padStart(2, "0")}:${(t % 60).toFixed(1).padStart(4, "0")}`;
+    report(OUT, (q, here) => {
+      q.step = "sheets";
+      delete q.count;
+      q.frames = keys.map(({ t, i }) => ({ src: inVideo(here, join(OUT, "thumbs", `k_${String(i).padStart(2, "0")}.jpg`)), caption: clock(t) }));
+      q.framesFrom = basename(IN).replace(/\.[a-z0-9]+$/i, "");
+      return q;
+    });
   }
   console.log(`sheets in ${OUT}: ${only.length ? "" : "keys.png, phone.png, "}${strips.length} strips`);
 }

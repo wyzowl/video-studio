@@ -5,11 +5,14 @@ Claude reviews every draft before the user sees it. Always review the rendered f
 ## A round
 
 1. `HF check` must show 0 errors; read the warnings.
-2. Render a draft: `HF render --quality draft --fps 30 --output renders/drafts/<project>_v1_draft_r1.mp4`.
+2. Render a draft: `node PLUGIN/scripts/studio.mjs render -- --quality draft --fps 30 --output
+   renders/drafts/<project>_v1_draft_r1.mp4` (`HF render`, pinned, with its progress on the video's overview).
 3. Make the review sheets from it:
    `node PLUGIN/scripts/tools/sheets.mjs renders/drafts/<project>_v1_draft_r1.mp4 docs/review/r1`
 4. Look at every sheet (Read tool) and score the round.
-5. Log it, fix the three worst problems, and start the next round.
+5. Log it, then put the scores and the three worst problems on the video's overview in one call (`studio.mjs progress
+   <project> fixes --round <n> --scores … --fix "<where>: <what>"`, production skill, "Work in progress"). Fix them
+   and start the next round.
 
 Repeat until every score is 8 or more, with at least two rounds. Only then show the user.
 
