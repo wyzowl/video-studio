@@ -58,7 +58,10 @@ don't use it. New projects use the `hyperframes` version in `studio.json`.
      next. Flag every departure from the brief or the approved storyboard. Then wait for the review in the
      background and end your turn.
    - When the review comes in (the wait finishes, or the user says they've saved), read `feedback.json` beside
-     `review.json` (never write it yourself).
+     `review.json` (never write it yourself). A note may point at something in the picture: a `box` or an `arrow`
+     (fractions of the picture, x and y from its top-left) and a `picture`, that moment with their mark drawn on it
+     (in the review's `points/` folder). Look at every note's picture (Read tool) before changing anything: it shows
+     exactly what they mean.
      `approved` means go to stage 9, treating any notes as small last tweaks. `changes` means apply every note (times
      are seconds into the video: look at each moment), run the review loop again, and share the result as review
      v<N+1>: start it on the overview with `studio.mjs progress <project> video <N+1> notes`.

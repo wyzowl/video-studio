@@ -22,6 +22,10 @@ another tells Claude how to show the page (`studio.mjs show`), unless it's alrea
 when their files change. For scripts, storyboards and drafts, Claude then waits in the background
 (`studio.mjs wait`): saving a finished review wakes it, so the user doesn't have to come back to the chat.
 
+On a paused draft, and on the latest storyboard's frames, Box and Arrow buttons on the picture let the user point at
+something (`ui/point.js`). The note keeps the shape, as fractions of the picture, and the page saves a picture of that
+moment with the mark on it in the version's `points/` folder; `studio.mjs wait` tells Claude to look at those first.
+
 To share outside the studio, script and storyboard pages download as PDFs and drafts as video files. The page server
 makes each PDF from a print version of the page with HyperFrames' headless Chrome (`scripts/lib/print.mjs`,
 `ui/print.css`) and keeps a copy in the version's folder; `studio.mjs pdf <page>` does the same for Claude.

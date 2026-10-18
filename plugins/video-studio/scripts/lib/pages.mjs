@@ -139,7 +139,7 @@ function frame({ src, ratio = "16 / 9", alt = "", caption = "", time = "", href 
   const cap = caption || time ? `<figcaption class="frame_caption"><span>${esc(caption)}</span>${time ? `<span class="frame_time">${esc(time)}</span>` : ""}</figcaption>` : "";
   const zoomable = zoom && src;
   const link = zoomable
-    ? `<a class="frame_stage frame_stage--zoom" href="${esc(src)}" data-zoom data-w="${zoom.w}" data-h="${zoom.h}" data-label="${esc(zoom.label)}" title="Open full size">${stage}</a>`
+    ? `<a class="frame_stage frame_stage--zoom" href="${esc(src)}" data-zoom data-w="${zoom.w}" data-h="${zoom.h}" data-label="${esc(zoom.label)}"${zoom.id ? ` data-frame-id="${esc(zoom.id)}"` : ""} title="Open full size">${stage}</a>`
     : href
       ? `<a class="frame_stage" href="${esc(href)}">${stage}</a>`
       : `<div class="frame_stage">${stage}</div>`;
@@ -1251,7 +1251,8 @@ export function storyboardPage(studio, slug, version) {
                 const caption = f.caption || `Frame ${k + 1}`;
                 const time = f.time != null ? timecode(f.time, true) : "";
                 const label = [`Scene ${i + 1}: ${s.title || `Scene ${i + 1}`}`, caption, time].filter(Boolean).join(" · ");
-                return frame({ src: `${base}${enc(f.src)}`, ratio: size.ratio, alt: f.caption || `Scene ${i + 1}, frame ${k + 1}`, caption, time, zoom: { w: size.w, h: size.h, label } });
+                const frameId = String(f.src || "").split("/").pop().replace(/\.[a-z0-9]+$/i, "") || `${id}-${k + 1}`;
+                return frame({ src: `${base}${enc(f.src)}`, ratio: size.ratio, alt: f.caption || `Scene ${i + 1}, frame ${k + 1}`, caption, time, zoom: { w: size.w, h: size.h, label, id: frameId } });
               })
               .join("")
           : frame({ ratio: size.ratio, empty: "No frames for this scene" })
@@ -1276,6 +1277,7 @@ export function storyboardPage(studio, slug, version) {
           <div class="review_note" hidden>
             <label class="field-label" for="n-${esc(id)}">What should change?</label>
             <textarea id="n-${esc(id)}" data-note="${esc(id)}" rows="4" placeholder="Be as specific as you can: what to change, and why."></textarea>
+            <ul class="points" data-points="${esc(id)}"></ul>
           </div>
         </div>
       </fieldset>
@@ -1291,6 +1293,9 @@ export function storyboardPage(studio, slug, version) {
     latest,
     scenes: scenes.map((s, i) => ({ id: String(s.id || `s${String(i + 1).padStart(2, "0")}`), title: s.title || `Scene ${i + 1}`, carried: Boolean(s.carriedApproval) })),
     feedback: fb || null,
+    // for "Point at it" (ui/point.js): where the version's files are, and the frames' shape
+    base,
+    ratio: size.w / size.h,
   };
 
   const body = `
@@ -1325,7 +1330,7 @@ export function storyboardPage(studio, slug, version) {
       earlier: latest ? "" : `<div class="callout"><strong>This is an earlier version.</strong><p>Its feedback is shown as it was saved. <a href="/videos/${enc(slug)}/storyboard/v${versions.at(-1)}/">Review the latest version (v${versions.at(-1)})</a>.</p></div>`,
       changed: sb.changes ? { title: `What changed in v${v}`, text: sb.changes } : null,
       howTo: latest
-        ? `<p>Look at each scene's frames${scenes.some((x) => x.clip) ? ", play its rough cut" : ""} and open <b>What happens</b> for the detail. Every scene starts as <b>Approved</b>: choose <b>Feedback</b> on any scene you'd like changed, and say what should change. Notes under <b>Anything else?</b> ask for changes too. Then press <b>Approve and save</b> (it says <b>Send feedback</b> once there's feedback): Claude picks your review up straight away (if Claude isn't waiting, tell it you've saved). Nothing is built until every scene is approved.</p>`
+        ? `<p>Look at each scene's frames${scenes.some((x) => x.clip) ? ", play its rough cut" : ""} and open <b>What happens</b> for the detail. Every scene starts as <b>Approved</b>: choose <b>Feedback</b> on any scene you'd like changed, and say what should change. To show exactly what you mean, press <b>Box</b> or <b>Arrow</b> on a frame and drag on it: your note goes into that scene's feedback. Notes under <b>Anything else?</b> ask for changes too. Then press <b>Approve and save</b> (it says <b>Send feedback</b> once there's feedback): Claude picks your review up straight away (if Claude isn't waiting, tell it you've saved). Nothing is built until every scene is approved.</p>`
         : "",
     })}
   </div>
@@ -1362,6 +1367,7 @@ ${sceneHtml}
   <p class="reviewbar_message" data-message aria-live="polite">${summary.savedAt ? `Last saved ${esc(formatDateTime(Date.parse(summary.savedAt)))}.` : ""}</p>
 </div>`;
   const foot = `<script type="application/json" id="storyboard-state">${JSON.stringify(state).replace(/</g, "\\u003c")}</script>
+<script src="/ui/point.js" defer></script>
 <script src="/ui/storyboard.js" defer></script>`;
   return { status: 200, html: layout({ title: `Storyboard v${v}: ${video.title}`, active: "videos", studio, body, foot }) };
 }
@@ -1635,7 +1641,8 @@ export function reviewPage(studio, slug, version) {
   const player = rv.video
     ? `<video class="player_video" data-player controls playsinline preload="metadata" src="${esc(fileUrl(rv.video))}"${rv.poster ? ` poster="${esc(fileUrl(rv.poster))}"` : ""}></video>`
     : `<span class="frame_empty">No video file in this review</span>`;
-  const state = { project: slug, version: v, latest, feedback: fb || null };
+  // for "Point at it" (ui/point.js): where the version's files are, and the video's shape
+  const state = { project: slug, version: v, latest, feedback: fb || null, base: `/videos/${enc(slug)}/review/v${v}/`, ratio: size.w / size.h };
   const chosen = openingDecision(fb, summary);
   const bytes = rv.video ? statSync(join(studio.root, "videos", slug, rv.video), { throwIfNoEntry: false })?.size : 0;
 
@@ -1666,7 +1673,7 @@ export function reviewPage(studio, slug, version) {
       earlier: latest ? "" : `<div class="callout"><strong>This is an earlier version.</strong><p>Its notes are shown as they were saved. <a href="/videos/${enc(slug)}/review/v${versions.at(-1)}/">Review the latest version (v${versions.at(-1)})</a>.</p></div>`,
       changed: rv.changes ? { title: `What changed in video v${v}`, text: rv.changes } : null,
       howTo: latest
-        ? `<p>Watch the video. To comment on a moment, pause there and press <b>Add a note</b>: the note is pinned to that time. Your decision is <b>Approve video</b> unless you add a note or write under <b>Anything else?</b>: then it switches to <b>Changes needed</b> (you can change it). When you've watched it all, press <b>Approve and save</b> (it says <b>Send changes</b> once there are notes): Claude picks your review up straight away (if Claude isn't waiting, tell it you've saved). The final video is only made once you approve.</p>`
+        ? `<p>Watch the video. To comment on a moment, pause there and press <b>Add a note</b>: the note is pinned to that time. To show exactly what you mean, press <b>Box</b> or <b>Arrow</b> on the paused picture and drag on it. Your decision is <b>Approve video</b> unless you add a note or write under <b>Anything else?</b>: then it switches to <b>Changes needed</b> (you can change it). When you've watched it all, press <b>Approve and save</b> (it says <b>Send changes</b> once there are notes): Claude picks your review up straight away (if Claude isn't waiting, tell it you've saved). The final video is only made once you approve.</p>`
         : "",
     })}
   </div>
@@ -1676,12 +1683,12 @@ export function reviewPage(studio, slug, version) {
     ${eyebrow("01", "Watch and comment")}
     <div class="review-layout">
       <div class="stack">
-        <figure class="frame"${portrait ? ' style="max-width: 26rem"' : ""}><div class="frame_stage"><div class="frame_media frame_media--player" style="--ratio: ${size.ratio}">${player}</div></div></figure>
+        <figure class="frame"${portrait ? ' style="max-width: 26rem"' : ""}><div class="frame_stage"><div class="frame_media frame_media--player" style="--ratio: ${size.ratio}"${latest && rv.video ? " data-point-host" : ""}>${player}</div></div></figure>
         ${chapters.length ? `<div class="player_tools"><span class="field-label">Jump to</span>${chapters.map((c) => `<button class="chapter" type="button" data-seek="${+c.time}">${esc(timecode(+c.time))} ${esc(c.title || "")}</button>`).join("")}</div>` : ""}
       </div>
       <div class="stack review-side">
         <h2 class="card_title">Notes</h2>
-        <p class="muted" data-notes-empty>No notes yet. Pause on a moment, then press “Add a note”.</p>
+        <p class="muted" data-notes-empty>No notes yet. Pause on a moment, then press “Add a note”, or Box or Arrow on the picture to point at something.</p>
         <div class="review-side_add"><button class="button button--secondary" type="button" data-add-note${latest && rv.video ? "" : " disabled"}>Add a note at <span class="mono" data-now>00:00.0</span></button></div>
         <ol class="notes" data-notes></ol>
         <div class="review_note">
@@ -1711,6 +1718,7 @@ export function reviewPage(studio, slug, version) {
   <p class="reviewbar_message" data-message aria-live="polite">${summary.savedAt ? `Last saved ${esc(formatDateTime(Date.parse(summary.savedAt)))}.` : ""}</p>
 </div>`;
   const foot = `<script type="application/json" id="review-state">${JSON.stringify(state).replace(/</g, "\\u003c")}</script>
+<script src="/ui/point.js" defer></script>
 <script src="/ui/review.js" defer></script>`;
   return { status: 200, html: layout({ title: `Video v${v}: ${video.title}`, active: "videos", studio, body, foot }) };
 }
@@ -1889,7 +1897,8 @@ export function libraryPage(studio, category, query) {
     .join("");
   const freeOnly = view.type === "free";
   const favesOnly = view.type === "favourites";
-  const shown = (freeOnly ? items.filter((i) => i.free) : favesOnly ? [...items, ...locked].filter((i) => view.favourites.has(i.code)) : [...items, ...locked]).sort(byCode);
+  // favourites are items this Mac can use: a locked one can't be starred (one starred before its licence lapsed waits)
+  const shown = (freeOnly ? items.filter((i) => i.free) : favesOnly ? items.filter((i) => view.favourites.has(i.code)) : [...items, ...locked]).sort(byCode);
   // a locked item shows faded, under a "Paid upgrade" badge that leads to the full library above the cards
   const cards = shown
     .map(
@@ -1979,8 +1988,10 @@ export function libraryPage(studio, category, query) {
 /** What the library's search looks in: an item's code, name and what it's for. */
 const searchText = (item) => `${item.code} ${item.name} ${item.summary || ""}`.toLowerCase();
 
-/** A card's star: on, the item is one of the user's favourites (ui/page.js posts it to /api/favourite). */
+/** A card's star: on, the item is one of the user's favourites (ui/page.js posts it to /api/favourite). Only an item
+    this Mac can use has one: a locked paid item has to be unlocked first. */
 function starButton(item, view) {
+  if (item.locked) return "";
   const on = view.favourites.has(item.code);
   return `<button class="gstar" type="button" data-favourite="${esc(item.code)}" aria-pressed="${on}" aria-label="Favourite ${esc(`${item.code} ${item.name}`)}" title="${on ? "In your favourites" : "Add to your favourites"}"><span aria-hidden="true">★</span></button>`;
 }
@@ -2144,8 +2155,9 @@ export function itemPage(studio, category, code, query) {
   return { status: 200, html: layout({ title: `${item.code} ${item.name}`, active: "library", studio, body }) };
 }
 
-/** An item page's star: add it to the user's favourites, or take it out (ui/page.js). */
+/** An item page's star: add it to the user's favourites, or take it out (ui/page.js). Not for a locked item. */
 function favouriteButton(item, view) {
+  if (item.locked) return "";
   const on = view.favourites.has(item.code);
   return `<button class="button button--secondary gfav" type="button" data-favourite="${esc(item.code)}" aria-pressed="${on}"><span aria-hidden="true">★</span> <span data-favourite-label>${on ? "In your favourites" : "Add to favourites"}</span></button>`;
 }

@@ -94,7 +94,9 @@ Once a draft passes the loop, the user reviews it on its review page. Write one 
 `poster` and `changes` are optional. `version` must match the folder (`v2` → `2`): a video shows up once it does.
 The page writes `feedback.json` beside it when the user saves:
 `decision` (`approved` or `changes`: it's approved unless the user adds notes; a save from before the page had only
-these two can say `undecided`), `notes` (each with `time` in seconds and `text`) and `general`.
+these two can say `undecided`), `notes` (each with `time` in seconds and `text`; a note pointed at the picture also
+has `box` `{ x, y, w, h }` or `arrow` `{ from: [x, y], to: [x, y] }`, fractions of the picture from its top-left, and
+`picture`, the frame at that time with the mark drawn on it, such as `points/p1a2b3c.jpg`) and `general`.
 
 ## Motion audit: `docs/motion_audit.md`
 

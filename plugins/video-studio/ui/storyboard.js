@@ -1,7 +1,8 @@
 // Storyboard review: each scene is Approved unless it's marked Feedback (with a note). General notes ask for changes
 // too. The save button says which ("Approve and save" or "Send feedback"), and the scene strip shows each scene's mark
 // and the one on screen. Saving posts the review to the studio server, which writes feedback.json next to the
-// storyboard.
+// storyboard. A note pointed at a frame (Box or Arrow, ui/point.js through ui/page.js's viewer) joins that scene's
+// feedback, with a close-up of what it points at; its picture is saved in the storyboard's points/ folder.
 (() => {
   const state = JSON.parse(document.getElementById("storyboard-state").textContent);
   const saveBtn = document.querySelector("[data-save]");
@@ -16,6 +17,56 @@
     dirty = value;
     window.studioDirty = value;
   };
+
+  // each scene's pointed notes: [{ id, frame, text, box | arrow, picture | pending }]
+  const points = Object.fromEntries(state.scenes.map((s) => [s.id, []]));
+  const shapeOf = (pt) => (pt.box ? { box: pt.box } : pt.arrow ? { arrow: pt.arrow } : null);
+
+  function renderPoints(id) {
+    const list = document.querySelector(`[data-points="${esc(id)}"]`);
+    if (!list) return;
+    list.replaceChildren(
+      ...points[id].map((pt) => {
+        const li = document.createElement("li");
+        li.className = "point_note";
+        const shape = shapeOf(pt);
+        const close = document.createElement("div");
+        close.className = "note_point";
+        if (shape) close.append(window.StudioPoint.thumb(pt.pending || `${state.base}${pt.picture}`, shape, state.ratio));
+        const body = document.createElement("div");
+        body.className = "point_note_body";
+        const label = document.createElement("span");
+        label.className = "note_point_label";
+        label.textContent = `Frame ${pt.frame || "?"} · ${shape?.box ? "on the box" : "where the arrow points"}`;
+        const text = document.createElement("textarea");
+        text.rows = 2;
+        text.value = pt.text;
+        text.disabled = !state.latest;
+        text.setAttribute("aria-label", `Your note on frame ${pt.frame}`);
+        text.addEventListener("input", () => {
+          pt.text = text.value;
+          setDirty(true);
+          say("Unsaved changes.");
+        });
+        body.append(label, text);
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "note_remove";
+        remove.textContent = "×";
+        remove.title = "Remove this note";
+        remove.setAttribute("aria-label", `Remove the note on frame ${pt.frame}`);
+        remove.hidden = !state.latest;
+        remove.addEventListener("click", () => {
+          points[id] = points[id].filter((x) => x !== pt);
+          renderPoints(id);
+          setDirty(true);
+          say("Unsaved changes.");
+        });
+        li.append(close, body, remove);
+        return li;
+      }),
+    );
+  }
 
   const radios = (id) => document.querySelectorAll(`input[name="r-${esc(id)}"]`);
   const statusOf = (id) => [...radios(id)].find((r) => r.checked)?.value || "approved";
@@ -70,6 +121,8 @@
     const input = [...radios(s.id)].find((r) => r.value === status);
     if (input) input.checked = true;
     if (saved && saved.note && noteEl(s.id)) noteEl(s.id).value = saved.note;
+    points[s.id] = (saved?.points || []).filter((pt) => pt && (pt.box || pt.arrow) && pt.picture).map((pt) => ({ ...pt }));
+    renderPoints(s.id);
     apply(s.id);
   }
   if (fb && fb.general && general) general.value = fb.general;
@@ -106,6 +159,24 @@
     mark();
   }
 
+  // a note pointed at a frame in the viewer: into that scene's feedback (the scene is switched to Feedback)
+  document.addEventListener("studio:point", (e) => {
+    if (!state.latest) return;
+    const { link, shape, text, picture } = e.detail || {};
+    const id = link?.closest("[data-scene]")?.dataset.scene;
+    if (!id || !points[id]) return;
+    const feedback = [...radios(id)].find((r) => r.value === "feedback");
+    if (feedback && !feedback.checked) {
+      feedback.checked = true;
+      apply(id);
+      tally();
+    }
+    points[id].push({ id: `p${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, frame: link.dataset.frameId || "", text, ...shape, ...(picture ? { pending: picture.src } : {}) });
+    renderPoints(id);
+    setDirty(true);
+    say(`Unsaved changes. The note is in scene ${scenePos[id]}'s feedback.`);
+  });
+
   // earlier versions are read-only
   if (!state.latest) {
     document.querySelectorAll(".review input, textarea[data-note]").forEach((el) => (el.disabled = true));
@@ -141,7 +212,8 @@
   });
 
   saveBtn?.addEventListener("click", async () => {
-    const missing = state.scenes.filter((s) => statusOf(s.id) === "feedback" && !noteEl(s.id)?.value.trim());
+    // a scene's feedback is its note, its pointed notes, or both
+    const missing = state.scenes.filter((s) => statusOf(s.id) === "feedback" && !noteEl(s.id)?.value.trim() && !points[s.id].some((pt) => pt.text.trim()));
     if (missing.length) {
       const first = missing[0];
       say(`Add a note to scene ${scenePos[first.id]} (${first.title}), or mark it Approved.`, true);
@@ -151,7 +223,10 @@
     const scenes = {};
     for (const s of state.scenes) {
       const status = statusOf(s.id);
-      scenes[s.id] = status === "feedback" ? { status, note: noteEl(s.id).value.trim() } : { status };
+      scenes[s.id] =
+        status === "feedback"
+          ? { status, note: noteEl(s.id).value.trim(), points: points[s.id].filter((pt) => pt.text.trim()).map(({ pending, ...pt }) => ({ ...pt, text: pt.text.trim() })) }
+          : { status };
     }
     saveBtn.disabled = true;
     saveBtn.textContent = "Saving…";
@@ -159,11 +234,28 @@
       const res = await fetch("/api/feedback", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ project: state.project, version: state.version, scenes, general: general ? general.value.trim() : "" }),
+        body: JSON.stringify({
+          project: state.project,
+          version: state.version,
+          scenes,
+          // the pictures of pointed notes not saved yet
+          pictures: Object.fromEntries(Object.values(points).flatMap((list) => list.filter((pt) => pt.pending).map((pt) => [pt.id, pt.pending]))),
+          general: general ? general.value.trim() : "",
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data.error || `${res.status} ${res.statusText}`);
       setDirty(false);
+      // the pictures are saved now: the scenes show them from the storyboard's folder
+      for (const [id, saved] of Object.entries(data.scenes || {})) {
+        for (const pt of saved.points || []) {
+          const mine = points[id]?.find((x) => x.id === pt.id);
+          if (mine && pt.picture) {
+            mine.picture = pt.picture;
+            delete mine.pending;
+          }
+        }
+      }
       const s = data.summary;
       const time = new Date(data.savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       if (data.claude) {

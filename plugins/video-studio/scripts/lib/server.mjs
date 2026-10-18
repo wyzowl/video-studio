@@ -4,7 +4,7 @@
 // as PDFs (each leaving a copy in its version's folder) and videos under review as video files.
 import http from "node:http";
 import { spawn } from "node:child_process";
-import { createReadStream, statSync, writeFileSync, renameSync } from "node:fs";
+import { createReadStream, existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync, renameSync } from "node:fs";
 import { join, relative, resolve, sep, extname } from "node:path";
 import {
   PLUGIN_ROOT,
@@ -317,12 +317,13 @@ function readBody(req, limit) {
   });
 }
 
-/** Shared checks for a POST from a studio page: same-origin and a JSON body. */
-async function readPost(req, res) {
+/** Shared checks for a POST from a studio page: same-origin and a JSON body (a review's may carry pictures, so it can
+    be larger). */
+async function readPost(req, res, limit = 1_000_000) {
   const origin = req.headers.origin;
   if (origin && !/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) return json(res, 403, { ok: false, error: "Forbidden origin" }), null;
   try {
-    return JSON.parse(await readBody(req, 1_000_000)) || {};
+    return JSON.parse(await readBody(req, limit)) || {};
   } catch (err) {
     return json(res, 400, { ok: false, error: err.message === "Request too large" ? err.message : "The request wasn't valid JSON" }), null;
   }
@@ -338,18 +339,20 @@ async function licencePost(req, res) {
   return json(res, 200, { ok: result.status === "ok", ...result });
 }
 
-/** POST /api/favourite — from the library: { code, on } stars or unstars an item. Answers with the favourites. */
+/** POST /api/favourite — from the library: { code, on } stars or unstars an item. Only an item this Mac can use can
+    be starred (not a locked paid one); any can be unstarred. Answers with the favourites. */
 async function favouritePost(req, res, root) {
   const data = await readPost(req, res);
   if (!data) return;
   const item = typeof data.code === "string" ? findItem(data.code) : null;
   if (!item) return json(res, 404, { ok: false, error: "There's no such library item" });
+  if (data.on && !libraryItem(item.code)) return json(res, 403, { ok: false, error: "That item is in the full library: unlock it to keep it as a favourite" });
   return json(res, 200, { ok: true, items: setFavourite(root, item.code, Boolean(data.on)) });
 }
 
 /** Shared checks for a POSTed review: those above, plus a known project and version number. */
 async function readReviewPost(req, res) {
-  const data = await readPost(req, res);
+  const data = await readPost(req, res, 40_000_000);
   if (!data) return null;
   const { project, version } = data;
   if (typeof project !== "string" || !PROJECT.test(project)) return json(res, 400, { ok: false, error: "Unknown project" }), null;
@@ -413,6 +416,44 @@ function writeAtomic(target, value) {
   renameSync(tmp, target);
 }
 
+// "Point at it": a note can carry a mark on the picture (a box or an arrow, in fractions of the picture, x and y from
+// its top-left) and a picture of that moment with the mark drawn on it, saved in the version's points/ folder.
+const POINT_ID = /^p[a-z0-9]{4,24}$/;
+
+/** A note's mark, checked: { box } or { arrow }, or null. */
+function pointShape(n) {
+  const ok = (v) => typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 1;
+  const r = (v) => Math.round(v * 1000) / 1000;
+  const b = n?.box;
+  if (b && [b.x, b.y, b.w, b.h].every(ok) && b.w > 0 && b.h > 0) return { box: { x: r(b.x), y: r(b.y), w: r(Math.min(b.w, 1 - b.x)), h: r(Math.min(b.h, 1 - b.y)) } };
+  const a = n?.arrow;
+  const ends = a && Array.isArray(a.from) && Array.isArray(a.to) ? [...a.from, ...a.to] : [];
+  if (ends.length === 4 && ends.every(ok)) return { arrow: { from: a.from.map(r), to: a.to.map(r) } };
+  return null;
+}
+
+/** Saves the pictures sent for pointed notes (JPEGs as data URLs) in the version's points/ folder, and drops those no
+    note has any more. Answers each kept picture's path, by its note's id. */
+function savePictures(dir, ids, sent) {
+  const folder = join(dir, "points");
+  const kept = {};
+  for (const id of ids) {
+    const m = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(typeof sent?.[id] === "string" ? sent[id] : "");
+    const buf = m ? Buffer.from(m[1], "base64") : null;
+    if (buf && buf.length > 2 && buf.length < 6e6 && buf[0] === 0xff && buf[1] === 0xd8) {
+      mkdirSync(folder, { recursive: true });
+      writeFileSync(join(folder, `${id}.jpg`), buf);
+    }
+    if (existsSync(join(folder, `${id}.jpg`))) kept[id] = `points/${id}.jpg`;
+  }
+  let names = [];
+  try {
+    names = readdirSync(folder);
+  } catch {}
+  for (const name of names) if (/^p[a-z0-9]+\.jpg$/.test(name) && !Object.hasOwn(kept, name.slice(0, -4))) rmSync(join(folder, name), { force: true });
+  return kept;
+}
+
 /** A script or video review's decision: Approve or Changes needed, as chosen; without one, Approve unless there are
     notes (a page from before there were only two choices can still send "undecided"). */
 const decisionOf = (data, notes) =>
@@ -467,9 +508,15 @@ async function saveReview(req, res, root) {
   const limit = Number.isFinite(+rv.duration) ? +rv.duration + 5 : Infinity;
   const notes = (Array.isArray(data.notes) ? data.notes : [])
     .slice(0, 300)
-    .map((n) => ({ time: Math.round(Math.min(Math.max(0, Number(n?.time) || 0), limit) * 10) / 10, text: typeof n?.text === "string" ? n.text.trim().slice(0, 2000) : "" }))
+    .map((n) => {
+      const note = { time: Math.round(Math.min(Math.max(0, Number(n?.time) || 0), limit) * 10) / 10, text: typeof n?.text === "string" ? n.text.trim().slice(0, 2000) : "" };
+      const shape = pointShape(n);
+      return shape && typeof n?.id === "string" && POINT_ID.test(n.id) ? { ...note, id: n.id, ...shape } : note;
+    })
     .filter((n) => n.text)
     .sort((a, b) => a.time - b.time);
+  const pictures = savePictures(dir, notes.filter((n) => n.id).map((n) => n.id), data.pictures);
+  for (const n of notes) if (n.id && pictures[n.id]) n.picture = pictures[n.id];
   const record = {
     project,
     version,
@@ -484,7 +531,7 @@ async function saveReview(req, res, root) {
   const finished = record.summary.decision !== "undecided";
   const claude = claudeWaiting(root, `/videos/${project}/review/v${version}/`);
   if (finished && claude) markWorking(root, project, { stage: "review", version, outcome: record.summary.decision });
-  return json(res, 200, { ok: true, savedAt: record.savedAt, summary: record.summary, finished, claude });
+  return json(res, 200, { ok: true, savedAt: record.savedAt, summary: record.summary, finished, claude, notes: record.notes });
 }
 
 /** POST /api/feedback — save a storyboard review as videos/<project>/storyboard/v<N>/feedback.json */
@@ -505,8 +552,24 @@ async function saveFeedback(req, res, root) {
     // a scene is approved unless it's marked for feedback
     const status = sent.status === "feedback" ? "feedback" : "approved";
     const note = typeof sent.note === "string" ? sent.note.trim().slice(0, 5000) : "";
-    scenes[id] = status === "feedback" ? { status, note } : { status };
+    // and its feedback can point at its frames
+    const points = (Array.isArray(sent.points) ? sent.points : [])
+      .slice(0, 50)
+      .map((x) => {
+        const shape = pointShape(x);
+        const text = typeof x?.text === "string" ? x.text.trim().slice(0, 2000) : "";
+        const frame = typeof x?.frame === "string" && /^[A-Za-z0-9_-]{1,60}$/.test(x.frame) ? x.frame : "";
+        return shape && text && typeof x?.id === "string" && POINT_ID.test(x.id) ? { id: x.id, frame, text, ...shape } : null;
+      })
+      .filter(Boolean);
+    scenes[id] = status === "feedback" ? { status, note, ...(points.length ? { points } : {}) } : { status };
   });
+  const pictures = savePictures(
+    dir,
+    Object.values(scenes).flatMap((x) => (x.points || []).map((pt) => pt.id)),
+    data.pictures,
+  );
+  for (const x of Object.values(scenes)) for (const pt of x.points || []) if (pictures[pt.id]) pt.picture = pictures[pt.id];
   const record = {
     project,
     version,
@@ -520,5 +583,5 @@ async function saveFeedback(req, res, root) {
   const finished = record.summary.scenes > 0 && record.summary.unreviewed === 0;
   const claude = claudeWaiting(root, `/videos/${project}/storyboard/v${version}/`);
   if (finished && claude) markWorking(root, project, { stage: "storyboard", version, outcome: record.summary.allApproved ? "approved" : "feedback" });
-  return json(res, 200, { ok: true, savedAt: record.savedAt, summary: record.summary, finished, claude });
+  return json(res, 200, { ok: true, savedAt: record.savedAt, summary: record.summary, finished, claude, scenes: record.scenes });
 }

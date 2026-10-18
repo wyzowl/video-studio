@@ -93,15 +93,18 @@ A footage video's storyboard is made the same way, from the approved script's ta
 ## When the review comes in
 
 The wait finishes when the user saves a finished review (or they tell you they've saved). That save is their
-go-ahead: carry on without asking them to confirm. Read `feedback.json`.
+go-ahead: carry on without asking them to confirm. Read `feedback.json`. A scene's feedback is its `note`, its
+`points`, or both: each point is a note on one of its frames (`frame`, `text`, a `box` or an `arrow` in fractions of the
+frame, x and y from its top-left, and `picture`, the frame with their mark drawn on it, in the version's `points/`
+folder). Look at every point's picture (Read tool) before changing that frame: it shows exactly what they mean.
 - **Every scene approved, and no general notes:** confirm, then go to the build stage of the production skill.
 - **Feedback on some scenes, or general notes** (the page counts general notes as asking for changes; feedback from
   someone outside the studio is often pasted there, naming scenes by number): make the next version. If the general
   notes turn out to ask for nothing (just praise, say), tell the user and go to the build stage instead.
   0. Start it on the overview: `studio.mjs progress <project> storyboard <N+1> notes`, then `plan`, and `check` as
      you look over the re-rendered frames.
-  1. Copy `v<N>` to `v<N+1>` (leave `v<N>` and its feedback untouched) and delete the copy's `feedback.json` and
-     any PDF (a download's copy). The copy stays out of sight until its `storyboard.json` says `"version": N+1`.
+  1. Copy `v<N>` to `v<N+1>` (leave `v<N>` and its feedback untouched) and delete the copy's `feedback.json`, its
+     `points/` folder and any PDF (a download's copy). The copy stays out of sight until its `storyboard.json` says `"version": N+1`.
   2. Apply every note in the copy's `frames.html`. A general note can touch several scenes.
   3. Re-render only the frames that changed (`--only s02-1,s02-2`) and check them.
   4. Last, update the new `storyboard.json`: mark scenes you changed `"changed": true`; mark scenes that were approved

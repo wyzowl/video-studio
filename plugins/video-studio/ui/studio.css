@@ -3088,8 +3088,256 @@ a.stages_item:hover {
   box-shadow: 0 1.5rem 4rem -1rem #000;
 }
 .viewer_img[hidden],
-.viewer_video[hidden] {
+.viewer_video[hidden],
+.viewer_point[hidden] {
   display: none;
+}
+/* the viewer's frame: the picture "Point at it" draws on */
+.viewer_point {
+  position: relative;
+}
+
+/* ───────── "Point at it": Box and Arrow on a paused picture, the drawing, and the note beside it (ui/point.js) ───────── */
+.point_tools {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 3;
+  display: none;
+  gap: 0.4rem;
+}
+.can-point > .point_tools {
+  display: flex;
+}
+.point_tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  min-height: 2.25rem;
+  padding: 0.45rem 0.7rem;
+  border: var(--border-width) solid color-mix(in lab, var(--paper) 35%, transparent);
+  border-radius: var(--radius-s);
+  background: color-mix(in srgb, var(--ink) 78%, transparent);
+  color: var(--paper);
+  font: 600 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color var(--hover) var(--ease), color var(--hover) var(--ease);
+}
+.point_tool:hover,
+.point_tool:focus-visible {
+  background: var(--yellow);
+  color: var(--ink);
+  border-color: var(--yellow);
+}
+.point_tool:focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: 2px;
+}
+/* on a storyboard's frames: there on hover or focus (always on a touch screen) */
+.frame--point {
+  position: relative;
+}
+.point_tools--frame {
+  display: flex;
+  top: calc(var(--frame-inset) + 0.5rem);
+  right: calc(var(--frame-inset) + 0.5rem);
+  opacity: 0;
+  transition: opacity var(--hover) var(--ease);
+}
+.frame--point:hover .point_tools--frame,
+.frame--point:focus-within .point_tools--frame {
+  opacity: 1;
+}
+@media (hover: none) {
+  .point_tools--frame {
+    opacity: 1;
+  }
+}
+.point_layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  cursor: crosshair;
+  touch-action: none;
+}
+/* while drawing, the note's box may reach past the picture's edges */
+.is-pointing {
+  overflow: visible;
+  z-index: 6;
+}
+.point_layer > svg,
+.point_ghost {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.point_ghost {
+  z-index: 2;
+}
+.point_dim {
+  fill: rgba(10, 12, 14, 0.5);
+}
+.point_shape rect,
+.point_shape line {
+  fill: none;
+  stroke: var(--yellow);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  paint-order: stroke;
+  filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.7));
+}
+.point_shape polygon {
+  fill: var(--yellow);
+  filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.7));
+}
+.point_hint {
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 1.5rem);
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--radius-s);
+  background: var(--yellow);
+  color: var(--ink);
+  font: 600 var(--text-tiny) / 1.3 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  pointer-events: none;
+}
+.point_pop {
+  position: absolute;
+  z-index: 5;
+  width: min(24rem, calc(100% - 1rem));
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 0 1rem 2.5rem -0.75rem rgba(0, 0, 0, 0.65);
+  cursor: auto;
+}
+/* its notch points at the drawing: at --notch along the side that faces it */
+.point_pop::before {
+  content: "";
+  position: absolute;
+  left: var(--notch, 1.75rem);
+  width: 14px;
+  height: 14px;
+  background: var(--white);
+  transform: rotate(45deg);
+}
+.point_pop--below::before {
+  top: -7px;
+}
+.point_pop--above::before {
+  bottom: -7px;
+}
+.point_pop--right::before {
+  left: -7px;
+  top: var(--notch, 1.75rem);
+}
+.point_pop--left::before {
+  left: auto;
+  right: -7px;
+  top: var(--notch, 1.75rem);
+}
+.point_pop--loose::before {
+  display: none;
+}
+.point_pop .field-label {
+  color: color-mix(in lab, var(--ink) 62%, transparent);
+}
+.point_pop textarea {
+  min-height: 4.5rem;
+  background: var(--paper);
+  color: var(--ink);
+  border-color: color-mix(in lab, var(--ink) 30%, transparent);
+  font-size: var(--text-small);
+}
+.point_pop .button {
+  min-height: 2.25rem;
+  padding: 0.45rem 0.8rem;
+  font-size: var(--text-small);
+}
+/* a pointed note: a close-up of what it points at */
+.point_thumb {
+  display: block;
+  width: 100%;
+  max-height: 10rem;
+  border-radius: var(--radius-s);
+  background: #111;
+}
+.note--pointed {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+.note_body {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.note_point {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.note_point:focus-visible {
+  outline: 2px dashed var(--text);
+  outline-offset: 2px;
+}
+.note_point_label {
+  font: 500 var(--text-tiny) / 1.2 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+@media (max-width: 40rem) {
+  .note--pointed .note_body {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+/* a storyboard scene's pointed notes, under its note */
+.points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.points:empty {
+  display: none;
+}
+.point_note {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-s);
+  background: var(--background-3);
+}
+.point_note .note_point .point_thumb {
+  max-height: 6rem;
+}
+.point_note_body {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.point_note textarea {
+  min-height: 3.5rem;
+  font-size: var(--text-small);
 }
 .viewer_caption {
   display: flex;

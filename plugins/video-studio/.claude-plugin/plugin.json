@@ -1,6 +1,6 @@
 {
   "name": "video-studio",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Wyzowl Video Studio: make animated videos with Claude Code and HyperFrames. A guided brief, reusable brand kits, a storyboard you approve scene by scene, a scored review loop, and local rendering.",
   "author": {
     "name": "Wyzowl",

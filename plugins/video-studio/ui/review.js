@@ -1,6 +1,8 @@
 // Video review: watch the video, pin notes to moments in it, then the decision: Approve video, unless there are notes
 // (they switch it to Changes needed), and save: the button says which ("Approve and save" or "Send changes"). Saving
 // posts the review to the studio server, which writes feedback.json beside the review.
+// "Point at it" (ui/point.js): on the paused picture, Box or Arrow draws on it, and the note keeps the mark and a
+// picture of that moment with the mark on it (saved in the review's points/ folder), shown close up in the list.
 (() => {
   const state = JSON.parse(document.getElementById("review-state").textContent);
   const player = document.querySelector("[data-player]");
@@ -51,6 +53,9 @@
     player.pause();
     player.scrollIntoView({ block: "nearest", behavior: "smooth" });
   };
+  const shapeOf = (n) => (n.box ? { box: n.box } : n.arrow ? { arrow: n.arrow } : null);
+  const newId = () => `p${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+  let point = null;
 
   function render(focusNote) {
     notes.sort((a, b) => a.time - b.time);
@@ -87,7 +92,28 @@
           follow();
           changed();
         });
-        li.append(time, text, remove);
+        const shape = shapeOf(n);
+        if (shape && (n.pending || n.picture)) {
+          // a pointed note: a close-up of what it points at, then the note; its time shows the mark again
+          li.classList.add("note--pointed");
+          const body = document.createElement("div");
+          body.className = "note_body";
+          const close = document.createElement("button");
+          close.type = "button";
+          close.className = "note_point";
+          close.title = "Show it on the picture";
+          close.append(window.StudioPoint.thumb(n.pending || `${state.base}${n.picture}`, shape, state.ratio));
+          const label = document.createElement("span");
+          label.className = "note_point_label";
+          label.textContent = shape.box ? "On the box" : "Where the arrow points";
+          close.addEventListener("click", () => {
+            seek(n.time);
+            point?.show(shape);
+          });
+          body.append(close, label, text);
+          time.addEventListener("click", () => point?.show(shape));
+          li.append(time, body, remove);
+        } else li.append(time, text, remove);
         if (n === focusNote) queueMicrotask(() => text.focus());
         return li;
       }),
@@ -123,7 +149,7 @@
   // restore what was saved
   const fb = state.feedback;
   if (fb) {
-    notes = (fb.notes || []).map((n) => ({ time: Number(n.time) || 0, text: String(n.text || "") }));
+    notes = (fb.notes || []).map((n) => ({ time: Number(n.time) || 0, text: String(n.text || ""), ...(n.id ? { id: n.id } : {}), ...(n.box ? { box: n.box } : {}), ...(n.arrow ? { arrow: n.arrow } : {}), ...(n.picture ? { picture: n.picture } : {}) }));
     if (general) general.value = fb.general || "";
     const r = radios.find((x) => x.value === fb.decision);
     if (r) r.checked = true;
@@ -142,6 +168,30 @@
     general && (general.disabled = true);
     radios.forEach((r) => (r.disabled = true));
     return;
+  }
+
+  // point at it, on the paused picture: the note keeps the mark and the picture with it
+  const host = document.querySelector("[data-point-host]");
+  if (host && player && window.StudioPoint) {
+    point = window.StudioPoint.attach({
+      host,
+      source: () => player,
+      when: () => player.paused && !player.seeking && player.readyState >= 2,
+      label: () => `Note at ${tc(player.currentTime)}`,
+      onAdd: ({ shape, text, picture }) => {
+        const n = { id: newId(), time: Math.round(player.currentTime * 10) / 10, text, ...shape, ...(picture ? { pending: picture.src } : {}) };
+        notes.push(n);
+        follow();
+        render();
+        point.show(shape);
+        changed();
+      },
+    });
+    for (const e of ["play", "pause", "seeked", "loadeddata", "seeking"]) player.addEventListener(e, () => point.refresh());
+    player.addEventListener("play", () => {
+      point.stop();
+      point.clear();
+    });
   }
 
   addBtn?.addEventListener("click", () => {
@@ -185,11 +235,27 @@
       const res = await fetch("/api/review", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ project: state.project, version: state.version, decision: decision(), notes, general: general ? general.value.trim() : "" }),
+        body: JSON.stringify({
+          project: state.project,
+          version: state.version,
+          decision: decision(),
+          notes: notes.map(({ pending, ...n }) => n),
+          // the pictures of pointed notes not saved yet
+          pictures: Object.fromEntries(notes.filter((n) => n.pending && n.id).map((n) => [n.id, n.pending])),
+          general: general ? general.value.trim() : "",
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data.error || `${res.status} ${res.statusText}`);
       setDirty(false);
+      // the pictures are saved now: the list shows them from the review's folder
+      for (const saved of data.notes || []) {
+        const n = notes.find((x) => x.id && x.id === saved.id);
+        if (n && saved.picture) {
+          n.picture = saved.picture;
+          delete n.pending;
+        }
+      }
       const time = new Date(data.savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       const d = data.summary.decision;
       if (data.claude) {

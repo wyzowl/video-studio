@@ -158,6 +158,10 @@ Nothing is uploaded.
   wide and 400 px tall (on a small screen the row swipes sideways); click one to see it full size, as large as the
   window allows, and use the arrow keys to step through them.
 - **Video review pages:** the video in a player, with notes pinned to moments, and the approve or change decision.
+- **Point at it:** on a paused video, or on a storyboard frame, press **Box** or **Arrow** on the picture and drag
+  to show exactly what you mean, then write the note beside it. The note keeps a close-up of what you pointed at, and
+  Claude gets a picture of that moment with your mark on it. On a storyboard, the note goes into that scene's
+  feedback.
 - **Delivery pages:** once the final video is made, every file in one place: each size and its web copy, the poster,
   a thumbnail, captions (SRT and WebVTT) and the contact sheet, each to download or show in Finder, with the words to
   go with it (a title, a description and alt text) and suggestions to ask Claude for next, such as other sizes or a

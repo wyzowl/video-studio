@@ -858,13 +858,22 @@ function describeReview(page, { dir, feedback, summary: s }) {
       : `they asked for changes: ${plural(s.notes, "note")}${s.hasGeneral ? " and a general comment" : ""}`;
     return `The user has finished reviewing script v${page.version} of ${page.project} (saved ${saved}): ${detail}. ${next} the script skill ("When the review comes in").`;
   }
+  // notes pointed at something in the picture, each with a picture of it marked
+  const pointed =
+    page.kind === "storyboard"
+      ? Object.values(feedback.scenes || {}).reduce((n, x) => n + (Array.isArray(x?.points) ? x.points.length : 0), 0)
+      : (feedback.notes || []).filter((n) => n?.box || n?.arrow).length;
+  const pictures = pointed
+    ? `; ${plural(pointed, "note")} point${pointed === 1 ? "s" : ""} at something in the picture (${pointed === 1 ? "its picture, with their mark on it, is" : "their pictures, with the marks on them, are"} in ${join(dir, "points")}: look at ${pointed === 1 ? "it" : "them"} first)`
+    : "";
   if (page.kind === "storyboard") {
-    const detail = s.allApproved ? "every scene is approved" : `${s.approved} approved, ${s.feedback} with feedback${s.hasGeneral ? ", and general notes asking for changes" : ""}`;
+    const detail = (s.allApproved ? "every scene is approved" : `${s.approved} approved, ${s.feedback} with feedback${s.hasGeneral ? ", and general notes asking for changes" : ""}`) + pictures;
     return `The user has finished reviewing storyboard v${page.version} of ${page.project} (saved ${saved}): ${detail}. ${next} the storyboard skill ("When the review comes in").`;
   }
-  const detail = s.approved
-    ? `they approved the video${s.notes ? `, with ${plural(s.notes, "note")} to treat as small last tweaks` : ""}`
-    : `they asked for changes: ${plural(s.notes, "note")}${s.hasGeneral ? " and a general comment" : ""}`;
+  const detail =
+    (s.approved
+      ? `they approved the video${s.notes ? `, with ${plural(s.notes, "note")} to treat as small last tweaks` : ""}`
+      : `they asked for changes: ${plural(s.notes, "note")}${s.hasGeneral ? " and a general comment" : ""}`) + pictures;
   return `The user has finished reviewing video v${page.version} of ${page.project} (saved ${saved}): ${detail}. ${next} stage 8 (video review) of the production skill.`;
 }
 

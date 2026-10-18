@@ -4,6 +4,8 @@
 // - On the dashboard, the nav marks the section on screen: Videos, Brands or Library.
 // - A storyboard frame opens full size, as large as the window allows, in a viewer: arrows step through the
 //   page's frames, Esc or a click outside closes it. A footage storyboard's "Play the scene" plays its rough cut there.
+//   On the latest storyboard, Box and Arrow on a frame (or in the viewer) point at something in it ("Point at it",
+//   ui/point.js): the note goes to ui/storyboard.js, for that scene's feedback.
 // - "Download PDF" waits while the studio makes the PDF, then downloads it, and offers the copy it keeps in Finder.
 // - The library: a brand, size or type reloads the page with it; previews play only while they're on screen; "Play
 //   from the start" restarts them; "Copy" buttons copy their text. The search filters a category's items as you type,
@@ -98,6 +100,16 @@
   let frames = [];
   let at = 0;
   let playing = null;
+  let pointer = null;
+  // pointing at a frame: on the latest version of a storyboard only
+  const board = (() => {
+    try {
+      return JSON.parse(document.getElementById("storyboard-state")?.textContent || "null");
+    } catch {
+      return null;
+    }
+  })();
+  const canPoint = Boolean(board?.latest && window.StudioPoint);
 
   function build() {
     viewer = document.createElement("dialog");
@@ -105,7 +117,7 @@
     viewer.setAttribute("aria-label", "Frame, full size");
     viewer.innerHTML = `<button class="viewer_close" type="button" aria-label="Close">×</button>
 <button class="viewer_step viewer_step--prev" type="button" aria-label="Previous frame">‹</button>
-<figure class="viewer_figure"><img class="viewer_img" alt=""><video class="viewer_video" controls playsinline preload="auto" hidden></video><figcaption class="viewer_caption"><span data-viewer-label></span><span class="viewer_count" data-viewer-count></span></figcaption></figure>
+<figure class="viewer_figure"><div class="viewer_point"><img class="viewer_img" alt=""></div><video class="viewer_video" controls playsinline preload="auto" hidden></video><figcaption class="viewer_caption"><span data-viewer-label></span><span class="viewer_count" data-viewer-count></span></figcaption></figure>
 <button class="viewer_step viewer_step--next" type="button" aria-label="Next frame">›</button>`;
     document.body.append(viewer);
     viewer.querySelector(".viewer_close").addEventListener("click", () => viewer.close());
@@ -116,7 +128,7 @@
       if (event.target === viewer || event.target.classList.contains("viewer_figure")) viewer.close();
     });
     viewer.addEventListener("keydown", (event) => {
-      if (playing) return;
+      if (playing || viewer.querySelector(".point_layer")) return;
       if (event.key === "ArrowLeft") show(at - 1);
       if (event.key === "ArrowRight") show(at + 1);
     });
@@ -131,6 +143,19 @@
       playing = null;
     });
     addEventListener("resize", () => viewer.open && fit());
+    if (canPoint) {
+      const img = viewer.querySelector(".viewer_img");
+      pointer = window.StudioPoint.attach({
+        host: viewer.querySelector(".viewer_point"),
+        source: () => img,
+        when: () => !playing && img.complete && img.naturalWidth > 0,
+        label: () => frames[at]?.dataset.label || "Your note",
+        addLabel: "Add to this scene's feedback",
+        onAdd: ({ shape, text, picture }) => document.dispatchEvent(new CustomEvent("studio:point", { detail: { link: frames[at], shape, text, picture } })),
+      });
+      img.addEventListener("load", () => pointer.refresh());
+      viewer.addEventListener("close", () => pointer.stop());
+    }
   }
 
   // as large as the window allows, never past the video's own size, keeping its shape
@@ -146,6 +171,9 @@
     at = (index + frames.length) % frames.length;
     const link = frames[at];
     const img = viewer.querySelector(".viewer_img");
+    pointer?.stop();
+    pointer?.clear();
+    viewer.querySelector(".viewer_point").hidden = false;
     img.hidden = false;
     viewer.querySelector(".viewer_video").hidden = true;
     img.src = link.href;
@@ -154,12 +182,14 @@
     viewer.querySelector("[data-viewer-count]").textContent = frames.length > 1 ? `${at + 1} of ${frames.length}` : "";
     viewer.querySelectorAll(".viewer_step").forEach((b) => (b.hidden = frames.length < 2));
     fit();
+    pointer?.refresh();
   }
 
   function play(link) {
     playing = link;
+    pointer?.stop();
     const video = viewer.querySelector(".viewer_video");
-    viewer.querySelector(".viewer_img").hidden = true;
+    viewer.querySelector(".viewer_point").hidden = true;
     video.hidden = false;
     video.src = link.href;
     viewer.querySelector("[data-viewer-label]").textContent = link.dataset.label || "";
@@ -167,6 +197,16 @@
     viewer.querySelectorAll(".viewer_step").forEach((b) => (b.hidden = true));
     fit();
     video.play().catch(() => {});
+  }
+
+  /** A frame, full size in the viewer. */
+  function openFrame(link) {
+    if (!viewer) build();
+    playing = null;
+    viewer.querySelector(".viewer_video").pause();
+    frames = [...document.querySelectorAll("a[data-zoom]")];
+    show(frames.indexOf(link));
+    if (!viewer.open) viewer.showModal();
   }
 
   document.addEventListener("click", (event) => {
@@ -179,12 +219,42 @@
       play(link);
       return;
     }
-    playing = null;
-    viewer.querySelector(".viewer_video").pause();
-    frames = [...document.querySelectorAll("a[data-zoom]")];
-    show(frames.indexOf(link));
-    if (!viewer.open) viewer.showModal();
+    openFrame(link);
   });
+
+  // Box and Arrow on each frame of the latest storyboard: the frame opens full size, ready to draw on
+  if (canPoint)
+    document.querySelectorAll("a[data-zoom][data-frame-id]").forEach((link) => {
+      const tools = document.createElement("div");
+      tools.className = "point_tools point_tools--frame";
+      tools.setAttribute("role", "group");
+      tools.setAttribute("aria-label", "Point at something in this frame");
+      for (const [tool, mark, name] of [
+        ["box", "▭", "Box"],
+        ["arrow", "↗", "Arrow"],
+      ]) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "point_tool";
+        b.dataset.pointTool = tool;
+        b.setAttribute("aria-label", `Point at something in this frame with ${tool === "box" ? "a box" : "an arrow"}`);
+        b.innerHTML = `<span aria-hidden="true">${mark}</span> ${name}`;
+        b.addEventListener("click", () => {
+          openFrame(link);
+          // ready to draw once the frame has loaded
+          const img = viewer.querySelector(".viewer_img");
+          const go = () => {
+            pointer?.refresh();
+            pointer?.start(tool);
+          };
+          if (img.complete && img.naturalWidth) go();
+          else img.addEventListener("load", go, { once: true });
+        });
+        tools.append(b);
+      }
+      link.closest(".frame")?.classList.add("frame--point");
+      link.closest(".frame")?.append(tools);
+    });
 
   // ───────── download a PDF ─────────
   // The studio makes the PDF when it's asked for (a few seconds), so the button says so meanwhile. The PDF arrives as a
