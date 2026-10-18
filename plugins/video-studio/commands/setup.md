@@ -17,6 +17,13 @@ Get the user to a working studio, one step at a time. Say what each step does in
 anything or changing their settings, and stop with a clear explanation if a step fails. Assume the user isn't
 technical: plain words, no jargon.
 
+0. **The setup page.** Unless the check above says Node.js isn't installed, start with the page that follows setup as
+   you go: run `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" setup-page`, then open the address it prints in your
+   Browser pane, beside the chat (preview_start with that url); without a Browser pane, `open <address>`. Tell the
+   user in a sentence that it ticks off each step as it's done. Before each install or download below, say so on the
+   page: `studio.mjs setup-note <check> installing`, where the check is `node`, `ffmpeg`, `git`, `parakeet`, `cutout`,
+   `skills`, `motion` or `chrome` (the test render); if it fails, `setup-note <check> failed`. A check that's done ticks
+   off by itself. Without Node.js, open the page once it's installed (step 3).
 1. **macOS only.** If the check shows this isn't macOS, stop here: Wyzowl Video Studio runs on macOS only.
    Install nothing.
 2. **Where the studio lives.** Use the folder in `$ARGUMENTS` if one was given. Otherwise ask with AskUserQuestion
@@ -58,4 +65,6 @@ technical: plain words, no jargon.
     `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" show / --studio "<folder>"` and follow what it says (beside the
     chat, with its card). Then tell them the one thing that matters next: **open Claude Code in the studio folder** (in the
     desktop app, start a session in that folder; in the terminal, `cd` there and run `claude`), so the studio's skills
-    load. From there, `/video-studio:new-brand` adds a brand and `/video-studio:new-video` starts a video.
+    load. From there, `/video-studio:new-brand` adds a brand and `/video-studio:new-video` starts a video. Any time
+    later, the Studio health page (`/health`, linked at the foot of every studio page) shows what's on this Mac and,
+    beside anything that isn't working, what to say to Claude to fix it.

@@ -14,7 +14,8 @@ The easiest way is to ask Claude. In Claude Code, say:
 
 Then start a new Claude Code session, so the plugin loads, and run `/video-studio:setup` (or ask Claude to set it
 up). Setup checks your Mac, installs what's missing (asking first), creates your studio folder and makes a test
-render. When it's done, open Claude Code in the studio folder.
+render. It opens a page beside the chat that ticks off each step as it's done. When it's done, open Claude Code in the
+studio folder.
 
 To install it yourself, run this in a terminal (Claude Code 2.1.275 or later):
 
@@ -54,7 +55,8 @@ claude plugin update video-studio@wyzowl
 
 Then start a new Claude Code session. Studios carry on as they are; the page server restarts on the new version by
 itself the next time a page is shown. If the new version needs a download that isn't on your Mac yet (such as the model that cuts the presenter
-out of footage), Claude tells you once and offers to fetch it.
+out of footage), Claude tells you once and offers to fetch it. The dashboard says what the update brought, until you
+press **Got it**.
 
 ## Requirements
 
@@ -139,7 +141,12 @@ desktop app, or in the normal web browser, and always gives a card or link to op
 shows them any time. The page designs come with the plugin; the content is the studio folder's own brands and videos.
 Nothing is uploaded.
 
-- **Dashboard:** a timeline of recent videos with their status, the studio's brands, and the library.
+- **Dashboard:** what's waiting for your review, a timeline of recent videos with their status, the studio's brands,
+  and the library. After an update, it says what's new; if something the studio needs is missing from the Mac, it
+  says so.
+- **Studio health** (`/health`, linked at the foot of every page): everything the studio uses on the Mac and
+  whether it's working, and beside anything that isn't, what to say to Claude to fix it. During setup the same page
+  follows each step as it's done.
 - **Brand pages:** logo, colours (with contrast ratios), type specimens, motion identity and rules.
 - **Video overviews:** one page per video showing what's happening now (including "Claude is making storyboard v3"
   while it works) and every stage, newest first, back to the brief: exactly what you wrote when you asked for the
@@ -151,12 +158,20 @@ Nothing is uploaded.
   wide and 400 px tall (on a small screen the row swipes sideways); click one to see it full size, as large as the
   window allows, and use the arrow keys to step through them.
 - **Video review pages:** the video in a player, with notes pinned to moments, and the approve or change decision.
+- **Delivery pages:** once the final video is made, every file in one place: each size and its web copy, the poster,
+  a thumbnail, captions (SRT and WebVTT) and the contact sheet, each to download or show in Finder, with the words to
+  go with it (a title, a description and alt text) and suggestions to ask Claude for next, such as other sizes or a
+  shorter cut. The version rows on a video's pages link to it (**Video delivery: All assets**).
 - **Library:** ready-made pieces for videos, on one page with a menu of five categories: **Widgets** (on-screen
   things that show information), **Layouts** (ways to show one or more things on screen), **Text effects** (ways to
   use text on screen), **Transitions** (ways to move from one scene to the next) and **Data** (full-screen charts,
   graphs and data visualisations).
   - Every item plays live in any of the studio's brands and at any size: 16:9, 1:1, 4:5 or 9:16. **Type** shows
-    paid and free items, or the free ones only.
+    paid and free items, the free ones only, or your favourites.
+  - **Search** filters a category's items as you type (press `/` to start), and says how many match in the others.
+  - **Favourites:** star any item to keep it in the studio's favourites. Video Studio suggests your favourites first.
+  - **Try it with your words:** on an item's page, change its words and options and the preview plays them. The
+    request to copy for Claude then includes them.
   - A plain dark frame and a person's silhouette stand in for your footage. Transitions play between that and a simple
     chart in the brand.
   - Each item has a code, such as W03. Claude suggests suitable items in the script and storyboard (they show as

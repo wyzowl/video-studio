@@ -1,0 +1,15 @@
+{
+  "0.7.0": [
+    { "text": "Search the library as you type, and star the items you like: Video Studio suggests your favourites first.", "href": "/library/" },
+    { "text": "Try any library item with your own words on its page, and watch the preview play them.", "href": "/library/widgets/w03/" },
+    { "text": "A delivery page for every finished video: each file to download, captions, and the words to go with it." },
+    { "text": "Setup and Studio health: a page that shows what's installed, and what to say to Claude to fix anything that isn't.", "href": "/health" }
+  ],
+  "0.6.3": [
+    { "text": "Watch it being made: while Claude works, a video's overview shows the steps, the newest frames and Video Studio's own scores." }
+  ],
+  "0.6.2": [
+    { "text": "Hover a library tag in a script or storyboard to see the item playing in your brand." },
+    { "text": "Review pages are shorter: the notes fold away, and the save button says what saving does." }
+  ]
+}

@@ -555,6 +555,11 @@ export function pageStamp(root, path) {
       ...(latest > +m[2] && { latest: `/videos/${encodeURIComponent(m[1])}/review/v${latest}/`, latestLabel: `Video v${latest}` }),
     };
   }
+  if ((m = /^\/videos\/([^/]+)\/delivery\/?$/.exec(path))) {
+    // a video's delivery: every file in its renders folder (a new size, the captions, the words to go with it)
+    const d = join(root, "videos", m[1], "renders");
+    return { stamp: hash(listDir(d).filter((e) => e.isFile()).map((e) => `${e.name}:${mtime(join(d, e.name))}`).join("|")) };
+  }
   return { stamp: "" };
 }
 
@@ -616,6 +621,47 @@ export function pageForFile(root, file) {
 // ───────── waiting for a review ─────────
 // `studio.mjs wait` lets Claude wait in the background until the user finishes a script, storyboard or draft review. It
 // registers in .studio/waiting.json, so the page can say Claude is listening and a save can say Claude has started.
+
+// What's new in the plugin (whats-new.json: each version's notes, newest first), and the version whose notes this
+// studio's dashboard last showed (.studio/seen.json), so a card says what an update brought, once.
+const seenFile = (root) => join(root, ".studio", "seen.json");
+const byVersion = (a, b) => b.localeCompare(a, "en", { numeric: true });
+
+/** The notes of every version newer than the one this studio last saw, up to the plugin's own ([{ version, items }]).
+    A studio that never saw any sees the newest version's notes alone. */
+export function whatsNew(root) {
+  const all = readJSON(join(PLUGIN_ROOT, "whats-new.json"), {});
+  const now = pluginVersion();
+  const seen = readJSON(seenFile(root), {}).whatsNew || null;
+  const versions = Object.keys(all)
+    .filter((v) => v.localeCompare(now, "en", { numeric: true }) <= 0 && (!seen || v.localeCompare(seen, "en", { numeric: true }) > 0))
+    .sort(byVersion);
+  return (seen ? versions : versions.slice(0, 1)).map((version) => ({ version, items: (all[version] || []).filter((x) => x?.text) }));
+}
+
+/** The studio has seen the notes up to this version. */
+export function sawWhatsNew(root, version = pluginVersion()) {
+  mkdirSync(join(root, ".studio"), { recursive: true });
+  writeFileSync(seenFile(root), `${JSON.stringify({ ...readJSON(seenFile(root), {}), whatsNew: version }, null, 2)}\n`);
+}
+
+// The user's favourite library items in this studio, by code ("W03"): the library shows them starred and can show
+// them alone, and `studio.mjs library` lists them first, so Claude suggests them first. Kept in .studio/favourites.json.
+const favouritesFile = (root) => join(root, ".studio", "favourites.json");
+
+export function readFavourites(root) {
+  const list = readJSON(favouritesFile(root), {}).items;
+  return Array.isArray(list) ? [...new Set(list.filter((c) => typeof c === "string" && /^[A-Z]\d{2,3}$/.test(c)))] : [];
+}
+
+/** Star or unstar a library item; the list as it now stands, in the order they were starred. */
+export function setFavourite(root, code, on) {
+  const items = readFavourites(root).filter((c) => c !== code);
+  if (on) items.push(code);
+  mkdirSync(join(root, ".studio"), { recursive: true });
+  writeFileSync(favouritesFile(root), `${JSON.stringify({ items }, null, 2)}\n`);
+  return items;
+}
 
 const waitingFile = (root) => join(root, ".studio", "waiting.json");
 const pageKey = (path) => {

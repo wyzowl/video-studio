@@ -87,6 +87,8 @@ graphs), each with a code and each dressed in the video's brand at the video's s
   nothing in it yet says so; design those moments yourself, as usual. Items from the full library appear there once a
   licence key has unlocked them on this Mac; until then the list ends with a count of the locked ones. Suggest only
   listed items, and if the user wants something only a locked item does, say it's in the full library.
+- **Their favourites first:** the items the user has starred in the library are listed first (★). Suggest those
+  wherever one fits before reaching for others.
 - **Where they fit:**
   - a figure the presenter quotes: W03 Stat, a card over the footage;
   - a figure that deserves the whole screen: D03 Big stat;

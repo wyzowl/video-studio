@@ -28,12 +28,16 @@ import {
   parseSize,
   formatDate,
   formatDateTime,
+  readFavourites,
+  whatsNew,
   timecode,
   contrast,
 } from "./studio.mjs";
 import { CATEGORIES, SIZES, BRAND_VARS, libraryItems, libraryItem, lockedItems, findItem, brokenItems, contentVariables, brandStyle } from "./library.mjs";
 import { catalogue, installedPack, licence } from "./paid.mjs";
 import { SCORES, stageTitle, stepsNow } from "./progress.mjs";
+import { deliveryFiles, deliveryWords, hasDelivery } from "./delivery.mjs";
+import { checksNow, setupNotes } from "./checks.mjs";
 
 export const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -115,7 +119,7 @@ function footer(studio) {
       ${cell("Plugin", `Wyzowl Video Studio ${pluginVersion()}`)}
       ${cell("HyperFrames", studio.hyperframes || "not set")}
     </dl>
-    <p class="footer_note">Pages update themselves when Claude changes something. To change anything, ask Claude in your studio session.</p>
+    <p class="footer_note">Pages update themselves when Claude changes something. To change anything, ask Claude in your studio session.${studio.root ? ` <a href="/health">Studio health</a>` : ""}</p>
   </div>
 </footer>`;
 }
@@ -218,8 +222,11 @@ function stagesNav(studio, slug, current = "") {
     });
     return `<span class="stages_group">${label}</span><span class="stages_items">${items.join("")}</span>`;
   };
-  const rows = row("script", "Script") + row("storyboard", "Storyboard") + row("review", "Video");
-  return rows ? `<nav class="stages" aria-label="Every version of the script, storyboard and video">${rows}</nav>` : "";
+  const delivered = hasDelivery(studio.root, slug)
+    ? `<span class="stages_group">Video delivery</span><span class="stages_items">${current === "delivery" ? `<span class="stages_item" aria-current="page">All assets</span>` : `<a class="stages_item" href="${base}delivery/">All assets</a>`}</span>`
+    : "";
+  const rows = row("script", "Script") + row("storyboard", "Storyboard") + row("review", "Video") + delivered;
+  return rows ? `<nav class="stages" aria-label="Every version of the script, storyboard and video, and the delivery">${rows}</nav>` : "";
 }
 
 /** A version's download, to share outside the studio, and where feedback that comes back goes. A PDF is made when
@@ -268,7 +275,7 @@ export function dashboardPage(studio) {
         v.script && !v.storyboard
           ? `<a class="button${key === "script" ? " button--corners" : " button--secondary"}" href="${esc(v.script.url)}">${key === "script" ? "Review script" : `Script v${v.script.version}`}</a>`
           : "",
-        v.master ? `<a class="button button--secondary" href="${esc(v.master.url)}">Watch video</a>` : "",
+        v.master ? `<a class="button button--secondary" href="${esc(v.master.url)}">Watch video</a><a class="button button--secondary" href="${overview}delivery/">All assets</a>` : "",
       ].join("");
       const brandChip = brand
         ? `<a class="chip chip--swatch" style="--_dot: ${esc(brandColours(brand).accent || "#ccc")}" href="/brands/${enc(brand.slug)}/">${esc(brand.name)}</a>`
@@ -340,6 +347,7 @@ export function dashboardPage(studio) {
         <h1 class="display">${esc(studio.name)}</h1>
         <p class="lede">Every video and brand in this studio. Start a video with <code>${COMMANDS.newVideo}</code> or add a brand with <code>${COMMANDS.newBrand}</code>.</p>
         ${waitingFor(videos)}
+        ${needsAttention(studio)}
       </div>
       <dl class="titleblock">
         ${cell("Videos", String(videos.length))}
@@ -351,6 +359,7 @@ export function dashboardPage(studio) {
     </div>
   </div>
 </section>
+${whatsNewCard(studio)}
 <section class="section section--rule" id="videos">
   <div class="container">
     ${eyebrow(tc(1), "Videos")}
@@ -373,6 +382,35 @@ export function dashboardPage(studio) {
   </div>
 </section>`;
   return layout({ title: studio.name, active: "videos", studio, body });
+}
+
+/** On the dashboard, when something this studio needs isn't on the Mac: what, and the way to Studio health. */
+function needsAttention(studio) {
+  const missing = checksNow(studio.root).filter((c) => !c.ok && !c.optional);
+  if (!missing.length) return "";
+  const names = missing.map((c) => c.name);
+  const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names.at(-1)}` : names[0];
+  return `<p class="attention"><span class="attention_mark" aria-hidden="true">!</span><span><b>${esc(plural(missing.length, "thing"))} ${missing.length === 1 ? "needs" : "need"} attention:</b> ${esc(list)}. <a href="/health">See Studio health</a>, which says what to tell Claude.</span></p>`;
+}
+
+/** The notes of the updates this studio hasn't seen yet, at the top of the dashboard until they're put away. */
+function whatsNewCard(studio) {
+  const notes = whatsNew(studio.root).filter((n) => n.items.length);
+  if (!notes.length) return "";
+  const newest = notes[0].version;
+  const items = notes.flatMap((n) => n.items).slice(0, 6);
+  return `<section class="section section--rule whatsnew" data-whatsnew="${esc(newest)}" aria-labelledby="whatsnew-title">
+  <div class="container">
+    <div class="whatsnew_card">
+      <div class="stack">
+        <p class="field-label">Updated to ${esc(newest)}</p>
+        <h2 class="card_title" id="whatsnew-title">What's new</h2>
+      </div>
+      <ul class="whatsnew_list">${items.map((x) => `<li>${x.href ? `<a href="${esc(x.href)}">${esc(x.text)}</a>` : esc(x.text)}</li>`).join("")}</ul>
+      <div class="row"><button class="button button--secondary" type="button" data-whatsnew-done>Got it</button></div>
+    </div>
+  </div>
+</section>`;
 }
 
 /** Every review waiting for the user across the studio, for the top of the dashboard. */
@@ -733,7 +771,13 @@ function nowPanel(video) {
   if (key === "review") return panel("action", `Video v${rv.version} is ready for your review`, "Watch it and pin a note to any moment you'd like changed. With no notes, press Approve and save.", button(rv.url, `Review video v${rv.version}`));
   if (key === "changes") return panel("waiting", `Your notes on video v${rv.version} are saved`, "Claude makes the changes in a new version. If Claude hasn't started, tell it “I've saved my notes on the video”.");
   if (key === "approved") return panel("waiting", `Video v${rv.version} is approved`, "Claude makes the final video next. If Claude hasn't started, tell it “Video approved”.");
-  if (key === "delivered") return panel("done", "The final video is ready", "", video.master ? button(video.master.url, "Watch the video") : "");
+  if (key === "delivered")
+    return panel(
+      "done",
+      "The final video is ready",
+      "Every file, and the words to go with it, are on its delivery page.",
+      `<div class="row">${video.master ? button(video.master.url, "Watch the video") : ""}<a class="button button--secondary" href="/videos/${enc(video.slug)}/delivery/">All assets</a></div>`,
+    );
   return panel("waiting", "Planning", "The script comes next, and appears here for your review.");
 }
 
@@ -957,7 +1001,7 @@ export function projectPage(studio, slug) {
         chip: `<span class="chip chip--delivered">Delivered</span>`,
         meta: video.master.name,
         thumb: thumb(video.thumbnail, "The final video", video.master.url),
-        actions: `<a class="button button--corners" href="${esc(video.master.url)}">Watch the video</a>`,
+        actions: `<a class="button button--corners" href="${esc(video.master.url)}">Watch the video</a><a class="button button--secondary" href="${base}delivery/">All assets</a>`,
       }),
     );
   }
@@ -1322,6 +1366,256 @@ ${sceneHtml}
   return { status: 200, html: layout({ title: `Storyboard v${v}: ${video.title}`, active: "videos", studio, body, foot }) };
 }
 
+// ───────── setup and health ─────────
+
+const slugOf = (t) => String(t).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+/** One check: done, being installed, or not; and if not, what to say to Claude to fix it (with a Copy button). */
+function checkRow(c, note) {
+  const installing = !c.ok && note?.state === "installing";
+  const failed = !c.ok && note?.state === "failed";
+  const state = c.ok ? "ok" : installing ? "installing" : c.optional ? "optional" : "missing";
+  const said = { ok: "Done", installing: "Installing now", optional: "Optional", missing: "Needs attention" }[state];
+  const say =
+    !c.ok && c.say && !installing
+      ? `<div class="check_say"><span class="field-label">${c.id === "homebrew" ? "To fix it" : "Say to Claude"}</span><p>${c.id === "homebrew" ? esc(c.say) : `“${esc(c.say)}”`}</p>${c.id === "homebrew" || c.id === "macos" ? "" : `<button class="button button--secondary" type="button" data-copy="${esc(c.say)}">Copy</button>`}</div>`
+      : "";
+  return `<li class="check check--${state}">
+  <span class="check_mark" aria-hidden="true">${{ ok: "✓", installing: "", optional: "–", missing: "!" }[state]}</span>
+  <div class="check_text"><strong><span class="visually-hidden">${esc(said)}: </span>${esc(c.name)}</strong><p class="muted">${esc(failed ? `${c.detail}. The last try didn't finish: Claude says why in the chat.` : c.detail)}</p>${!c.ok && c.time ? `<p class="check_time">${installing ? "Installing now · " : ""}${esc(c.time[0].toUpperCase() + c.time.slice(1))}</p>` : ""}</div>
+  ${say}
+</li>`;
+}
+
+/** The checklist's parts ([{ name, sig, html }]): where it stands, then each group of checks, for ui/page.js to redraw
+    what changed while Claude sets things up. */
+export function checksParts(root, { setup = false } = {}) {
+  const checks = checksNow(root);
+  const notes = setupNotes();
+  const required = checks.filter((c) => !c.optional);
+  const done = required.filter((c) => c.ok).length;
+  const missing = required.filter((c) => !c.ok);
+  const installing = checks.filter((c) => !c.ok && notes[c.id]?.state === "installing");
+  const parts = [];
+  const add = (name, html) => parts.push({ name, sig: sig(html), html: `<div data-part="${name}" data-sig="${sig(html)}">${html}</div>` });
+  let state = "action";
+  let title = setup ? `${done} of ${required.length} done` : `${plural(missing.length, "thing")} ${missing.length === 1 ? "needs" : "need"} attention`;
+  let text = setup ? "Answer Claude's questions in the chat: where your studio goes, and whether to install each thing. Each one ticks off here as it's done." : "Beside each one is what to say to Claude to fix it.";
+  if (!missing.length) {
+    state = "done";
+    title = setup ? "Setup is done" : "Everything's working";
+    text = setup ? "Open Claude Code in your studio folder to make videos there." : "Everything Wyzowl Video Studio needs is on this Mac.";
+  } else if (installing.length) {
+    state = "working";
+    const doing = installing.map((c) => c.doing || `Installing ${c.name}`);
+    title = doing.length > 1 ? `${doing[0]}, and ${doing.slice(1).map((d) => d[0].toLowerCase() + d.slice(1)).join(" and ")}` : doing[0];
+    text = `${done} of ${required.length} done. Each one ticks off here as it's done.`;
+  }
+  add(
+    "summary",
+    `<div class="now now--${state}" role="status">${state === "working" ? `<span class="now_pulse" aria-hidden="true"></span>` : ""}<div class="now_text"><strong>${esc(title)}</strong><p>${esc(text)}</p></div>${state === "done" && root ? `<a class="button button--corners" href="/">Open the dashboard</a>` : ""}</div>`,
+  );
+  for (const group of [...new Set(checks.map((c) => c.group))]) {
+    const rows = checks.filter((c) => c.group === group).map((c) => checkRow(c, notes[c.id]));
+    add(`group-${slugOf(group)}`, `<section class="checks_group"><h3 class="field-label">${esc(group)}</h3><ul class="checks">${rows.join("")}</ul></section>`);
+  }
+  return parts;
+}
+
+/** Setup's checklist (before there's a studio, the only page there is) and, later, the studio's health: everything
+    the studio uses on this Mac, live. */
+export function healthPage(studio, { setup = false } = {}) {
+  const root = studio?.root || null;
+  const parts = checksParts(root, { setup });
+  const l = licence();
+  const pack = installedPack();
+  const body = `
+<section class="section section--hero">
+  <div class="container">
+    <p class="breadcrumbs">${root ? `<a href="/">Studio</a> / ` : ""}${setup ? "Setup" : "Studio health"}</p>
+    ${eyebrow(tc(0), setup ? "Setup" : "Health")}
+    <div class="split">
+      <div class="stack">
+        <h1>${setup ? "Setting up Wyzowl Video Studio" : "Studio health"}</h1>
+        <p class="lede">${
+          setup
+            ? "This page follows setup as Claude works through it: what's on this Mac, what's being installed, and what's next."
+            : "Everything Wyzowl Video Studio uses on this Mac, and whether it's working. Beside anything that isn't is what to say to Claude to fix it."
+        }</p>
+      </div>
+      <dl class="titleblock">
+        ${cell("Plugin", `Wyzowl Video Studio ${pluginVersion()}`)}
+        ${cell("HyperFrames", studio?.hyperframes || "not set yet")}
+        ${cell("Studio folder", root || "not made yet")}
+        ${cell("Full library", l?.status === "active" && pack ? `unlocked, ${plural(pack.items, "item")}` : "not unlocked")}
+      </dl>
+    </div>
+  </div>
+</section>
+<section class="section section--rule">
+  <div class="container">
+    ${eyebrow("01", setup ? "Each step" : "Each check")}
+    <div class="checks_panel" data-checks="${setup ? "setup" : "health"}">${parts.map((x) => x.html).join("")}</div>
+  </div>
+</section>`;
+  return layout({ title: setup ? "Setup" : "Studio health", studio: studio || { name: "Not set up yet", root: "", hyperframes: "" }, body });
+}
+
+// ───────── delivery page ─────────
+
+const SIZE_WHERE = { "16x9": "for YouTube, websites and presentations", "1x1": "for social feeds", "4x5": "for Instagram and Facebook feeds", "9x16": "for Stories, Reels, TikTok and Shorts" };
+
+/** What a delivery file is, for the page: its name there and a line on what it's for. */
+function deliveryLabel(f) {
+  const size = f.size ? SIZES[f.size]?.label || f.size.replace("x", "×") : "";
+  if (f.kind === "master") return [`Final video${size ? ` · ${size}` : ""}`, "The full-quality master, for editing and keeping."];
+  if (f.kind === "web") return [`Web copy${size ? ` · ${size}` : ""}`, "Smaller, for websites, social posts and email."];
+  if (f.kind === "poster") return ["Poster frame", "The still to show before it plays."];
+  if (f.kind === "thumbnail") return ["Thumbnail", "For YouTube and link previews (1280 px)."];
+  if (f.kind === "gif") return ["GIF preview", "A short silent loop, for email and messages."];
+  if (f.kind === "captions") return [f.name.toLowerCase().endsWith(".vtt") ? "Captions · WebVTT" : "Captions · SRT", f.name.toLowerCase().endsWith(".vtt") ? "For a video on a website." : "For YouTube, LinkedIn and most players."];
+  if (f.kind === "contact") return ["Contact sheet", "Frames from across the video, to see it at a glance."];
+  return [f.name, ""];
+}
+
+/** A video's delivery: the final video, every file made with it (each size and its web copy, the stills, the
+    captions), the words to go with it, and what to ask Claude for next. */
+export function deliveryPage(studio, slug) {
+  const video = readVideo(studio.root, slug);
+  if (!video) return { status: 404, html: page404(studio, `The video “${slug}”`) };
+  const brief = readBrief(studio.root, slug);
+  const brand = video.brand ? readBrand(studio.root, video.brand) : null;
+  const files = deliveryFiles(studio.root, slug);
+  const masters = files.filter((f) => f.kind === "master");
+  const base = `/videos/${enc(slug)}/`;
+  const fileUrl = (f) => `${base}renders/${enc(f.name)}?v=${Math.round(f.mtime)}`;
+  const words = deliveryWords(studio.root, slug);
+  const poster = files.find((f) => f.kind === "poster");
+  const main = files.find((f) => f.kind === "web") || masters[0];
+  const length = masters.find((f) => f.media?.duration)?.media.duration || main?.media?.duration || 0;
+  const total = files.reduce((n, f) => n + f.bytes, 0);
+  const delivered = Math.max(0, ...masters.map((f) => f.mtime));
+  const sizes = [...new Set(masters.map((f) => f.size).filter(Boolean))];
+  const mac = process.platform === "darwin";
+
+  const thumbOf = (f) => {
+    if (["poster", "thumbnail", "contact", "gif"].includes(f.kind)) return `<img src="${esc(fileUrl(f))}" alt="" loading="lazy" decoding="async">`;
+    if ((f.kind === "master" || f.kind === "web") && poster) return `<img src="${esc(fileUrl(poster))}" alt="" loading="lazy" decoding="async">`;
+    return `<span class="dfile_badge">${esc(f.kind === "captions" ? "CC" : (f.name.split(".").pop() || "").toUpperCase())}</span>`;
+  };
+  const metaOf = (f) => {
+    const m = f.media;
+    const bits = [f.name];
+    if (m?.width) bits.push(`${m.width}×${m.height}`);
+    if (m?.fps && (f.kind === "master" || f.kind === "web")) bits.push(`${m.fps} fps`);
+    if (m?.duration && (f.kind === "master" || f.kind === "web" || f.kind === "gif")) bits.push(timecode(m.duration));
+    bits.push(fileSize(f.bytes));
+    return bits.join(" · ");
+  };
+  const fileRows = files
+    .map((f) => {
+      const [name, what] = deliveryLabel(f);
+      return `<li class="dfile">
+  <div class="dfile_thumb${f.media && f.media.height > f.media.width ? " dfile_thumb--tall" : ""}${f.kind === "contact" ? " dfile_thumb--whole" : ""}">${thumbOf(f)}</div>
+  <div class="dfile_text"><strong>${esc(name)}</strong>${what ? `<p class="muted">${esc(what)}</p>` : ""}<p class="dfile_meta">${esc(metaOf(f))}</p></div>
+  <div class="dfile_actions"><a class="button button--secondary" href="${base}delivery/download/${enc(f.name)}" download>Download</a>${mac ? `<button class="button button--secondary" type="button" data-reveal="videos/${esc(slug)}/renders/${esc(f.name)}">Show in Finder</button>` : ""}</div>
+</li>`;
+    })
+    .join("\n");
+
+  const wordRows = [
+    ["title", "Title"],
+    ["description", "Description"],
+    ["altText", "Alt text"],
+  ]
+    .filter(([k]) => words[k])
+    .map(([k, label]) => `<div class="dword"><span class="field-label">${esc(label)}</span><p>${esc(words[k])}</p><button class="button button--secondary" type="button" data-copy="${esc(words[k])}">Copy</button></div>`)
+    .join("");
+
+  // what to ask Claude for next: the sizes not made yet, shorter versions, and anything the delivery doesn't have
+  const asks = [];
+  for (const key of ["9x16", "1x1", "16x9", "4x5"].filter((k) => !sizes.includes(k)).slice(0, 2)) asks.push(`Make a ${SIZES[key].label} version of ${video.title} ${SIZE_WHERE[key]}.`);
+  if (length > 20) asks.push(`Make a 15-second cut-down of ${video.title} for social ads.`);
+  if (length > 10) asks.push(`Make a 6-second bumper of ${video.title} for YouTube.`);
+  const speech = brief.voiceover && brief.voiceover !== "none";
+  if (speech && !files.some((f) => f.kind === "captions")) asks.push(`Make captions for ${video.title}: an SRT and a WebVTT file.`);
+  if (speech) asks.push(`Make a silent version of ${video.title} with the captions on screen, for feeds that play without sound.`);
+  if (!wordRows) asks.push(`Write a title, a description and alt text to go with ${video.title}.`);
+  if (!files.some((f) => f.kind === "gif")) asks.push(`Make a GIF preview of ${video.title} for an email.`);
+  const askRows = asks.map((a) => `<li class="dask"><span>${esc(a)}</span><button class="button button--secondary" type="button" data-copy="${esc(a)}">Copy</button></li>`).join("");
+
+  const portrait = (main?.media?.height || video.size.h) > (main?.media?.width || video.size.w);
+  const ratio = main?.media?.width ? `${main.media.width} / ${main.media.height}` : video.size.ratio;
+  const body = `
+<section class="section section--hero">
+  <div class="container">
+    <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/#videos">Videos</a> / <a href="${base}">${esc(video.title)}</a> / Delivery</p>
+    ${eyebrow("Final", "Video delivery")}
+    <div class="hero_head">
+      <h1>${esc(video.title)}</h1>
+      <div class="split split--top">
+        <div class="stack">
+          ${shortLede(videoDescription(brief))}
+          ${stagesNav(studio, slug, "delivery")}
+        </div>
+        <dl class="titleblock">
+          ${cell("Brand", brand?.name || video.brand || "")}
+          ${cell("Sizes", sizes.map((k) => SIZES[k]?.label || k).join(", ") || video.size.label)}
+          ${cell("Length", length ? `${timecode(length)} (${length.toFixed(1)} s)` : "")}
+          ${cell("Delivered", delivered ? formatDate(delivered) : "")}
+          ${cell("Files", String(files.length))}
+          ${cell("In all", fileSize(total))}
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+${
+  masters.length
+    ? `<section class="section section--rule">
+  <div class="container">
+    ${eyebrow("01", "The final video")}
+    <figure class="frame" style="max-width: ${portrait ? "26rem" : "60rem"}"><div class="frame_stage"><div class="frame_media frame_media--player" style="--ratio: ${ratio}"><video class="player_video" controls playsinline preload="metadata" src="${esc(fileUrl(main))}"${poster ? ` poster="${esc(fileUrl(poster))}"` : ""}></video></div></div></figure>
+  </div>
+</section>
+<section class="section section--rule">
+  <div class="container">
+    ${eyebrow("02", "Every file")}
+    <h2>Every file</h2>
+    <ul class="dfiles">${fileRows}</ul>
+    <p class="muted">They're all in the video's folder, in <span class="mono">videos/${esc(slug)}/renders/</span>.</p>
+  </div>
+</section>
+${
+  wordRows
+    ? `<section class="section section--rule">
+  <div class="container">
+    ${eyebrow("03", "Words to go with it")}
+    <h2>Words to go with it</h2>
+    <div class="dwords">${wordRows}</div>
+  </div>
+</section>`
+    : ""
+}
+<section class="section section--rule">
+  <div class="container">
+    ${eyebrow(wordRows ? "04" : "03", "What next")}
+    <div class="stack">
+      <h2>What next</h2>
+      <p class="lede">Ask Claude for any of these in the chat: copy one, paste it in, and add anything you'd like.</p>
+    </div>
+    <ul class="dasks">${askRows}</ul>
+  </div>
+</section>`
+    : `<section class="section section--rule">
+  <div class="container">
+    <div class="libempty"><span class="libempty_label">Nothing delivered yet</span><p>The final video and every file made with it appear here once the video is approved and made.</p></div>
+  </div>
+</section>`
+}`;
+  return { status: 200, html: layout({ title: `Delivery: ${video.title}`, active: "videos", studio, body }) };
+}
+
 // ───────── video review page ─────────
 
 export function reviewPage(studio, slug, version) {
@@ -1459,8 +1753,15 @@ function libraryView(studio, query) {
   const slug = query?.get("brand") || "";
   const brand = brands.some((b) => b.slug === slug) ? readBrand(studio.root, slug) : null;
   const size = SIZES[query?.get("size")] ? query.get("size") : "16x9";
-  const type = query?.get("type") === "free" ? "free" : "all";
-  return { brands, brand, size, type };
+  const type = ["free", "favourites"].includes(query?.get("type")) ? query.get("type") : "all";
+  // an item's own values, from "Try it with your words" (strings and numbers only)
+  let vars = {};
+  try {
+    const given = JSON.parse(query?.get("vars") || "{}");
+    if (given && typeof given === "object" && !Array.isArray(given))
+      vars = Object.fromEntries(Object.entries(given).filter(([k, v]) => /^[A-Za-z][\w-]*$/.test(k) && ["string", "number"].includes(typeof v)).map(([k, v]) => [k, typeof v === "string" ? v.slice(0, 500) : v]));
+  } catch {}
+  return { brands, brand, size, type, vars, q: (query?.get("q") || "").slice(0, 80), favourites: new Set(readFavourites(studio.root)) };
 }
 
 /** The view's query string, kept on every link between library pages so the choice of brand, size and type sticks. */
@@ -1468,7 +1769,7 @@ function viewQuery(view, size = view.size) {
   const p = new URLSearchParams();
   if (view.brand) p.set("brand", view.brand.slug);
   if (size !== "16x9") p.set("size", size);
-  if (view.type === "free") p.set("type", "free");
+  if (view.type !== "all") p.set("type", view.type);
   const s = p.toString();
   return s ? `?${s}` : "";
 }
@@ -1478,6 +1779,7 @@ function gframe(item, view, size = view.size, title = `${item.code} ${item.name}
   const S = SIZES[size];
   const p = new URLSearchParams({ size });
   if (view.brand) p.set("brand", view.brand.slug);
+  if (view.vars && Object.keys(view.vars).length) p.set("vars", JSON.stringify(view.vars));
   return `<div class="gframe" style="--ratio: ${S.w} / ${S.h}; --ar: ${(S.w / S.h).toFixed(4)}"><iframe src="/library/preview/${enc(item.code.toLowerCase())}?${p}" title="${esc(title)}" loading="lazy" tabindex="-1"></iframe></div>`;
 }
 
@@ -1553,13 +1855,14 @@ function libraryControls(view, { type = false } = {}) {
       ? `<fieldset class="gcontrol"><legend class="field-label">Type</legend><div class="seg">${[
           ["all", "Paid & Free"],
           ["free", "Free only"],
+          ["favourites", "Favourites"],
         ]
           .map(([key, label]) => `<label><input type="radio" name="type" value="${key}"${view.type === key ? " checked" : ""}><span>${esc(label)}</span></label>`)
           .join("")}</div></fieldset>`
-      : view.type === "free"
-        ? `<input type="hidden" name="type" value="free">`
+      : view.type !== "all"
+        ? `<input type="hidden" name="type" value="${esc(view.type)}">`
         : ""
-  }
+  }${Object.keys(view.vars || {}).length ? `<input type="hidden" name="vars" value="${esc(JSON.stringify(view.vars))}">` : ""}
   <noscript><button class="button button--secondary" type="submit">Show</button></noscript>
 </form>`;
 }
@@ -1585,11 +1888,13 @@ export function libraryPage(studio, category, query) {
     })
     .join("");
   const freeOnly = view.type === "free";
-  const shown = (freeOnly ? items.filter((i) => i.free) : [...items, ...locked]).sort(byCode);
+  const favesOnly = view.type === "favourites";
+  const shown = (freeOnly ? items.filter((i) => i.free) : favesOnly ? [...items, ...locked].filter((i) => view.favourites.has(i.code)) : [...items, ...locked]).sort(byCode);
   // a locked item shows faded, under a "Paid upgrade" badge that leads to the full library above the cards
   const cards = shown
     .map(
-      (item) => `<article class="card gitem${item.locked ? " gitem--locked" : ""}">
+      (item) => `<article class="card gitem${item.locked ? " gitem--locked" : ""}" data-search="${esc(searchText(item))}">
+  ${starButton(item, view)}
   ${item.locked ? `<a class="gitem_upgrade" href="#full-library">Paid upgrade</a>` : ""}
   <div class="gitem_media">${item.locked ? lockedFrame(item, view.size) : gframe(item, view)}</div>
   <div class="card_body">
@@ -1601,8 +1906,9 @@ export function libraryPage(studio, category, query) {
     )
     .join("\n");
   const bothTypes = viewQuery({ ...view, type: "all" });
-  const empty =
-    freeOnly && items.length + locked.length
+  const empty = favesOnly
+    ? `<div class="libempty"><span class="libempty_label">No favourite ${esc(c.one)}s yet</span><p>Star any ${esc(c.one)} to keep it here. Video Studio suggests your favourites first. <a href="/library/${category}/${bothTypes}">Show them all</a>.</p></div>`
+    : freeOnly && items.length + locked.length
       ? `<div class="libempty"><span class="libempty_label">No free ${esc(c.one)}s</span><p>Every ${esc(c.one)} here is in the full library. <a href="/library/${category}/${bothTypes}">Show paid and free</a>.</p></div>`
       : `<div class="libempty"><span class="libempty_label">On the way</span><p>The first ${esc(c.one)}s come in a plugin update. Until then, Claude designs them for each video from scratch.</p></div>`;
   const example = items[0] || all[0];
@@ -1636,8 +1942,9 @@ export function libraryPage(studio, category, query) {
           <h2>${esc(c.title)}</h2>
           <p class="lede">${esc(c.lede)}</p>
         </div>
-        ${freeOnly ? "" : paidPanel(category)}
-        ${shown.length ? `<div class="ggrid${S.h > S.w ? " ggrid--tall" : ""}">${cards}</div>` : empty}
+        ${librarySearch(view, category)}
+        ${freeOnly || favesOnly ? "" : paidPanel(category)}
+        ${shown.length ? `<div class="ggrid${S.h > S.w ? " ggrid--tall" : ""}" data-lib-grid>${cards}</div>` : empty}
         ${brokenItems(category)
           .map((b) => `<div class="callout"><strong>${esc(b.file.split("/").pop())} couldn't be shown</strong><p>${esc(b.error)}</p></div>`)
           .join("")}
@@ -1663,7 +1970,29 @@ export function libraryPage(studio, category, query) {
     </div>
   </div>
 </section>`;
-  return layout({ title: `${c.title} · Library`, active: "library", studio, body });
+  // every item in every category, for the search's counts in the other categories
+  const index = [...all, ...allLocked].map((i) => ({ k: i.category, s: searchText(i) }));
+  const foot = `<script type="application/json" id="library-index">${JSON.stringify({ categories: Object.fromEntries(Object.entries(CATEGORIES).map(([k, x]) => [k, x.title])), view: viewQuery({ ...view, vars: {} }), items: index }).replace(/</g, "\\u003c")}</script>`;
+  return layout({ title: `${c.title} · Library`, active: "library", studio, body, foot });
+}
+
+/** What the library's search looks in: an item's code, name and what it's for. */
+const searchText = (item) => `${item.code} ${item.name} ${item.summary || ""}`.toLowerCase();
+
+/** A card's star: on, the item is one of the user's favourites (ui/page.js posts it to /api/favourite). */
+function starButton(item, view) {
+  const on = view.favourites.has(item.code);
+  return `<button class="gstar" type="button" data-favourite="${esc(item.code)}" aria-pressed="${on}" aria-label="Favourite ${esc(`${item.code} ${item.name}`)}" title="${on ? "In your favourites" : "Add to your favourites"}"><span aria-hidden="true">★</span></button>`;
+}
+
+/** The library's search, over the category's cards as you type, with how many match in the other categories
+    (ui/page.js). "/" goes to it. */
+function librarySearch(view, category) {
+  return `<div class="libsearch" role="search">
+  <label class="field-label" for="lib-q">Search the library</label>
+  <div class="libsearch_row"><input id="lib-q" type="search" value="${esc(view.q)}" placeholder="Try “stat”, “quote” or “map”" autocomplete="off" spellcheck="false" data-lib-search data-category="${esc(category)}"><kbd aria-hidden="true">/</kbd></div>
+  <p class="libsearch_result" data-lib-result aria-live="polite"></p>
+</div>`;
 }
 
 /** One item: it playing large, at every size, what it's for, what you fill in and what comes from the brand kit. */
@@ -1708,6 +2037,35 @@ export function itemPage(studio, category, code, query) {
     })
     .join("");
   const ask = `Use ${item.code} (${item.name}) in my video: `;
+  // "Try it with your words": the words and options, without the media files the preview stands in for, or the pixel
+  // positions that place it over real footage
+  const tryFields = contentVariables(item).filter(
+    (d) => !(d.type === "string" && (/(Video|Image|Path)$|^(image|video|media|clip)\d+$|^(photo|avatar|logo|file|cover)$/.test(d.id) || /\bfile\b/i.test(d.label || ""))) && !(d.type === "number" && d.unit === "px"),
+  );
+  const example = Object.fromEntries(tryFields.map((d) => [d.id, item.preview?.[d.id] ?? d.default]));
+  const now = { ...example, ...Object.fromEntries(Object.entries(view.vars).filter(([k]) => Object.hasOwn(example, k))) };
+  const field = (d) => {
+    const v = now[d.id];
+    const label = `<span class="field-label">${esc(d.label || d.id)}</span>`;
+    if (d.type === "enum")
+      return `<label class="gtry_field">${label}<span class="gselect"><select name="${esc(d.id)}">${(d.options || []).map((o) => `<option value="${esc(o.value)}"${String(o.value) === String(v) ? " selected" : ""}>${esc(o.label)}</option>`).join("")}</select></span></label>`;
+    if (d.type === "number")
+      return `<label class="gtry_field">${label}<span class="gtry_number"><input type="number" name="${esc(d.id)}" value="${esc(v ?? "")}"${d.min != null ? ` min="${esc(d.min)}"` : ""}${d.max != null ? ` max="${esc(d.max)}"` : ""} step="${esc(d.step ?? "any")}">${d.unit ? `<span>${esc(d.unit)}</span>` : ""}</span></label>`;
+    if (d.type === "color" && /^#[0-9a-f]{6}$/i.test(String(v)))
+      return `<label class="gtry_field">${label}<input type="color" name="${esc(d.id)}" value="${esc(v)}"></label>`;
+    const long = String(v ?? "").length > 48 || /[|\n]/.test(String(v ?? ""));
+    return `<label class="gtry_field">${label}${long ? `<textarea name="${esc(d.id)}" rows="2">${esc(v ?? "")}</textarea>` : `<input type="text" name="${esc(d.id)}" value="${esc(v ?? "")}">`}</label>`;
+  };
+  const tryForm = tryFields.length
+    ? `<form class="gtry" data-try data-code="${esc(item.code)}" data-name="${esc(item.name)}" data-example="${esc(JSON.stringify(example))}">
+  <div class="stack">
+    <h3 class="card_title">Try it with your words</h3>
+    <p class="muted">Change its words and options and the preview plays them, in the brand and size above. Nothing here changes a video.</p>
+  </div>
+  <div class="gtry_fields">${tryFields.map(field).join("")}</div>
+  <div class="row"><button class="button button--secondary" type="button" data-try-reset>Back to the example</button></div>
+</form>`
+    : "";
   const body = `
 <section class="section section--hero">
   <div class="container">
@@ -1717,6 +2075,7 @@ export function itemPage(studio, category, code, query) {
       <div class="stack">
         <h1>${esc(item.name)}</h1>
         <p class="lede">${esc(item.summary)}</p>
+        <div class="row">${favouriteButton(item, view)}</div>
       </div>
       <dl class="titleblock">
         ${cell("Code", item.code)}
@@ -1733,8 +2092,13 @@ export function itemPage(studio, category, code, query) {
 <section class="section section--rule">
   <div class="container">
     ${eyebrow(tc(1), "Preview")}
-    <div class="gstage${S.h > S.w ? " gstage--tall" : ""}">${gframe(item, view)}</div>
-    <div class="row gstage_tools"><button class="button button--secondary" type="button" data-replay>Play from the start</button><span class="muted">It loops; the silhouette stands in for your footage.</span></div>
+    <div class="gplay${tryForm ? " gplay--try" : ""}">
+      <div class="gplay_stage">
+        <div class="gstage${S.h > S.w ? " gstage--tall" : ""}">${gframe(item, view)}</div>
+        <div class="row gstage_tools"><button class="button button--secondary" type="button" data-replay>Play from the start</button><span class="muted">It loops; the silhouette stands in for your footage.</span></div>
+      </div>
+      ${tryForm}
+    </div>
     <h3 class="card_title gsizes_title">Every size</h3>
     <div class="gsizes">${sizes}</div>
   </div>
@@ -1752,8 +2116,8 @@ export function itemPage(studio, category, code, query) {
       <div class="callout">
         <strong>Use it in a video</strong>
         <p>Tell Claude the code, the video and where it goes. Claude fills in the words, dresses it in the video's brand and fits it to the video's size.</p>
-        <p class="mono">“${esc(ask)}…”</p>
-        <p><button class="button button--secondary" type="button" data-copy="${esc(ask)}">Copy this to start</button></p>
+        <p class="mono" data-ask>“${esc(ask)}…”</p>
+        <p><button class="button button--secondary" type="button" data-copy="${esc(ask)}" data-ask-copy>Copy this to start</button></p>
       </div>
     </div>
   </div>
@@ -1780,6 +2144,12 @@ export function itemPage(studio, category, code, query) {
   return { status: 200, html: layout({ title: `${item.code} ${item.name}`, active: "library", studio, body }) };
 }
 
+/** An item page's star: add it to the user's favourites, or take it out (ui/page.js). */
+function favouriteButton(item, view) {
+  const on = view.favourites.has(item.code);
+  return `<button class="button button--secondary gfav" type="button" data-favourite="${esc(item.code)}" aria-pressed="${on}"><span aria-hidden="true">★</span> <span data-favourite-label>${on ? "In your favourites" : "Add to favourites"}</span></button>`;
+}
+
 /** A locked paid item's page: stills of it at every size, what it's for and how it moves, what it takes, and how to
     unlock it. */
 function lockedItemPage(studio, item, view) {
@@ -1803,6 +2173,7 @@ function lockedItemPage(studio, item, view) {
       <div class="stack">
         <h1>${esc(item.name)}</h1>
         <p class="lede">${esc(item.summary)}</p>
+        <div class="row">${favouriteButton(item, view)}</div>
       </div>
       <dl class="titleblock">
         ${cell("Code", item.code)}

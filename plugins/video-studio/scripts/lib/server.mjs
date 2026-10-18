@@ -24,10 +24,13 @@ import {
   pageStamp,
   claudeWaiting,
   markWorking,
+  setFavourite,
+  sawWhatsNew,
+  registeredStudios,
 } from "./studio.mjs";
-import { dashboardPage, brandPage, projectPage, scriptPage, storyboardPage, reviewPage, libraryPage, itemPage, page404, progressState } from "./pages.mjs";
+import { dashboardPage, brandPage, projectPage, scriptPage, storyboardPage, reviewPage, deliveryPage, healthPage, checksParts, libraryPage, itemPage, page404, progressState } from "./pages.mjs";
 import { scriptPrint, storyboardPrint } from "./print.mjs";
-import { CATEGORIES, libraryItem, previewDocument, SIZES } from "./library.mjs";
+import { CATEGORIES, findItem, libraryItem, previewDocument, SIZES } from "./library.mjs";
 import { renderPdf, shareName, attachment } from "./pdf.mjs";
 import { PREVIEWS_DIR, checkLibrary } from "./paid.mjs";
 
@@ -82,6 +85,13 @@ export function createStudioServer(root) {
       if (req.method === "POST" && path === "/api/script") return await saveScript(req, res, studioRoot);
       if (req.method === "POST" && path === "/api/reveal") return await reveal(req, res, studioRoot);
       if (req.method === "POST" && path === "/api/licence") return await licencePost(req, res);
+      if (req.method === "POST" && path === "/api/favourite") return await favouritePost(req, res, studioRoot);
+      if (req.method === "POST" && path === "/api/seen") {
+        const data = await readPost(req, res);
+        if (!data) return;
+        sawWhatsNew(studioRoot, typeof data.version === "string" && /^\d+\.\d+\.\d+$/.test(data.version) ? data.version : undefined);
+        return json(res, 200, { ok: true });
+      }
       if (req.method !== "GET" && req.method !== "HEAD") return text(res, 405, "Method not allowed");
 
       if (path === "/api/status") {
@@ -104,6 +114,9 @@ export function createStudioServer(root) {
         return json(res, 200, PROJECT.test(slug) ? progressState(studio, slug) : { active: false });
       }
       if (path === "/" || path === "/index.html") return html(res, 200, dashboardPage(studio));
+      // what's on this Mac: setup's checklist, and the studio's health (ui/page.js keeps them up to date)
+      if (path === "/setup" || path === "/setup/" || path === "/health" || path === "/health/") return html(res, 200, healthPage(studio, { setup: path.startsWith("/setup") }));
+      if (path === "/api/checks") return json(res, 200, { parts: checksParts(studioRoot, { setup: url.searchParams.get("view") === "setup" }) });
       if (path.startsWith("/ui/")) return file(req, res, uiRoot, path.slice(4));
 
       let m;
@@ -146,6 +159,15 @@ export function createStudioServer(root) {
         if (!path.endsWith("/")) return redirect(res, `${url.pathname}/`);
         const page = reviewPage(studio, m[1], Number(m[2]));
         return html(res, page.status, page.html);
+      }
+      // a video's delivery: every file of the final video, and each one to download
+      if ((m = /^\/videos\/([^/]+)\/delivery\/?$/.exec(path)) && PROJECT.test(m[1])) {
+        if (!path.endsWith("/")) return redirect(res, `${url.pathname}/`);
+        const page = deliveryPage(studio, m[1]);
+        return html(res, page.status, page.html);
+      }
+      if ((m = /^\/videos\/([^/]+)\/delivery\/download\/([^/]+)$/.exec(path)) && PROJECT.test(m[1])) {
+        return file(req, res, join(studioRoot, "videos", m[1], "renders"), m[2], { "content-disposition": attachment(m[2]) });
       }
       // the library opens on its first category; each category has a page, and each item a page of its own
       if (path === "/library" || path === "/library/") return redirect(res, `/library/${Object.keys(CATEGORIES)[0]}/${url.search}`);
@@ -191,6 +213,30 @@ export function createStudioServer(root) {
       }
       if (path.startsWith("/brands/") || path.startsWith("/videos/")) return file(req, res, studioRoot, path.slice(1));
       return html(res, 404, page404(studio, "That page"));
+    } catch (err) {
+      if (!res.headersSent) text(res, 500, `Server error: ${err.message}`);
+      else res.end();
+    }
+  });
+}
+
+/** Before there's a studio: the Setup page alone, with its checks, and the pages' own files. Everything else leads to
+    it. Once setup has made a studio, its checks include the studio's. */
+export function createSetupServer() {
+  const uiRoot = join(PLUGIN_ROOT, "ui");
+  return http.createServer(async (req, res) => {
+    try {
+      const host = String(req.headers.host || "").replace(/:\d+$/, "");
+      if (!LOCAL_HOSTS.has(host)) return text(res, 403, "Forbidden");
+      const url = new URL(req.url, "http://127.0.0.1");
+      const path = url.pathname;
+      const root = registeredStudios()[0]?.path || null;
+      if (path === "/api/status") return json(res, 200, { ok: true, setup: true, studio: "", plugin: pluginVersion(), pid: process.pid, open: [] });
+      if (path === "/api/stamp") return json(res, 200, { stamp: "setup" });
+      if (path === "/api/checks") return json(res, 200, { parts: checksParts(root, { setup: true }) });
+      if (path.startsWith("/ui/")) return file(req, res, uiRoot, path.slice(4));
+      if (path === "/setup" || path === "/setup/") return html(res, 200, healthPage(root ? readStudio(root) : null, { setup: true }));
+      return redirect(res, "/setup");
     } catch (err) {
       if (!res.headersSent) text(res, 500, `Server error: ${err.message}`);
       else res.end();
@@ -292,6 +338,15 @@ async function licencePost(req, res) {
   return json(res, 200, { ok: result.status === "ok", ...result });
 }
 
+/** POST /api/favourite — from the library: { code, on } stars or unstars an item. Answers with the favourites. */
+async function favouritePost(req, res, root) {
+  const data = await readPost(req, res);
+  if (!data) return;
+  const item = typeof data.code === "string" ? findItem(data.code) : null;
+  if (!item) return json(res, 404, { ok: false, error: "There's no such library item" });
+  return json(res, 200, { ok: true, items: setFavourite(root, item.code, Boolean(data.on)) });
+}
+
 /** Shared checks for a POSTed review: those above, plus a known project and version number. */
 async function readReviewPost(req, res) {
   const data = await readPost(req, res);
@@ -337,14 +392,15 @@ function downloadDraft(req, res, studio, slug, version) {
   return file(req, res, join(studio.root, "videos", slug), rv.video, { "content-disposition": attachment(name) });
 }
 
-/** POST /api/reveal — show a downloaded PDF's copy in Finder, ready to attach to an email. Only a PDF in a script or
-    storyboard version's folder, and only on a Mac. */
+/** POST /api/reveal — show a file in Finder, ready to attach to an email: a downloaded PDF's copy in a script or
+    storyboard version's folder, or a delivery file in a video's renders folder. Only on a Mac. */
 async function reveal(req, res, root) {
   const data = await readPost(req, res);
   if (!data) return;
   const rel = typeof data.path === "string" ? data.path : "";
   const target = resolve(root, rel);
-  const ok = target.startsWith(root + sep) && /^videos\/[^/]+\/(script|storyboard)\/v\d+\/[^/]+\.pdf$/.test(relative(root, target).split(sep).join("/"));
+  const at = relative(root, target).split(sep).join("/");
+  const ok = target.startsWith(root + sep) && (/^videos\/[^/]+\/(script|storyboard)\/v\d+\/[^/]+\.pdf$/.test(at) || /^videos\/[^/]+\/renders\/[^/.][^/]*$/.test(at));
   if (!ok || !statSync(target, { throwIfNoEntry: false })?.isFile()) return json(res, 404, { ok: false, error: "That file wasn't found" });
   if (process.platform !== "darwin") return json(res, 501, { ok: false, error: "Show in Finder works on a Mac" });
   spawn("open", ["-R", target], { stdio: "ignore", detached: true }).unref();

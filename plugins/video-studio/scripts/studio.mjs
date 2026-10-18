@@ -30,7 +30,12 @@
 //   node studio.mjs licence [<key>]            with a key, unlock the full library on this Mac; without, its state
 //   node studio.mjs install cutout             download the presenter cut-out model (about 168 MB, once), for text
 //                                              behind the presenter
-//   node studio.mjs serve [--port 4747]        run the page server in the foreground
+//   node studio.mjs setup-page                 the Setup page's address, starting a page server for it (before there's
+//                                              a studio, one that serves only that page)
+//   node studio.mjs setup-note <check> <installing|failed|clear>
+//                                              say on the Setup page that a check's install is under way (or failed)
+//   node studio.mjs serve [--port 4747]        run the page server in the foreground (--setup: before there's a studio,
+//                                              the Setup page alone)
 //   node studio.mjs stop                       stop the page server
 //   node studio.mjs page-ready                 PostToolUse hook: reads the hook's JSON on stdin; when Claude has written
 //                                              a page's data file, tells Claude the page is ready to show
@@ -54,6 +59,9 @@ import {
   readStudio,
   readBrand,
   readBrief,
+  readFavourites,
+  sawWhatsNew,
+  USER_DIR,
   registeredStudios,
   registerStudio,
   resolvePage,
@@ -103,7 +111,7 @@ async function status(port) {
     // AbortSignal.timeout doesn't keep Node running after a refused connection, as a plain setTimeout would
     const res = await fetch(`http://127.0.0.1:${port}/api/status`, { signal: AbortSignal.timeout(600) });
     const body = await res.json();
-    return body?.ok && body.studio ? { ...body, port } : null;
+    return body?.ok && (body.studio || body.setup) ? { ...body, port } : null;
   } catch {
     return null;
   }
@@ -149,6 +157,7 @@ async function main() {
     return init(resolve(arg));
   }
 
+  if (cmd === "serve" && argv.includes("--setup")) return serveSetup();
   if (cmd === "serve") {
     const root = studioRoot();
     const { createStudioServer } = await import("./lib/server.mjs");
@@ -191,6 +200,8 @@ async function main() {
   }
 
   if (cmd === "show") return show();
+  if (cmd === "setup-page") return setupPage();
+  if (cmd === "setup-note") return setupNote();
   if (cmd === "ready") return ready();
   if (cmd === "progress") return progressCommand();
   if (cmd === "render") return renderCommand();
@@ -203,7 +214,7 @@ async function main() {
   if (cmd === "hook") return hook();
   if (cmd === "page-ready") return pageReady().catch(() => {}); // a hook: never in the way, silent on any problem
   if (cmd === "context") return context();
-  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, pdf, library, install, serve, stop, page-ready`);
+  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, setup-page, setup-note, pdf, library, install, serve, stop, page-ready`);
 }
 
 function init(root) {
@@ -232,8 +243,71 @@ function init(root) {
   };
   copy("studio-CLAUDE.md", "CLAUDE.md");
   copy("studio-gitignore", ".gitignore");
+  // a new studio has nothing to catch up on: its dashboard's "What's new" starts with the next update
+  if (!prev.created) sawWhatsNew(root);
   registerStudio(root, next.name);
   console.log(JSON.stringify({ studio: root, ...next, filesCreated: created, filesKept: kept }, null, 2));
+}
+
+/** `serve --setup`: before there's a studio, a page server for the Setup page alone, which setup opens first. Once the
+    studio exists, its own page server takes over (and the Setup page with it). */
+async function serveSetup() {
+  const { createSetupServer } = await import("./lib/server.mjs");
+  const server = createSetupServer();
+  for (const port of PORTS) {
+    const ok = await new Promise((done, fail) => {
+      server.once("error", (e) => (e.code === "EADDRINUSE" ? done(false) : fail(e)));
+      server.listen(port, "127.0.0.1", () => done(true));
+    });
+    if (!ok) continue;
+    const url = `http://127.0.0.1:${port}/`;
+    const stateFile = join(USER_DIR, "setup-server.json");
+    mkdirSync(USER_DIR, { recursive: true });
+    writeFileSync(stateFile, JSON.stringify({ pid: process.pid, port, url, plugin: pluginVersion(), startedAt: new Date().toISOString() }, null, 2));
+    console.log(`Wyzowl Video Studio setup page: ${url}setup`);
+    const cleanup = () => {
+      if (readJSON(stateFile)?.pid === process.pid) rmSync(stateFile, { force: true });
+      process.exit(0);
+    };
+    process.on("SIGTERM", cleanup);
+    process.on("SIGINT", cleanup);
+    return;
+  }
+  throw new Error(`No free port between ${PORTS[0]} and ${PORTS.at(-1)}`);
+}
+
+/** `setup-page`: the Setup page's address. In (or with) a studio, its page server shows it; before there's one, a
+    setup page server does. */
+async function setupPage() {
+  const root = here() || registeredStudios()[0]?.path || null;
+  if (root) return console.log(pageUrl(await ensureServer(root), "/setup"));
+  const running = (await runningServers()).find((s) => s.setup && s.plugin === pluginVersion());
+  if (running) return console.log(pageUrl(`http://127.0.0.1:${running.port}/`, "/setup"));
+  mkdirSync(USER_DIR, { recursive: true });
+  const log = openSync(join(USER_DIR, "setup-server.log"), "a");
+  const child = spawn(process.execPath, [SELF, "serve", "--setup"], { detached: true, stdio: ["ignore", log, log] });
+  child.unref();
+  for (let i = 0; i < 60; i++) {
+    await sleep(100);
+    const st = readJSON(join(USER_DIR, "setup-server.json"));
+    if (st?.pid === child.pid && (await status(st.port))) return console.log(pageUrl(st.url, "/setup"));
+  }
+  throw new Error(`The setup page didn't start. See ${join(USER_DIR, "setup-server.log")}`);
+}
+
+/** `setup-note <check> <installing|failed|clear>`: what the Setup page says of a check while Claude installs it. */
+function setupNote() {
+  const [, id, state] = positional;
+  const states = ["installing", "failed", "clear"];
+  if (!id || !states.includes(state)) throw new Error(`usage: studio.mjs setup-note <check> <${states.join("|")}>`);
+  const file = join(USER_DIR, "setup.json");
+  const all = readJSON(file, {});
+  const notes = { ...(all.notes || {}) };
+  if (state === "clear") delete notes[id];
+  else notes[id] = { state, at: new Date().toISOString() };
+  mkdirSync(USER_DIR, { recursive: true });
+  writeFileSync(file, `${JSON.stringify({ ...all, notes }, null, 2)}\n`);
+  console.log(`Setup page: ${id} ${state === "clear" ? "cleared" : state}.`);
 }
 
 async function describe(root) {
@@ -298,7 +372,7 @@ async function hook() {
     `Plugin files: ${PLUGIN_ROOT} (helpers in scripts/, review tools in scripts/tools/, score kit in scripts/score-kit/).`,
     `HyperFrames for new videos: ${studio.hyperframes || "not set"}. Brands: ${brands.map((b) => b.slug).join(", ") || "none"}. Videos: ${videos.length} (${open.length} in progress${open[0] ? `; latest: ${open[0].slug}, ${open[0].status.label.toLowerCase()}` : ""}).`,
     "For any video work here, follow the video-studio production skill (with the storyboard and brand-kit skills). New videos: /video-studio:new-video. New brands: /video-studio:new-brand. Pages: /video-studio:dashboard.",
-    warn.length ? `Setup problems: ${warn.join("; ")}. Suggest /video-studio:setup before making videos.` : "",
+    warn.length ? `Setup problems: ${warn.join("; ")}. Suggest /video-studio:setup before making videos; the Studio health page (/health) shows what's missing.` : "",
     update,
   ]
     .filter(Boolean)
@@ -570,13 +644,22 @@ async function pdf() {
 async function library() {
   if (!arg) {
     const lines = [];
+    // the items the user starred in the library come first, and Claude suggests them first
+    const root = here();
+    const favourites = new Set(root ? readFavourites(root) : []);
+    const starred = [...favourites].map((c) => libraryItem(c)).filter(Boolean);
+    if (starred.length) {
+      lines.push("## The user's favourites (★)", "They starred these in the library: suggest them first wherever one fits.");
+      for (const item of starred) lines.push(`- ★ ${item.code} ${item.name} (${CATEGORIES[item.category].title}): ${item.summary}`);
+      lines.push("");
+    }
     for (const [category, c] of Object.entries(CATEGORIES)) {
       const items = libraryItems(category);
       lines.push(`## ${c.title}`);
       if (!items.length) lines.push(`None yet: design ${c.one}s for the video from scratch.`);
       for (const item of items) {
         const layer = item.category === "transitions" ? "" : `, ${itemLayer(item)}`;
-        lines.push(`- ${item.code} ${item.name} (${item.free ? "free" : "full library"}${layer}): ${item.summary}`);
+        lines.push(`- ${favourites.has(item.code) ? "★ " : ""}${item.code} ${item.name} (${item.free ? "free" : "full library"}${layer}): ${item.summary}`);
       }
     }
     lines.push(

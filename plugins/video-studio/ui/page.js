@@ -6,9 +6,12 @@
 //   page's frames, Esc or a click outside closes it. A footage storyboard's "Play the scene" plays its rough cut there.
 // - "Download PDF" waits while the studio makes the PDF, then downloads it, and offers the copy it keeps in Finder.
 // - The library: a brand, size or type reloads the page with it; previews play only while they're on screen; "Play
-//   from the start" restarts them; "Copy" buttons copy their text.
+//   from the start" restarts them; "Copy" buttons copy their text. The search filters a category's items as you type,
+//   a star keeps an item in the studio's favourites, and "Try it with your words" plays an item with the words given.
+//   A brand, size or type, a category or one of an item's sizes opens the next page where this one was.
 // - A library item named in a script or storyboard shows itself playing while its chip is hovered or focused.
 // - While Claude makes something for a video, the panel on its overview follows the work as it happens.
+// - The Setup and Health page's checklist follows setup as it happens; the dashboard's "What's new" goes on "Got it".
 // - The masthead's height (and a storyboard's scene strip's) keeps jumps and focus clear of them.
 (() => {
   // ───────── the sticky bars ─────────
@@ -237,13 +240,47 @@
     }
   });
 
+  // ───────── show a file in Finder ─────────
+  document.addEventListener("click", (e) => {
+    const button = e.target.closest?.("[data-reveal]");
+    if (!button) return;
+    fetch("/api/reveal", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ path: button.dataset.reveal }) }).catch(() => {});
+  });
+
   // ───────── the library ─────────
+  // A choice of brand, size or type reloads the page, and a category or one of an item's sizes opens another: each
+  // opens where this one was, rather than at the top.
+  const PLACE = "wvs-library-place";
+  const keepPlace = () => {
+    try {
+      sessionStorage.setItem(PLACE, JSON.stringify({ y: Math.round(scrollY), at: Date.now() }));
+    } catch {}
+  };
+  try {
+    const kept = JSON.parse(sessionStorage.getItem(PLACE) || "null");
+    sessionStorage.removeItem(PLACE);
+    if (kept && Date.now() - kept.at < 15000 && location.pathname.startsWith("/library/") && !location.hash) {
+      const back = () => scrollTo(0, Math.min(kept.y, document.documentElement.scrollHeight - innerHeight));
+      back();
+      // again once the page has its full height (the previews' frames are sized before they load, so it's close)
+      addEventListener("load", back, { once: true });
+    }
+  } catch {}
+  document.addEventListener("click", (e) => {
+    const link = e.target.closest?.("a.libnav_link, a.gsize");
+    if (link && !e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) keepPlace();
+  });
   document.querySelectorAll("[data-library-controls]").forEach((form) =>
     form.addEventListener("change", () => {
       const params = new URLSearchParams(new FormData(form));
       if (!params.get("brand")) params.delete("brand");
       if (params.get("size") === "16x9") params.delete("size");
-      if (params.get("type") !== "free") params.delete("type");
+      if (!["free", "favourites"].includes(params.get("type"))) params.delete("type");
+      if (!params.get("vars")) params.delete("vars");
+      // the search goes along to the reloaded page
+      const q = document.querySelector("[data-lib-search]")?.value.trim();
+      if (q) params.set("q", q);
+      keepPlace();
       const query = params.toString();
       location.assign(location.pathname + (query ? `?${query}` : ""));
     }),
@@ -288,18 +325,186 @@
     button.addEventListener("click", () => document.querySelectorAll(".gstage iframe, .gsizes iframe").forEach((f) => tell(f, "replay"))),
   );
 
-  document.querySelectorAll("[data-copy]").forEach((button) =>
-    button.addEventListener("click", async () => {
-      const label = button.textContent;
+  // (on the document, so a button drawn later, in a checklist that redraws itself, copies too)
+  document.addEventListener("click", async (e) => {
+    const button = e.target.closest?.("[data-copy]");
+    if (!button || button.dataset.copying) return;
+    const label = button.textContent;
+    button.dataset.copying = "1";
+    try {
+      await navigator.clipboard.writeText(button.dataset.copy);
+      button.textContent = "Copied";
+    } catch {
+      button.textContent = "Select the text above to copy it";
+    }
+    setTimeout(() => {
+      button.textContent = label;
+      delete button.dataset.copying;
+    }, 2000);
+  });
+
+  // ───────── setup and health ─────────
+  // The checklist asks the studio again every few seconds while it's on screen (setup's more often) and redraws the
+  // parts that changed: a tool installed ticks off, one being installed says so.
+  document.querySelectorAll("[data-checks]").forEach((panel) => {
+    const view = panel.dataset.checks;
+    let busy = false;
+    setInterval(async () => {
+      if (busy || document.visibilityState !== "visible") return;
+      busy = true;
       try {
-        await navigator.clipboard.writeText(button.dataset.copy);
-        button.textContent = "Copied";
+        const { parts } = await (await fetch(`/api/checks?view=${encodeURIComponent(view)}`, { cache: "no-store" })).json();
+        const have = [...panel.querySelectorAll(":scope > [data-part]")];
+        if (have.length !== parts.length || have.some((el, i) => el.dataset.part !== parts[i].name)) panel.innerHTML = parts.map((x) => x.html).join("");
+        else parts.forEach((x, i) => have[i].dataset.sig !== x.sig && (have[i].outerHTML = x.html));
       } catch {
-        button.textContent = "Select the text above to copy it";
+      } finally {
+        busy = false;
       }
-      setTimeout(() => (button.textContent = label), 2000);
+    }, view === "setup" ? 3000 : 10000);
+  });
+  document.querySelectorAll("[data-whatsnew]").forEach((card) =>
+    card.querySelector("[data-whatsnew-done]")?.addEventListener("click", async () => {
+      card.remove();
+      try {
+        await fetch("/api/seen", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ version: card.dataset.whatsnew }) });
+      } catch {}
     }),
   );
+
+  // ───────── the library's search ─────────
+  // The words typed filter the category's cards (each word in its code, name or what it's for), and say how many
+  // match in the other categories, with links that carry the search there. "/" goes to the box from anywhere.
+  const search = document.querySelector("[data-lib-search]");
+  if (search) {
+    const index = JSON.parse(document.getElementById("library-index")?.textContent || "{}");
+    const cards = [...document.querySelectorAll("[data-lib-grid] > [data-search]")];
+    const result = document.querySelector("[data-lib-result]");
+    const here = search.dataset.category;
+    const matches = (text, words) => words.every((w) => text.includes(w));
+    const run = () => {
+      const q = search.value.trim();
+      const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+      let shown = 0;
+      for (const card of cards) {
+        card.hidden = Boolean(words.length) && !matches(card.dataset.search, words);
+        if (!card.hidden) shown++;
+      }
+      const url = new URL(location.href);
+      if (q) url.searchParams.set("q", q);
+      else url.searchParams.delete("q");
+      history.replaceState(null, "", url);
+      result.replaceChildren();
+      if (!words.length) return;
+      result.append(`${shown ? `${shown} of ${cards.length}` : "None"} here match “${q}”.`);
+      const elsewhere = {};
+      for (const item of index.items || []) if (item.k !== here && matches(item.s, words)) elsewhere[item.k] = (elsewhere[item.k] || 0) + 1;
+      const keys = Object.keys(index.categories || {}).filter((k) => elsewhere[k]);
+      if (!keys.length) return;
+      result.append(" Also in ");
+      keys.forEach((k, i) => {
+        const view = new URLSearchParams((index.view || "").replace(/^\?/, ""));
+        view.set("q", q);
+        const a = Object.assign(document.createElement("a"), { href: `/library/${k}/?${view}`, textContent: `${index.categories[k]} (${elsewhere[k]})` });
+        result.append(i ? (i === keys.length - 1 ? " and " : ", ") : "", a);
+      });
+      result.append(".");
+    };
+    let timer = 0;
+    search.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(run, 120);
+    });
+    if (search.value) run();
+    addEventListener("keydown", (e) => {
+      if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey || e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+      e.preventDefault();
+      search.focus();
+      search.select();
+    });
+  }
+
+  // ───────── favourites ─────────
+  // A star keeps an item in the studio's favourites (Claude suggests them first): pressed, it's in.
+  document.addEventListener("click", async (e) => {
+    const star = e.target.closest?.("[data-favourite]");
+    if (!star) return;
+    e.preventDefault();
+    const on = star.getAttribute("aria-pressed") !== "true";
+    try {
+      const res = await fetch("/api/favourite", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ code: star.dataset.favourite, on }) });
+      if (!(await res.json()).ok) return;
+      document.querySelectorAll(`[data-favourite="${CSS.escape(star.dataset.favourite)}"]`).forEach((el) => {
+        el.setAttribute("aria-pressed", String(on));
+        if (el.title) el.title = on ? "In your favourites" : "Add to your favourites";
+        const label = el.querySelector("[data-favourite-label]");
+        if (label) label.textContent = on ? "In your favourites" : "Add to favourites";
+      });
+    } catch {}
+  });
+
+  // ───────── try it with your words ─────────
+  // An item's page plays it with the words and options given: the preview reloads with them (the sizes a moment
+  // later), the address keeps them (so a brand or size choice does too), and the request to copy for Claude names them.
+  document.querySelectorAll("form[data-try]").forEach((form) => {
+    const example = JSON.parse(form.dataset.example || "{}");
+    const stage = [...document.querySelectorAll(".gstage iframe")];
+    const sizes = [...document.querySelectorAll(".gsizes iframe")];
+    const links = [...document.querySelectorAll("a.gsize")];
+    const ask = document.querySelector("[data-ask]");
+    const askCopy = document.querySelector("[data-ask-copy]");
+    const askStart = `Use ${form.dataset.code} (${form.dataset.name}) in my video`;
+    const given = () => {
+      const out = {};
+      for (const el of form.elements) {
+        if (!el.name || !Object.hasOwn(example, el.name)) continue;
+        const v = el.type === "number" ? (el.value === "" ? null : Number(el.value)) : el.value;
+        if (v !== null && String(v) !== String(example[el.name] ?? "")) out[el.name] = v;
+      }
+      return out;
+    };
+    const withVars = (href, json) => {
+      const u = new URL(href, location.href);
+      if (json) u.searchParams.set("vars", json);
+      else u.searchParams.delete("vars");
+      return u.pathname + u.search;
+    };
+    const reload = (frames, json) => frames.forEach((f) => {
+      const next = withVars(f.getAttribute("src"), json);
+      if (next !== f.getAttribute("src")) f.setAttribute("src", next);
+    });
+    let soon = 0;
+    let later = 0;
+    const apply = () => {
+      const vars = given();
+      const json = Object.keys(vars).length ? JSON.stringify(vars) : "";
+      reload(stage, json);
+      clearTimeout(later);
+      later = setTimeout(() => reload(sizes, json), 1200);
+      links.forEach((a) => a.setAttribute("href", withVars(a.getAttribute("href"), json)));
+      history.replaceState(null, "", withVars(location.href, json));
+      const controls = document.querySelector("[data-library-controls]");
+      if (controls) {
+        let hidden = controls.querySelector('input[name="vars"]');
+        if (!hidden && json) controls.append((hidden = Object.assign(document.createElement("input"), { type: "hidden", name: "vars" })));
+        if (hidden) hidden.value = json;
+      }
+      const settings = Object.entries(vars).map(([k, v]) => `${k} “${v}”`).join(", ");
+      const text = settings ? `${askStart}, with ${settings}: ` : `${askStart}: `;
+      if (ask) ask.textContent = `“${text}…”`;
+      if (askCopy) askCopy.dataset.copy = text;
+    };
+    form.addEventListener("input", () => {
+      clearTimeout(soon);
+      soon = setTimeout(apply, 450);
+    });
+    form.addEventListener("submit", (e) => e.preventDefault());
+    form.querySelector("[data-try-reset]")?.addEventListener("click", () => {
+      for (const el of form.elements) if (el.name && Object.hasOwn(example, el.name)) el.value = example[el.name] ?? "";
+      apply();
+    });
+    if (Object.keys(given()).length) apply();
+  });
 
   // ───────── work in progress ─────────
   // While Claude makes something for a video, its overview shows the work as it happens: the steps, the count under way,

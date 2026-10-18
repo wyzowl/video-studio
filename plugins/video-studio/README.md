@@ -47,8 +47,9 @@ answer box (`hooks/answer-box.tsx`) draws Claude's final message of a turn that 
 yellow border (and a 10% yellow ground where the surface can paint one), so the answer is easy to find. Their tests
 are in `tests/` (`claude plugin test`).
 
-Inside: `scripts/` (the studio helper, page server, frame renderer, setup check, website palette reader, review and
-footage tools, and score kit), `library/` (the library's items), `ui/` (page and print styles, the pages' scripts, the Inter and JetBrains Mono fonts with their licences) and `templates/` (files
-setup writes into a new studio).
+Inside: `scripts/` (the studio helper, page server, frame renderer, setup check, website palette reader, review,
+footage and captions tools, and score kit), `library/` (the library's items), `ui/` (page and print styles, the pages'
+scripts, the Inter and JetBrains Mono fonts with their licences), `templates/` (files setup writes into a new studio)
+and `whats-new.json` (what each version brings, for the dashboard's "What's new").
 
 Full documentation: https://github.com/wyzowl/video-studio

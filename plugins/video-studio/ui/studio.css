@@ -574,6 +574,15 @@ p {
   text-transform: uppercase;
   white-space: nowrap;
 }
+/* a video's status on a phone can be longer than its card is wide: it wraps */
+.video-card .chip {
+  max-width: 100%;
+  white-space: normal;
+  line-height: 1.3;
+}
+.video-card .chip::before {
+  flex: none;
+}
 .chip::before {
   content: "";
   width: 0.5rem;
@@ -883,6 +892,8 @@ a.frame_stage:hover .frame_media > img {
 }
 .video-card {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: var(--space-5);
   padding: var(--space-4);
   background: var(--background-2);
@@ -1946,6 +1957,160 @@ kbd {
   font: 600 var(--text-tiny) / 1 var(--font-mono);
   letter-spacing: 0.06em;
 }
+/* the library's search: it filters the cards as you type (ui/page.js) */
+.libsearch {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 40rem;
+}
+.libsearch_row {
+  position: relative;
+  display: flex;
+}
+.libsearch input,
+.gtry input[type="text"],
+.gtry input[type="number"],
+.gtry textarea {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.85rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--background-2);
+  color: var(--text);
+  font: 400 var(--text-small) / 1.4 var(--font-body);
+}
+.libsearch input {
+  padding-right: 2.75rem;
+}
+.libsearch input:focus-visible,
+.gtry input:focus-visible,
+.gtry textarea:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+.libsearch kbd {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  padding: 0.15rem 0.4rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: 3px;
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  color: var(--text-2);
+  pointer-events: none;
+}
+.libsearch input:focus + kbd,
+.libsearch input:not(:placeholder-shown) + kbd {
+  display: none;
+}
+.libsearch_result {
+  font-size: var(--text-small);
+  color: var(--text-2);
+}
+.libsearch_result:empty {
+  display: none;
+}
+.gitem[hidden] {
+  display: none;
+}
+/* a card's star: on, the item is one of the studio's favourites */
+.gstar {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ink) 70%, transparent);
+  color: color-mix(in lab, var(--paper) 55%, transparent);
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--hover) var(--ease), background-color var(--hover) var(--ease);
+}
+.gstar:hover {
+  color: var(--paper);
+  background: var(--ink);
+}
+.gstar[aria-pressed="true"] {
+  color: var(--yellow);
+}
+.gstar:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
+.gfav[aria-pressed="true"] > span:first-child {
+  color: var(--yellow);
+}
+/* an item's page: its preview, beside "Try it with your words" on a wide screen */
+.gplay {
+  display: grid;
+  gap: var(--space-5);
+}
+@media (min-width: 64rem) {
+  .gplay--try {
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+    align-items: start;
+  }
+  .gplay--try .gstage .gframe {
+    --_h: min(56vh, 30rem);
+  }
+}
+.gplay_stage {
+  min-width: 0;
+}
+.gtry {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background-2);
+}
+.gtry_fields {
+  display: grid;
+  gap: var(--space-4);
+}
+.gtry_field {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.gtry_field .field-label {
+  line-height: 1.35;
+}
+.gtry textarea {
+  min-height: 4.25rem;
+  resize: vertical;
+}
+.gtry_number {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.gtry_number input {
+  max-width: 9rem;
+}
+.gtry_number span {
+  font: 500 var(--text-small) / 1 var(--font-mono);
+  color: var(--text-2);
+}
+.gtry input[type="color"] {
+  width: 3.5rem;
+  height: 2.5rem;
+  padding: 0.2rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--background-2);
+}
+
 /* an item's page: large, then every size */
 .gstage {
   display: flex;
@@ -2221,6 +2386,261 @@ a.stages_item:hover {
 }
 .stages_item--none {
   --_dot: var(--border-strong);
+}
+
+/* ───────── setup and the studio's health: a checklist that follows setup as it happens (ui/page.js) ───────── */
+.checks_panel {
+  display: grid;
+  gap: var(--space-6);
+  max-width: 62.5rem;
+}
+.checks_panel .now {
+  margin-top: 0;
+}
+.checks_group {
+  display: grid;
+  gap: var(--space-3);
+}
+.checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  border-top: var(--border-width) solid var(--border);
+}
+.check {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) minmax(0, 22rem);
+  align-items: start;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-4) 0;
+  border-bottom: var(--border-width) solid var(--border);
+}
+.check_mark {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  font: 700 var(--text-small) / 1 var(--font-mono);
+  background: var(--background-3);
+  color: var(--text-2);
+}
+.check--ok .check_mark {
+  background: var(--success);
+  color: var(--white);
+}
+.check--missing .check_mark {
+  background: var(--yellow);
+  color: var(--ink);
+}
+/* being installed: the mark turns */
+.check--installing .check_mark {
+  background: transparent;
+  border: 2px solid var(--border);
+  border-top-color: var(--yellow);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .check--installing .check_mark {
+    animation: check-turn 0.9s linear infinite;
+  }
+  @keyframes check-turn {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+}
+.check_text {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.check_text .muted {
+  font-size: var(--text-small);
+  overflow-wrap: anywhere;
+}
+.check_time {
+  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.check_say {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--yellow);
+  background: var(--background-3);
+  font-size: var(--text-small);
+}
+.check_say .button {
+  justify-self: start;
+  margin-top: var(--space-1);
+}
+@media (max-width: 48rem) {
+  .check {
+    grid-template-columns: 2rem minmax(0, 1fr);
+  }
+  .check_say {
+    grid-column: 2;
+  }
+}
+/* the dashboard: something this studio needs isn't on the Mac */
+.attention {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  max-width: 44rem;
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--yellow);
+  background: var(--background-3);
+  font-size: var(--text-small);
+}
+.attention_mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--yellow);
+  color: var(--ink);
+  font: 700 var(--text-tiny) / 1 var(--font-mono);
+}
+/* the dashboard: what the update brought, until it's put away */
+.whatsnew_card {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 52rem;
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--border);
+  border-left: 2px solid var(--yellow);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--background-2);
+}
+.whatsnew_list {
+  margin: 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: var(--space-2);
+}
+.whatsnew_list li::marker {
+  color: var(--yellow);
+}
+
+/* ───────── a video's delivery: the final video, every file made with it, the words to go with it, what next ───────── */
+.dfiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.dfile {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  background: var(--background-2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+}
+.dfile_thumb {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-s);
+  background: #1d2024;
+}
+.dfile_thumb--tall {
+  aspect-ratio: 9 / 16;
+  width: 4.5rem;
+  justify-self: center;
+}
+.dfile_thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dfile_thumb--whole img {
+  object-fit: contain;
+}
+.dfile_badge {
+  font: 600 var(--text-tiny) / 1 var(--font-mono);
+  letter-spacing: 0.1em;
+  color: var(--paper);
+}
+.dfile_text {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.dfile_text .muted {
+  font-size: var(--text-small);
+}
+.dfile_meta {
+  font: 500 var(--text-tiny) / 1.4 var(--font-mono);
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.dfile_actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+@media (max-width: 40rem) {
+  .dfile {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+  }
+  .dfile_actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+.dwords {
+  display: grid;
+  gap: var(--space-4);
+}
+@media (min-width: 52rem) {
+  .dwords {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+.dword {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--background-2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+}
+.dword .button {
+  justify-self: start;
+}
+.dasks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  max-width: 52rem;
+  border-top: var(--border-width) solid var(--border);
+}
+.dask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: var(--border-width) solid var(--border);
+}
+.dask span {
+  flex: 1 1 20rem;
 }
 
 /* ───────── a video's overview ───────── */

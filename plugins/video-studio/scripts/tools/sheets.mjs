@@ -2,14 +2,16 @@
 // Run from the project root:
 //   node <plugin>/scripts/tools/sheets.mjs renders/drafts/draft_r3.mp4 docs/review/r3            key + phone sheets, all strips
 //   node <plugin>/scripts/tools/sheets.mjs renders/drafts/draft_r3.mp4 docs/review/r3 whip zoom  only these strips
-//   node <plugin>/scripts/tools/sheets.mjs renders/<p>_16x9.mp4 --deliver                         _web.mp4, poster, contact
+//   node <plugin>/scripts/tools/sheets.mjs renders/<p>_16x9.mp4 --deliver                         _web.mp4, poster,
+//                                                                                                   thumbnail, contact
 //
 // docs/beats.json (the film decides what to look at; this script only does the grabbing):
 //   { "keys":   [1.6, 4.6, …],              one per VO sentence on its key word (or per story beat with no VO)
 //     "strips": { "whip": [12.4, 13.0], … },  12 frames across each of the fastest moves
 //     "poster": 61.5,                          the poster frame
 //     "contact": [0.8, 2.6, …] }               optional: the 30 contact-sheet beats (default: keys, resampled)
-// Deliver mode keeps a revision suffix: renders/<p>_16x9_v2.mp4 → poster_v2.png, contact_v2.png.
+// Deliver mode keeps a revision suffix: renders/<p>_16x9_v2.mp4 → poster_v2.png, thumbnail_v2.jpg, contact_v2.png.
+// The thumbnail is the poster at 1280 px along its longer side, as a JPEG (YouTube's size, and link previews').
 // While a stage is under way on the video's pages, its newest key frames (or the poster) show there
 // (lib/progress.mjs): review sheets also make small copies of the key frames, in thumbs/.
 import { spawn } from "node:child_process";
@@ -39,6 +41,7 @@ if (deliver) {
   const D = dirname(IN), base = basename(IN, ".mp4"), V = (base.match(/_16x9(.*)$/) || [, ""])[1];
   await ff(["-i", IN, "-c:v", "libx264", "-crf", "19", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-c:a", "aac", "-b:a", "192k", join(D, `${base}_web.mp4`)]);
   await grab(B.poster, join(D, `poster${V}.png`))();
+  await ff(["-i", join(D, `poster${V}.png`), "-vf", "scale='if(gt(iw,ih),1280,-2)':'if(gt(iw,ih),-2,1280)'", "-q:v", "3", join(D, `thumbnail${V}.jpg`)]);
   const T = pick(B.contact || B.keys, 30), tmp = mkdtempSync(join(tmpdir(), "contact-"));
   await pool(T.map((t, i) => grab(t, join(tmp, `c_${String(i).padStart(2, "0")}.png`), 384)));
   await ff(["-pattern_type", "glob", "-i", join(tmp, "c_*.png"), "-vf", `tile=6x${Math.ceil(T.length / 6)}:padding=3:color=0x888888`, join(D, `contact${V}.png`)]);
@@ -50,7 +53,7 @@ if (deliver) {
     q.frames = [{ src: inVideo(at, join(D, `poster${V}.png`)), caption: "Poster" }];
     return q;
   });
-  console.log(`web: ${join(D, base + "_web.mp4")} · poster: ${join(D, `poster${V}.png`)} · contact: ${join(D, `contact${V}.png`)}`);
+  console.log(`web: ${join(D, base + "_web.mp4")} · poster: ${join(D, `poster${V}.png`)} · thumbnail: ${join(D, `thumbnail${V}.jpg`)} · contact: ${join(D, `contact${V}.png`)}`);
 } else {
   mkdirSync(OUT, { recursive: true });
   const jobs = [];

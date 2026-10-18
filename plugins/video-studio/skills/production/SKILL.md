@@ -62,8 +62,9 @@ don't use it. New projects use the `hyperframes` version in `studio.json`.
      `approved` means go to stage 9, treating any notes as small last tweaks. `changes` means apply every note (times
      are seconds into the video: look at each moment), run the review loop again, and share the result as review
      v<N+1>: start it on the overview with `studio.mjs progress <project> video <N+1> notes`.
-9. **Master and deliverables**, only after the user approves the video. See "Deliverables". Then show the video's
-   overview `/videos/<project>/`, where the final video now sits at the end of its stages.
+9. **Master and deliverables**, only after the user approves the video. See "Deliverables". Then show its delivery
+   page `/videos/<project>/delivery/` ("Showing a page"): the final video and every file made with it, the words to
+   go with it, and what they might ask for next.
 10. **Other sizes**, only after sign-off and only when asked: separate compositions in the same project that reuse the
    timeline, audio and assets. Re-lay out type and composition for each format; never crop or letterbox.
 11. **Revisions.** A new version suffix (`_v2`); keep the previous files; motion or feel changes come with a
@@ -155,7 +156,8 @@ scores. So the user can always see that something is happening, mark the work as
 
 Pages: `/` (dashboard), `/brands/<slug>/` (a brand), `/videos/<project>/` (a video's overview: what's happening now
 and every script, storyboard and video), `/videos/<project>/script/` (latest script),
-`/videos/<project>/storyboard/` (latest storyboard) and `/videos/<project>/review/` (latest video review). After a finished review, the page takes the user to the video's overview, which says what
+`/videos/<project>/storyboard/` (latest storyboard), `/videos/<project>/review/` (latest video review) and
+`/videos/<project>/delivery/` (the final video and every file made with it). After a finished review, the page takes the user to the video's overview, which says what
 you're making while you work on it.
 
 ## Library items
@@ -294,7 +296,14 @@ Only when the brief says `voiceover: ai`. Use HyperFrames' built-in voices unles
   --fps 60 --output renders/<project>_<size>.mp4`, after `studio.mjs progress <project> final <version> master`.
   `<size>` is `16x9`, `1x1`, `4x5`, `9x16` or `WxH`.
 - `node PLUGIN/scripts/tools/sheets.mjs renders/<project>_<size>.mp4 --deliver` makes the `_web.mp4` copy (H.264,
-  CRF 19, faststart), `poster.png` and `contact.png`.
+  CRF 19, faststart), `poster.png`, `thumbnail.jpg` (1280 px, for YouTube and link previews) and `contact.png`.
+- Captions, when the video has speech: `node PLUGIN/scripts/tools/captions.mjs inputs/transcript_verified.json` (from
+  the video's folder) makes `renders/<project>.srt` and `.vtt`. Pass `--offset <seconds>` when the voiceover starts
+  later in the video. For a footage video, write the cut's word times (each word moved to where its range sits in the
+  cut) to `docs/words.json` and use that.
+- `renders/delivery.json`, the words to go with it: `{ "title": "…", "description": "…", "altText": "…" }`. The
+  description is a sentence or two for a post or a web page; the alt text says what's seen, in one sentence, for
+  someone who can't see it. The delivery page shows them, each with a Copy button.
 - `docs/review_log.md` and `docs/motion_audit.md`.
 - Say what you would improve next.
 
