@@ -577,6 +577,21 @@ export function brandPage(studio, slug) {
   </div></section>`
       : "";
 
+  // the logo ident: the brand's sound for its logo, a sting from SFX Kit copied into the brand's folder
+  const ident = b.ident && b.ident.file ? b.ident : null;
+  const soundSection = ident
+    ? `<section class="section section--rule"><div class="container">
+    ${eyebrow(next(), "Sound")}
+    <h2>Sound</h2>
+    <div class="stack">
+      <p><span class="field-label">Logo ident</span><br><strong>${esc(ident.name || ident.sound || "Logo ident")}</strong>${ident.sound ? ` <span class="mono muted">${esc(ident.sound)}</span>` : ""}</p>
+      <audio controls preload="none" src="${base}${enc(ident.file)}" style="width: 100%; max-width: 28rem"></audio>
+      ${ident.notes ? `<p class="muted">${esc(ident.notes)}</p>` : ""}
+      <p class="muted">Videos for ${esc(b.name)} use it for the logo, unless the brief asks for something else.</p>
+    </div>
+  </div></section>`
+    : "";
+
   const list = (arr) => `<ul class="rules-list">${arr.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>`;
   const rules = Array.isArray(b.rules) ? b.rules : [];
   const lang = Array.isArray(b.graphicLanguage) ? b.graphicLanguage : [];
@@ -628,7 +643,7 @@ export function brandPage(studio, slug) {
     </div>
   </div>
 </section>
-${logoSection}${colourSection}${typeSection}${motionSection}${rulesSection}${refSection}
+${logoSection}${colourSection}${typeSection}${motionSection}${soundSection}${rulesSection}${refSection}
 <section class="section section--rule"><div class="container">
   ${eyebrow(next(), "Use")}
   <div class="split" style="align-items: start">
@@ -1388,7 +1403,7 @@ function checkRow(c, note) {
       : "";
   return `<li class="check check--${state}">
   <span class="check_mark" aria-hidden="true">${{ ok: "✓", installing: "", optional: "–", missing: "!" }[state]}</span>
-  <div class="check_text"><strong><span class="visually-hidden">${esc(said)}: </span>${esc(c.name)}</strong><p class="muted">${esc(failed ? `${c.detail}. The last try didn't finish: Claude says why in the chat.` : c.detail)}</p>${!c.ok && c.time ? `<p class="check_time">${installing ? "Installing now · " : ""}${esc(c.time[0].toUpperCase() + c.time.slice(1))}</p>` : ""}</div>
+  <div class="check_text"><strong><span class="visually-hidden">${esc(said)}: </span>${esc(c.name)}</strong><p class="muted">${esc(failed ? `${c.detail}. The last try didn't finish: ${c.group === "Downloads" ? "Video Studio tries again when the next session starts" : "Claude says why in the chat"}.` : c.detail)}</p>${!c.ok && c.time ? `<p class="check_time">${installing ? "Installing now · " : ""}${esc(c.time[0].toUpperCase() + c.time.slice(1))}</p>` : ""}</div>
   ${say}
 </li>`;
 }

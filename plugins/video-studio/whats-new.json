@@ -1,4 +1,17 @@
 {
+  "0.8.0": [
+    {
+      "text": "Sound effects from SFX Kit: 320 sounds, each placed exactly on its moment and set under the voiceover. Claude adds them while it builds a video, as many as the brief calls for.",
+      "href": "/health"
+    },
+    {
+      "text": "A brand kit can have a logo ident: the brand's sound for its logo, which plays on the brand's page."
+    },
+    {
+      "text": "Setup installs everything Video Studio needs without asking about each part, and an update downloads anything new in the background. Renders use the graphics chip by themselves on Apple silicon.",
+      "href": "/health"
+    }
+  ],
   "0.7.1": [
     {
       "text": "Point at it: on a paused video or a storyboard frame, press Box or Arrow and drag to show exactly what you mean. Claude gets a picture of that moment with your mark on it."

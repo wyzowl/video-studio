@@ -56,8 +56,7 @@ Then a second panel:
 - **Recorded voiceover:** after step 3, ask them to put the file in the project's `inputs/` folder (give the full
   path), or to tell you where it is. WAV is best; MP3 is fine.
 - **Script only:** ask for the script, pasted or as a file. Then ask how it should be voiced (AskUserQuestion):
-  "On-screen text and music", "AI voiceover" (HyperFrames' built-in voices: free and made on this Mac; another voice
-  service only if the user asks), or "I'll record a voiceover" (pause until they supply it).
+  "On-screen text and music", "AI voiceover" (HyperFrames' built-in voices: free and made on this Mac), or "I'll record a voiceover" (pause until they supply it).
 - **Neither yet:** ask what the video should achieve, who it's for, the key messages in order, the call to action and
   the tone. Draft a script in two columns (voiceover, and what's on screen) and get it approved before the storyboard.
   If the `wyzowl-explainer-script` skill is available, use it for the draft.

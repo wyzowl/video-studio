@@ -129,12 +129,12 @@ export function runChecks({ root = null, online = false } = {}) {
       group: "Downloads",
       name: x.name,
       ok,
-      detail: ok ? "downloaded" : `not downloaded yet: it's used to ${x.what}`,
+      detail: ok ? (x.detail ? x.detail() : "downloaded") : `not downloaded yet: it's used to ${x.what}`,
       fix: `${x.command(hf)} (${x.size}, once)`,
-      say: x.id === "parakeet" ? "Download the transcription model." : x.id === "cutout" ? "Download the presenter cut-out model." : `Download ${x.name.toLowerCase()}.`,
-      time: `${x.size.replace(/^about /, "")}, about ${x.id === "parakeet" ? "2–5" : "1–2"} min`,
-      doing: `Downloading ${x.id === "parakeet" ? "the transcription model" : x.id === "cutout" ? "the presenter cut-out model" : x.name.toLowerCase()}`,
-      optional: x.id !== "parakeet",
+      say: x.say || (x.id === "parakeet" ? "Download the transcription model." : x.id === "cutout" ? "Download the presenter cut-out model." : `Download ${x.name.toLowerCase()}.`),
+      time: x.time || `${x.size.replace(/^about /, "")}, about ${x.id === "parakeet" ? "2–5" : "1–2"} min`,
+      doing: x.doing || `Downloading ${x.id === "parakeet" ? "the transcription model" : x.id === "cutout" ? "the presenter cut-out model" : x.name.toLowerCase()}`,
+      optional: false,
     });
   }
 
@@ -179,22 +179,14 @@ export function runChecks({ root = null, online = false } = {}) {
     });
   }
 
-  // faster renders: the setting in the user's shell, or in this process's own
-  let zshrc = "";
-  try {
-    zshrc = readFileSync(join(homedir(), ".zshrc"), "utf8");
-  } catch {}
-  const gpu = process.env.PRODUCER_BROWSER_GPU_MODE === "hardware" || /^\s*export\s+PRODUCER_BROWSER_GPU_MODE=["']?hardware/m.test(zshrc);
+  // faster renders: on Apple silicon, Video Studio's renders (studio.mjs render) draw on the graphics chip by themselves
+  const silicon = process.platform === "darwin" && process.arch === "arm64";
   add({
     id: "gpu",
     group: "Optional",
     name: "Faster renders",
-    ok: gpu,
-    detail: gpu ? "renders use the graphics chip" : "not set (HyperFrames works it out for itself)",
-    fix: "On Apple silicon: add `export PRODUCER_BROWSER_GPU_MODE=hardware` to ~/.zshrc",
-    say: "Turn on faster renders for my studio.",
-    time: "under a minute",
-    doing: "Turning on faster renders",
+    ok: silicon,
+    detail: silicon ? "on: Video Studio's renders use the graphics chip" : "needs Apple silicon: renders here use the processor",
     optional: true,
   });
   if (process.env.GEMINI_API_KEY)

@@ -13,8 +13,9 @@ The easiest way is to ask Claude. In Claude Code, say:
 > Install the Wyzowl Video Studio plugin from https://github.com/wyzowl/video-studio
 
 Then start a new Claude Code session, so the plugin loads, and run `/video-studio:setup` (or ask Claude to set it
-up). Setup checks your Mac, installs what's missing (asking first), creates your studio folder and makes a test
-render. It opens a page beside the chat that ticks off each step as it's done. When it's done, open Claude Code in the
+up). Setup checks your Mac, installs everything Video Studio needs (it says first what it will download, about 1 GB,
+and only asks you to do what needs you: Homebrew's install, which takes your Mac password, and choosing where your
+studio lives), creates your studio folder and makes a test render. It opens a page beside the chat that ticks off each step as it's done. When it's done, open Claude Code in the
 studio folder.
 
 To install it yourself, run this in a terminal (Claude Code 2.1.275 or later):
@@ -54,8 +55,9 @@ claude plugin update video-studio@wyzowl
 ```
 
 Then start a new Claude Code session. Studios carry on as they are; the page server restarts on the new version by
-itself the next time a page is shown. If the new version needs a download that isn't on your Mac yet (such as the model that cuts the presenter
-out of footage), Claude tells you once and offers to fetch it. The dashboard says what the update brought, until you
+itself the next time a page is shown. If the new version needs a download that isn't on your Mac yet (such as SFX
+Kit, the studio's sound effects), it downloads in the background when a session starts, and Claude tells you in a
+line. The dashboard says what the update brought, until you
 press **Got it**.
 
 ## Requirements
@@ -65,7 +67,7 @@ press **Got it**.
   Claude Code 2.1.295.
 - **About 6 GB of disk space** for HyperFrames' browser and models, plus 0.3–1.5 GB per video.
 - Setup installs the rest: Node.js, ffmpeg and git (through Homebrew), the HyperFrames skills, the LottieFiles
-  motion-design skill, and the on-device transcription model.
+  motion-design skill, the on-device transcription model, and SFX Kit, the studio's sound effects.
 
 ## Commands
 
@@ -73,7 +75,7 @@ press **Got it**.
 |---|---|
 | `/video-studio:setup` | Checks and installs what's needed, creates a studio folder, and makes a test render |
 | `/video-studio:new-video` | Asks a few questions (type, brand, script, size, where it's shown, length), sets up the project, then writes a script and makes a storyboard, each for your approval |
-| `/video-studio:new-brand` | Builds a brand kit from a website, logo files, colours and fonts, with its own brand page |
+| `/video-studio:new-brand` | Builds a brand kit from a website, logo files, colours and fonts, with a logo ident and its own brand page |
 | `/video-studio:dashboard` | Shows the studio's pages: recent videos, video overviews, brands, scripts, storyboards, video reviews and the library |
 
 ## How a video is made
@@ -94,8 +96,9 @@ press **Got it**.
    page every scene starts **Approved**: switch any you'd like changed to **Feedback**, with a note, then save. Claude
    makes a new version until every scene is approved. Nothing is built before that. For a footage video the frames
    are stills from the footage, and each scene has **Play the scene**, which plays its rough cut with its sound.
-5. **Build and review.** Claude builds the video, renders drafts and reviews them against a seven-point rubric, for at
-   least two rounds, until every score is 8 or more.
+5. **Build and review.** Claude builds the video, adds its sound effects from SFX Kit (as many as the brief calls for,
+   each placed exactly on its moment and set under the voiceover), renders drafts and reviews them against a
+   seven-point rubric, for at least two rounds, until every score is 8 or more.
 6. **Video review.** On the video's review page you watch it and pin notes to moments in it. The decision is
    **Approve video** unless you add a note or write under **Anything else?**, which switches it to **Changes needed**.
 7. **Delivery.** Once you approve, Claude renders the 60 fps master, a web copy, a poster and a contact sheet.
@@ -247,4 +250,6 @@ plugins/video-studio/             the plugin: commands, skills, hook, scripts, p
   included for the plugin's own pages and isn't covered by the repository's licence.
 - HyperFrames and its skills (HeyGen) and the motion-design skill (LottieFiles) are installed from their own sources
   by setup, under their own licences.
+- **SFX Kit** (CC0 1.0), the studio's sound effects, is downloaded by setup from
+  [github.com/wyzowl/sfx-kit](https://github.com/wyzowl/sfx-kit).
 - The licence for this repository will be chosen before the public release.

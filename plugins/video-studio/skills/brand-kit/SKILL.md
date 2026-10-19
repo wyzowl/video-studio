@@ -1,6 +1,6 @@
 ---
 name: brand-kit
-description: Create or update a brand kit in a Wyzowl Video Studio - logo files, colours, fonts, motion identity and rules in brands/<brand>/brand.json, shown on the brand's own page. Use when the user adds a brand, names a new brand for a video, or asks to change a brand.
+description: Create or update a brand kit in a Wyzowl Video Studio - logo files, colours, fonts, motion identity, logo ident and rules in brands/<brand>/brand.json, shown on the brand's own page. Use when the user adds a brand, names a new brand for a video, or asks to change a brand.
 ---
 
 # Brand kit
@@ -13,6 +13,7 @@ brands/<slug>/
   logos/       the brand's own logo files (SVG preferred)
   fonts/       font files the studio may use
   refs/        screenshots and reference images
+  sounds/      the logo ident (a sting from SFX Kit)
 ```
 
 The studio pages render each kit as a brand page at `/brands/<slug>/`. `PLUGIN` is this plugin's folder ("Plugin
@@ -39,9 +40,14 @@ files" in the session-start note).
 6. **Motion identity.** Propose one personality, signature eases (GSAP names, such as `expo.out` for arrivals,
    `power3.inOut` for travel and `sine.inOut` for ambient), a three-step duration palette, one entrance pattern and an
    ambient layer, all from the brand's feel. The user confirms.
-7. **Copy the files** into `logos/`, `fonts/` and `refs/`, then **write `brand.json` last**: writing it publishes the
+7. **Logo ident.** Choose the brand's sound for its logo from SFX Kit's logo stings: the character that fits the
+   brand's feel (warm, bright, bold, minimal, playful, tech or airy), short unless its films open on a build. Copy it
+   in with `node PLUGIN/scripts/tools/sfx.mjs copy sting-<character>-<short|long> brands/<slug>/sounds/ident.wav` and
+   say in a line why it fits. The user hears it on the brand page and can ask for another. If SFX Kit isn't on this
+   Mac yet, `node PLUGIN/scripts/studio.mjs install all --wait` gets it first.
+8. **Copy the files** into `logos/`, `fonts/` and `refs/`, then **write `brand.json` last**: writing it publishes the
    brand page, and the studio tells you its address.
-8. **Show the brand page** `/brands/<slug>/` (see "Showing a page" in the production skill): beside the chat, with
+9. **Show the brand page** `/brands/<slug>/` (see "Showing a page" in the production skill): beside the chat, with
    its card. Ask the user to check it and tell you anything to change.
 
 ## Update a kit
@@ -90,6 +96,8 @@ if it isn't open, show it again. Videos already delivered keep their own copies 
     "ambient": "A slow drift on the paper texture",
     "notes": "Nothing bouncy except a tiny overshoot on UI."
   },
+  "ident": { "sound": "sting-warm-short", "name": "Logo sting, warm, short", "file": "sounds/ident.wav",
+    "notes": "Warm and rounded, like the brand's voice." },
   "rules": ["One accent colour: copper.", "Cream text on forest, never the reverse for body copy."],
   "graphicLanguage": ["Rounded 12 px cards", "Hand-drawn coffee-bean line icons"],
   "voice": "Friendly and plain-spoken, a little poetic.",
@@ -109,5 +117,7 @@ if it isn't open, show it again. Videos already delivered keep their own copies 
   cards or buttons; default 16px), and `labelFont` the family for small capitals labels, such as a mono (include its
   file under `fonts` with the role `Label`). The rest comes from the colours (text, secondary text, accent), the
   display and body fonts, and the "Travel" ease. Open the library in the brand to check it.
+- `ident` is the logo ident: the SFX Kit sting (`sound`) the brand uses for its logo, copied to `file`. Videos use it
+  for the logo unless the brief asks for something else.
 - Everything except `name` is optional, but a kit isn't ready for a video until it has colours, fonts and a logo (or
   the user has agreed to go without one).

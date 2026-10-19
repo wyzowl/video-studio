@@ -30,6 +30,10 @@
 //   node studio.mjs licence [<key>]            with a key, unlock the full library on this Mac; without, its state
 //   node studio.mjs install cutout             download the presenter cut-out model (about 168 MB, once), for text
 //                                              behind the presenter
+//   node studio.mjs install sfx-kit            download SFX Kit, the studio's sound effects (about 55 MB, once)
+//   node studio.mjs install all [--wait]       everything Video Studio needs that isn't on this Mac yet, smallest
+//                                              first, shown on the Setup and Studio health pages as it goes (--wait:
+//                                              if another session is already downloading, wait for it to finish)
 //   node studio.mjs setup-page                 the Setup page's address, starting a page server for it (before there's
 //                                              a studio, one that serves only that page)
 //   node studio.mjs setup-note <check> <installing|failed|clear>
@@ -71,6 +75,7 @@ import {
 import { showInstructions } from "./lib/show.mjs";
 import { SCORES, STAGES, endStage, readProgress, startStage, stageTitle, stepsFor, stepsNow, updateProgress, videoAt } from "./lib/progress.mjs";
 import { EXTRAS, newer } from "./lib/extras.mjs";
+import { KIT_DIR, SFX_KIT, installKit, kitInstalled } from "./lib/sfx.mjs";
 import { CATEGORIES, SIZES, BRAND_VARS, BUNDLED_FONTS, libraryItems, libraryItem, lockedItems, findItem, contentVariables, brandStyle, itemLayer } from "./lib/library.mjs";
 import { catalogue, checkDue, checkLibrary, installedPack, licence } from "./lib/paid.mjs";
 
@@ -296,10 +301,8 @@ async function setupPage() {
 }
 
 /** `setup-note <check> <installing|failed|clear>`: what the Setup page says of a check while Claude installs it. */
-function setupNote() {
-  const [, id, state] = positional;
-  const states = ["installing", "failed", "clear"];
-  if (!id || !states.includes(state)) throw new Error(`usage: studio.mjs setup-note <check> <${states.join("|")}>`);
+/** Note for the Setup and Studio health pages that a check's install is under way or failed (or clear the note). */
+function writeSetupNote(id, state) {
   const file = join(USER_DIR, "setup.json");
   const all = readJSON(file, {});
   const notes = { ...(all.notes || {}) };
@@ -307,6 +310,13 @@ function setupNote() {
   else notes[id] = { state, at: new Date().toISOString() };
   mkdirSync(USER_DIR, { recursive: true });
   writeFileSync(file, `${JSON.stringify({ ...all, notes }, null, 2)}\n`);
+}
+
+function setupNote() {
+  const [, id, state] = positional;
+  const states = ["installing", "failed", "clear"];
+  if (!id || !states.includes(state)) throw new Error(`usage: studio.mjs setup-note <check> <${states.join("|")}>`);
+  writeSetupNote(id, state);
   console.log(`Setup page: ${id} ${state === "clear" ? "cleared" : state}.`);
 }
 
@@ -351,29 +361,35 @@ async function hook() {
       spawn(process.execPath, [SELF, "library", "check", "--quiet"], { detached: true, stdio: "ignore" }).unref();
     } catch {}
   }
-  // after an update: say so once, and offer the downloads the new version brings
+  // after an update: say so once
   let update = "";
   const was = studio.plugin;
   const now = pluginVersion();
   if (was && newer(now, was)) {
-    const missing = EXTRAS.filter((x) => newer(x.since, was) && !x.installed());
     update = `Wyzowl Video Studio was updated from ${was} to ${now}.`;
-    if (missing.length) {
-      update += ` The update can use downloads that aren't on this Mac yet: ${missing.map((x) => `${x.name} (${x.size}), to ${x.what}`).join("; ")}. Tell the user at the start of your reply and ask whether to download them now; if they agree, run ${missing.map((x) => x.command(studio.hyperframes || "latest")).join(", then ")}. Otherwise they can add them later with /video-studio:setup.`;
-    }
     // remembered, so it's said once
     try {
       const file = join(root, "studio.json");
       writeFileSync(file, `${JSON.stringify({ ...readJSON(file, {}), plugin: now }, null, 2)}\n`);
     } catch {}
   }
+  // what Video Studio needs that isn't on this Mac yet (a new version's downloads, or one that didn't finish)
+  // downloads in the background, so the session never waits on it
+  const missing = EXTRAS.filter((x) => !x.installed());
+  let downloads = "";
+  if (missing.length) {
+    const started = startDownloads(root);
+    downloads = `Video Studio ${started ? "is downloading" : "is still downloading"} what it needs, in the background: ${missing.map((x) => `${x.name} (${x.size})`).join(", ")}. Tell the user in a line at the start of your reply (there's nothing for them to do); Studio health (/health) shows when it's done. If you need one before then, \`node "${SELF}" install all --wait\` waits for it.`;
+  }
   const context = [
     `Wyzowl Video Studio: this folder is a video studio (${root}).`,
     `Plugin files: ${PLUGIN_ROOT} (helpers in scripts/, review tools in scripts/tools/, score kit in scripts/score-kit/).`,
+    `Sound effects: SFX Kit ${SFX_KIT.version}${kitInstalled() ? ` in ${KIT_DIR} (scripts/tools/sfx.mjs)` : ", downloading (below)"}.`,
     `HyperFrames for new videos: ${studio.hyperframes || "not set"}. Brands: ${brands.map((b) => b.slug).join(", ") || "none"}. Videos: ${videos.length} (${open.length} in progress${open[0] ? `; latest: ${open[0].slug}, ${open[0].status.label.toLowerCase()}` : ""}).`,
     "For any video work here, follow the video-studio production skill (with the storyboard and brand-kit skills). New videos: /video-studio:new-video. New brands: /video-studio:new-brand. Pages: /video-studio:dashboard.",
     warn.length ? `Setup problems: ${warn.join("; ")}. Suggest /video-studio:setup before making videos; the Studio health page (/health) shows what's missing.` : "",
     update,
+    downloads,
   ]
     .filter(Boolean)
     .join("\n");
@@ -586,7 +602,9 @@ async function renderCommand() {
     } catch {}
   };
   note({ done: 0, total: 0, pct: 0, phase: "setup" }, true);
-  const child = spawn("npx", ["--yes", `hyperframes@${pin}`, "render", ...args], { cwd: process.cwd(), stdio: ["inherit", "pipe", "pipe"] });
+  // faster renders: on Apple silicon, HyperFrames' browser draws on the graphics chip (unless the user set otherwise)
+  const gpu = process.platform === "darwin" && process.arch === "arm64" && !process.env.PRODUCER_BROWSER_GPU_MODE ? { PRODUCER_BROWSER_GPU_MODE: "hardware" } : {};
+  const child = spawn("npx", ["--yes", `hyperframes@${pin}`, "render", ...args], { cwd: process.cwd(), stdio: ["inherit", "pipe", "pipe"], env: { ...process.env, ...gpu } });
   const watch = (stream, out) => {
     let rest = "";
     stream.on("data", (chunk) => {
@@ -826,9 +844,15 @@ async function libraryStill(item, { root, slug, size, at, out }) {
 }
 
 /** `install cutout`: download HyperFrames' presenter cut-out model now (about 168 MB, once), rather than the first
-    time a video needs it: run the background remover once on a small test image. */
-function install() {
-  if (arg !== "cutout") throw new Error("usage: studio.mjs install cutout");
+    time a video needs it: run the background remover once on a small test image. `install sfx-kit`: download SFX
+    Kit, check every file, and unpack it (lib/sfx.mjs). `install all`: everything that isn't here yet. */
+async function install() {
+  if (arg === "all") return installAll();
+  if (arg === "sfx-kit") {
+    const r = await installKit();
+    return console.log(r.already ? `SFX Kit ${SFX_KIT.version} is already on this Mac (${r.sounds} sounds).` : `SFX Kit ${SFX_KIT.version} is on this Mac: ${r.sounds} sounds, every file checked. Videos can use its sound effects now.`);
+  }
+  if (arg !== "cutout") throw new Error("usage: studio.mjs install all|cutout|sfx-kit");
   const extra = EXTRAS.find((x) => x.id === "cutout");
   if (extra.installed()) return console.log("Presenter cut-outs are already set up on this Mac.");
   const root = here();
@@ -844,6 +868,80 @@ function install() {
     console.log("Presenter cut-outs are set up: Claude can now put text behind the presenter.");
   } finally {
     rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// one run of the downloads at a time on a Mac, whichever session started it
+const DOWNLOADS_LOCK = join(USER_DIR, "downloading.json");
+const alive = (pid) => {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+};
+/** The downloads under way on this Mac ({ pid, at, what }), or null. */
+function downloadsRunning() {
+  const held = readJSON(DOWNLOADS_LOCK, null);
+  return held && alive(held.pid) && Date.now() - Date.parse(held.at) < 3 * 3600e3 ? held : null;
+}
+function takeDownloadsLock(what) {
+  const body = `${JSON.stringify({ pid: process.pid, at: new Date().toISOString(), what })}\n`;
+  mkdirSync(USER_DIR, { recursive: true });
+  for (let tries = 0; tries < 2; tries++) {
+    try {
+      writeFileSync(DOWNLOADS_LOCK, body, { flag: "wx" });
+      return true;
+    } catch {
+      if (downloadsRunning()) return false;
+      rmSync(DOWNLOADS_LOCK, { force: true }); // left by a run that's gone
+    }
+  }
+  return false;
+}
+
+/** `install all`: everything Video Studio needs that isn't on this Mac yet, smallest first, each shown on the Setup
+    and Studio health pages while it downloads (and marked failed if it doesn't finish). */
+async function installAll() {
+  if (downloadsRunning()) {
+    if (!argv.includes("--wait")) return console.log(`Video Studio is already downloading: ${downloadsRunning().what.join(", ")}.`);
+    console.log("Waiting for the downloads under way to finish…");
+    while (downloadsRunning()) await sleep(2000);
+  }
+  const todo = EXTRAS.filter((x) => !x.installed()).sort((a, b) => a.mb - b.mb);
+  if (!todo.length) return console.log("Everything Video Studio needs is on this Mac.");
+  if (!takeDownloadsLock(todo.map((x) => x.name))) return console.log("Video Studio is already downloading.");
+  const root = here();
+  const hf = (root && readStudio(root).hyperframes) || "latest";
+  const failed = [];
+  try {
+    for (const x of todo) {
+      writeSetupNote(x.id, "installing");
+      console.log(`${x.name} (${x.size})…`);
+      const [command, args] = x.run(hf, root);
+      spawnSync(command, args, { stdio: "inherit", cwd: root || process.cwd(), env: { ...process.env, PATH: `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH || ""}` } });
+      const ok = x.installed();
+      writeSetupNote(x.id, ok ? "clear" : "failed");
+      if (!ok) failed.push(x.name);
+    }
+  } finally {
+    rmSync(DOWNLOADS_LOCK, { force: true });
+  }
+  if (failed.length) throw new Error(`${failed.join(", ")} didn't finish. Check the internet connection: Video Studio tries again when the next session starts, or run this again.`);
+  console.log(`Video Studio has everything it needs: ${todo.map((x) => x.name).join(", ")} downloaded.`);
+}
+
+/** Start `install all` in the background (its output in install.log), unless downloads are already under way. */
+function startDownloads(root) {
+  if (downloadsRunning()) return false;
+  try {
+    mkdirSync(USER_DIR, { recursive: true });
+    const log = openSync(join(USER_DIR, "install.log"), "a");
+    spawn(process.execPath, [SELF, "install", "all", "--studio", root], { cwd: root, detached: true, stdio: ["ignore", log, log] }).unref();
+    return true;
+  } catch {
+    return false;
   }
 }
 

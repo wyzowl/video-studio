@@ -11,6 +11,9 @@ that needs changing to **Feedback** (with a note) and saves (the button says **A
 feedback** once there's feedback), which writes `feedback.json` beside the storyboard. Nothing is built until every
 scene is approved.
 
+Sound effects aren't part of the storyboard: they're made with the video, once there's something on screen to sync
+them to (production skill, `references/audio.md`).
+
 `PLUGIN` is this plugin's folder ("Plugin files" in the session-start note).
 
 ## Files

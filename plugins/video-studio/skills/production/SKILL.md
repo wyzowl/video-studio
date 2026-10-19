@@ -44,8 +44,9 @@ don't use it. New projects use the `hyperframes` version in `studio.json`.
    generates `index.html` for bigger films. Reuse the approved storyboard frames' layouts. `HF check` must show
    0 errors. Check stills with `HF snapshot --at <times>` before the first render. A footage video is built as clips
    instead ("Footage videos" below).
-6. **Sound.** Use a supplied track if there is one. Otherwise propose a music bed and sound design, never add them
-   silently. See `references/audio.md`.
+6. **Sound.** Music: use a supplied track if there is one; otherwise propose a music bed, never add one silently.
+   Sound effects come from SFX Kit and are made with the video, as much as the brief calls for: the user first hears
+   them in the video, and asks for changes there. See `references/audio.md`.
 7. **Review loop.** Draft renders, review sheets, seven scores, fixes, and at least two rounds until every score is 8
    or more. See `references/review.md`. Nothing goes to the user before this.
 8. **Video review.** Share the reviewed render on its review page, where the user pins notes to moments in the video
@@ -273,7 +274,7 @@ write `docs/style_guide.md` (palette, type, shot lengths, transitions, camera, t
 Take the reference's grammar, never its content.
 
 **Local only.** Render on this Mac. Never use `hyperframes cloud`, `publish`, Lambda or Cloud Run, and never ask the
-user to sign in to HeyGen. Before renders: `export PRODUCER_BROWSER_GPU_MODE=hardware` on Apple silicon. Ask before
+user to sign in to HeyGen. `studio.mjs render` uses the graphics chip on Apple silicon by itself. Ask before
 `npx hyperframes skills update`; never change skills silently.
 
 **Studio.** Opening HyperFrames Studio re-saves `index.html` (it adds `data-hf-id` attributes). Re-read before editing,
@@ -289,8 +290,7 @@ Only when the brief says `voiceover: ai`. Use HyperFrames' built-in voices unles
   and let the user pick. Their links on the studio pages are `/videos/<project>/inputs/voice-samples/<voice>.wav`.
   Then generate the whole script: `HF tts inputs/script.txt --voice <voice> --output inputs/vo.wav` (`--speed` if
   needed).
-- **Another service, only if the user asks for it** (for example ElevenLabs, if it's connected): follow its tools'
-  instructions and save the result as `inputs/vo.wav`.
+- **A voice made elsewhere:** if the user wants one, they supply the file. Save it as `inputs/vo.wav`.
 - Record the voice in `BRIEF.md` (for example `voice: bf_emma`). Then treat the file as a recorded voiceover.
 
 ## Deliverables
@@ -313,5 +313,5 @@ Only when the brief says `voiceover: ai`. Use HyperFrames' built-in voices unles
 ## References
 
 - `references/review.md`: the review loop (sheets, `beats.json`, scores, logs, motion audit).
-- `references/audio.md`: levels, the score kit, ducking and loudness checks.
+- `references/audio.md`: levels, sound effects from SFX Kit, the score kit, ducking and loudness checks.
 - `references/gotchas.md`: HyperFrames problems that each cost a render round to find.
