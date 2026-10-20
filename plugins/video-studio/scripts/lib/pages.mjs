@@ -19,6 +19,7 @@ import {
   scriptWordsLabel,
   rowSources,
   scriptLength,
+  voiceoverText,
   WORDS_PER_MINUTE,
   readStoryboard,
   storyboardVersions,
@@ -38,6 +39,7 @@ import { catalogue, installedPack, licence } from "./paid.mjs";
 import { SCORES, stageTitle, stepsNow } from "./progress.mjs";
 import { deliveryFiles, deliveryWords, hasDelivery } from "./delivery.mjs";
 import { checksNow, setupNotes } from "./checks.mjs";
+import { TIDY_MIN_BYTES, lastTidy, sizeLabel, studioTidy, tidyPlan, tidyWhat } from "./tidy.mjs";
 
 export const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -673,7 +675,7 @@ const clip = (text, n = 40) => {
 };
 // a version's state → chip colour
 const STATE_CHIP = { approved: "production", feedback: "feedback", ready: "storyboard", none: "plain" };
-const VOICEOVER = { none: "None", ai: "AI voice", recorded: "Recorded" };
+const VOICEOVER = { none: "None", recorded: "Recorded", supplied: "Read from the script", ai: "AI voice" };
 
 /** One stage on a video's overview timeline. `content` is HTML, after the lines of text. */
 function stageItem({ date, title, chip = "", meta = "", text = [], content = "", thumb = null, actions = "", pending = false }) {
@@ -940,7 +942,9 @@ export function projectPage(studio, slug) {
   const scVersions = scriptVersions(studio.root, slug);
   const sbVersions = storyboardVersions(studio.root, slug);
   const rvVersions = reviewVersions(studio.root, slug);
-  const thumb = (src, alt, href) => ({ src, ratio: video.size.ratio, alt, href, empty: "No image yet", portrait });
+  const thumb = (src, alt, href, empty = "No image yet") => ({ src, ratio: video.size.ratio, alt, href, empty, portrait });
+  const inVideo = (p) => Boolean(p && statSync(join(studio.root, "videos", slug, p), { throwIfNoEntry: false }));
+  const tidied = lastTidy(studio.root, slug);
   const chip = (st) => `<span class="chip chip--${STATE_CHIP[st.key]}">${esc(st.label)}</span>`;
   const reviewed = (summary) => (summary.savedAt ? `reviewed ${formatDateTime(Date.parse(summary.savedAt))}` : "");
 
@@ -1003,7 +1007,7 @@ export function projectPage(studio, slug) {
         chip: chip(st),
         meta: [rv.duration ? timecode(rv.duration) : "", parseSize(rv.size || video.size).label, reviewed(data.summary)].filter(Boolean).join(" · "),
         text: rv.changes ? `What changed: ${clip(rv.changes)}` : "",
-        thumb: thumb(rv.poster ? `${base}${enc(rv.poster)}` : null, `Video v${v}`, href),
+        thumb: thumb(inVideo(rv.poster) ? `${base}${enc(rv.poster)}` : null, `Video v${v}`, href, tidied && rv.poster ? "Removed in a tidy-up" : undefined),
         actions: `<a class="button${st.key === "ready" ? " button--corners" : " button--secondary"}" href="${href}">Open video v${v}</a>`,
       }),
     );
@@ -1103,6 +1107,8 @@ export function scriptPage(studio, slug, version) {
   const length = scriptLength(sc);
   const brief = readBrief(studio.root, slug);
   const recorded = spoken && !footage && (sc.recorded === true || brief.voiceover === "recorded");
+  // a voiceover still to be read: its words alone, to paste into a voice service or send to whoever records it
+  const toRead = spoken && !footage && !recorded ? voiceoverText(sc) : "";
   const hasBold = rows.some((r) => /\*\*.+?\*\*/s.test(`${r.voiceover || ""} ${r.onScreen || ""} ${r.action || ""}`));
   const state = { project: slug, version: v, latest, columns: { words, action: "Action on screen" }, rows: rows.map((r) => ({ id: r.id, n: r.n })), feedback: fb || null };
   const chosen = openingDecision(fb, summary);
@@ -1126,6 +1132,7 @@ export function scriptPage(studio, slug, version) {
           ${shortLede(videoDescription(brief, sc.summary))}
           ${stagesNav(studio, slug, `script-${v}`)}
           ${share({ href: `/videos/${enc(slug)}/script/v${v}/download`, label: "Download PDF", pdf: true, note: latest ? SHARE_NOTE : "" })}
+          ${toRead ? `<div class="share"><button class="button button--secondary" type="button" data-copy="${esc(toRead)}">Copy the voiceover</button><p class="share_note">Just its words, to paste into a voice service or send to whoever records it.</p></div>` : ""}
         </div>
         <dl class="titleblock">
           ${cell("Brand", brand?.name || video.brand || "")}
@@ -1443,6 +1450,29 @@ export function checksParts(root, { setup = false } = {}) {
   return parts;
 }
 
+/** Studio health's tidy-up: each finished video with space to free, and the edit history HyperFrames still keeps for
+    deleted videos, each with what to say to Claude (studio.mjs tidy lists exactly what goes, and asks first). */
+function spaceSection(root) {
+  const t = studioTidy(root);
+  const row = (name, detail, say) =>
+    `<li class="dask"><span><strong>${esc(name)}</strong><br><span class="muted">${esc(detail)}</span></span><button class="button button--secondary" type="button" data-copy="${esc(say)}">Copy</button></li>`;
+  const rows = [];
+  if (t.videos.length + (t.gone.length ? 1 : 0) > 1) rows.push(row("All of them", `${sizeLabel(t.bytes)} to free`, "Tidy up all my finished videos."));
+  for (const p of t.videos) rows.push(row(p.title, `${sizeLabel(p.bytes)} to free: ${tidyWhat(p)}`, `Tidy up ${p.title}.`));
+  if (t.gone.length) rows.push(row(t.gone.length === 1 ? "A deleted video" : `${t.gone.length} deleted videos`, `${sizeLabel(t.goneBytes)} to free: the edit history HyperFrames still keeps for ${t.gone.length === 1 ? "it" : "them"}`, "Tidy up the edit history of my deleted videos."));
+  return `
+<section class="section section--rule">
+  <div class="container">
+    ${eyebrow("02", "Space")}
+    <div class="stack">
+      <h2>Tidy up finished videos</h2>
+      <p class="lede">A finished video still keeps what it needed while it was being made: draft renders, review stills, replaced storyboards and its edit history in HyperFrames. Tidying it up removes them once you've said yes, and keeps everything the video needs to be changed and rendered again. To ask Claude, copy one and paste it into the chat.</p>
+    </div>
+    ${rows.length ? `<ul class="dasks">${rows.join("")}</ul>` : `<p class="muted">Nothing to tidy up: your finished videos only keep what they need.</p>`}
+  </div>
+</section>`;
+}
+
 /** Setup's checklist (before there's a studio, the only page there is) and, later, the studio's health: everything
     the studio uses on this Mac, live. */
 export function healthPage(studio, { setup = false } = {}) {
@@ -1478,7 +1508,7 @@ export function healthPage(studio, { setup = false } = {}) {
     ${eyebrow("01", setup ? "Each step" : "Each check")}
     <div class="checks_panel" data-checks="${setup ? "setup" : "health"}">${parts.map((x) => x.html).join("")}</div>
   </div>
-</section>`;
+</section>${root && !setup ? spaceSection(root) : ""}`;
   return layout({ title: setup ? "Setup" : "Studio health", studio: studio || { name: "Not set up yet", root: "", hyperframes: "" }, body });
 }
 
@@ -1563,6 +1593,8 @@ export function deliveryPage(studio, slug) {
   if (speech) asks.push(`Make a silent version of ${video.title} with the captions on screen, for feeds that play without sound.`);
   if (!wordRows) asks.push(`Write a title, a description and alt text to go with ${video.title}.`);
   if (!files.some((f) => f.kind === "gif")) asks.push(`Make a GIF preview of ${video.title} for an email.`);
+  const tidy = masters.length ? tidyPlan(studio.root, slug) : null;
+  if (tidy && !tidy.working && tidy.bytes >= TIDY_MIN_BYTES) asks.push(`Tidy up ${video.title} to free ${sizeLabel(tidy.bytes)}: remove ${tidyWhat(tidy)}.`);
   const askRows = asks.map((a) => `<li class="dask"><span>${esc(a)}</span><button class="button button--secondary" type="button" data-copy="${esc(a)}">Copy</button></li>`).join("");
 
   const portrait = (main?.media?.height || video.size.h) > (main?.media?.width || video.size.w);
@@ -1626,6 +1658,7 @@ ${
       <p class="lede">Ask Claude for any of these in the chat: copy one, paste it in, and add anything you'd like.</p>
     </div>
     <ul class="dasks">${askRows}</ul>
+    ${tidy?.last ? `<p class="muted">Tidied up on ${esc(formatDate(Date.parse(tidy.last.at)))}: ${esc(sizeLabel(tidy.last.freed))} freed.</p>` : ""}
   </div>
 </section>`
     : `<section class="section section--rule">
@@ -1653,13 +1686,15 @@ export function reviewPage(studio, slug, version) {
   const latest = v === versions.at(-1);
   const fileUrl = (p) => `/videos/${enc(slug)}/${enc(p)}`;
   const chapters = (Array.isArray(rv.chapters) ? rv.chapters : []).filter((c) => c && Number.isFinite(+c.time));
-  const player = rv.video
-    ? `<video class="player_video" data-player controls playsinline preload="metadata" src="${esc(fileUrl(rv.video))}"${rv.poster ? ` poster="${esc(fileUrl(rv.poster))}"` : ""}></video>`
-    : `<span class="frame_empty">No video file in this review</span>`;
+  const inVideo = (p) => (p ? statSync(join(studio.root, "videos", slug, p), { throwIfNoEntry: false }) : null);
+  const there = inVideo(rv.video);
+  const player = there
+    ? `<video class="player_video" data-player controls playsinline preload="metadata" src="${esc(fileUrl(rv.video))}"${inVideo(rv.poster) ? ` poster="${esc(fileUrl(rv.poster))}"` : ""}></video>`
+    : `<span class="frame_empty">${!rv.video ? "No video file in this review" : lastTidy(studio.root, slug) ? "This draft was removed when the video was tidied up" : "This version's video file isn't there"}</span>`;
   // for "Point at it" (ui/point.js): where the version's files are, and the video's shape
   const state = { project: slug, version: v, latest, feedback: fb || null, base: `/videos/${enc(slug)}/review/v${v}/`, ratio: size.w / size.h };
   const chosen = openingDecision(fb, summary);
-  const bytes = rv.video ? statSync(join(studio.root, "videos", slug, rv.video), { throwIfNoEntry: false })?.size : 0;
+  const bytes = there?.size || 0;
 
   const body = `
 <section class="section section--hero">
@@ -1698,13 +1733,13 @@ export function reviewPage(studio, slug, version) {
     ${eyebrow("01", "Watch and comment")}
     <div class="review-layout">
       <div class="stack">
-        <figure class="frame"${portrait ? ' style="max-width: 26rem"' : ""}><div class="frame_stage"><div class="frame_media frame_media--player" style="--ratio: ${size.ratio}"${latest && rv.video ? " data-point-host" : ""}>${player}</div></div></figure>
+        <figure class="frame"${portrait ? ' style="max-width: 26rem"' : ""}><div class="frame_stage"><div class="frame_media frame_media--player" style="--ratio: ${size.ratio}"${latest && there ? " data-point-host" : ""}>${player}</div></div></figure>
         ${chapters.length ? `<div class="player_tools"><span class="field-label">Jump to</span>${chapters.map((c) => `<button class="chapter" type="button" data-seek="${+c.time}">${esc(timecode(+c.time))} ${esc(c.title || "")}</button>`).join("")}</div>` : ""}
       </div>
       <div class="stack review-side">
         <h2 class="card_title">Notes</h2>
         <p class="muted" data-notes-empty>No notes yet. Pause on a moment, then press “Add a note”, or Box or Arrow on the picture to point at something.</p>
-        <div class="review-side_add"><button class="button button--secondary" type="button" data-add-note${latest && rv.video ? "" : " disabled"}>Add a note at <span class="mono" data-now>00:00.0</span></button></div>
+        <div class="review-side_add"><button class="button button--secondary" type="button" data-add-note${latest && there ? "" : " disabled"}>Add a note at <span class="mono" data-now>00:00.0</span></button></div>
         <ol class="notes" data-notes></ol>
         <div class="review_note">
           <label class="field-label" for="n-general">Anything else? Music, pace, overall feel (optional)</label>

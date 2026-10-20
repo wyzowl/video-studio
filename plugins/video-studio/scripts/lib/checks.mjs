@@ -61,7 +61,7 @@ export function runChecks({ root = null } = {}) {
     name: "Node.js",
     ok: nodeMajor >= 20 && has("npx"),
     detail: `${process.versions.node}${nodeMajor < 20 ? " (20 or newer is needed)" : ""}${has("npx") ? "" : ", without npx"}`,
-    fix: "brew install node",
+    fix: "HOMEBREW_NO_ANALYTICS=1 brew install node",
     say: "Install Node.js for my studio.",
     time: "about 1 min",
     doing: "Installing Node.js",
@@ -74,14 +74,14 @@ export function runChecks({ root = null } = {}) {
     name: "ffmpeg",
     ok: Boolean(ff) && has("ffprobe"),
     detail: ff ? ff.split("\n")[0].replace(/ Copyright.*/, "") : "not installed: it reads and writes the video and sound",
-    fix: "brew install ffmpeg",
+    fix: "HOMEBREW_NO_ANALYTICS=1 brew install ffmpeg",
     say: "Install ffmpeg for my studio.",
     time: "about 2 min",
     doing: "Installing ffmpeg",
   });
 
   const git = run("git", ["--version"]);
-  add({ id: "git", group: "This Mac", name: "git", ok: Boolean(git), detail: git || "not installed: the skills installer needs it", fix: "brew install git", say: "Install git for my studio.", time: "under a minute", doing: "Installing git" });
+  add({ id: "git", group: "This Mac", name: "git", ok: Boolean(git), detail: git || "not installed: the skills installer needs it", fix: "HOMEBREW_NO_ANALYTICS=1 brew install git", say: "Install git for my studio.", time: "under a minute", doing: "Installing git" });
 
   const npx = join(homedir(), ".npm/_npx");
   const cached = [

@@ -6,7 +6,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { PLUGIN_ROOT } from "./studio.mjs";
 import { SFX_KIT, kitInstalled, readGaps, readKit } from "./sfx.mjs";
-import { HYPERFRAMES } from "./versions.mjs";
+import { HYPERFRAMES, HYPERFRAMES_SWITCHES } from "./versions.mjs";
 
 const cache = join(homedir(), ".cache", "hyperframes");
 const has = (dir, re) => {
@@ -30,8 +30,8 @@ export const EXTRAS = [
     mb: 640,
     since: "0.1.0",
     installed: () => has(join(cache, "parakeet"), /./),
-    command: () => `npx --yes ${HYPERFRAMES} models install parakeet`,
-    run: () => ["npx", ["--yes", HYPERFRAMES, "models", "install", "parakeet"]],
+    command: () => `${HYPERFRAMES_SWITCHES} npx --yes ${HYPERFRAMES} models install parakeet`,
+    run: () => ["npx", ["--yes", HYPERFRAMES, "models", "install", "parakeet"]], // with HyperFrames' switches, from studio.mjs
   },
   {
     id: "cutout",

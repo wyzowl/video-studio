@@ -20,7 +20,7 @@ Each of these cost a render round to find (HyperFrames 0.8.140–0.8.149). Reche
 - **Lint's `gsap_callback_dom_measurement`** is a false positive when measuring only happens at init.
 - **A plate pre-scaled for a later zoom** fills the frame whenever its clip is visible. Gate its opacity to the move.
 - **HyperFrames run without its version fetches the newest release on every run.** Run it as `HF`, or through the
-  project's `npm run` scripts.
+  project's `npm run` scripts with `HF`'s two switches before them.
 - **`snapshot` can send frames to Gemini** to describe them. Always pass `--describe false`, so frames stay on this Mac.
 - **Some ffmpeg builds have no `drawtext`** (Homebrew's doesn't). Render text overlays for slates and comparisons with
   `node PLUGIN/scripts/tools/label_png.mjs`.

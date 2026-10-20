@@ -20,10 +20,13 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { EXTRAS } from "../lib/extras.mjs";
 import { inVideo, report } from "../lib/progress.mjs";
-import { HYPERFRAMES } from "../lib/versions.mjs";
+import { HYPERFRAMES, HYPERFRAMES_ENV } from "../lib/versions.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+// HyperFrames' switches, for the transcriptions this tool runs: no usage data, no update check
+for (const [name, value] of Object.entries(HYPERFRAMES_ENV)) process.env[name] ??= value;
 const argv = process.argv.slice(2);
 const cmd = argv[0];
 const opt = (k, d = null) => {
@@ -128,11 +131,14 @@ function speechIslands(file) {
   return islands.filter(([a, b]) => b - a >= 0.08);
 }
 
-/** Word times from HyperFrames (Parakeet where it's installed): [{ text, start, end }] */
+/** Word times from HyperFrames, with Parakeet, the transcription model Video Studio downloads (never HyperFrames' own
+    fallback, which would install whisper-cpp and its model by itself): [{ text, start, end }] */
 function transcribe(file) {
+  if (!EXTRAS.find((x) => x.id === "parakeet").installed())
+    fail(`The transcription model isn't on this Mac yet. Run node "${join(HERE, "..", "studio.mjs")}" install all --wait, which downloads it (or waits for the download under way), then scan again.`);
   const work = mkdtempSync(join(tmpdir(), "wvs-transcribe-"));
   try {
-    const r = run("npx", ["--yes", HYPERFRAMES, "transcribe", file, "--engine", "auto", "--json", "-d", work]);
+    const r = run("npx", ["--yes", HYPERFRAMES, "transcribe", file, "--engine", "parakeet", "--json", "-d", work]);
     const out = join(work, "transcript.json");
     if (!existsSync(out)) fail(`The transcription didn't work for ${basename(file)}: ${(r.stderr || r.stdout || "").trim().split("\n").slice(-2).join(" ")}`);
     const words = JSON.parse(readFileSync(out, "utf8"));

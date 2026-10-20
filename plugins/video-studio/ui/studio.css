@@ -730,6 +730,10 @@ a.frame_stage:hover .frame_media > img {
 .frame_media--player {
   background: #000;
 }
+/* a message where a video would play (one removed by a tidy-up): light, on the player's black */
+.frame_media--player .frame_empty {
+  color: color-mix(in lab, var(--paper) 72%, transparent);
+}
 .frame_media > video.player_video {
   object-fit: contain;
 }

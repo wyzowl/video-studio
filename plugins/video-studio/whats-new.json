@@ -1,4 +1,16 @@
 {
+  "0.9.0": [
+    {
+      "text": "Tidy up finished videos: once a video is delivered, Video Studio can remove its drafts, review stills, replaced storyboards and edit history, after you say yes. The delivery page and Studio health show how much space each one would free.",
+      "href": "/health"
+    },
+    {
+      "text": "Voiceovers are always your own: a recording, or one read from the approved script by a voice artist or any voice service. The script page's Copy the voiceover button gives you its words."
+    },
+    {
+      "text": "Video Studio keeps HyperFrames on the version it's tested with, and turns off the anonymous usage data that HyperFrames, the skills tool and Homebrew would otherwise send."
+    }
+  ],
   "0.8.0": [
     {
       "text": "Sound effects from SFX Kit: 320 sounds, each placed exactly on its moment and set under the voiceover. Claude adds them while it builds a video, as many as the brief calls for.",

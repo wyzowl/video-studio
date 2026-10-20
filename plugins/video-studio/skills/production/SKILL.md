@@ -1,6 +1,6 @@
 ---
 name: production
-description: Wyzowl Video Studio production rules for making, changing, reviewing, rendering and delivering videos inside a Wyzowl Video Studio folder (one with studio.json). Use for any video work in a studio, together with the HyperFrames skills; it brings in the script, storyboard and brand-kit skills when needed.
+description: Wyzowl Video Studio production rules for making, changing, reviewing, rendering, delivering and tidying up videos inside a Wyzowl Video Studio folder (one with studio.json). Use for any video work in a studio, together with the HyperFrames skills; it brings in the script, storyboard and brand-kit skills when needed.
 ---
 
 # Wyzowl Video Studio: production
@@ -10,9 +10,12 @@ the **storyboard** (before anything is built) and the **video** (before the fina
 `/hyperframes`, which routes animated videos to `/general-video`. Every film must be agency-grade.
 
 **Paths.** `PLUGIN` means this plugin's folder: the session-start note calls it "Plugin files", and commands see it as
-`${CLAUDE_PLUGIN_ROOT}`. `HF` means `npx --yes hyperframes@0.8.149`, the HyperFrames Video Studio is tested with, which
-every new project starts on. A project made on an earlier version keeps it: its `package.json` scripts name it, so use
-`npm run check` there, and `studio.mjs render` follows its `render` script. Render with
+`${CLAUDE_PLUGIN_ROOT}`. `HF` means
+`HYPERFRAMES_NO_TELEMETRY=1 HYPERFRAMES_NO_UPDATE_CHECK=1 npx --yes hyperframes@0.8.149`: the HyperFrames Video Studio
+is tested with, which every new project starts on, with its two switches (no anonymous usage data, and no check for a
+newer release: Video Studio chooses the version). A project made on an earlier version keeps it: its `package.json`
+scripts name it, so run `npm run check` there with the same two switches before it, and `studio.mjs render` follows
+its `render` script. Render with
 `node PLUGIN/scripts/studio.mjs render -- …` (the same options as `HF render`), from the video's folder: it shows the
 render's progress on the video's overview ("Work in progress" below). Always run HyperFrames with its version: without
 one, npx fetches the newest release on every run.
@@ -31,9 +34,10 @@ one, npx fetches the newest release on every run.
      `HF transcribe inputs/vo.wav --engine parakeet`; correct misheard words against the script; run
      `node PLUGIN/scripts/tools/vo-check.mjs inputs/vo.wav <transcript>` and fix drifted words; check key cue words by
      ear; save `inputs/transcript_verified.json`.
-   - **AI voiceover** (`voiceover: ai` in the brief): once the script is approved, make it from the approved
-     script's voiceover (see "AI voiceover" below). The generated file becomes the recorded voiceover, then follow the
-     step above.
+   - **A voiceover to come** (`voiceover: supplied` in the brief): once the script is approved, ask the user to have the
+     approved voiceover read (the script page's **Copy the voiceover** gives them its words) and to put the file in
+     `inputs/` (give the full path). Wait for it. Then it's the recorded voiceover: follow the step above, correcting
+     misheard words against the approved script.
    - **No voiceover:** a beat grid is the clock. `TEMPO` and a `PRE` lead-in, with beat *b* at
      `PRE + b × 60 / TEMPO`. Write every cue in beats, so re-timing is one change.
    - **Footage** (`type: footage`): the cut's own speech is the clock. Each kept range plays at its own pace, and
@@ -108,8 +112,8 @@ footage sets the size, and its speech is the clock.
      video = the range's `data-start` + the word's time − the range's in point.
    - Sound: the speech leads. Music sits under it and ducks while people speak (`references/audio.md`); B-roll's own
      sound stays off unless it's the point.
-   - Check every join: transcribe the draft (`HF transcribe`) and compare its words with the script's, so no word is
-     clipped, doubled or missing; and look at the cuts with `HF snapshot --describe false`.
+   - Check every join: transcribe the draft (`HF transcribe <draft> --engine parakeet`) and compare its words with the
+     script's, so no word is clipped, doubled or missing; and look at the cuts with `HF snapshot --describe false`.
 
 ## Showing a page
 
@@ -275,24 +279,23 @@ write `docs/style_guide.md` (palette, type, shot lengths, transitions, camera, t
 Take the reference's grammar, never its content.
 
 **Local only.** Render on this Mac. Never use `hyperframes cloud`, `publish`, Lambda or Cloud Run, and never ask the
-user to sign in to HeyGen. `studio.mjs render` uses the graphics chip on Apple silicon by itself. Ask before
-`HF skills update`; never change skills silently.
+user to sign in to HeyGen. Don't fetch or make media with `/media-use` either (HeyGen's catalogue and voices, or
+logos and LUTs from the web): music is the user's track or the score kit, sound effects come from SFX Kit, logos
+from the brand kit, and voiceovers from the user. `studio.mjs render` uses the graphics chip on Apple silicon by
+itself. Ask before `HF skills update`; never change skills silently.
 
 **Studio.** Opening HyperFrames Studio re-saves `index.html` (it adds `data-hf-id` attributes). Re-read before editing,
 check `HF history`, and bracket each round of edits with `HF history begin --who claude --label "…"` and
 `HF history end`, so the user's own Studio edits are never overwritten. In build-script projects, a rebuild overwrites
 Studio edits: carry them into `src/`.
 
-## AI voiceover
+## Voiceovers
 
-Only when the brief says `voiceover: ai`. Use HyperFrames' built-in voices unless the user asks for something else.
-- **Built-in voices** (the default: free, on this Mac, no account): `HF tts --list` shows them. Make a short sample line
-  in two or three likely voices, for example `HF tts "<first line>" --voice bf_emma --output inputs/voice-samples/bf_emma.wav`,
-  and let the user pick. Their links on the studio pages are `/videos/<project>/inputs/voice-samples/<voice>.wav`.
-  Then generate the whole script: `HF tts inputs/script.txt --voice <voice> --output inputs/vo.wav` (`--speed` if
-  needed).
-- **A voice made elsewhere:** if the user wants one, they supply the file. Save it as `inputs/vo.wav`.
-- Record the voice in `BRIEF.md` (for example `voice: bf_emma`). Then treat the file as a recorded voiceover.
+Video Studio doesn't make voiceovers: a voiceover is always a file the user brings (their own recording, a voice
+artist's, or one made with a voice service). Never make one with `HF tts`, HeyGen or `/media-use`, not even as a
+stand-in. Keep the file as it came, and make `inputs/vo.wav` from it with ffmpeg if it's in another format. An older
+video whose brief says `voiceover: ai` already has its voiceover: treat it as a recorded one, and if the file is
+missing, ask the user for one.
 
 ## Deliverables
 
@@ -310,6 +313,21 @@ Only when the brief says `voiceover: ai`. Use HyperFrames' built-in voices unles
   someone who can't see it. The delivery page shows them, each with a Copy button.
 - `docs/review_log.md` and `docs/motion_audit.md`.
 - Say what you would improve next.
+
+## Tidying up
+
+A finished video still keeps what it needed while it was being made: draft renders, review stills, the storyboard
+versions the approved one replaced, footage previews and its edit history in HyperFrames (up to 2 GB). The delivery
+page and Studio health offer to tidy it up; tidy only when the user asks.
+1. Run `node PLUGIN/scripts/studio.mjs tidy <project>` and show the user what it lists: what goes, what stays and the
+   space it frees. For every finished video at once, `tidy --all`; for the edit history of deleted videos alone,
+   `tidy --deleted`.
+2. Ask before going on (AskUserQuestion, header "Tidy up": "Tidy it up" or "Keep everything"): deleting can't be
+   undone.
+3. On a yes, run it again with `--yes` and say what was freed.
+
+It refuses while you're still working on the video. A video with no final render isn't tidied unless the user asks
+for that video by name, knowing what it removes (`--unfinished`).
 
 ## References
 

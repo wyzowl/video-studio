@@ -49,8 +49,8 @@ export function stepsFor(p, brief = {}) {
   if (p.stage === "storyboard")
     return [
       ...(again ? [step("notes", "Read your feedback")] : []),
-      ...(!again && !footage && brief.voiceover === "ai" ? [step("voice", "Make the voiceover")] : []),
-      ...(!again && !footage && brief.voiceover === "recorded" ? [step("voice", "Time the voiceover")] : []),
+      // a voiceover the user brings (recorded first, or read from the approved script; an older video's AI voice too)
+      ...(!again && !footage && ["recorded", "supplied", "ai"].includes(brief.voiceover) ? [step("voice", "Time the voiceover")] : []),
       step("plan", again ? "Plan the changes" : "Plan the scenes"),
       step("frames", footage ? "Pick the stills" : "Make the frames"),
       ...(footage ? [step("clips", "Cut the rough cuts")] : []),

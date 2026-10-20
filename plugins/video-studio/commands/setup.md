@@ -42,7 +42,8 @@ jargon.
    - **Homebrew:** you can't install it for them, because its installer asks for their password. Give them the one
      install command from https://brew.sh to paste into the Terminal app, wait until they say it's done, then re-run
      the check: `node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.mjs"`.
-   - **Node.js, ffmpeg, git:** run `brew install` with just the missing ones.
+   - **Node.js, ffmpeg, git:** run `HOMEBREW_NO_ANALYTICS=1 brew install` with just the missing ones (Homebrew's
+     anonymous usage data stays off, as it does for everything Video Studio runs).
 5. **HyperFrames.** Video Studio uses HyperFrames 0.8.149, the version it's tested with: every new video starts on it,
    and it runs through npx, so there's nothing to install.
 6. **Create the studio:**
@@ -60,10 +61,12 @@ jargon.
    graphics chip by themselves.
 9. **Test render**, from the studio folder. The first render also downloads HyperFrames' headless Chrome:
    ```bash
+   export HYPERFRAMES_NO_TELEMETRY=1 HYPERFRAMES_NO_UPDATE_CHECK=1
    HYPERFRAMES_SKIP_SKILLS=1 npx --yes hyperframes@0.8.149 init videos/_setup-test --non-interactive
    cd videos/_setup-test && npm run check && npm run render -- --quality draft --fps 30 --output renders/test.mp4
    ```
-   If it works, delete `videos/_setup-test`. If it fails, show the error and the likely fix.
+   Run it as one command, so the first line's switches (no usage data, no update check) reach HyperFrames. If it
+   works, delete `videos/_setup-test`. If it fails, show the error and the likely fix.
 10. **Finish.** Run the check from the studio folder and show the table. Show the dashboard: run
     `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" show / --studio "<folder>"` and follow what it says (beside the
     chat, with its card). Then tell them the one thing that matters next: **open Claude Code in the studio folder** (in the

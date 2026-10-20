@@ -33,9 +33,9 @@ Mark the work on the video's overview as you go (production skill, "Work in prog
 1. **Know the story first.** Read the brief (`BRIEF.md`): who it's for, the one message, the call to action, the
    length and the tone. If something that changes the story is missing, ask before writing.
 2. **Where the words come from:**
-   - **Recorded voiceover** (supplied by the user): transcribe it first (production skill, stage 3) and use the clean
-     take: no retakes, false starts or anything that will be cut. The voiceover column is that transcript, word for
-     word; set `"recorded": true`.
+   - **Recorded voiceover** (`voiceover: recorded`: the file came with the request): transcribe it first (production
+     skill, stage 3) and use the clean take: no retakes, false starts or anything that will be cut. The voiceover
+     column is that transcript, word for word; set `"recorded": true`.
    - **Footage** (a footage video): scan it first (production skill, "Footage videos"): every clip's transcript,
      with its pauses, umms and repeated takes marked, and its contact sheet. Write the cut you propose, with
      `"mode": "footage"`:
@@ -47,8 +47,9 @@ Mark the work on the video's overview as you go (production skill, "Work in prog
      The words are what was said on camera, so they can be cut or moved, or swapped for another take, but never
      reworded. The action column says what's seen: the shot (and any punch-in), B-roll (which clip), and what's
      added on top.
-   - **AI voiceover** (`voiceover: ai`): write the voiceover. Once the script is approved, the AI voice reads exactly
-     that.
+   - **A voiceover to come** (`voiceover: supplied`): write the voiceover. Once the script is approved, the user has it
+     read exactly as written (by them, a voice artist or a voice service) and brings the file. The script page's
+     **Copy the voiceover** gives them its words alone.
    - **No voiceover:** set `"mode": "text"`. The second column is the text on screen, word for word, in each row's
      `onScreen`.
 3. **A row per beat.** Every row is a scene, or one moment of one: when several things happen in a scene, give each
@@ -128,8 +129,8 @@ on without asking them to confirm. Read `feedback.json`: `decision` (`approved` 
 `row`, the number the page showed, `column` and `text`) and `general`.
 
 - **Approved:** carry any notes into the next stages as small last tweaks, and say how you applied them. Then go on:
-  for an AI voiceover, make it from the approved voiceover (production skill, stage 3); then the storyboard
-  (storyboard skill), from the approved script.
+  for a voiceover to come, ask the user for the file and wait for it (production skill, stage 3); then the
+  storyboard (storyboard skill), from the approved script.
 - **Changes needed:** write version N+1. Start it on the overview (`studio.mjs progress <project> script <N+1>
   notes`), then mark `draft` and `length` as you go.
   1. Leave `v<N>` and its feedback as they are. Apply every note: a note's `row` is the number the user saw in

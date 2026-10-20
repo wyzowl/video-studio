@@ -27,7 +27,8 @@ Ask with the AskUserQuestion tool, in one panel:
   website, colours and fonts"). With no brands yet, offer "New brand" and "No brand (a neutral style)". "Other" lets
   them name another existing brand.
 - **Do you have a script or voiceover?** (header "Script")
-  - "Script and recorded voiceover": you'll add the voiceover file (and the script, if there is one).
+  - "Script and voiceover": you'll add the voiceover file, recorded or made with a voice service (and the script,
+    if there is one).
   - "Script only": you'll paste or upload the script.
   - "Neither yet": Claude asks about the video and drafts a script for you.
 
@@ -53,19 +54,23 @@ Then a second panel:
   "Screen recordings". Then whether there's music: "I have a track", "Suggest one" or "No music". After step 3, ask
   them to put the clips in the project's `inputs/footage/` folder (give the full path), or to tell you where they are
   and copy them there yourself.
-- **Recorded voiceover:** after step 3, ask them to put the file in the project's `inputs/` folder (give the full
+- **Script and voiceover:** after step 3, ask them to put the file in the project's `inputs/` folder (give the full
   path), or to tell you where it is. WAV is best; MP3 is fine.
-- **Script only:** ask for the script, pasted or as a file. Then ask how it should be voiced (AskUserQuestion):
-  "On-screen text and music", "AI voiceover" (HyperFrames' built-in voices: free and made on this Mac), or "I'll record a voiceover" (pause until they supply it).
+- **Script only:** ask for the script, pasted or as a file. Then ask how it should be voiced (AskUserQuestion, header
+  "Voice"): "On-screen text and music", or "I'll supply a voiceover" (recorded by them or a voice artist, or made
+  with any voice service, read from the approved script: Video Studio waits for the file once the script is approved).
 - **Neither yet:** ask what the video should achieve, who it's for, the key messages in order, the call to action and
-  the tone. Draft a script in two columns (voiceover, and what's on screen) and get it approved before the storyboard.
-  If the `wyzowl-explainer-script` skill is available, use it for the draft.
+  the tone, and how it should be voiced (as for a script only). Draft the script (with a voiceover: the voiceover and
+  what's on screen; without one: the text on screen and what happens) and get it approved before the storyboard. If
+  the `wyzowl-explainer-script` skill is available, use it for the draft.
+
+Video Studio doesn't make voiceovers: a voiceover is always a file the user brings.
 
 ### 3. Set up the project
 
 1. Choose a short kebab-case project name from the title, and check `videos/<project>` is free.
 2. Scaffold with Video Studio's HyperFrames, 0.8.149:
-   `HYPERFRAMES_SKIP_SKILLS=1 npx --yes hyperframes@0.8.149 init "videos/<project>" --non-interactive`
+   `HYPERFRAMES_SKIP_SKILLS=1 HYPERFRAMES_NO_TELEMETRY=1 HYPERFRAMES_NO_UPDATE_CHECK=1 npx --yes hyperframes@0.8.149 init "videos/<project>" --non-interactive`
    Add `--resolution portrait` for 9:16 or `--resolution square` for 1:1. For 4:5 and custom sizes, set the
    composition's `data-width` and `data-height` after `init`. For a footage video, scaffold it, put the clips in
    `inputs/footage/` and scan them (production skill, "Footage videos"), then set `data-width` and `data-height` to
@@ -86,6 +91,9 @@ Then a second panel:
    - **Intent** is your summary: what the video is for and how it should feel, in a short paragraph.
    - **Assets**, **Customizations** and **Notes** are your notes from starting it: the files it uses, anything about
      it that departs from the brand or the usual way, and anything else to remember.
+   - **voiceover** (in the front matter): `recorded` when the voiceover file comes with the request (the script is
+     written from it), `supplied` when the user will bring one read from the approved script, `none` for on-screen
+     text.
 
    ```markdown
    ---
@@ -94,7 +102,7 @@ Then a second panel:
    type: <animated | footage>
    size: <16:9 | 1:1 | 4:5 | 9:16 | WxH>
    aspect: <width>x<height>
-   voiceover: <recorded | ai | none>
+   voiceover: <recorded | supplied | none>
    workflow: general-video
    flow: companion
    storyboard: yes

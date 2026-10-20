@@ -275,6 +275,21 @@ export function scriptRows(script) {
   return (Array.isArray(script?.rows) ? script.rows : []).map((row, i) => ({ ...row, id: String(row?.id || `r${String(i + 1).padStart(2, "0")}`), n: i + 1 }));
 }
 
+/** The voiceover alone, to have it read: each row's words (bold marks and notes in parentheses left out), a line
+    each, with a sentence carried across rows ("Manage your work…", "…track tasks") joined back up. */
+export function voiceoverText(script) {
+  const lines = [];
+  const ELLIPSIS = /(?:…|\.\.\.)$/;
+  for (const row of scriptRows(script)) {
+    const said = String(row.voiceover || "").replace(/\*\*/g, "").replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
+    if (!said) continue;
+    const prev = lines.at(-1);
+    if (prev && ELLIPSIS.test(prev) && /^(?:…|\.\.\.)/.test(said)) lines[lines.length - 1] = `${prev.replace(ELLIPSIS, "").trimEnd()} ${said.replace(/^(?:…|\.\.\.)\s*/, "")}`;
+    else lines.push(said);
+  }
+  return lines.join("\n");
+}
+
 /** The voiceover's words (bold marks and notes in parentheses left out) and the length they make at 135 a minute. */
 export function scriptLength(script) {
   if (!scriptHasVoiceover(script)) return null;
@@ -374,7 +389,8 @@ export function readVideo(root, slug) {
     ? {
         version: latestRv.version,
         url: `/videos/${encodeURIComponent(slug)}/review/v${latestRv.version}/`,
-        poster: latestRv.review.poster ? projectUrl(latestRv.review.poster) : null,
+        // a draft's poster is gone once the video's been tidied up
+        poster: latestRv.review.poster && existsSync(join(root, "videos", slug, latestRv.review.poster)) ? projectUrl(latestRv.review.poster) : null,
         ...latestRv.summary,
       }
     : null;

@@ -89,9 +89,9 @@ press **Got it**.
    A recorded voiceover is transcribed and cut clean first. For a footage video, Claude reads all the footage first:
    every clip transcribed, with its pauses, umms and repeated takes marked. The script is then the cut it proposes,
    word for word from the best takes, with the clip and time of each line, and a note of what was cut.
-3. **Voiceover and timing.** A recorded voiceover is the master clock. Without one: an AI voiceover (HyperFrames'
-   built-in voices by default, made on the Mac) read from the approved script, or on-screen text timed to a beat
-   grid.
+3. **Voiceover and timing.** A voiceover is the master clock. It's always one you bring: your recording, or one read
+   from the approved script by you, a voice artist or any voice service (the script page's **Copy the voiceover**
+   gives you its words). Without one, on-screen text is timed to a beat grid.
 4. **Storyboard.** Every scene with 1–5 frames, rendered in the brand at the video's real size. On the storyboard
    page every scene starts **Approved**: switch any you'd like changed to **Feedback**, with a note, then save. Claude
    makes a new version until every scene is approved. Nothing is built before that. For a footage video the frames
@@ -102,6 +102,9 @@ press **Got it**.
 6. **Video review.** On the video's review page you watch it and pin notes to moments in it. The decision is
    **Approve video** unless you add a note or write under **Anything else?**, which switches it to **Changes needed**.
 7. **Delivery.** Once you approve, Claude renders the 60 fps master, a web copy, a poster and a contact sheet.
+8. **Tidying up.** A finished video still keeps what it needed while it was being made: draft renders, review stills,
+   replaced storyboards and its edit history in HyperFrames (up to 2 GB). Ask Claude to tidy it up (the delivery page
+   and Studio health offer it): Claude lists what goes and what stays, and deletes nothing until you say yes.
 
 At each point where your feedback is needed, Claude opens the page for it as soon as it's ready: in the Claude
 desktop app, in the built-in browser beside the chat. In the chat it adds a card for the page with a link right under
@@ -148,8 +151,9 @@ Nothing is uploaded.
   and the library. After an update, it says what's new; if something the studio needs is missing from the Mac, it
   says so.
 - **Studio health** (`/health`, linked at the foot of every page): everything the studio uses on the Mac and
-  whether it's working, and beside anything that isn't, what to say to Claude to fix it. During setup the same page
-  follows each step as it's done.
+  whether it's working, and beside anything that isn't, what to say to Claude to fix it. Under **Space**, each
+  finished video with room to free, and what to say to tidy it up. During setup the same page follows each step as
+  it's done.
 - **Brand pages:** logo, colours (with contrast ratios), type specimens, motion identity and rules.
 - **Video overviews:** one page per video showing what's happening now (including "Claude is making storyboard v3"
   while it works) and every stage, newest first, back to the brief: exactly what you wrote when you asked for the
@@ -167,8 +171,8 @@ Nothing is uploaded.
   feedback.
 - **Delivery pages:** once the final video is made, every file in one place: each size and its web copy, the poster,
   a thumbnail, captions (SRT and WebVTT) and the contact sheet, each to download or show in Finder, with the words to
-  go with it (a title, a description and alt text) and suggestions to ask Claude for next, such as other sizes or a
-  shorter cut. The version rows on a video's pages link to it (**Video delivery: All assets**).
+  go with it (a title, a description and alt text) and suggestions to ask Claude for next, such as other sizes, a
+  shorter cut or tidying up. The version rows on a video's pages link to it (**Video delivery: All assets**).
 - **Library:** ready-made pieces for videos, on one page with a menu of five categories: **Widgets** (on-screen
   things that show information), **Layouts** (ways to show one or more things on screen), **Text effects** (ways to
   use text on screen), **Transitions** (ways to move from one scene to the next) and **Data** (full-screen charts,

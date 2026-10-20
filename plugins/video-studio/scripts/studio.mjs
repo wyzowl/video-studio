@@ -31,6 +31,12 @@
 //   node studio.mjs install cutout             download the presenter cut-out model (about 168 MB, once), for text
 //                                              behind the presenter
 //   node studio.mjs install sfx-kit            download SFX Kit, the studio's sound effects (about 55 MB, once)
+//   node studio.mjs tidy <video> [--yes]       what tidying up a finished video would remove (its drafts, review
+//                                              stills, replaced storyboards, footage previews and edit history) and
+//                                              keep; with --yes, remove them, once the user has said yes
+//                                              (--unfinished: a video with no final render yet, asked for by name)
+//   node studio.mjs tidy --all [--yes]         the same for every finished video, and the edit history of deleted ones
+//   node studio.mjs tidy --deleted [--yes]     just the edit history HyperFrames still keeps for deleted videos
 //   node studio.mjs install all [--wait]       everything Video Studio needs that isn't on this Mac yet, smallest
 //                                              first, shown on the Setup and Studio health pages as it goes (--wait:
 //                                              if another session is already downloading, wait for it to finish)
@@ -54,6 +60,7 @@ import {
   PLUGIN_ROOT,
   claudeWaiting,
   findStudio,
+  formatDate,
   formatDateTime,
   listBrands,
   listVideos,
@@ -64,6 +71,7 @@ import {
   readBrand,
   readBrief,
   readFavourites,
+  readVideo,
   sawWhatsNew,
   USER_DIR,
   registeredStudios,
@@ -76,11 +84,14 @@ import { showInstructions } from "./lib/show.mjs";
 import { SCORES, STAGES, endStage, readProgress, startStage, stageTitle, stepsFor, stepsNow, updateProgress, videoAt } from "./lib/progress.mjs";
 import { EXTRAS, newer } from "./lib/extras.mjs";
 import { KIT_DIR, SFX_KIT, installKit, kitInstalled } from "./lib/sfx.mjs";
-import { HYPERFRAMES, HYPERFRAMES_VERSION } from "./lib/versions.mjs";
+import { HYPERFRAMES, HYPERFRAMES_ENV, HYPERFRAMES_VERSION } from "./lib/versions.mjs";
 import { CATEGORIES, SIZES, BRAND_VARS, BUNDLED_FONTS, libraryItems, libraryItem, lockedItems, findItem, contentVariables, brandStyle, itemLayer } from "./lib/library.mjs";
 import { catalogue, checkDue, checkLibrary, installedPack, licence } from "./lib/paid.mjs";
+import { goneHistories, sizeLabel, studioTidy, tidyGone, tidyPlan, tidyVideo, tidyWhat } from "./lib/tidy.mjs";
 
 const SELF = fileURLToPath(import.meta.url);
+// HyperFrames' switches, for every HyperFrames run from here (renders, models, cut-outs): no usage data, no update check
+for (const [name, value] of Object.entries(HYPERFRAMES_ENV)) process.env[name] ??= value;
 const PORT = 4747;
 const PORTS = Array.from({ length: 10 }, (_, i) => PORT + i);
 const argv = process.argv.slice(2);
@@ -216,11 +227,12 @@ async function main() {
   if (cmd === "library" || cmd === "gallery") return library();
   if (cmd === "licence" || cmd === "license") return licenceCommand();
   if (cmd === "install") return install();
+  if (cmd === "tidy") return tidyCommand();
   if (cmd === "wait") return waitForReview();
   if (cmd === "hook") return hook();
   if (cmd === "page-ready") return pageReady().catch(() => {}); // a hook: never in the way, silent on any problem
   if (cmd === "context") return context();
-  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, setup-page, setup-note, pdf, library, install, serve, stop, page-ready`);
+  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, setup-page, setup-note, pdf, library, install, tidy, serve, stop, page-ready`);
 }
 
 function init(root) {
@@ -388,6 +400,7 @@ async function hook() {
     `Sound effects: SFX Kit ${SFX_KIT.version}${kitInstalled() ? ` in ${KIT_DIR} (scripts/tools/sfx.mjs)` : ", downloading (below)"}.`,
     `HyperFrames for new videos: ${HYPERFRAMES_VERSION}. Brands: ${brands.map((b) => b.slug).join(", ") || "none"}. Videos: ${videos.length} (${open.length} in progress${open[0] ? `; latest: ${open[0].slug}, ${open[0].status.label.toLowerCase()}` : ""}).`,
     "For any video work here, follow the video-studio production skill (with the storyboard and brand-kit skills). New videos: /video-studio:new-video. New brands: /video-studio:new-brand. Pages: /video-studio:dashboard.",
+    `To tidy up a finished video, use \`node "${SELF}" tidy <video>\` (production skill, "Tidying up"): show the user what it lists and ask before \`--yes\`. Never delete a video's files any other way.`,
     warn.length ? `Setup problems: ${warn.join("; ")}. Suggest /video-studio:setup before making videos; the Studio health page (/health) shows what's missing.` : "",
     update,
     downloads,
@@ -848,6 +861,82 @@ async function libraryStill(item, { root, slug, size, at, out }) {
 /** `install cutout`: download HyperFrames' presenter cut-out model now (about 168 MB, once), rather than the first
     time a video needs it: run the background remover once on a small test image. `install sfx-kit`: download SFX
     Kit, check every file, and unpack it (lib/sfx.mjs). `install all`: everything that isn't here yet. */
+// ───────── tidy ─────────
+
+const TIDY_KEEPS =
+  "It keeps the delivered files in renders/, the approved script and storyboard, every review's notes, and the video's source and inputs (footage, voiceover, music), so the video can still be changed and rendered again.";
+/** `tidy <video> [--yes] [--unfinished]`, `tidy --all [--yes]` and `tidy --deleted [--yes]`: what tidying up would
+    remove and keep, for Claude to show the user and ask; then, with --yes, removing it. */
+function tidyCommand() {
+  const root = studioRoot();
+  const yes = argv.includes("--yes");
+  if (argv.includes("--all")) return tidyAll(root, yes);
+  if (argv.includes("--deleted")) return tidyDeleted(root, yes);
+  if (!arg) throw new Error("Which video? node studio.mjs tidy <video>, or --all for every finished one");
+  const video = readVideo(root, arg);
+  if (!video) throw new Error(`There's no video "${arg}" in this studio.`);
+  const name = `"${video.title}" (videos/${arg})`;
+  if (yes) {
+    const r = tidyVideo(root, arg, { unfinished: argv.includes("--unfinished") });
+    if (!r.done.length && !r.left.length) return console.log(`There was nothing to tidy up in ${name}.`);
+    const lines = [`Tidied up ${name}: ${sizeLabel(r.freed)} freed.`, ...r.done.map((i) => `- Removed ${i.label[0].toLowerCase()}${i.label.slice(1)}: ${sizeLabel(i.bytes)}`)];
+    if (r.left.length) lines.push(`Left its edit history (${sizeLabel(r.left[0].bytes)}): HyperFrames has it open, in its Studio or a preview. Close that, then tidy up again to remove it.`);
+    return console.log(lines.join("\n"));
+  }
+  const plan = tidyPlan(root, arg);
+  const last = plan.last ? ` It was last tidied up on ${formatDate(Date.parse(plan.last.at))} (${sizeLabel(plan.last.freed)} freed).` : "";
+  if (!plan.items.length) return console.log(`There's nothing to tidy up in ${name}: it only keeps what it needs.${last}`);
+  const lines = [`Tidying up ${name} would free ${sizeLabel(plan.bytes)}. It removes:`];
+  for (const i of plan.items) lines.push(`- ${i.label}: ${sizeLabel(i.bytes)}${i.paths.length ? ` (${i.paths.join(", ")})` : ""}${i.note ? `. ${i.note[0].toUpperCase()}${i.note.slice(1)}.` : ""}`);
+  lines.push(TIDY_KEEPS + last);
+  const busy = plan.items.find((i) => i.busy);
+  if (busy) lines.push("HyperFrames has its edit history open now (its Studio or a preview), so that would be left. Close it first to remove it too.");
+  if (plan.working) lines.push("Claude is still working on this video: tidy it up once that's done.");
+  else if (!plan.finished) lines.push(`This video isn't finished: it has no final render yet, and it may still need its drafts and history. Only tidy it if the user asks for this video by name, knowing that: then add --unfinished.`);
+  else lines.push(`Deleting can't be undone: show the user this list and ask before going on. Then: node "${SELF}" tidy ${arg} --yes`);
+  console.log(lines.join("\n"));
+}
+
+function tidyAll(root, yes) {
+  const all = studioTidy(root);
+  if (!all.videos.length && !all.gone.length) return console.log("There's nothing to tidy up: every finished video only keeps what it needs.");
+  if (!yes) {
+    const lines = [`Tidying up every finished video would free ${sizeLabel(all.bytes)}:`];
+    for (const p of all.videos) lines.push(`- ${p.title} (videos/${p.slug}): ${sizeLabel(p.bytes)}, ${tidyWhat(p)}${p.items.some((i) => i.busy) ? " (its edit history is open in HyperFrames, so it would be left)" : ""}`);
+    if (all.gone.length) lines.push(`- The edit history HyperFrames kept for ${all.gone.length === 1 ? "a deleted video" : `${all.gone.length} deleted videos`}: ${sizeLabel(all.goneBytes)}`);
+    lines.push("Each video keeps its delivered files, its approved script and storyboard, every review's notes, and its source and inputs (footage, voiceover, music), so it can still be changed and rendered again.");
+    lines.push(`Deleting can't be undone: show the user this list and ask before going on. Then: node "${SELF}" tidy --all --yes`);
+    return console.log(lines.join("\n"));
+  }
+  let freed = 0;
+  const lines = [];
+  for (const p of all.videos) {
+    try {
+      const r = tidyVideo(root, p.slug);
+      freed += r.freed;
+      lines.push(`- ${p.title}: ${sizeLabel(r.freed)} freed${r.left.length ? " (its edit history was left: HyperFrames has it open)" : ""}`);
+    } catch (err) {
+      lines.push(`- ${p.title}: left as it is. ${err.message}`);
+    }
+  }
+  if (all.gone.length) {
+    const g = tidyGone(root);
+    freed += g.freed;
+    lines.push(`- The edit history of ${g.count === 1 ? "a deleted video" : `${g.count} deleted videos`}: ${sizeLabel(g.freed)} freed`);
+  }
+  console.log([`Tidied up: ${sizeLabel(freed)} freed.`, ...lines].join("\n"));
+}
+
+function tidyDeleted(root, yes) {
+  const gone = goneHistories(root);
+  const bytes = gone.reduce((n, g) => n + g.bytes, 0);
+  const what = gone.length === 1 ? "a deleted video" : `${gone.length} deleted videos`;
+  if (!gone.length) return console.log("HyperFrames keeps no edit history for videos deleted from this studio.");
+  if (!yes) return console.log(`HyperFrames still keeps the edit history of ${what} from this studio: ${sizeLabel(bytes)} (${gone.map((g) => `videos/${g.dir.split("/").pop()}`).join(", ")}). Removing it can't be undone: ask the user first. Then: node "${SELF}" tidy --deleted --yes`);
+  const g = tidyGone(root);
+  console.log(`Removed the edit history of ${what}: ${sizeLabel(g.freed)} freed.`);
+}
+
 async function install() {
   if (arg === "all") return installAll();
   if (arg === "sfx-kit") {
