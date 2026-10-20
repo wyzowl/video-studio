@@ -43,11 +43,10 @@ off a canvas: until its start, a clip is hidden and measures as zero.
 Large downloads (transcription, presenter cut-outs) are listed in `scripts/lib/extras.mjs`: setup offers them, and
 after an update the session-start hook has Claude offer any the new version brings.
 
-The hooks module, `hooks/index.tsx`, adds two things in studio sessions. A band above Claude's message box
-(`hooks/bar.tsx`) shows the storyboard or draft waiting for review with a button that opens it ("Open storyboard
+The hooks module, `hooks/index.tsx`, adds two things in studio sessions. A band above Claude's message box shows the storyboard or draft waiting for review with a button that opens it ("Open storyboard
 v2"), what Claude is making with "Watch", or "Working on a video?" with "Open dashboard". It checks after each of
 Claude's turns and each studio tool it runs (`studio.mjs ready`). The
-answer box (`hooks/answer-box.tsx`) draws Claude's final message of a turn that used tools in a rounded box with a
+answer box draws Claude's final message of a turn that used tools in a rounded box with a
 yellow border (and a 10% yellow ground where the surface can paint one), so the answer is easy to find. Their tests
 are in `tests/` (`claude plugin test`).
 

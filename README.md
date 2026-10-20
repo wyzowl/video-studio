@@ -212,8 +212,8 @@ Claude opens a page as soon as it writes the file behind it (`brand.json`, `scri
 plugin hook gives Claude the page's address at that moment. It stays quiet when the page is already open, so later
 edits don't pull the browser away from what you're looking at.
 
-The band above the message box (`hooks/bar.tsx`) and the answer box (`hooks/answer-box.tsx`) make up the plugin's
-hooks module (`hooks/index.tsx`), and show only in sessions inside a studio.
+The band above the message box and the answer box make up the plugin's hooks module (`hooks/index.tsx`), and show
+only in sessions inside a studio.
 
 After showing a script, storyboard or video, Claude waits for your review with a small background task
 (`studio.mjs wait`). While it waits, the page's save bar says "Claude starts when you save". Saving the review ends

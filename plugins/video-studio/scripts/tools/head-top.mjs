@@ -1,7 +1,7 @@
 // Where the top of the presenter's head is in a cut-out, at its highest in the clip: the headTop for the T01 Words
 // behind library item, so the keyword sits where the head covers at most half of it.
 //   node <plugin>/scripts/tools/head-top.mjs <cutout.webm|.mov|.png> [--size 1920x1080] [--fps 4]
-// The cut-out is the footage with its background removed (npx hyperframes remove-background). The answer is in the
+// The cut-out is the footage with its background removed (HyperFrames' remove-background). The answer is in the
 // video's own pixels (--size, default 1920x1080), with the footage filling the frame as T01 shows it (cover, centred).
 import { spawnSync } from "node:child_process";
 import { extname } from "node:path";

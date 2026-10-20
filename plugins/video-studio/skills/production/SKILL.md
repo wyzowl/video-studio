@@ -10,11 +10,12 @@ the **storyboard** (before anything is built) and the **video** (before the fina
 `/hyperframes`, which routes animated videos to `/general-video`. Every film must be agency-grade.
 
 **Paths.** `PLUGIN` means this plugin's folder: the session-start note calls it "Plugin files", and commands see it as
-`${CLAUDE_PLUGIN_ROOT}`. `HF` means `npx --yes hyperframes@<pin>`, where `<pin>` is the version in the project's
-`package.json`. Use `npm run check` where it exists. Render with `node PLUGIN/scripts/studio.mjs render -- …` (the
-same options as `HF render`), from the video's folder: it runs the pinned `HF render` and shows the render's progress
-on the video's overview ("Work in progress" below). Bare `npx hyperframes` runs the newest release instead of the pin:
-don't use it. New projects use the `hyperframes` version in `studio.json`.
+`${CLAUDE_PLUGIN_ROOT}`. `HF` means `npx --yes hyperframes@0.8.149`, the HyperFrames Video Studio is tested with, which
+every new project starts on. A project made on an earlier version keeps it: its `package.json` scripts name it, so use
+`npm run check` there, and `studio.mjs render` follows its `render` script. Render with
+`node PLUGIN/scripts/studio.mjs render -- …` (the same options as `HF render`), from the video's folder: it shows the
+render's progress on the video's overview ("Work in progress" below). Always run HyperFrames with its version: without
+one, npx fetches the newest release on every run.
 
 ## Stages
 
@@ -42,7 +43,7 @@ don't use it. New projects use the `hyperframes` version in `studio.json`.
    mark `check` and each round's steps as you go. One `index.html` with a pure `render(t)` on one paused GSAP clock, or
    `src/` plus a build script that
    generates `index.html` for bigger films. Reuse the approved storyboard frames' layouts. `HF check` must show
-   0 errors. Check stills with `HF snapshot --at <times>` before the first render. A footage video is built as clips
+   0 errors. Check stills with `HF snapshot --at <times> --describe false` before the first render. A footage video is built as clips
    instead ("Footage videos" below).
 6. **Sound.** Music: use a supplied track if there is one; otherwise propose a music bed, never add one silently.
    Sound effects come from SFX Kit and are made with the video, as much as the brief calls for: the user first hears
@@ -108,7 +109,7 @@ footage sets the size, and its speech is the clock.
    - Sound: the speech leads. Music sits under it and ducks while people speak (`references/audio.md`); B-roll's own
      sound stays off unless it's the point.
    - Check every join: transcribe the draft (`HF transcribe`) and compare its words with the script's, so no word is
-     clipped, doubled or missing; and look at the cuts with `HF snapshot`.
+     clipped, doubled or missing; and look at the cuts with `HF snapshot --describe false`.
 
 ## Showing a page
 
@@ -275,7 +276,7 @@ Take the reference's grammar, never its content.
 
 **Local only.** Render on this Mac. Never use `hyperframes cloud`, `publish`, Lambda or Cloud Run, and never ask the
 user to sign in to HeyGen. `studio.mjs render` uses the graphics chip on Apple silicon by itself. Ask before
-`npx hyperframes skills update`; never change skills silently.
+`HF skills update`; never change skills silently.
 
 **Studio.** Opening HyperFrames Studio re-saves `index.html` (it adds `data-hf-id` attributes). Re-read before editing,
 check `HF history`, and bracket each round of edits with `HF history begin --who claude --label "…"` and

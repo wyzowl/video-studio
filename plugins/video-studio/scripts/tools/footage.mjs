@@ -21,6 +21,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { inVideo, report } from "../lib/progress.mjs";
+import { HYPERFRAMES } from "../lib/versions.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
@@ -127,32 +128,11 @@ function speechIslands(file) {
   return islands.filter(([a, b]) => b - a >= 0.08);
 }
 
-/** HyperFrames' version for this project: package.json's, else the studio's (studio.json). */
-function hyperframesPin() {
-  const pkg = (() => {
-    try {
-      const p = JSON.parse(readFileSync(join(PROJECT, "package.json"), "utf8"));
-      return { ...p.dependencies, ...p.devDependencies }.hyperframes;
-    } catch {
-      return null;
-    }
-  })();
-  if (pkg) return String(pkg).replace(/^[\^~]/, "");
-  for (let dir = PROJECT; ; dir = dirname(dir)) {
-    try {
-      const s = JSON.parse(readFileSync(join(dir, "studio.json"), "utf8"));
-      if (s.hyperframes) return String(s.hyperframes);
-    } catch {}
-    if (dirname(dir) === dir) break;
-  }
-  fail("Couldn't tell which HyperFrames version to use: run this from the video's project folder.");
-}
-
 /** Word times from HyperFrames (Parakeet where it's installed): [{ text, start, end }] */
 function transcribe(file) {
   const work = mkdtempSync(join(tmpdir(), "wvs-transcribe-"));
   try {
-    const r = run("npx", ["--yes", `hyperframes@${hyperframesPin()}`, "transcribe", file, "--engine", "auto", "--json", "-d", work]);
+    const r = run("npx", ["--yes", HYPERFRAMES, "transcribe", file, "--engine", "auto", "--json", "-d", work]);
     const out = join(work, "transcript.json");
     if (!existsSync(out)) fail(`The transcription didn't work for ${basename(file)}: ${(r.stderr || r.stdout || "").trim().split("\n").slice(-2).join(" ")}`);
     const words = JSON.parse(readFileSync(out, "utf8"));

@@ -7,7 +7,7 @@ argument-hint: "[folder for the studio]"
 
 ## What this machine has now
 
-!`node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.mjs" --online 2>&1 || echo "Node.js isn't installed (or the check couldn't run), so the other checks were skipped."`
+!`node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.mjs" 2>&1 || echo "Node.js isn't installed (or the check couldn't run), so the other checks were skipped."`
 
 The plugin's own files are in `${CLAUDE_PLUGIN_ROOT}`.
 
@@ -43,15 +43,15 @@ jargon.
      install command from https://brew.sh to paste into the Terminal app, wait until they say it's done, then re-run
      the check: `node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.mjs"`.
    - **Node.js, ffmpeg, git:** run `brew install` with just the missing ones.
-5. **HyperFrames version.** Use the newest release the check reported (or `npm view hyperframes version`). Call it
-   `<version>` below. Every new video in this studio starts on this version.
+5. **HyperFrames.** Video Studio uses HyperFrames 0.8.149, the version it's tested with: every new video starts on it,
+   and it runs through npx, so there's nothing to install.
 6. **Create the studio:**
-   `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" init "<folder>" --name "<studio name>" --hyperframes <version>`.
+   `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" init "<folder>" --name "<studio name>"`.
    Use the folder's name as the studio name unless they gave another. Don't offer to make the studio a git
    repository: it keeps its own versions (storyboards, drafts, renders).
 7. **Skills**, run from the studio folder (they install for Claude Code, in this folder only):
-   - `npx --yes skills add heygen-com/hyperframes --skill '*' --agent claude-code --copy -y`
-   - `npx --yes skills add LottieFiles/motion-design-skill --skill motion-design --agent claude-code --copy -y`
+   - `DISABLE_TELEMETRY=1 npx --yes skills@1.7.4 add heygen-com/hyperframes#v0.8.149 --skill '*' --agent claude-code --copy -y`
+   - `DISABLE_TELEMETRY=1 npx --yes skills@1.7.4 add https://codeload.github.com/LottieFiles/motion-design-skill/tar.gz/f9a8a041b85185ee4881b3471d3415e939aac772 --skill motion-design --agent claude-code --copy -y`
 8. **Downloads**, from the studio folder: `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" install all`. It
    downloads whatever isn't on this Mac yet, smallest first, and ticks each off on the setup page: SFX Kit (the studio's
    sound effects), presenter cut-outs (they let text sit behind a presenter in footage) and the transcription model
@@ -60,7 +60,7 @@ jargon.
    graphics chip by themselves.
 9. **Test render**, from the studio folder. The first render also downloads HyperFrames' headless Chrome:
    ```bash
-   HYPERFRAMES_SKIP_SKILLS=1 npx --yes hyperframes@<version> init videos/_setup-test --non-interactive
+   HYPERFRAMES_SKIP_SKILLS=1 npx --yes hyperframes@0.8.149 init videos/_setup-test --non-interactive
    cd videos/_setup-test && npm run check && npm run render -- --quality draft --fps 30 --output renders/test.mp4
    ```
    If it works, delete `videos/_setup-test`. If it fails, show the error and the likely fix.

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // Wyzowl Video Studio setup check: what this machine has and what's missing (lib/checks.mjs, which the studio's Setup
 // and Health page shows too).
-//   node doctor.mjs [--json] [--online]     --online also asks npm for the newest HyperFrames release
+//   node doctor.mjs [--json]
 import { findStudio, pluginVersion } from "./lib/studio.mjs";
 import { runChecks } from "./lib/checks.mjs";
 
 const argv = process.argv.slice(2);
 const root = findStudio(process.env.CLAUDE_PROJECT_DIR || process.cwd());
-const checks = runChecks({ root, online: argv.includes("--online") });
+const checks = runChecks({ root });
 
 if (argv.includes("--json")) {
   console.log(JSON.stringify({ plugin: pluginVersion(), checks }, null, 2));

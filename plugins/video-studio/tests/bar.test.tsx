@@ -1,4 +1,4 @@
-// The band above Claude's message box (hooks/bar.tsx), run by `claude plugin test plugins/video-studio`.
+// The band above Claude's message box (in hooks/index.tsx), run by `claude plugin test plugins/video-studio`.
 import { expect, mock, test } from 'claude-code/testing'
 import type { Engine } from 'claude-code/testing'
 import type { On } from 'claude-code'

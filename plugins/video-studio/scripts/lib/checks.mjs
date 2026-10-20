@@ -7,6 +7,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { readStudio, readJSON, registeredStudios, USER_DIR } from "./studio.mjs";
 import { EXTRAS } from "./extras.mjs";
+import { HYPERFRAMES_VERSION, SKILL_INSTALLS } from "./versions.mjs";
 
 const PATH = `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH || ""}`;
 const run = (cmd, args) => {
@@ -25,7 +26,7 @@ const list = (dir) => {
 /** Every check, in the order setup goes ({ id, group, name, ok, detail, fix, say, time, doing, optional }). `say` is
     what to tell Claude; `fix` is the command Claude runs; `time` is roughly how long it takes; `doing` is what the
     Setup page says while Claude does it. */
-export function runChecks({ root = null, online = false } = {}) {
+export function runChecks({ root = null } = {}) {
   const checks = [];
   const add = (c) => checks.push({ optional: false, fix: "", say: "", time: "", ...c });
 
@@ -96,14 +97,13 @@ export function runChecks({ root = null, online = false } = {}) {
         .filter(Boolean),
     ),
   ].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-  const latest = online ? run("npm", ["view", "hyperframes", "version"]) : null;
   add({
     id: "hyperframes",
     group: "HyperFrames",
     name: "HyperFrames",
-    ok: cached.length > 0 || Boolean(latest),
-    detail: `${cached.length ? `on this Mac: ${cached.join(", ")}` : "not used yet"}${latest ? `; newest release: ${latest}` : ""}`,
-    fix: "Nothing to install: it runs through npx. Setup picks a version and records it in studio.json.",
+    ok: cached.includes(HYPERFRAMES_VERSION),
+    detail: `Video Studio uses ${HYPERFRAMES_VERSION}; ${cached.length ? `on this Mac: ${cached.join(", ")}` : "not on this Mac yet"}`,
+    fix: "Nothing to install: it runs through npx, and the test render fetches it.",
     say: "Run the studio's test render.",
     time: "nothing to install",
   });
@@ -123,14 +123,13 @@ export function runChecks({ root = null, online = false } = {}) {
 
   for (const x of EXTRAS) {
     const ok = x.installed();
-    const hf = root ? readStudio(root).hyperframes || "latest" : "latest";
     add({
       id: x.id,
       group: "Downloads",
       name: x.name,
       ok,
       detail: ok ? (x.detail ? x.detail() : "downloaded") : `not downloaded yet: it's used to ${x.what}`,
-      fix: `${x.command(hf)} (${x.size}, once)`,
+      fix: `${x.command()} (${x.size}, once)`,
       say: x.say || (x.id === "parakeet" ? "Download the transcription model." : x.id === "cutout" ? "Download the presenter cut-out model." : `Download ${x.name.toLowerCase()}.`),
       time: x.time || `${x.size.replace(/^about /, "")}, about ${x.id === "parakeet" ? "2–5" : "1–2"} min`,
       doing: x.doing || `Downloading ${x.id === "parakeet" ? "the transcription model" : x.id === "cutout" ? "the presenter cut-out model" : x.name.toLowerCase()}`,
@@ -148,7 +147,7 @@ export function runChecks({ root = null, online = false } = {}) {
       name: "HyperFrames skills",
       ok: skill("hyperframes"),
       detail: skill("hyperframes") ? "installed in this studio" : "not installed in this studio",
-      fix: "From the studio folder: npx --yes skills add heygen-com/hyperframes --skill '*' --agent claude-code --copy -y",
+      fix: `From the studio folder: ${SKILL_INSTALLS.hyperframes}`,
       say: "Install the HyperFrames skills in my studio.",
       time: "under a minute",
       doing: "Installing the HyperFrames skills",
@@ -159,7 +158,7 @@ export function runChecks({ root = null, online = false } = {}) {
       name: "Motion design skill",
       ok: skill("motion-design"),
       detail: skill("motion-design") ? "installed in this studio" : "not installed in this studio",
-      fix: "From the studio folder: npx --yes skills add LottieFiles/motion-design-skill --skill motion-design --agent claude-code --copy -y",
+      fix: `From the studio folder: ${SKILL_INSTALLS.motion}`,
       say: "Install the motion design skill in my studio.",
       time: "under a minute",
       doing: "Installing the motion design skill",
@@ -189,17 +188,6 @@ export function runChecks({ root = null, online = false } = {}) {
     detail: silicon ? "on: Video Studio's renders use the graphics chip" : "needs Apple silicon: renders here use the processor",
     optional: true,
   });
-  if (process.env.GEMINI_API_KEY)
-    add({
-      id: "local",
-      group: "Optional",
-      name: "Frames stay on this Mac",
-      ok: false,
-      detail: "GEMINI_API_KEY is set, so `hyperframes snapshot` sends frames to Gemini",
-      fix: "Unset GEMINI_API_KEY, or pass --describe false to snapshot.",
-      say: "Keep my frames on this Mac.",
-      optional: true,
-    });
   return checks;
 }
 

@@ -1,4 +1,4 @@
-// The answer box (hooks/answer-box.tsx), run by `claude plugin test plugins/video-studio`.
+// The answer box (in hooks/index.tsx), run by `claude plugin test plugins/video-studio`.
 import { expect, mock, test } from 'claude-code/testing'
 import type { Engine } from 'claude-code/testing'
 import type { On } from 'claude-code'

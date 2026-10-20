@@ -3,7 +3,7 @@
 Each of these cost a render round to find (HyperFrames 0.8.140–0.8.149). Recheck them after upgrading.
 
 - **No partial renders.** Any edit means a full render. `--resume` (with `HF_SEGMENTED_CAPTURE=true`) only recovers a
-  crashed render. Check changed sections first with `HF snapshot --at <times>` stills or `HF keyframes --from --to`
+  crashed render. Check changed sections first with `HF snapshot --at <times> --describe false` stills or `HF keyframes --from --to`
   strips.
 - **Studio rewrites `index.html`** (it adds `data-hf-id` attributes). Re-read the file before editing, and bracket
   edits with `history begin` / `history end` (`--label` is required). In build-script projects, a rebuild overwrites
@@ -19,9 +19,9 @@ Each of these cost a render round to find (HyperFrames 0.8.140–0.8.149). Reche
 - **The animation-map audit only sees the clock tween** in a `render(t)` composition. Audit motion from review strips.
 - **Lint's `gsap_callback_dom_measurement`** is a false positive when measuring only happens at init.
 - **A plate pre-scaled for a later zoom** fills the frame whenever its clip is visible. Gate its opacity to the move.
-- **Bare `npx <package>` resolves the newest release on every run**, not the project's pin. Use `npm run …` or
-  `npx --yes hyperframes@<pin> …`.
-- **`snapshot` sends frames to Gemini** when `GEMINI_API_KEY` is set. Keep it unset, or pass `--describe false`.
+- **HyperFrames run without its version fetches the newest release on every run.** Run it as `HF`, or through the
+  project's `npm run` scripts.
+- **`snapshot` can send frames to Gemini** to describe them. Always pass `--describe false`, so frames stay on this Mac.
 - **Some ffmpeg builds have no `drawtext`** (Homebrew's doesn't). Render text overlays for slates and comparisons with
   `node PLUGIN/scripts/tools/label_png.mjs`.
 - **After the user edits in the HyperFrames desktop app,** run `HF catch-up` before the next change.

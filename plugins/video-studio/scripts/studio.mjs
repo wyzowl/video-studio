@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Wyzowl Video Studio helper.
-//   node studio.mjs init <folder> [--name "My Studio"] [--hyperframes 0.8.149]   create (or update) a studio folder
+//   node studio.mjs init <folder> [--name "My Studio"]   create (or update) a studio folder
 //   node studio.mjs context                    the studio as markdown, for Claude
 //   node studio.mjs hook                       SessionStart hook output (JSON)
 //   node studio.mjs url [path]                 start the page server if needed and print the page's address
@@ -9,7 +9,7 @@
 //   node studio.mjs wait <path>                wait until the user finishes reviewing a script, storyboard or video
 //                                              (Claude runs it in the background: finishing wakes Claude to carry on)
 //   node studio.mjs ready                      the page waiting for the user's review, and what Claude is making, as
-//                                              JSON, for the band above Claude's message box (hooks/bar.tsx)
+//                                              JSON, for the band above Claude's message box (hooks/index.tsx)
 //   node studio.mjs progress <video> <stage> <version> <step>
 //                                              start a stage on the video's pages (script, storyboard, video or
 //                                              final), at a step; then `progress <video> <step>` for each next step.
@@ -76,6 +76,7 @@ import { showInstructions } from "./lib/show.mjs";
 import { SCORES, STAGES, endStage, readProgress, startStage, stageTitle, stepsFor, stepsNow, updateProgress, videoAt } from "./lib/progress.mjs";
 import { EXTRAS, newer } from "./lib/extras.mjs";
 import { KIT_DIR, SFX_KIT, installKit, kitInstalled } from "./lib/sfx.mjs";
+import { HYPERFRAMES, HYPERFRAMES_VERSION } from "./lib/versions.mjs";
 import { CATEGORIES, SIZES, BRAND_VARS, BUNDLED_FONTS, libraryItems, libraryItem, lockedItems, findItem, contentVariables, brandStyle, itemLayer } from "./lib/library.mjs";
 import { catalogue, checkDue, checkLibrary, installedPack, licence } from "./lib/paid.mjs";
 
@@ -158,7 +159,7 @@ const pageUrl = (base, path) => (path ? base.replace(/\/$/, "") + (path.startsWi
 
 async function main() {
   if (cmd === "init") {
-    if (!arg) throw new Error('usage: studio.mjs init <folder> [--name "My Studio"] [--hyperframes <version>]');
+    if (!arg) throw new Error('usage: studio.mjs init <folder> [--name "My Studio"]');
     return init(resolve(arg));
   }
 
@@ -235,7 +236,8 @@ function init(root) {
     name: opt("--name") || prev.name || "Video Studio",
     created: prev.created || new Date().toISOString(),
     plugin: pluginVersion(),
-    hyperframes: opt("--hyperframes") || prev.hyperframes || null,
+    // new videos start on Video Studio's pinned HyperFrames (lib/versions.mjs)
+    hyperframes: HYPERFRAMES_VERSION,
     schema: 1,
   };
   writeFileSync(studioPath, `${JSON.stringify(next, null, 2)}\n`);
@@ -334,7 +336,7 @@ async function context() {
   const lines = [
     `## Studio: ${studio.name}`,
     `- Folder: ${root}`,
-    `- HyperFrames version for new videos: ${studio.hyperframes || "not set (run /video-studio:setup)"}`,
+    `- HyperFrames version for new videos: ${HYPERFRAMES_VERSION} (Video Studio's pinned version)`,
     `- Plugin: Wyzowl Video Studio ${pluginVersion()} at ${PLUGIN_ROOT}`,
     `- Pages: ${server ? `http://127.0.0.1:${server.port}/ (running)` : "not running (they start when a page is shown)"}`,
     `- Brands (${brands.length}): ${brands.length ? brands.map((b) => `${b.slug} (${b.name})`).join(", ") : "none yet"}`,
@@ -353,7 +355,6 @@ async function hook() {
   if (node < 20) warn.push(`Node.js ${process.versions.node} is old; 20 or newer is needed`);
   if (spawnSync("ffmpeg", ["-version"], { stdio: "ignore" }).status !== 0) warn.push("ffmpeg is missing");
   if (!existsSync(join(root, ".claude", "skills", "hyperframes", "SKILL.md"))) warn.push("the HyperFrames skills aren't installed in this studio");
-  if (!studio.hyperframes) warn.push("no HyperFrames version is set");
   const open = videos.filter((v) => v.status.key !== "delivered");
   // the full library's daily check, in the background so the session never waits on the network
   if (checkDue()) {
@@ -385,7 +386,7 @@ async function hook() {
     `Wyzowl Video Studio: this folder is a video studio (${root}).`,
     `Plugin files: ${PLUGIN_ROOT} (helpers in scripts/, review tools in scripts/tools/, score kit in scripts/score-kit/).`,
     `Sound effects: SFX Kit ${SFX_KIT.version}${kitInstalled() ? ` in ${KIT_DIR} (scripts/tools/sfx.mjs)` : ", downloading (below)"}.`,
-    `HyperFrames for new videos: ${studio.hyperframes || "not set"}. Brands: ${brands.map((b) => b.slug).join(", ") || "none"}. Videos: ${videos.length} (${open.length} in progress${open[0] ? `; latest: ${open[0].slug}, ${open[0].status.label.toLowerCase()}` : ""}).`,
+    `HyperFrames for new videos: ${HYPERFRAMES_VERSION}. Brands: ${brands.map((b) => b.slug).join(", ") || "none"}. Videos: ${videos.length} (${open.length} in progress${open[0] ? `; latest: ${open[0].slug}, ${open[0].status.label.toLowerCase()}` : ""}).`,
     "For any video work here, follow the video-studio production skill (with the storyboard and brand-kit skills). New videos: /video-studio:new-video. New brands: /video-studio:new-brand. Pages: /video-studio:dashboard.",
     warn.length ? `Setup problems: ${warn.join("; ")}. Suggest /video-studio:setup before making videos; the Studio health page (/health) shows what's missing.` : "",
     update,
@@ -475,7 +476,7 @@ async function waitForReview() {
 
 /** `ready`, as JSON: the newest script, storyboard or video waiting for the user's review (`page`), and what Claude is
     making (`making`: the video it's working on now, with the step it's on), each or both null. The band above Claude's
-    message box (hooks/bar.tsx) offers to open the one to review, or else to watch the one being made. */
+    message box (hooks/index.tsx) offers to open the one to review, or else to watch the one being made. */
 function ready() {
   const root = studioRoot();
   const videos = listVideos(root);
@@ -563,9 +564,11 @@ function progressCommand() {
 }
 
 /** The HyperFrames version a video's folder renders with: its package.json's render script, or the studio's. */
-function hyperframesPin(dir, root) {
+/** How to run HyperFrames' render for a video: its own `render` script, which names the exact version the video was
+    made on, or, without one, Video Studio's pinned HyperFrames. */
+function renderRunner(dir) {
   const script = readJSON(join(dir, "package.json"))?.scripts?.render || "";
-  return /hyperframes@([0-9][\w.-]*)/.exec(script)?.[1] || readStudio(root).hyperframes || null;
+  return /hyperframes@[0-9][\w.-]*\s+render\b/.test(script) ? ["npm", ["run", "render", "--"]] : ["npx", ["--yes", HYPERFRAMES, "render"]];
 }
 
 /** `render`: `HF render …` for the video whose folder this is (its pinned HyperFrames), with HyperFrames' own output as
@@ -575,8 +578,6 @@ function hyperframesPin(dir, root) {
 async function renderCommand() {
   const at = videoAt(process.cwd());
   if (!at) throw new Error("Run `studio.mjs render` from the video's folder (videos/<video>/ in a studio).");
-  const pin = hyperframesPin(at.dir, at.root);
-  if (!pin) throw new Error(`No HyperFrames version for "${at.slug}": its package.json has no render script and studio.json no "hyperframes".`);
   const from = argv.indexOf("render") + 1;
   const args = argv.slice(from).filter((a, i, all) => a !== "--" && a !== "--studio" && all[i - 1] !== "--studio");
   const outIdx = args.findIndex((a) => a === "--output" || a === "-o");
@@ -604,7 +605,8 @@ async function renderCommand() {
   note({ done: 0, total: 0, pct: 0, phase: "setup" }, true);
   // faster renders: on Apple silicon, HyperFrames' browser draws on the graphics chip (unless the user set otherwise)
   const gpu = process.platform === "darwin" && process.arch === "arm64" && !process.env.PRODUCER_BROWSER_GPU_MODE ? { PRODUCER_BROWSER_GPU_MODE: "hardware" } : {};
-  const child = spawn("npx", ["--yes", `hyperframes@${pin}`, "render", ...args], { cwd: process.cwd(), stdio: ["inherit", "pipe", "pipe"], env: { ...process.env, ...gpu } });
+  const [command, base] = renderRunner(at.dir);
+  const child = spawn(command, [...base, ...args], { cwd: process.cwd(), stdio: ["inherit", "pipe", "pipe"], env: { ...process.env, ...gpu } });
   const watch = (stream, out) => {
     let rest = "";
     stream.on("data", (chunk) => {
@@ -765,7 +767,7 @@ async function library() {
   if (fonts.length) steps.push(`${next()}. Fonts: index.html needs an @font-face for each, as for the rest of the video: ${fonts.map(fontSource).join("; ")}.`);
   if (media.length)
     steps.push(
-      `${next()}. Media: in the copy, write each file as the src of its element (${media.map((d) => d.id).join(", ")}: the elements with data-var-src="…"), and delete the media elements you don't use, so check stays clean.${item.id.startsWith("t01") ? " The cut-out is the same footage with the background removed: npx hyperframes remove-background <footage.mp4> -o <footage>_cutout.webm. Cut both to the moment it plays; their sound stays on the main track." : " Their sound stays on the main track."}`,
+      `${next()}. Media: in the copy, write each file as the src of its element (${media.map((d) => d.id).join(", ")}: the elements with data-var-src="…"), and delete the media elements you don't use, so check stays clean.${item.id.startsWith("t01") ? " The cut-out is the same footage with the background removed: HF remove-background <footage.mp4> -o <footage>_cutout.webm. Cut both to the moment it plays; their sound stays on the main track." : " Their sound stays on the main track."}`,
     );
   const out = [
     `${item.code} ${item.name} (${CATEGORIES[item.category].title}${item.free ? ", free" : ""}): ${item.summary}`,
@@ -855,14 +857,12 @@ async function install() {
   if (arg !== "cutout") throw new Error("usage: studio.mjs install all|cutout|sfx-kit");
   const extra = EXTRAS.find((x) => x.id === "cutout");
   if (extra.installed()) return console.log("Presenter cut-outs are already set up on this Mac.");
-  const root = here();
-  const hf = (root && readStudio(root).hyperframes) || "latest";
   const dir = mkdtempSync(join(tmpdir(), "video-studio-cutout-"));
   try {
     const made = spawnSync("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", "color=c=gray:s=64x64", "-frames:v", "1", join(dir, "test.png")]);
     if (made.status !== 0) throw new Error("ffmpeg couldn't make the test image. Is ffmpeg installed? Run /video-studio:setup.");
     console.log(`Downloading the presenter cut-out model (${extra.size}, once)…`);
-    const run = spawnSync("npx", ["--yes", `hyperframes@${hf}`, "remove-background", join(dir, "test.png"), "-o", join(dir, "out.png")], { stdio: "inherit" });
+    const run = spawnSync("npx", ["--yes", HYPERFRAMES, "remove-background", join(dir, "test.png"), "-o", join(dir, "out.png")], { stdio: "inherit" });
     // the model is what matters; the test image itself needn't come out well
     if (!extra.installed()) throw new Error(`The download didn't finish${run.status ? " (the background remover stopped with an error)" : ""}. Check the internet connection and try again.`);
     console.log("Presenter cut-outs are set up: Claude can now put text behind the presenter.");
@@ -913,13 +913,12 @@ async function installAll() {
   if (!todo.length) return console.log("Everything Video Studio needs is on this Mac.");
   if (!takeDownloadsLock(todo.map((x) => x.name))) return console.log("Video Studio is already downloading.");
   const root = here();
-  const hf = (root && readStudio(root).hyperframes) || "latest";
   const failed = [];
   try {
     for (const x of todo) {
       writeSetupNote(x.id, "installing");
       console.log(`${x.name} (${x.size})…`);
-      const [command, args] = x.run(hf, root);
+      const [command, args] = x.run();
       spawnSync(command, args, { stdio: "inherit", cwd: root || process.cwd(), env: { ...process.env, PATH: `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH || ""}` } });
       const ok = x.installed();
       writeSetupNote(x.id, ok ? "clear" : "failed");

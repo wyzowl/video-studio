@@ -6,6 +6,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { PLUGIN_ROOT } from "./studio.mjs";
 import { SFX_KIT, kitInstalled, readGaps, readKit } from "./sfx.mjs";
+import { HYPERFRAMES } from "./versions.mjs";
 
 const cache = join(homedir(), ".cache", "hyperframes");
 const has = (dir, re) => {
@@ -17,8 +18,8 @@ const has = (dir, re) => {
 };
 
 /** Each: what it is, what it's for ("to …"), its size (and in MB, so the smallest download first), the plugin
-    version that first used it, whether it's here, and how to get it (for a studio pinned to HyperFrames `hf`): as a
-    command line for Claude, and as `run(hf, root)` → [command, args] for `studio.mjs install all`. Optional: the
+    version that first used it, whether it's here, and how to get it (with Video Studio's pinned HyperFrames): as a
+    command line for Claude, and as `run()` → [command, args] for `studio.mjs install all`. Optional: the
     words for Setup and Studio health (`say`, `doing`, `time`), and a `detail` line once it's here. */
 export const EXTRAS = [
   {
@@ -29,8 +30,8 @@ export const EXTRAS = [
     mb: 640,
     since: "0.1.0",
     installed: () => has(join(cache, "parakeet"), /./),
-    command: (hf) => `npx --yes hyperframes@${hf} models install parakeet`,
-    run: (hf) => ["npx", ["--yes", `hyperframes@${hf}`, "models", "install", "parakeet"]],
+    command: () => `npx --yes ${HYPERFRAMES} models install parakeet`,
+    run: () => ["npx", ["--yes", HYPERFRAMES, "models", "install", "parakeet"]],
   },
   {
     id: "cutout",
@@ -41,7 +42,7 @@ export const EXTRAS = [
     since: "0.2.0",
     installed: () => has(join(cache, "background-removal", "models"), /\.onnx$/),
     command: () => `node "${join(PLUGIN_ROOT, "scripts", "studio.mjs")}" install cutout`,
-    run: (hf, root) => [process.execPath, [join(PLUGIN_ROOT, "scripts", "studio.mjs"), "install", "cutout", ...(root ? ["--studio", root] : [])]],
+    run: () => [process.execPath, [join(PLUGIN_ROOT, "scripts", "studio.mjs"), "install", "cutout"]],
   },
   {
     id: "sfx-kit",

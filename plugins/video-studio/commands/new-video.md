@@ -64,8 +64,8 @@ Then a second panel:
 ### 3. Set up the project
 
 1. Choose a short kebab-case project name from the title, and check `videos/<project>` is free.
-2. Scaffold with the studio's HyperFrames version (`hyperframes` in studio.json, shown above):
-   `HYPERFRAMES_SKIP_SKILLS=1 npx --yes hyperframes@<version> init "videos/<project>" --non-interactive`
+2. Scaffold with Video Studio's HyperFrames, 0.8.149:
+   `HYPERFRAMES_SKIP_SKILLS=1 npx --yes hyperframes@0.8.149 init "videos/<project>" --non-interactive`
    Add `--resolution portrait` for 9:16 or `--resolution square` for 1:1. For 4:5 and custom sizes, set the
    composition's `data-width` and `data-height` after `init`. For a footage video, scaffold it, put the clips in
    `inputs/footage/` and scan them (production skill, "Footage videos"), then set `data-width` and `data-height` to
