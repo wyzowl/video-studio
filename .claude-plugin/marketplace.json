@@ -10,10 +10,10 @@
   "plugins": [
     {
       "name": "video-studio",
-      "description": "Wyzowl Video Studio: make animated videos with Claude Code and HyperFrames. A guided brief, reusable brand kits, a storyboard you approve scene by scene, a scored review loop, and local rendering.",
+      "description": "Make professional videos with Claude Code on your Mac: a guided brief, a script and storyboard you approve, reusable brand kits, and animated or footage-based videos with sound, reviewed and rendered locally.",
       "source": "./plugins/video-studio",
       "category": "productivity",
-      "homepage": "https://github.com/wyzowl/video-studio"
+      "homepage": "https://wyzowl.com/video-studio/"
     }
   ]
 }

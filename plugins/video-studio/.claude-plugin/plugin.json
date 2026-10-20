@@ -1,21 +1,33 @@
 {
   "name": "video-studio",
+  "displayName": "Wyzowl Video Studio",
   "version": "0.9.0",
-  "description": "Wyzowl Video Studio: make animated videos with Claude Code and HyperFrames. A guided brief, reusable brand kits, a storyboard you approve scene by scene, a scored review loop, and local rendering.",
+  "description": "Make professional videos with Claude Code on your Mac: a guided brief, a script and storyboard you approve, reusable brand kits, and animated or footage-based videos with sound, reviewed and rendered locally.",
   "author": {
     "name": "Wyzowl",
     "url": "https://wyzowl.com"
   },
-  "homepage": "https://github.com/wyzowl/video-studio",
+  "homepage": "https://wyzowl.com/video-studio/",
   "repository": "https://github.com/wyzowl/video-studio",
   "license": "LicenseRef-Wyzowl-Video-Studio",
+  "termsOfServiceUrl": "https://github.com/wyzowl/video-studio/blob/main/LICENSE",
   "keywords": [
     "video",
+    "video-production",
+    "video-editing",
     "animation",
-    "hyperframes",
+    "motion-graphics",
     "motion-design",
+    "explainer",
+    "marketing-video",
+    "social-video",
     "storyboard",
-    "brand-kit"
+    "scriptwriting",
+    "brand-kit",
+    "sound-effects",
+    "captions",
+    "voiceover",
+    "hyperframes"
   ],
   "types": "./types/index.d.ts"
 }
