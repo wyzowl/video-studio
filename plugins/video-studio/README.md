@@ -57,3 +57,6 @@ scripts, the Inter and JetBrains Mono fonts with their licences), `templates/` (
 and `whats-new.json` (what each version brings, for the dashboard's "What's new").
 
 Full documentation: https://github.com/wyzowl/video-studio
+
+Licence: the [Wyzowl Video Studio Licence](LICENSE). Use it to make videos for any purpose, commercial or not; don't
+redistribute it or release your own versions.

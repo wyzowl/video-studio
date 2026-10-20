@@ -246,10 +246,12 @@ plugins/video-studio/             the plugin: commands, skills, hook, scripts, p
   with its licence: `plugins/video-studio/ui/fonts/LICENSE-JetBrainsMono.txt`.
 - **Caveat** (SIL Open Font License 1.1) is the handwriting in the full library's D72 Hand-drawn, bundled with its
   licence: `plugins/video-studio/ui/fonts/LICENSE-Caveat.txt`.
-- The **Wyzowl logo** (`plugins/video-studio/ui/wyzowl-logo.svg` and `wyzowl-icon.svg`) is a trademark of Wyzowl. It's
+- The **Wyzowl logo** (`plugins/video-studio/ui/wyzowl-logo.svg` and `wyzowl-icon.svg`) is a trademark of 4040 Media
+  Limited, trading as Wyzowl. It's
   included for the plugin's own pages and isn't covered by the repository's licence.
 - HyperFrames and its skills (HeyGen) and the motion-design skill (LottieFiles) are installed from their own sources
   by setup, under their own licences.
 - **SFX Kit** (CC0 1.0), the studio's sound effects, is downloaded by setup from
   [github.com/wyzowl/sfx-kit](https://github.com/wyzowl/sfx-kit).
-- The licence for this repository will be chosen before the public release.
+- **Video Studio itself** is under the [Wyzowl Video Studio Licence](LICENSE): free to use to make videos, commercial
+  or not, client work included. Please share links to it rather than copies, and don't release your own versions.

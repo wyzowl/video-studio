@@ -8,6 +8,7 @@
   },
   "homepage": "https://github.com/wyzowl/video-studio",
   "repository": "https://github.com/wyzowl/video-studio",
+  "license": "LicenseRef-Wyzowl-Video-Studio",
   "keywords": [
     "video",
     "animation",

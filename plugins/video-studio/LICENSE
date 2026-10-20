@@ -1,0 +1,75 @@
+Wyzowl Video Studio Licence
+
+Copyright © 2026 4040 Media Limited, trading as Wyzowl (https://wyzowl.com). All rights reserved, except as this
+licence allows.
+
+This licence covers Wyzowl Video Studio: the plugin in this repository, including its code, skills, commands, pages,
+library items, templates and tools ("Video Studio"). By installing or using Video Studio, you agree to this licence.
+
+1. What you may do
+
+   - Install Video Studio from Wyzowl's official sources: its GitHub repository
+     (https://github.com/wyzowl/video-studio) and the marketplace there, or Anthropic's Claude plugin directory.
+   - Use Video Studio to make videos and other material, for any purpose, commercial or non-commercial, including
+     work for your clients.
+   - Edit the copies of Video Studio's library items, templates and tools that it puts in your video projects, to make
+     and revise your videos.
+   - Tell people about Video Studio, and share links to its official pages and repository.
+
+2. Your videos
+
+   The videos and other material you make with Video Studio are yours, and Wyzowl claims no rights in them. Some may
+   contain material under its own terms, such as fonts, music, footage or sound effects, and those terms still apply.
+
+3. What you may not do
+
+   - Distribute, publish, share, sell, rent or sublicense copies of Video Studio or any part of it, whether changed or
+     not, except within the videos you make with it and their project files. Library items, templates and tools may
+     not be shared on their own for other people to reuse.
+   - Release or distribute your own version of Video Studio, or any product that includes or is derived from its code.
+   - Let other people use Video Studio itself through you, for example by hosting it as an online service. Making
+     videos for other people is fine.
+   - Remove or get around Video Studio's licence checks, or any copyright or licence notice in it.
+
+4. Parts under their own terms
+
+   Some parts of Video Studio, and some of what it installs or downloads, come with their own terms, which apply to
+   them instead of this licence:
+
+   - the full library's paid items, licensed under the terms you agree to when you buy them;
+   - SFX Kit, the studio's sound effects, under CC0 1.0 (https://github.com/wyzowl/sfx-kit);
+   - the bundled fonts, under the SIL Open Font License 1.1, with their licences beside them in the plugin's ui/fonts
+     folder;
+   - HyperFrames, its skills, the motion-design skill and the other tools that setup installs, under their own
+     licences, from their own sources.
+
+5. Wyzowl's name and logo
+
+   Wyzowl, Wyzowl Video Studio and the Wyzowl logo are trademarks of 4040 Media Limited. This licence gives you no
+   right to use them, except to refer to Video Studio accurately.
+
+6. No warranty
+
+   Video Studio is provided as it is, without any warranty or condition, express or implied, including of quality,
+   fitness for a particular purpose or non-infringement, to the fullest extent the law allows.
+
+7. Liability
+
+   To the fullest extent the law allows, 4040 Media Limited is not liable for any loss or damage arising from Video
+   Studio or its use, including loss of data, profit or business. Nothing in this licence limits any liability that
+   can't be limited by law, such as for death or personal injury caused by negligence, or for fraud.
+
+8. Ending
+
+   This licence ends automatically if you break it. When it ends, you must stop using Video Studio and delete your
+   copies of it. The videos you made while the licence was in force stay yours.
+
+9. Later versions
+
+   Wyzowl may release later versions of Video Studio under different terms. Each version is covered by the licence
+   that comes with it.
+
+10. Law
+
+   This licence is governed by the laws of England and Wales, and the courts of England and Wales have exclusive
+   jurisdiction over any dispute about it.
