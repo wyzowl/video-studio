@@ -136,6 +136,7 @@ settings.
 
 - Support: https://wyzowl.com/contact-us/
 - Privacy policy: https://wyzowl.com/privacy/
+- Security problems: report them privately, as https://github.com/wyzowl/video-studio/blob/main/SECURITY.md explains
 
 ## Licence
 
