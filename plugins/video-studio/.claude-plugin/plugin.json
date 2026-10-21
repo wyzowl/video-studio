@@ -1,7 +1,7 @@
 {
   "name": "video-studio",
   "displayName": "Wyzowl Video Studio",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Make professional videos with Claude Code on your Mac: a guided brief, a script and storyboard you approve, reusable brand kits, and animated or footage-based videos with sound, reviewed and rendered locally.",
   "author": {
     "name": "Wyzowl",

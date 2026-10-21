@@ -1853,7 +1853,7 @@ function lockedFrame(item, size = "16x9") {
 const byCode = (a, b) => a.code.localeCompare(b.code, "en", { numeric: true });
 
 // where people get a licence key for the full library
-const GET_KEY = "https://wyzowl.com/video-studio/";
+const GET_KEY = "https://wyzowl.com/get-video-studio-library/";
 
 /** The full library, above the locked items (the cards' "Paid upgrade" badges lead to it): what it adds and a box for
     the licence key; or, once a key has unlocked it on this Mac, where it stands, with a check for new items (ui/page.js
