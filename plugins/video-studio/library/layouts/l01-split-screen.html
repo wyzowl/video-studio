@@ -7,6 +7,7 @@
     {"id":"address","type":"string","label":"Address in the browser bar","default":"example.com"},
     {"id":"presenterVideo","type":"string","label":"Presenter footage (video file; its sound stays on the main track)","default":""},
     {"id":"cues","type":"string","label":"Highlights: JSON list of {at, x, y, w, h, zoom, until}, with x, y, w and h as fractions of the screen","default":""},
+    {"id":"exit","type":"enum","label":"At the end","default":"animate","options":[{"value":"animate","label":"Animate out"},{"value":"hold","label":"Hold, for a transition"}]},
     {"id":"duration","type":"number","label":"Length","default":7,"min":2,"step":0.1,"unit":"s"},
     {"id":"card","type":"color","label":"Background","default":"#F6F3EA"},
     {"id":"ink","type":"color","label":"Window outlines","default":"#1E1E1E"},
@@ -279,9 +280,11 @@
             }
             tl.to(box, { opacity: 0, duration: 0.2, ease: "none" }, until);
           });
-          tl.to(cursor, { opacity: 0, duration: 0.2, ease: "none" }, outAt);
-          tl.to(screen, { clipPath: shut(screen, radius), duration: 0.45, ease: EASE }, D - 0.65);
-          tl.to(ring, { clipPath: shut(ring, ringRadius), duration: 0.45, ease: EASE }, D - 0.65);
+          if (v("exit", "animate") !== "hold") tl.to(cursor, { opacity: 0, duration: 0.2, ease: "none" }, outAt);
+          if (v("exit", "animate") !== "hold") {
+            tl.to(screen, { clipPath: shut(screen, radius), duration: 0.45, ease: EASE }, D - 0.65);
+            tl.to(ring, { clipPath: shut(ring, ringRadius), duration: 0.45, ease: EASE }, D - 0.65);
+          }
           tl.set({}, {}, D);
           window.__timelines[ID] = tl;
         })();

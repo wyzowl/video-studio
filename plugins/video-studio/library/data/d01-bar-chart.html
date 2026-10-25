@@ -62,7 +62,7 @@
         #d01-bar-chart[data-fmt="16x9"] .box { left: 192px; top: 72px; width: 1536px; height: 864px; padding: 56px 72px 44px; }
         #d01-bar-chart[data-fmt="1x1"] .box { left: 108px; top: 96px; width: 864px; height: 792px; padding: 44px 48px 36px; }
         #d01-bar-chart[data-fmt="4x5"] .box { left: 108px; top: 120px; width: 864px; height: 1008px; padding: 52px 48px 40px; }
-        #d01-bar-chart[data-fmt="9x16"] .box { left: 108px; top: 200px; width: 864px; height: 1260px; padding: 60px 48px 48px; }
+        #d01-bar-chart[data-fmt="9x16"] .box { left: 108px; top: 140px; width: 864px; height: 1260px; padding: 60px 48px 48px; }
         #d01-bar-chart .head { display: flex; flex-direction: column; gap: 14px; }
         #d01-bar-chart[data-fmt="1x1"] .head { gap: 12px; }
         #d01-bar-chart[data-fmt="9x16"] .head { gap: 16px; }
@@ -139,6 +139,18 @@
         #d01-bar-chart[data-fmt="9x16"] .bar { height: 44px; }
         #d01-bar-chart[data-fmt="9x16"] .val { font-size: 32px; line-height: 36px; }
         #d01-bar-chart:not([data-fmt="16x9"]) .row:last-child { padding-bottom: 0; }
+        /* fewer bars than the six it's laid out for (data-few): the rows grow by --grow, up to half as tall again, and
+           sit in the middle of the space under the title rather than at its foot */
+        #d01-bar-chart[data-few] .box { justify-content: flex-start; }
+        #d01-bar-chart[data-few] .bars { margin-block: auto; }
+        #d01-bar-chart[data-few][data-fmt="16x9"] .row { min-height: calc(68px * var(--grow, 1)); }
+        #d01-bar-chart[data-few][data-fmt="16x9"] .bar { height: calc(44px * var(--grow, 1)); }
+        #d01-bar-chart[data-few][data-fmt="1x1"] .row:not(:last-child) { padding-bottom: calc(14px * var(--grow, 1)); }
+        #d01-bar-chart[data-few][data-fmt="1x1"] .bar { height: calc(26px * var(--grow, 1)); }
+        #d01-bar-chart[data-few][data-fmt="4x5"] .row:not(:last-child) { padding-bottom: calc(20px * var(--grow, 1)); }
+        #d01-bar-chart[data-few][data-fmt="4x5"] .bar { height: calc(36px * var(--grow, 1)); }
+        #d01-bar-chart[data-few][data-fmt="9x16"] .row:not(:last-child) { padding-bottom: calc(28px * var(--grow, 1)); }
+        #d01-bar-chart[data-few][data-fmt="9x16"] .bar { height: calc(44px * var(--grow, 1)); }
 
         #d01-bar-chart .source {
           position: absolute;
@@ -159,7 +171,8 @@
         #d01-bar-chart[data-fmt="16x9"] .source { left: 192px; top: 962px; }
         #d01-bar-chart[data-fmt="1x1"] .source { left: 108px; top: 912px; }
         #d01-bar-chart[data-fmt="4x5"] .source { left: 108px; top: 1156px; }
-        #d01-bar-chart[data-fmt="9x16"] .source { left: 108px; top: 1484px; }
+        /* 9:16: the source line ends at 1480, clear of the platforms' captions below */
+        #d01-bar-chart[data-fmt="9x16"] .source { left: 108px; top: 1424px; }
       </style>
 
       <div id="d01-bar-chart" data-composition-id="d01-bar-chart">
@@ -195,7 +208,8 @@
           text(".eyebrow", "eyebrow");
           text(".title", "title");
           text(".subtitle", "subtitle");
-          q(".source .text").textContent = String(v("source", ""));
+          // after the item's own "Source ·" label, so a label typed in as well is left out
+          q(".source .text").textContent = String(v("source", "")).replace(/^\s*source\s*[·:|\-–—]\s*/i, "");
           if (!q(".source .text").textContent.trim()) q(".source").style.display = "none";
 
           // the figures: [{label, value}], up to eight, drawn to scale from zero
@@ -232,6 +246,12 @@
             bars.appendChild(row);
             return { row, label: row.querySelector(".label"), bar: row.querySelector(".bar"), val: row.querySelector(".val"), value: d.value, count: { n: 0 } };
           });
+          // fewer bars than the six it's laid out for: they grow, up to half as tall again, and sit in the middle of the
+          // space under the title (data-few in the style)
+          if (rows.length < 6) {
+            root.dataset.few = "";
+            root.style.setProperty("--grow", String(Math.min(1.5, 6 / Math.max(1, rows.length))));
+          }
 
           // text widths off a canvas, as HyperFrames recommends: nothing in the page is measured, so this works while
           // the clip is still hidden (until its start, a clip measures as zero)

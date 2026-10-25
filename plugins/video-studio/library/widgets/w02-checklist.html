@@ -6,6 +6,8 @@
     {"id":"items","type":"string","label":"Items, separated by |","default":"A clear message|A short script|A strong first line|One clear next step"},
     {"id":"ticks","type":"string","label":"When each item ticks (seconds, separated by |; empty: 0.40 s apart)","default":""},
     {"id":"side","type":"enum","label":"Side","default":"left","options":[{"value":"left","label":"Left"},{"value":"right","label":"Right"}]},
+    {"id":"level","type":"enum","label":"How high it sits at 1:1, 4:5 and 9:16","default":"low","options":[{"value":"low","label":"Low, under the presenter’s face"},{"value":"middle","label":"In the middle"},{"value":"high","label":"High, near the top"}]},
+    {"id":"exit","type":"enum","label":"At the end","default":"animate","options":[{"value":"animate","label":"Animate out"},{"value":"hold","label":"Hold, for a transition"}]},
     {"id":"duration","type":"number","label":"Length","default":6,"min":2,"step":0.1,"unit":"s"},
     {"id":"card","type":"color","label":"Card","default":"#F6F3EA"},
     {"id":"ink","type":"color","label":"Text","default":"#1E1E1E"},
@@ -58,6 +60,11 @@
         #w02-checklist[data-fmt="4x5"] .place { align-items: flex-end; padding: 64px; }
         /* 9:16 keeps clear of the platform's captions (bottom 440 px) and buttons (right 196 px) */
         #w02-checklist[data-fmt="9x16"] .place { align-items: flex-end; padding: 0 0 440px 64px; }
+        /* level, at 1:1, 4:5 and 9:16: low (under the presenter's face) unless it's middle or high, which keep clear of what's low in the frame */
+        #w02-checklist[data-level="middle"]:not([data-fmt="16x9"]) .place { align-items: center; }
+        #w02-checklist[data-level="high"]:not([data-fmt="16x9"]) .place { align-items: flex-start; }
+        #w02-checklist[data-level="middle"][data-fmt="9x16"] .place { padding-top: 200px; }
+        #w02-checklist[data-level="high"][data-fmt="9x16"] .place { padding: 200px 0 0 64px; }
         #w02-checklist[data-side="right"]:not([data-fmt="9x16"]) .place { justify-content: flex-end; }
         #w02-checklist .card {
           box-sizing: border-box;
@@ -138,6 +145,7 @@
           const r = W / H;
           root.dataset.fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
           root.dataset.side = v("side", "left") === "right" ? "right" : "left";
+          root.dataset.level = ["middle", "high"].includes(v("level", "low")) ? v("level", "low") : "low";
 
           const EASE = v("ease", "power3.inOut");
           const D = Math.max(2, Number(v("duration", 6)));
@@ -168,8 +176,10 @@
             tl.fromTo(row.querySelector(".text"), { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE }, t + 0.05);
           });
           const out = D - 0.5;
-          tl.to(card.children, { opacity: 0, duration: 0.2, ease: "none" }, out);
-          tl.to(card, { y: 24, opacity: 0, duration: 0.3, ease: EASE }, out + 0.1);
+          if (v("exit", "animate") !== "hold") {
+            tl.to(card.children, { opacity: 0, duration: 0.2, ease: "none" }, out);
+            tl.to(card, { y: 24, opacity: 0, duration: 0.3, ease: EASE }, out + 0.1);
+          }
           tl.set({}, {}, D);
           window.__timelines[ID] = tl;
         })();

@@ -7,6 +7,7 @@
     {"id":"cutoutVideo","type":"string","label":"Cut-out of the presenter (transparent video of the same footage)","default":""},
     {"id":"headTop","type":"number","label":"Top of the head at its highest in the scene (px from the top; the word then sits so the head covers at most half of it)","default":0,"min":0,"step":1,"unit":"px"},
     {"id":"push","type":"number","label":"Push in over the scene","default":4,"min":0,"max":10,"step":0.5,"unit":"%"},
+    {"id":"exit","type":"enum","label":"At the end","default":"animate","options":[{"value":"animate","label":"Animate out"},{"value":"hold","label":"Hold, for a transition"}]},
     {"id":"duration","type":"number","label":"Length","default":5,"min":2,"step":0.1,"unit":"s"},
     {"id":"card","type":"color","label":"Card","default":"#F6F3EA"},
     {"id":"ink","type":"color","label":"Text","default":"#1E1E1E"},
@@ -179,7 +180,9 @@
             const tl = gsap.timeline({ paused: true });
             tl.fromTo(layers, { scale: 1 }, { scale: 1 + push, duration: D, ease: "none" }, 0);
             tl.fromTo(letters, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: EASE, stagger: 0.04 }, 0.2);
-            tl.to(letters, { y: 40, opacity: 0, duration: 0.4, ease: EASE, stagger: 0.03 }, Math.max(1.4, D - 0.4 - 0.03 * letters.length - 0.1));
+            if (v("exit", "animate") !== "hold") {
+              tl.to(letters, { y: 40, opacity: 0, duration: 0.4, ease: EASE, stagger: 0.03 }, Math.max(1.4, D - 0.4 - 0.03 * letters.length - 0.1));
+            }
             tl.set({}, {}, D);
             window.__timelines[ID] = tl;
           }

@@ -57,7 +57,7 @@
         #d03-big-stat[data-fmt="16x9"] .box { left: 192px; top: 72px; width: 1536px; height: 864px; padding: 56px 72px 44px; }
         #d03-big-stat[data-fmt="1x1"] .box { left: 108px; top: 96px; width: 864px; height: 792px; padding: 44px 48px 36px; }
         #d03-big-stat[data-fmt="4x5"] .box { left: 108px; top: 120px; width: 864px; height: 1008px; padding: 52px 48px 40px; }
-        #d03-big-stat[data-fmt="9x16"] .box { left: 108px; top: 200px; width: 864px; height: 1260px; padding: 60px 48px 48px; }
+        #d03-big-stat[data-fmt="9x16"] .box { left: 108px; top: 140px; width: 864px; height: 1260px; padding: 60px 48px 48px; }
         #d03-big-stat .eyebrow {
           font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
           font-size: 24px;
@@ -140,7 +140,12 @@
         #d03-big-stat[data-fmt="16x9"] .source { left: 192px; top: 962px; }
         #d03-big-stat[data-fmt="1x1"] .source { left: 108px; top: 912px; }
         #d03-big-stat[data-fmt="4x5"] .source { left: 108px; top: 1156px; }
-        #d03-big-stat[data-fmt="9x16"] .source { left: 108px; top: 1484px; }
+        /* 9:16: the source line ends at 1480, clear of the platforms' captions below */
+        #d03-big-stat[data-fmt="9x16"] .source { left: 108px; top: 1424px; }
+        /* without an eyebrow, the figure sits in the middle of the frame rather than at its foot */
+        #d03-big-stat[data-no-eyebrow] .box { justify-content: center; }
+        #d03-big-stat[data-no-eyebrow] .eyebrow { display: none; }
+        #d03-big-stat[data-no-eyebrow] .stat { padding-top: 0; }
       </style>
 
       <div id="d03-big-stat" data-composition-id="d03-big-stat">
@@ -180,9 +185,12 @@
           const words = q(".words");
           const source = q(".source");
           eyebrow.textContent = String(v("eyebrow", ""));
+          // without one, the figure moves to the middle of the frame (data-no-eyebrow in the style)
+          if (!eyebrow.textContent.trim()) root.dataset.noEyebrow = "";
           unit.textContent = String(v("unit", "%"));
           words.textContent = String(v("words", ""));
-          q(".source .text").textContent = String(v("source", ""));
+          // after the item's own "Source ·" label, so a label typed in as well is left out
+          q(".source .text").textContent = String(v("source", "")).replace(/^\s*source\s*[·:|\-–—]\s*/i, "");
           for (const el of [eyebrow, unit, words]) if (!el.textContent.trim()) el.style.visibility = "hidden";
           if (!q(".source .text").textContent.trim()) source.style.display = "none";
 

@@ -55,7 +55,7 @@
         #t46-number-roll[data-fmt="16x9"] .box { left: 192px; top: 72px; width: 1536px; height: 864px; padding: 56px 72px 44px; }
         #t46-number-roll[data-fmt="1x1"] .box { left: 108px; top: 96px; width: 864px; height: 792px; padding: 44px 48px 36px; }
         #t46-number-roll[data-fmt="4x5"] .box { left: 108px; top: 120px; width: 864px; height: 1008px; padding: 52px 48px 40px; }
-        #t46-number-roll[data-fmt="9x16"] .box { left: 108px; top: 200px; width: 864px; height: 1260px; padding: 60px 48px 48px; }
+        #t46-number-roll[data-fmt="9x16"] .box { left: 108px; top: 140px; width: 864px; height: 1260px; padding: 60px 48px 48px; }
         #t46-number-roll .line {
           display: flex;
           align-items: flex-start;
@@ -90,7 +90,8 @@
         #t46-number-roll[data-fmt="16x9"] .source { left: 192px; top: 962px; }
         #t46-number-roll[data-fmt="1x1"] .source { left: 108px; top: 912px; }
         #t46-number-roll[data-fmt="4x5"] .source { left: 108px; top: 1156px; }
-        #t46-number-roll[data-fmt="9x16"] .source { left: 108px; top: 1484px; }
+        /* 9:16: the source line ends at 1480, clear of the platforms' captions below */
+        #t46-number-roll[data-fmt="9x16"] .source { left: 108px; top: 1424px; }
       </style>
 
       <div id="t46-number-roll" data-composition-id="t46-number-roll">
@@ -117,7 +118,8 @@
           const D = Math.max(3, Number(v("duration", 4.5)) || 4.5);
           const box = root.querySelector(".box");
           const source = root.querySelector(".source");
-          source.querySelector(".text").textContent = String(v("source", ""));
+          // after the item's own "Source ·" label, so a label typed in as well is left out
+          source.querySelector(".text").textContent = String(v("source", "")).replace(/^\s*source\s*[·:|\-–—]\s*/i, "");
           if (!source.querySelector(".text").textContent.trim()) source.style.display = "none";
           // the type at each format, from the Paper design: [size, line height, widest line]; and the height in the box
           // that the sentence, and the faded rows above it, have to fit
