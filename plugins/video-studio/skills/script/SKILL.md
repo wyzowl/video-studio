@@ -48,8 +48,8 @@ Mark the work on the video's overview as you go (production skill, "Work in prog
      reworded. The action column says what's seen: the shot (and any punch-in), B-roll (which clip), and what's
      added on top.
    - **A voiceover to come** (`voiceover: supplied`): write the voiceover. Once the script is approved, the user has it
-     read exactly as written (by them, a voice artist or a voice service) and brings the file. The script page's
-     **Copy the voiceover** gives them its words alone.
+     read exactly as written (by them, a voice artist or a voice service) and brings the file. The copy button at the
+     top of the script page (**Copy the voiceover**) gives them its words alone.
    - **No voiceover:** set `"mode": "text"`. The second column is the text on screen, word for word, in each row's
      `onScreen`.
 3. **A row per beat.** Every row is a scene, or one moment of one: when several things happen in a scene, give each

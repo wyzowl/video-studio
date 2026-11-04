@@ -90,12 +90,13 @@ press **Got it**.
    every clip transcribed, with its pauses, umms and repeated takes marked. The script is then the cut it proposes,
    word for word from the best takes, with the clip and time of each line, and a note of what was cut.
 3. **Voiceover and timing.** A voiceover is the master clock. It's always one you bring: your recording, or one read
-   from the approved script by you, a voice artist or any voice service (the script page's **Copy the voiceover**
-   gives you its words). Without one, on-screen text is timed to a beat grid.
+   from the approved script by you, a voice artist or any voice service (the copy button at the top of the script
+   page, **Copy the voiceover**, gives you its words). Without one, on-screen text is timed to a beat grid.
 4. **Storyboard.** Every scene with 1–5 frames, rendered in the brand at the video's real size. On the storyboard
-   page every scene starts **Approved**: switch any you'd like changed to **Feedback**, with a note, then save. Claude
-   makes a new version until every scene is approved. Nothing is built before that. For a footage video the frames
-   are stills from the footage, and each scene has **Play the scene**, which plays its rough cut with its sound.
+   page every scene is approved unless you add a note to it (**+ Note**, or **Box** or **Arrow** on a frame), then
+   save. Claude makes a new version until every scene is approved. Nothing is built before that. For a footage video
+   the frames are stills from the footage, and each scene has **Play the scene**, which plays its rough cut with its
+   sound.
 5. **Build and review.** Claude builds the video, adds its sound effects from SFX Kit (as many as the brief calls for,
    each placed exactly on its moment and set under the voiceover), renders drafts and reviews them against a
    seven-point rubric, for at least two rounds, until every score is 8 or more.
@@ -125,14 +126,14 @@ Nothing there is for review yet: the page for that opens when it's ready.
 
 You don't need to go back to the chat when you've finished a review. When you press **Approve and save** (it says
 **Send changes**, or **Send feedback** on a storyboard, once there are notes), Claude picks it up straight away and
-carries on: a script or video is approved unless you've added notes, and so is each storyboard scene unless you've
-marked it **Feedback**. This works while that Claude Code session is
+carries on: a script or video is approved unless you've added notes, and so is each storyboard scene unless it has a
+note. This works while that Claude Code session is
 open; otherwise, tell Claude you've saved.
 
 To get feedback from someone outside the studio, such as a client, send them a download.
-- The script and storyboard pages have **Download PDF**. Each PDF is a clean document, without the review controls,
-  and asks for replies by row or scene number.
-- The video review page has **Download video**.
+- The script and storyboard pages have **Download PDF**, the download button at the top. Each PDF is a clean
+  document, without the review controls, and asks for replies by row or scene number.
+- The video review page has **Download video**, the download button at the top.
 - A copy of each PDF is kept in the video's folder, and **Show in Finder** opens it there, ready to attach to an
   email.
 - When their feedback comes back, paste it into **Anything else?** on the same page and save. Notes there count as

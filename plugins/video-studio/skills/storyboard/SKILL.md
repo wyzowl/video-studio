@@ -1,15 +1,15 @@
 ---
 name: storyboard
-description: Make the scene-by-scene storyboard that a Wyzowl Video Studio user approves before a video is built - real frames in the brand at the video's size, a review page where each scene is marked Approved or Feedback, and new versions until every scene is approved. Use once the script is approved and the timing settled, and whenever a storyboard review comes in (the wait for it finishes, or the user says they've saved).
+description: Make the scene-by-scene storyboard that a Wyzowl Video Studio user approves before a video is built - real frames in the brand at the video's size, a review page where each scene is approved unless it gets a note, and new versions until every scene is approved. Use once the script is approved and the timing settled, and whenever a storyboard review comes in (the wait for it finishes, or the user says they've saved).
 ---
 
 # Storyboard
 
 The storyboard is the plan the user signs off before anything is built: every scene with 1–5 frames, its timing and
-words, and what happens. The studio's review page shows it; every scene starts **Approved**, the user switches any
-that needs changing to **Feedback** (with a note) and saves (the button says **Approve and save**, or **Send
-feedback** once there's feedback), which writes `feedback.json` beside the storyboard. Nothing is built until every
-scene is approved.
+words, and what happens. The studio's review page shows it; every scene is approved unless the user adds a note to it
+(**+ Note** on the scene, or **Box** or **Arrow** on a frame) and saves (the button says **Approve and save**, or
+**Send feedback** once there's feedback), which writes `feedback.json` beside the storyboard. Nothing is built until
+every scene is approved.
 
 Sound effects aren't part of the storyboard: they're made with the video, once there's something on screen to sync
 them to (production skill, `references/audio.md`).
@@ -72,7 +72,7 @@ voiceover), and mark `check` when you look over the frames; rendering them marks
    its address, so the frames must be rendered and checked first.
 6. **Share it:** show the page `/videos/<project>/storyboard/v1/` (see "Showing a page" in the production skill):
    beside the chat, with its card, then wait for the review in the background. Say in one sentence how to review:
-   every scene starts Approved, so switch any that needs changing to Feedback with a note, then press Send feedback
+   every scene is approved unless it has a note, so press + Note on any that needs changing, then press Send feedback
    (Approve and save, if every scene is right), and you'll take it from there. End your turn.
 
 ## From footage

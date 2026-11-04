@@ -169,15 +169,6 @@ function videoDescription(brief, ...fallbacks) {
 }
 const shortLede = (text) => (text ? `<p class="lede lede--short">${esc(text)}</p>` : "");
 
-/** The notes under a review page's hero: what changed in this version and how to review it, side by side (what
-    changed on the left), each closed until it's opened; either one alone takes the full width. An earlier version's
-    warning comes first and stays open, as it links to the latest. */
-function heroNotes({ earlier = "", changed = null, howTo = "" }) {
-  const fold = (title, body) => `<details class="callout fold"><summary><strong>${esc(title)}</strong></summary>${body}</details>`;
-  const parts = [changed && fold(changed.title, `<p>${esc(changed.text)}</p>`), howTo && fold("How to review", howTo)].filter(Boolean);
-  return `${earlier}${parts.length ? `<div class="hero_notes${parts.length > 1 ? " hero_notes--two" : ""}">${parts.join("")}</div>` : ""}`;
-}
-
 /** What a review page's save button says: what saving will do (ui/script.js and ui/review.js keep it up to date). */
 const SAVE = { approved: "Approve and save", changes: "Send changes" };
 
@@ -210,37 +201,127 @@ function versionState(studio, slug, kind, v, latest) {
   return { key: "none", label: "Not reviewed" };
 }
 
+const STAGE_LABEL = { script: "Script", storyboard: "Storyboard", review: "Video" };
+const STAGE_VERSIONS = { script: scriptVersions, storyboard: storyboardVersions, review: reviewVersions };
+
+/** Every version of a video's script, storyboard or video, each a link with a dot for where it stands. `current` is the
+    one on screen ("script-1", "storyboard-2", "review-1"…), shown but not linked. */
+function versionLinks(studio, slug, kind, current = "") {
+  const base = `/videos/${enc(slug)}/`;
+  const versions = STAGE_VERSIONS[kind](studio.root, slug);
+  return versions.map((v) => {
+    const st = versionState(studio, slug, kind, v, v === versions.at(-1));
+    const attrs = `class="stages_item stages_item--${st.key}" title="${esc(`${STAGE_LABEL[kind]} v${v}: ${st.label}`)}"`;
+    return `${kind}-${v}` === current ? `<span ${attrs} aria-current="page">v${v}</span>` : `<a ${attrs} href="${base}${kind}/v${v}/">v${v}</a>`;
+  });
+}
+
 /** A video's scripts, storyboards and videos, a row each, to move between them, each version with a dot for where it
     stands. `current` is "script-1", "storyboard-2", "review-1" and so on. (The breadcrumb leads to the overview.) */
 function stagesNav(studio, slug, current = "") {
   const base = `/videos/${enc(slug)}/`;
-  const row = (kind, label) => {
-    const versions = { script: scriptVersions, storyboard: storyboardVersions, review: reviewVersions }[kind](studio.root, slug);
-    if (!versions.length) return "";
-    const items = versions.map((v) => {
-      const st = versionState(studio, slug, kind, v, v === versions.at(-1));
-      const attrs = `class="stages_item stages_item--${st.key}" title="${esc(`${label} v${v}: ${st.label}`)}"`;
-      return `${kind}-${v}` === current ? `<span ${attrs} aria-current="page">v${v}</span>` : `<a ${attrs} href="${base}${kind}/v${v}/">v${v}</a>`;
-    });
-    return `<span class="stages_group">${label}</span><span class="stages_items">${items.join("")}</span>`;
+  const row = (kind) => {
+    const items = versionLinks(studio, slug, kind, current);
+    return items.length ? `<span class="stages_group">${STAGE_LABEL[kind]}</span><span class="stages_items">${items.join("")}</span>` : "";
   };
   const delivered = hasDelivery(studio.root, slug)
     ? `<span class="stages_group">Video delivery</span><span class="stages_items">${current === "delivery" ? `<span class="stages_item" aria-current="page">All assets</span>` : `<a class="stages_item" href="${base}delivery/">All assets</a>`}</span>`
     : "";
-  const rows = row("script", "Script") + row("storyboard", "Storyboard") + row("review", "Video") + delivered;
+  const rows = row("script") + row("storyboard") + row("review") + delivered;
   return rows ? `<nav class="stages" aria-label="Every version of the script, storyboard and video, and the delivery">${rows}</nav>` : "";
 }
 
-/** A version's download, to share outside the studio, and where feedback that comes back goes. A PDF is made when
-    it's asked for, so ui/page.js shows that it's on its way and offers its copy in Finder. */
-function share({ href, label, pdf = false, note = "" }) {
-  return `<div class="share">
-  <a class="button button--secondary" href="${esc(href)}"${pdf ? ' data-download="pdf"' : " download"}>${esc(label)}</a>
-  <p class="share_note" data-share-note aria-live="polite">${note}</p>
-</div>`;
+/** The script, storyboard and video as tabs in a review's bar, each opening its latest version (and the delivery, once
+    there is one), the one under review marked. Left out while there's only the one. */
+function stageTabs(studio, slug, kind, v) {
+  const base = `/videos/${enc(slug)}/`;
+  const tabs = Object.keys(STAGE_LABEL).flatMap((k) => {
+    const last = STAGE_VERSIONS[k](studio.root, slug).at(-1);
+    if (!last) return [];
+    const here = k === kind ? ` aria-current="${last === v ? "page" : "true"}"` : "";
+    return [`<a class="stagetab" href="${base}${k}/v${last}/"${here}>${STAGE_LABEL[k]}</a>`];
+  });
+  if (hasDelivery(studio.root, slug)) tabs.push(`<a class="stagetab" href="${base}delivery/">Delivery</a>`);
+  return tabs.length > 1 ? `<nav class="stagetabs" aria-label="The script, storyboard and video">${tabs.join("")}</nav>` : "";
 }
-const SHARE_NOTE = `To share outside the studio. Paste any feedback that comes back into <a href="#n-general">Anything else?</a>, then save.`;
+
 const fileSize = (bytes) => (bytes >= 1e6 ? `${(bytes / 1e6).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1e3))} KB`);
+
+// ───────── review pages ─────────
+// A script, storyboard or video review is one room: a slim bar at the top, the content on the left and the notes beside
+// it on the right, which stay in view (under the content on a phone). Each note is pinned to the content (a cell, a
+// scene or a moment), and the bar holds the decision and saving.
+
+/** The bar at the top of a review: back to the video's overview and tabs for the script, storyboard and video, then
+    which version this is, where it stands (when it was last saved, in its tooltip) and its other versions; on the right
+    the downloads, what's decided and the save button. Under it, what saving said, and a download's progress, in a
+    notice that slides down. It stays under the masthead. */
+function reviewHead({ studio, slug, video, kind, v, latest, title, actions = "", decide = "", save = "", saved = "" }) {
+  const st = versionState(studio, slug, kind, v, latest);
+  const versions = versionLinks(studio, slug, kind, `${kind}-${v}`);
+  const when = saved ? ` title="Last saved ${esc(formatDateTime(Date.parse(saved)))}"` : "";
+  return `<header class="reviewhead">
+  <div class="reviewhead_row">
+    <div class="reviewhead_title">
+      <div class="reviewhead_nav">
+        <a class="reviewhead_back" href="/videos/${enc(slug)}/"><span aria-hidden="true">←</span> ${esc(video.title)}</a>
+        ${stageTabs(studio, slug, kind, v)}
+      </div>
+      <div class="reviewhead_name">
+        <h1>${esc(title)}</h1>
+        <span class="chip chip--${STATE_CHIP[st.key] || "plain"}"${when}>${esc(st.label)}</span>
+        ${versions.length > 1 ? `<nav class="stages_items reviewhead_versions" aria-label="Versions of the ${STAGE_LABEL[kind].toLowerCase()}">${versions.join("")}</nav>` : ""}
+      </div>
+    </div>
+    <div class="reviewhead_actions">${actions}${decide}<span class="reviewhead_claude" data-claude-waiting hidden>Claude starts when you save</span>${save}</div>
+  </div>
+  <div class="reviewhead_notice"><div>
+    <p class="reviewhead_message" data-message aria-live="polite"></p>
+    <p class="reviewhead_message" data-share-note aria-live="polite"></p>
+  </div></div>
+</header>`;
+}
+
+/** Line icons for the review bar's buttons, each button named by its label and its tooltip (data-tip). */
+const ICON = {
+  download: `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>`,
+  copy: `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>`,
+};
+
+/** A download in the review bar, as an icon (a PDF is made when it's asked for: ui/page.js shows its progress under
+    the bar). */
+const headDownload = (href, label, pdf = false) =>
+  `<a class="button button--secondary button--medium button--icon" href="${esc(href)}"${pdf ? ' data-download="pdf"' : " download"} aria-label="${esc(label)}" data-tip="${esc(label)}">${ICON.download}</a>`;
+
+/** The decision on a script or video, in the review bar: Approve, or Changes needed. */
+const headDecision = (chosen, approve) => `<fieldset class="decide" data-decision><legend class="visually-hidden">Your decision</legend>${decisionOptions(chosen, approve)}</fieldset>`;
+
+/** The notes beside a review's content: an earlier version's warning, what changed in this version (closed), the
+    notes pinned to the content, the general notes and what saving will do, then how to review (closed). */
+function notesPanel({ earlier = "", changed = null, add = "", empty, general, hint = true, howTo = "", count = 0 }) {
+  return `<aside class="notespanel" aria-label="Notes">
+  ${earlier}
+  ${changed ? `<details class="notespanel_fold"><summary>${esc(changed.title)}</summary><p>${esc(changed.text)}</p></details>` : ""}
+  <div class="notespanel_head">
+    <h2 class="notespanel_title">Notes <span class="notespanel_count" data-count="notes">${count}</span></h2>
+  </div>
+  ${add}
+  <p class="notespanel_empty" data-notes-empty${count ? " hidden" : ""}>${empty}</p>
+  <ol class="notecards" data-notes></ol>
+  <div class="notespanel_general">
+    <label class="field-label" for="n-general">Anything else?</label>
+    ${general}
+  </div>
+  ${hint ? `<p class="notespanel_hint" data-decision-hint></p>` : ""}
+  ${howTo ? `<details class="notespanel_fold"><summary>How to review</summary>${howTo}</details>` : ""}
+</aside>`;
+}
+
+const reviewRoom = (content, panel) => `<div class="container reviewroom"><div class="reviewroom_content">${content}</div>${panel}</div>`;
+
+/** An earlier version's warning, at the top of its notes: they're shown as they were saved. */
+const earlierNote = (kind, href, latestV) =>
+  `<div class="callout notespanel_earlier"><strong>This is an earlier version.</strong><p>Its notes are shown as they were saved. <a href="${esc(href)}">Review the latest ${esc(kind)} (v${latestV})</a>.</p></div>`;
 
 function page404(studio, what) {
   return layout({
@@ -1160,47 +1241,30 @@ export function scriptPage(studio, slug, version) {
   const cellHtml = (row, key, label, text, extra = "") => `<td class="scriptsheet_cell" data-cell="${key}" data-label="${esc(label)}">
         <div class="scriptsheet_text">${itemChips(rich(text || ""), video)}</div>${extra}
         <button class="scriptsheet_add" type="button"${latest ? "" : " hidden"} aria-label="Add a note to row ${row.n}, ${esc(label.toLowerCase())}">+ Note</button>
-        <div class="scriptsheet_note" data-note-slot></div>
       </td>`;
+  const howTo = latest
+    ? `<p>Read the script row by row: the ${spoken ? (footage ? "words said" : "voiceover") : "text on screen"}, and what happens on screen beside it. Click a cell to add a note to it: the note is pinned to that row and column, so Claude knows exactly what to change. Your decision is <b>Approve</b> unless there are notes or something under <b>Anything else?</b>: then it switches to <b>Changes needed</b> (you can change it). When you've read it all, press <b>Approve and save</b> (it says <b>Send changes</b> once there are notes): Claude picks your review up straight away (if Claude isn't waiting, tell it you've saved). The storyboard is only made once you approve.</p><p>The download button at the top makes a PDF, to share outside the studio: paste any feedback that comes back into <b>Anything else?</b>, then save.</p>${
+        footage ? `<p><b>The words are from the footage.</b> They're what was said on camera, in the takes used; under each line is the clip and time it comes from. A note can ask for a line to be cut, moved or swapped for another take, but changing the words themselves needs a new take.</p>` : ""
+      }${recorded ? `<p><b>The voiceover is a recording.</b> Its words come from the recording, cut to the take that's used. A note can ask for a line to be cut or moved, but changing the words themselves needs a new recording.</p>` : ""}`
+    : "";
   const body = `
-<section class="section section--hero">
-  <div class="container">
-    <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/#videos">Videos</a> / <a href="/videos/${enc(slug)}/">${esc(video.title)}</a> / Script v${v}</p>
-    ${eyebrow(`V${v}`, "Script")}
-    <div class="hero_head">
-      <h1>${esc(sc.title || video.title)}</h1>
-      <div class="split split--top">
-        <div class="stack">
-          ${shortLede(videoDescription(brief, sc.summary))}
-          ${stagesNav(studio, slug, `script-${v}`)}
-          ${share({ href: `/videos/${enc(slug)}/script/v${v}/download`, label: "Download PDF", pdf: true, note: latest ? SHARE_NOTE : "" })}
-          ${toRead ? `<div class="share"><button class="button button--secondary" type="button" data-copy="${esc(toRead)}">Copy the voiceover</button><p class="share_note">Just its words, to paste into a voice service or send to whoever records it.</p></div>` : ""}
-        </div>
-        <dl class="titleblock">
-          ${cell("Brand", brand?.name || video.brand || "")}
-          ${cell("Size", `${size.label} · ${size.px}`)}
-          ${cell("Length", length ? `About ${timecode(length.seconds)} (${length.words} words)` : video.length)}
-          ${cell("Rows", String(rows.length))}
-          ${cell("Version", `v${v}`)}
-          ${cell("Created", sc.created ? formatDate(Date.parse(sc.created)) : "")}
-        </dl>
-      </div>
-    </div>
-    ${heroNotes({
-      earlier: latest ? "" : `<div class="callout"><strong>This is an earlier script.</strong><p>Its notes are shown as they were saved. <a href="/videos/${enc(slug)}/script/v${versions.at(-1)}/">Review the latest script (v${versions.at(-1)})</a>.</p></div>`,
-      changed: sc.changes ? { title: `What changed in script v${v}`, text: sc.changes } : null,
-      howTo: latest
-        ? `<p>Read the script row by row: the ${spoken ? (footage ? "words said" : "voiceover") : "text on screen"}, and what happens on screen beside it. To comment on a cell, click it and write your note; it's pinned to that row and column, so Claude knows exactly what to change. Your decision is <b>Approve script</b> unless you add a note or write under <b>Anything else?</b>: then it switches to <b>Changes needed</b> (you can change it). When you've read it all, press <b>Approve and save</b> (it says <b>Send changes</b> once there are notes): Claude picks your review up straight away (if Claude isn't waiting, tell it you've saved). The storyboard is only made once you approve.</p>${
-            footage ? `<p><b>The words are from the footage.</b> They're what was said on camera, in the takes used; under each line is the clip and time it comes from. A note can ask for a line to be cut, moved or swapped for another take, but changing the words themselves needs a new take.</p>` : ""
-          }${recorded ? `<p><b>The voiceover is a recording.</b> Its words come from the recording, cut to the take that's used. A note can ask for a line to be cut or moved, but changing the words themselves needs a new recording.</p>` : ""}`
-        : "",
-    })}
-  </div>
-</section>
-<section class="section section--rule">
-  <div class="container">
-    ${eyebrow("01", "Read and comment")}
-    <div class="scriptsheet">
+${reviewHead({
+  studio,
+  slug,
+  video,
+  kind: "script",
+  v,
+  latest,
+  title: `Script v${v}`,
+  actions:
+    headDownload(`/videos/${enc(slug)}/script/v${v}/download`, "Download PDF", true) +
+    (toRead ? `<button class="button button--secondary button--medium button--icon" type="button" data-copy="${esc(toRead)}" aria-label="Copy the voiceover" data-tip="Copy the voiceover">${ICON.copy}</button>` : ""),
+  decide: headDecision(chosen, "Approve"),
+  save: `<button class="button button--medium reviewhead_save" type="button" data-save${latest ? "" : " disabled"}>${latest ? SAVE[chosen] : "Save review"}</button>`,
+  saved: summary.savedAt,
+})}
+${reviewRoom(
+  `<div class="scriptsheet">
     <div class="scriptsheet_length">
       ${length?.footage ? `<p><b>Length:</b> about ${length.seconds} seconds of footage, from the takes used (${length.words} words said)</p>` : length ? `<p><b>Rule:</b> ${WORDS_PER_MINUTE} Words of voiceover = Approx 60 Seconds of video</p><p><b>This script:</b> ${length.words} Words of voiceover = ${length.seconds} Seconds of video</p>` : ""}
       <p class="scriptsheet_legend">${hasBold ? "<strong>Bold text</strong> appears on screen. " : ""}${latest ? "Click any cell to add a note to it." : ""}</p>
@@ -1222,40 +1286,16 @@ ${rows
       </table>
     </div>
     ${footage && sc.cuts ? `<div class="callout"><strong>Cut from the footage</strong><p>${esc(sc.cuts)}</p></div>` : ""}
-    </div>
-  </div>
-</section>
-<section class="section section--rule" id="general">
-  <div class="container">
-    ${eyebrow("+", "Your decision", true)}
-    <h2>Anything else?</h2>
-    <div class="scriptsheet_decision">
-      <div class="review_note">
-        <label class="field-label" for="n-general">Comments on the whole script: the story, tone, length (optional)</label>
-        <textarea id="n-general" data-general rows="5"></textarea>
-      </div>
-      <fieldset class="review" data-decision>
-        <legend class="field-label review_legend">Your decision</legend>
-        <div class="review_box">
-          <div class="review_options">
-            ${decisionOptions(chosen, "Approve script")}
-          </div>
-          <p class="review_hint" data-decision-hint></p>
-        </div>
-      </fieldset>
-    </div>
-  </div>
-</section>
-<div class="reviewbar" role="region" aria-label="Save your review">
-  <div class="reviewbar_counts" aria-live="polite">
-    <span><b data-count="notes">${summary.notes}</b> <span data-count-word>${summary.notes === 1 ? "note" : "notes"}</span></span>
-    <span>Decision: <b data-decision-label>${esc(DECISION_LABEL[chosen])}</b></span>
-    <span class="reviewbar_claude" data-claude-waiting hidden>Claude starts when you save</span>
-  </div>
-  <button class="reviewbar_jump" type="button" data-next-note${summary.notes ? "" : " hidden"}>Next note <span aria-hidden="true">↓</span></button>
-  <button class="button button--corners" type="button" data-save${latest ? "" : " disabled"}>${latest ? SAVE[chosen] : "Save review"}</button>
-  <p class="reviewbar_message" data-message aria-live="polite">${summary.savedAt ? `Last saved ${esc(formatDateTime(Date.parse(summary.savedAt)))}.` : ""}</p>
-</div>`;
+  </div>`,
+  notesPanel({
+    earlier: latest ? "" : earlierNote("script", `/videos/${enc(slug)}/script/v${versions.at(-1)}/`, versions.at(-1)),
+    changed: sc.changes ? { title: `What changed in script v${v}`, text: sc.changes } : null,
+    empty: latest ? "No notes yet. Click any cell in the script to add one." : "No notes on this version.",
+    general: `<textarea id="n-general" data-general rows="4" placeholder="The story, tone, length"></textarea>`,
+    howTo,
+    count: summary.notes,
+  }),
+)}`;
   const foot = `<script type="application/json" id="script-state">${JSON.stringify(state).replace(/</g, "\\u003c")}</script>
 <script src="/ui/script.js" defer></script>`;
   return { status: 200, html: layout({ title: `Script v${v}: ${video.title}`, active: "videos", studio, body, foot }) };
@@ -1270,14 +1310,11 @@ export function storyboardPage(studio, slug, version) {
   const sbData = versions.includes(v) ? readStoryboard(studio.root, slug, v) : null;
   if (!video || !sbData) return { status: 404, html: page404(studio, `Storyboard v${v ?? "?"} for “${slug}”`) };
   const { storyboard: sb, feedback: fb, summary } = sbData;
-  const brief = readBrief(studio.root, slug);
   const brand = video.brand ? readBrand(studio.root, video.brand) : null;
   const size = parseSize(sb.size || video.size);
-  const portrait = size.h > size.w;
   const base = `/videos/${enc(slug)}/storyboard/v${v}/`;
   const latest = v === versions.at(-1);
   const scenes = Array.isArray(sb.scenes) ? sb.scenes : [];
-  const total = sb.duration ?? scenes.reduce((mx, s) => Math.max(mx, +s.end || 0), 0);
   // frames show at most 300 px wide and 400 px tall, keeping their shape: a scene's frames fit on one row beside what
   // it says (a click opens one full size)
   const fmax = Math.round(Math.min(300, (400 * size.w) / size.h));
@@ -1296,58 +1333,40 @@ export function storyboardPage(studio, slug, version) {
         s.onScreen ? script("On screen", s.onScreen) : "",
         s.script && !s.voiceover ? script("Script", s.script) : "",
       ].join("");
-      return `<section class="section section--rule scene" id="${esc(id)}" data-scene="${esc(id)}">
-  <div class="container">
-    <div class="scene_head">
-      <p class="eyebrow eyebrow--plain"><span class="eyebrow_index">${String(i + 1).padStart(2, "0")}</span><span>${esc([timecode(s.start), timecode(s.end)].filter(Boolean).join("–"))}${dur ? ` · ${esc(dur)}` : ""}</span></p>
-      <div class="row">${badges}${
-        s.clip
-          ? `<a class="button button--secondary scene_play" href="${base}${enc(s.clip)}" data-play data-w="${size.w}" data-h="${size.h}" data-label="${esc(`Scene ${i + 1}: ${s.title || `Scene ${i + 1}`}`)}"><span aria-hidden="true">▶</span> Play the scene</a>`
-          : ""
-      }</div>
-    </div>
-    <h2>${esc(s.title || `Scene ${i + 1}`)}</h2>
-    <div class="scene_frames" data-frames="${frames.length}" style="--_fmax: ${fmax}px">
-      ${
-        frames.length
-          ? frames
-              .map((f, k) => {
-                const caption = f.caption || `Frame ${k + 1}`;
-                const time = f.time != null ? timecode(f.time, true) : "";
-                const label = [`Scene ${i + 1}: ${s.title || `Scene ${i + 1}`}`, caption, time].filter(Boolean).join(" · ");
-                const frameId = String(f.src || "").split("/").pop().replace(/\.[a-z0-9]+$/i, "") || `${id}-${k + 1}`;
-                return frame({ src: `${base}${enc(f.src)}`, ratio: size.ratio, alt: f.caption || `Scene ${i + 1}, frame ${k + 1}`, caption, time, zoom: { w: size.w, h: size.h, label, id: frameId } });
-              })
-              .join("")
-          : frame({ ratio: size.ratio, empty: "No frames for this scene" })
-      }
-    </div>
-    <div class="scene_grid">
-      <div class="stack">
-        ${lines}
-        ${
-          s.description || s.notes
-            ? `<details class="fold scene_more"><summary><span class="field-label">What happens</span></summary>${s.description ? `<p>${itemChips(esc(s.description), video)}</p>` : ""}${s.notes ? `<p class="muted">${esc(s.notes)}</p>` : ""}</details>`
-            : ""
-        }
-      </div>
-      <fieldset class="review" data-review="${esc(id)}">
-        <legend class="field-label review_legend">Your review of scene ${i + 1}</legend>
-        <div class="review_box">
-          <div class="review_options">
-            <label class="review_option review_option--approved"><input type="radio" name="r-${esc(id)}" value="approved" checked> Approved</label>
-            <label class="review_option review_option--feedback"><input type="radio" name="r-${esc(id)}" value="feedback"> Feedback</label>
-          </div>
-          <div class="review_note" hidden>
-            <label class="field-label" for="n-${esc(id)}">What should change?</label>
-            <textarea id="n-${esc(id)}" data-note="${esc(id)}" rows="4" placeholder="Be as specific as you can: what to change, and why."></textarea>
-            <ul class="points" data-points="${esc(id)}"></ul>
-          </div>
-        </div>
-      </fieldset>
-    </div>
+      return `<article class="scene" id="${esc(id)}" data-scene="${esc(id)}">
+  <div class="scene_head">
+    <p class="eyebrow eyebrow--plain"><span class="eyebrow_index">${String(i + 1).padStart(2, "0")}</span><span>${esc([timecode(s.start), timecode(s.end)].filter(Boolean).join("–"))}${dur ? ` · ${esc(dur)}` : ""}</span></p>
+    <div class="row">${badges}${
+      s.clip
+        ? `<a class="button button--secondary button--medium scene_play" href="${base}${enc(s.clip)}" data-play data-w="${size.w}" data-h="${size.h}" data-label="${esc(`Scene ${i + 1}: ${s.title || `Scene ${i + 1}`}`)}"><span aria-hidden="true">▶</span> Play the scene</a>`
+        : ""
+    }${latest ? `<button class="button button--secondary button--medium scene_add" type="button" data-scene-note="${esc(id)}">+ Note</button>` : ""}</div>
   </div>
-</section>`;
+  <h2>${esc(s.title || `Scene ${i + 1}`)}</h2>
+  <div class="scene_frames" data-frames="${frames.length}" style="--_fmax: ${fmax}px">
+    ${
+      frames.length
+        ? frames
+            .map((f, k) => {
+              const caption = f.caption || `Frame ${k + 1}`;
+              const time = f.time != null ? timecode(f.time, true) : "";
+              const label = [`Scene ${i + 1}: ${s.title || `Scene ${i + 1}`}`, caption, time].filter(Boolean).join(" · ");
+              const frameId = String(f.src || "").split("/").pop().replace(/\.[a-z0-9]+$/i, "") || `${id}-${k + 1}`;
+              return frame({ src: `${base}${enc(f.src)}`, ratio: size.ratio, alt: f.caption || `Scene ${i + 1}, frame ${k + 1}`, caption, time, zoom: { w: size.w, h: size.h, label, id: frameId } });
+            })
+            .join("")
+        : frame({ ratio: size.ratio, empty: "No frames for this scene" })
+    }
+  </div>
+  <div class="stack scene_words">
+    ${lines}
+    ${
+      s.description || s.notes
+        ? `<details class="fold scene_more"><summary><span class="field-label">What happens</span></summary>${s.description ? `<p>${itemChips(esc(s.description), video)}</p>` : ""}${s.notes ? `<p class="muted">${esc(s.notes)}</p>` : ""}</details>`
+        : ""
+    }
+  </div>
+</article>`;
     })
     .join("\n");
 
@@ -1362,74 +1381,45 @@ export function storyboardPage(studio, slug, version) {
     ratio: size.w / size.h,
   };
 
+  const howTo = latest
+    ? `<p>Look at each scene's frames${scenes.some((x) => x.clip) ? ", play its rough cut" : ""} and open <b>What happens</b> for the detail. Every scene is approved unless it has a note: press <b>+ Note</b> on a scene to say what should change. To show exactly what you mean, press <b>Box</b> or <b>Arrow</b> on a frame and drag on it: your note joins that scene's. Notes under <b>Anything else?</b> ask for changes too. Then press <b>Approve and save</b> (it says <b>Send feedback</b> once there are notes): Claude picks your review up straight away (if Claude isn't waiting, tell it you've saved). Nothing is built until every scene is approved.</p><p>The download button at the top makes a PDF, to share outside the studio: put feedback that comes back on the scenes it's about, or in <b>Anything else?</b>, then save.</p>`
+    : "";
+  const strip =
+    scenes.length > 1
+      ? `<nav class="scenestrip" aria-label="Scenes"><div class="scenestrip_row"><span class="field-label">Scenes</span>${state.scenes
+          .map(
+            (x, i) =>
+              `<a class="scenestrip_item" href="#${esc(x.id)}" data-strip="${esc(x.id)}" title="${esc(x.title)}"><span class="scenestrip_dot" aria-hidden="true"></span><span class="visually-hidden">Scene </span>${String(i + 1).padStart(2, "0")}<span class="visually-hidden" data-strip-state>, approved</span></a>`,
+          )
+          .join("")}</div></nav>`
+      : "";
+
   const body = `
-<section class="section section--hero">
-  <div class="container">
-    <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/#videos">Videos</a> / <a href="/videos/${enc(slug)}/">${esc(video.title)}</a> / Storyboard v${v}</p>
-    ${eyebrow(`V${v}`, "Storyboard")}
-    <div class="hero_head">
-      <h1>${esc(sb.title || video.title)}</h1>
-      <div class="split split--top">
-        <div class="stack">
-          ${shortLede(videoDescription(brief, sb.summary))}
-          ${stagesNav(studio, slug, `storyboard-${v}`)}
-          ${share({
-            href: `${base}download`,
-            label: "Download PDF",
-            pdf: true,
-            note: latest ? `To share outside the studio. Put feedback that comes back on the scenes it's about (choose Feedback), or in <a href="#n-general">Anything else?</a>, then save.` : "",
-          })}
-        </div>
-        <dl class="titleblock">
-          ${cell("Brand", brand?.name || video.brand || "")}
-          ${cell("Size", `${size.label} · ${size.px}`)}
-          ${cell("Length", total ? `${timecode(total)} (${(+total).toFixed(1)} s)` : video.length)}
-          ${cell("Scenes", String(scenes.length))}
-          ${cell("Version", `v${v}`)}
-          ${cell("Created", sb.created ? formatDate(Date.parse(sb.created)) : "")}
-        </dl>
-      </div>
-    </div>
-    ${heroNotes({
-      earlier: latest ? "" : `<div class="callout"><strong>This is an earlier version.</strong><p>Its feedback is shown as it was saved. <a href="/videos/${enc(slug)}/storyboard/v${versions.at(-1)}/">Review the latest version (v${versions.at(-1)})</a>.</p></div>`,
-      changed: sb.changes ? { title: `What changed in v${v}`, text: sb.changes } : null,
-      howTo: latest
-        ? `<p>Look at each scene's frames${scenes.some((x) => x.clip) ? ", play its rough cut" : ""} and open <b>What happens</b> for the detail. Every scene starts as <b>Approved</b>: choose <b>Feedback</b> on any scene you'd like changed, and say what should change. To show exactly what you mean, press <b>Box</b> or <b>Arrow</b> on a frame and drag on it: your note goes into that scene's feedback. Notes under <b>Anything else?</b> ask for changes too. Then press <b>Approve and save</b> (it says <b>Send feedback</b> once there's feedback): Claude picks your review up straight away (if Claude isn't waiting, tell it you've saved). Nothing is built until every scene is approved.</p>`
-        : "",
-    })}
-  </div>
-</section>
-${
-  scenes.length > 1
-    ? `<nav class="scenestrip" aria-label="Scenes"><div class="container"><div class="scenestrip_row"><span class="field-label">Scenes</span>${state.scenes
-        .map(
-          (x, i) =>
-            `<a class="scenestrip_item" href="#${esc(x.id)}" data-strip="${esc(x.id)}" title="${esc(x.title)}"><span class="scenestrip_dot" aria-hidden="true"></span><span class="visually-hidden">Scene </span>${String(i + 1).padStart(2, "0")}<span class="visually-hidden" data-strip-state>, approved</span></a>`,
-        )
-        .join("")}</div></div></nav>`
-    : ""
-}
-${sceneHtml}
-<section class="section section--rule" id="general">
-  <div class="container">
-    ${eyebrow("+", "General notes", true)}
-    <h2>Anything else?</h2>
-    <div class="review_note" style="max-width: 48rem">
-      <label class="field-label" for="n-general">Changes to the whole film: music, pace, overall feel (optional; notes here ask for a new version)</label>
-      <textarea id="n-general" data-note="general" rows="5"></textarea>
-    </div>
-  </div>
-</section>
-<div class="reviewbar" role="region" aria-label="Save your review">
-  <div class="reviewbar_counts" aria-live="polite">
-    <span><b data-count="approved">${summary.approved}</b> approved</span>
-    <span><b data-count="feedback">${summary.feedback}</b> feedback</span>
-    <span data-general-count${summary.hasGeneral ? "" : " hidden"}>+ general notes</span>
-    <span class="reviewbar_claude" data-claude-waiting hidden>Claude starts when you save</span>
-  </div>
-  <button class="button button--corners" type="button" data-save${latest ? "" : " disabled"}>${latest ? (!fb || summary.allApproved ? "Approve and save" : "Send feedback") : "Save feedback"}</button>
-  <p class="reviewbar_message" data-message aria-live="polite">${summary.savedAt ? `Last saved ${esc(formatDateTime(Date.parse(summary.savedAt)))}.` : ""}</p>
-</div>`;
+${reviewHead({
+  studio,
+  slug,
+  video,
+  kind: "storyboard",
+  v,
+  latest,
+  title: `Storyboard v${v}`,
+  actions: headDownload(`${base}download`, "Download PDF", true),
+  decide: `<span class="reviewhead_counts" aria-live="polite"><span><b data-count="approved">${summary.approved}</b> approved</span><span><b data-count="feedback">${summary.feedback}</b> feedback</span></span>`,
+  save: `<button class="button button--medium reviewhead_save" type="button" data-save${latest ? "" : " disabled"}>${latest ? (!fb || summary.allApproved ? "Approve and save" : "Send feedback") : "Save feedback"}</button>`,
+  saved: summary.savedAt,
+})}
+${reviewRoom(
+  `${strip}${sceneHtml}`,
+  notesPanel({
+    earlier: latest ? "" : earlierNote("storyboard", `/videos/${enc(slug)}/storyboard/v${versions.at(-1)}/`, versions.at(-1)),
+    changed: sb.changes ? { title: `What changed in storyboard v${v}`, text: sb.changes } : null,
+    empty: latest ? "Every scene is approved. Press “+ Note” on a scene to ask for a change, or Box or Arrow on a frame to point at something." : "No notes on this version.",
+    general: `<textarea id="n-general" data-note="general" rows="4" placeholder="Music, pace, overall feel"></textarea>`,
+    hint: false,
+    howTo,
+    count: summary.feedback,
+  }),
+)}`;
   const foot = `<script type="application/json" id="storyboard-state">${JSON.stringify(state).replace(/</g, "\\u003c")}</script>
 <script src="/ui/point.js" defer></script>
 <script src="/ui/storyboard.js" defer></script>`;
@@ -1721,7 +1711,6 @@ export function reviewPage(studio, slug, version) {
   const data = versions.includes(v) ? readReview(studio.root, slug, v) : null;
   if (!video || !data) return { status: 404, html: page404(studio, `Video review v${v ?? "?"} for “${slug}”`) };
   const { review: rv, feedback: fb, summary } = data;
-  const brief = readBrief(studio.root, slug);
   const brand = video.brand ? readBrand(studio.root, video.brand) : null;
   const size = parseSize(rv.size || video.size);
   const portrait = size.h > size.w;
@@ -1738,85 +1727,45 @@ export function reviewPage(studio, slug, version) {
   const chosen = openingDecision(fb, summary);
   const bytes = there?.size || 0;
 
+  const howTo = latest
+    ? `<p>Watch the video. To comment on a moment, pause there and press <b>Add a note</b>: the note is pinned to that time. To show exactly what you mean, press <b>Box</b> or <b>Arrow</b> on the paused picture and drag on it. Your decision is <b>Approve</b> unless there are notes or something under <b>Anything else?</b>: then it switches to <b>Changes needed</b> (you can change it). When you've watched it all, press <b>Approve and save</b> (it says <b>Send changes</b> once there are notes): Claude picks your review up straight away (if Claude isn't waiting, tell it you've saved). The final video is only made once you approve.</p><p>The download button at the top saves the video, to share outside the studio: paste any feedback that comes back into <b>Anything else?</b>, then save.</p>`
+    : "";
   const body = `
-<section class="section section--hero">
-  <div class="container">
-    <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/#videos">Videos</a> / <a href="/videos/${enc(slug)}/">${esc(video.title)}</a> / Video v${v}</p>
-    ${eyebrow(`V${v}`, "Video review")}
-    <div class="hero_head">
-      <h1>${esc(rv.title || video.title)}</h1>
-      <div class="split split--top">
-        <div class="stack">
-          ${shortLede(videoDescription(brief, rv.summary))}
-          ${stagesNav(studio, slug, `review-${v}`)}
-          ${bytes ? share({ href: `/videos/${enc(slug)}/review/v${v}/download`, label: `Download video (${fileSize(bytes)})`, note: latest ? SHARE_NOTE : "" }) : ""}
-        </div>
-        <dl class="titleblock">
-          ${cell("Brand", brand?.name || video.brand || "")}
-          ${cell("Size", `${size.label} · ${size.px}`)}
-          ${cell("Length", rv.duration ? `${timecode(rv.duration)} (${(+rv.duration).toFixed(1)} s)` : video.length)}
-          ${cell("Video", `v${v}`)}
-          ${cell("Shared", rv.created ? formatDate(Date.parse(rv.created)) : "")}
-          ${cell("File", rv.video ? rv.video.split("/").pop() : "")}
-        </dl>
-      </div>
-    </div>
-    ${heroNotes({
-      earlier: latest ? "" : `<div class="callout"><strong>This is an earlier version.</strong><p>Its notes are shown as they were saved. <a href="/videos/${enc(slug)}/review/v${versions.at(-1)}/">Review the latest version (v${versions.at(-1)})</a>.</p></div>`,
-      changed: rv.changes ? { title: `What changed in video v${v}`, text: rv.changes } : null,
-      howTo: latest
-        ? `<p>Watch the video. To comment on a moment, pause there and press <b>Add a note</b>: the note is pinned to that time. To show exactly what you mean, press <b>Box</b> or <b>Arrow</b> on the paused picture and drag on it. Your decision is <b>Approve video</b> unless you add a note or write under <b>Anything else?</b>: then it switches to <b>Changes needed</b> (you can change it). When you've watched it all, press <b>Approve and save</b> (it says <b>Send changes</b> once there are notes): Claude picks your review up straight away (if Claude isn't waiting, tell it you've saved). The final video is only made once you approve.</p>`
-        : "",
-    })}
-  </div>
-</section>
-<section class="section section--rule">
-  <div class="container">
-    ${eyebrow("01", "Watch and comment")}
-    <div class="review-layout">
-      <div class="stack">
-        <figure class="frame"${portrait ? ' style="max-width: 26rem"' : ""}><div class="frame_stage"><div class="frame_media frame_media--player" style="--ratio: ${size.ratio}"${latest && there ? " data-point-host" : ""}>${player}</div></div></figure>
-        ${chapters.length ? `<div class="player_tools"><span class="field-label">Jump to</span>${chapters.map((c) => `<button class="chapter" type="button" data-seek="${+c.time}">${esc(timecode(+c.time))} ${esc(c.title || "")}</button>`).join("")}</div>` : ""}
-      </div>
-      <div class="stack review-side">
-        <h2 class="card_title">Notes</h2>
-        <p class="muted" data-notes-empty>No notes yet. Pause on a moment, then press “Add a note”, or Box or Arrow on the picture to point at something.</p>
-        <div class="review-side_add"><button class="button button--secondary" type="button" data-add-note${latest && there ? "" : " disabled"}>Add a note at <span class="mono" data-now>00:00.0</span></button></div>
-        <ol class="notes" data-notes></ol>
-        <div class="review_note">
-          <label class="field-label" for="n-general">Anything else? Music, pace, overall feel (optional)</label>
-          <textarea id="n-general" data-general rows="4"></textarea>
-        </div>
-        <fieldset class="review" data-decision>
-          <legend class="field-label review_legend">Your decision</legend>
-          <div class="review_box">
-            <div class="review_options">
-              ${decisionOptions(chosen, "Approve video")}
-            </div>
-            <p class="review_hint" data-decision-hint></p>
-          </div>
-        </fieldset>
-      </div>
-    </div>
-  </div>
-</section>
-<div class="reviewbar" role="region" aria-label="Save your review">
-  <div class="reviewbar_counts" aria-live="polite">
-    <span><b data-count="notes">${summary.notes}</b> <span data-count-word>${summary.notes === 1 ? "note" : "notes"}</span></span>
-    <span>Decision: <b data-decision-label>${esc(DECISION_LABEL[chosen])}</b></span>
-    <span class="reviewbar_claude" data-claude-waiting hidden>Claude starts when you save</span>
-  </div>
-  <button class="button button--corners" type="button" data-save${latest ? "" : " disabled"}>${latest ? SAVE[chosen] : "Save review"}</button>
-  <p class="reviewbar_message" data-message aria-live="polite">${summary.savedAt ? `Last saved ${esc(formatDateTime(Date.parse(summary.savedAt)))}.` : ""}</p>
-</div>`;
+${reviewHead({
+  studio,
+  slug,
+  video,
+  kind: "review",
+  v,
+  latest,
+  title: `Video v${v}`,
+  actions: bytes ? headDownload(`/videos/${enc(slug)}/review/v${v}/download`, `Download video (${fileSize(bytes)})`) : "",
+  decide: headDecision(chosen, "Approve"),
+  save: `<button class="button button--medium reviewhead_save" type="button" data-save${latest ? "" : " disabled"}>${latest ? SAVE[chosen] : "Save review"}</button>`,
+  saved: summary.savedAt,
+})}
+${reviewRoom(
+  `<figure class="frame player"${portrait ? ' style="max-width: 26rem"' : ""}><div class="frame_stage"><div class="frame_media frame_media--player" style="--ratio: ${size.ratio}"${latest && there ? " data-point-host" : ""}>${player}</div></div></figure>
+    ${chapters.length ? `<div class="player_tools"><span class="field-label">Jump to</span>${chapters.map((c) => `<button class="chapter" type="button" data-seek="${+c.time}">${esc(timecode(+c.time))} ${esc(c.title || "")}</button>`).join("")}</div>` : ""}`,
+  notesPanel({
+    earlier: latest ? "" : earlierNote("video", `/videos/${enc(slug)}/review/v${versions.at(-1)}/`, versions.at(-1)),
+    changed: rv.changes ? { title: `What changed in video v${v}`, text: rv.changes } : null,
+    add: latest ? `<div class="notespanel_add"><button class="button button--secondary button--medium" type="button" data-add-note${there ? "" : " disabled"}>Add a note at <span class="mono" data-now>00:00.0</span></button></div>` : "",
+    empty: latest ? "No notes yet. Pause on a moment, then press “Add a note”, or Box or Arrow on the picture to point at something." : "No notes on this version.",
+    general: `<textarea id="n-general" data-general rows="4" placeholder="Music, pace, overall feel"></textarea>`,
+    howTo,
+    count: summary.notes,
+  }),
+)}`;
   const foot = `<script type="application/json" id="review-state">${JSON.stringify(state).replace(/</g, "\\u003c")}</script>
 <script src="/ui/point.js" defer></script>
 <script src="/ui/review.js" defer></script>`;
   return { status: 200, html: layout({ title: `Video v${v}: ${video.title}`, active: "videos", studio, body, foot }) };
 }
 
+/** A scene's words, as the script has them (its bold marks, the words on screen, drawn bold). */
 function script(label, text) {
-  return `<blockquote class="script"><span class="script_label">${esc(label)}</span><span class="script_text">${esc(text)}</span></blockquote>`;
+  return `<blockquote class="script"><span class="script_label">${esc(label)}</span><span class="script_text">${rich(text)}</span></blockquote>`;
 }
 
 // ───────── the library ─────────

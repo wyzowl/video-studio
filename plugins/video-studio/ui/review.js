@@ -1,6 +1,7 @@
-// Video review: watch the video, pin notes to moments in it, then the decision: Approve video, unless there are notes
-// (they switch it to Changes needed), and save: the button says which ("Approve and save" or "Send changes"). Saving
-// posts the review to the studio server, which writes feedback.json beside the review.
+// Video review: watch the video, pin notes to moments in it (kept in the notes beside the video, in time order), then
+// the decision: Approve, unless there are notes (they switch it to Changes needed), and save: the button says which
+// ("Approve and save" or "Send changes"). A note's time takes you back to its moment. Saving posts the review to the
+// studio server, which writes feedback.json beside the review.
 // "Point at it" (ui/point.js): on the paused picture, Box or Arrow draws on it, and the note keeps the mark and a
 // picture of that moment with the mark on it (saved in the review's points/ folder), shown close up in the list.
 (() => {
@@ -14,22 +15,22 @@
   const saveBtn = document.querySelector("[data-save]");
   const message = document.querySelector("[data-message]");
   const countEl = document.querySelector('[data-count="notes"]');
-  const countWord = document.querySelector("[data-count-word]");
-  const decisionLabel = document.querySelector("[data-decision-label]");
   const hint = document.querySelector("[data-decision-hint]");
   const radios = [...document.querySelectorAll('input[name="decision"]')];
-  const LABEL = { approved: "Approve", changes: "Changes needed" };
   const SAVE = { approved: "Approve and save", changes: "Send changes" };
   const HINT = {
-    approved: "Claude will make the final video. Any notes are treated as small last tweaks.",
-    changes: "Claude will make the changes in your notes and share a new version.",
+    approved: "Saving approves the video: Claude makes the final video. Any notes are treated as small last tweaks.",
+    changes: "Saving sends your notes: Claude makes the changes and shares a new version.",
   };
   let notes = [];
   let dirty = false;
-  // live.js reads window.studioDirty, so an update never reloads over unsaved notes
+  // live.js reads window.studioDirty, so an update never reloads over unsaved notes; the save button shows a dot
   const setDirty = (value) => {
     dirty = value;
     window.studioDirty = value;
+    saveBtn?.classList.toggle("is-unsaved", value);
+    if (value) saveBtn?.setAttribute("data-tip", "Not saved yet");
+    else saveBtn?.removeAttribute("data-tip");
   };
 
   const tc = (t) => {
@@ -45,7 +46,7 @@
   };
   const changed = () => {
     setDirty(true);
-    say("Unsaved changes.");
+    say("");
   };
   const seek = (t) => {
     if (!player) return;
@@ -62,12 +63,12 @@
     list.replaceChildren(
       ...notes.map((n) => {
         const li = document.createElement("li");
-        li.className = "note";
+        li.className = "notecard";
         const time = document.createElement("button");
         time.type = "button";
-        time.className = "note_time";
+        time.className = "notecard_place";
         time.textContent = tc(n.time);
-        time.title = "Jump to this moment";
+        time.title = "Go to this moment";
         time.addEventListener("click", () => seek(n.time));
         const text = document.createElement("textarea");
         text.rows = 3;
@@ -81,7 +82,7 @@
         });
         const remove = document.createElement("button");
         remove.type = "button";
-        remove.className = "note_remove";
+        remove.className = "notecard_remove";
         remove.textContent = "×";
         remove.title = "Remove this note";
         remove.setAttribute("aria-label", `Remove the note at ${tc(n.time)}`);
@@ -92,12 +93,13 @@
           follow();
           changed();
         });
+        const head = document.createElement("div");
+        head.className = "notecard_head";
+        head.append(time, remove);
         const shape = shapeOf(n);
         if (shape && (n.pending || n.picture)) {
           // a pointed note: a close-up of what it points at, then the note; its time shows the mark again
-          li.classList.add("note--pointed");
-          const body = document.createElement("div");
-          body.className = "note_body";
+          li.classList.add("notecard--pointed");
           const close = document.createElement("button");
           close.type = "button";
           close.className = "note_point";
@@ -110,17 +112,15 @@
             seek(n.time);
             point?.show(shape);
           });
-          body.append(close, label, text);
           time.addEventListener("click", () => point?.show(shape));
-          li.append(time, body, remove);
-        } else li.append(time, text, remove);
+          li.append(head, close, label, text);
+        } else li.append(head, text);
         if (n === focusNote) queueMicrotask(() => text.focus());
         return li;
       }),
     );
-    empty.hidden = notes.length > 0;
-    countEl.textContent = String(notes.length);
-    countWord.textContent = notes.length === 1 ? "note" : "notes";
+    if (empty) empty.hidden = notes.length > 0;
+    if (countEl) countEl.textContent = String(notes.length);
   }
 
   // The decision is Approve unless there are notes: the first note switches it to Changes needed, and removing the last
@@ -141,8 +141,7 @@
 
   function showDecision() {
     const d = decision();
-    decisionLabel.textContent = LABEL[d];
-    hint.textContent = HINT[d];
+    if (hint) hint.textContent = state.latest ? HINT[d] : "";
     if (state.latest && saveBtn) saveBtn.textContent = SAVE[d];
   }
 

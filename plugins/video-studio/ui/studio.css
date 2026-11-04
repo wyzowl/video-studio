@@ -84,12 +84,9 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* jumps and focus land clear of the sticky masthead, a storyboard's scene strip and the save bar (ui/page.js
-     measures the first two) */
-  scroll-padding-top: calc(var(--masthead-h, 3.6rem) + var(--strip-h, 0px) + var(--space-2));
-}
-html:has(.reviewbar) {
-  scroll-padding-bottom: 7.5rem;
+  /* jumps and focus land clear of the sticky masthead, a review's bar and a storyboard's scene strip (ui/page.js
+     measures them) */
+  scroll-padding-top: calc(var(--masthead-h, 3.6rem) + var(--reviewhead-h, 0px) + var(--strip-h, 0px) + var(--space-2));
 }
 body {
   margin: 0;
@@ -251,13 +248,15 @@ p {
   gap: var(--space-6);
 }
 /* The page header: a dark panel with the dot grid that fills the column between the rails, flush against the
-   masthead above and the next section's rule below. Its vertical space sits inside the panel. */
+   masthead above and the next section's rule below. Its vertical space sits inside the panel. A review's bar is the
+   same panel, slim, across the page. */
 .section--hero {
   padding-block: 0;
   background: none;
   animation: none;
 }
-.section--hero > .container {
+.section--hero > .container,
+.reviewhead {
   --background: var(--ink);
   --background-2: var(--ink-800);
   --background-3: var(--ink-700);
@@ -269,6 +268,8 @@ p {
   background:
     radial-gradient(color-mix(in lab, var(--paper) 14%, transparent) 1px, transparent 1px) center top / 1.25rem 1.25rem,
     var(--background);
+}
+.section--hero > .container {
   padding-block: var(--space-8) var(--space-7);
 }
 .section--hero .lede {
@@ -304,17 +305,6 @@ p {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-}
-/* under a review page's hero: what changed and how to review, side by side, each closed until it's opened */
-.hero_notes {
-  display: grid;
-  gap: var(--space-4);
-  align-items: start;
-}
-@media (min-width: 52rem) {
-  .hero_notes--two {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
 }
 
 /* ───────── a fold: a box that's closed until it's opened (a <details>) ───────── */
@@ -1111,17 +1101,466 @@ a.frame_stage:hover .frame_media > img {
   }
 }
 
+/* ───────── review pages: the bar, the content, and the notes beside it ───────── */
+/* the bar: back to the overview and the tabs, the version and where it stands, the downloads, the decision and
+   saving, on the page header's dark panel (above) across the page, its row lined up with the content. It stays under
+   the masthead beside the notes (on a narrow screen it scrolls away, as it takes several rows there); what saving said
+   slides down under it */
+.reviewhead {
+  position: relative;
+  z-index: 36;
+}
+.reviewhead_row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  width: min(100% - 2 * var(--page-margin), var(--max) + 2 * var(--rail-pad));
+  margin-inline: auto;
+  padding: 1.25rem var(--rail-pad);
+}
+.reviewhead_title {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.reviewhead_name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+}
+.reviewhead_title h1 {
+  margin: 0;
+  font-size: var(--text-h4);
+  line-height: 1.1;
+}
+.reviewhead_back {
+  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  text-decoration: none;
+}
+.reviewhead_back:hover {
+  color: var(--text);
+}
+/* the version's others, beside its title */
+.reviewhead_versions {
+  gap: var(--space-1);
+  align-self: center;
+}
+.reviewhead_versions .stages_item {
+  min-height: 1.6rem;
+  padding: 0.2rem 0.45rem;
+}
+/* the line over the title: back to the overview, then the script, storyboard and video as tabs, the one under review
+   underlined */
+.reviewhead_nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+.stagetabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  padding-left: var(--space-3);
+  border-left: var(--border-width) solid var(--border-strong);
+}
+.stagetab {
+  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color var(--hover) var(--ease), border-color var(--hover) var(--ease);
+}
+.stagetab:hover {
+  color: var(--text);
+}
+.stagetab[aria-current] {
+  color: var(--text);
+  border-bottom-color: var(--yellow);
+}
+/* the save button: a dot while there are changes not saved yet */
+.reviewhead_save.is-unsaved::after {
+  content: "";
+  position: absolute;
+  top: -0.3rem;
+  right: -0.3rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 2px solid var(--background);
+  border-radius: 50%;
+  background: var(--pink);
+}
+.reviewhead_actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2) var(--space-3);
+  margin-left: auto;
+}
+.button--medium {
+  min-height: 2.5rem;
+  padding: 0.55rem 0.95rem;
+}
+/* an icon alone (its name is its label and tooltip); a word it shows for a moment, like "Copied", widens it */
+.button--icon {
+  min-width: 2.5rem;
+  padding-inline: 0.55rem;
+}
+/* a tooltip: the button's name (or, on the save button, "Not saved yet"), under it, on hover or keyboard focus */
+.button[data-tip]::before {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 50%;
+  z-index: 1;
+  padding: 0.35rem 0.55rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 0.25rem 0.75rem color-mix(in lab, var(--ink) 25%, transparent);
+  font: 600 var(--text-tiny) / 1.2 var(--font-body);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -0.2rem);
+  transition:
+    opacity var(--hover) var(--ease),
+    transform var(--hover) var(--ease);
+}
+.button[data-tip]:focus-visible::before {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+@media (hover: hover) {
+  .button[data-tip]:hover::before {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    transition-delay: 0.15s;
+  }
+}
+.icon {
+  flex: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.button[aria-busy="true"] {
+  cursor: progress;
+}
+.reviewhead_counts {
+  display: flex;
+  gap: var(--space-3);
+  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.reviewhead_counts b {
+  font-variant-numeric: tabular-nums;
+}
+/* shown while Claude waits in the background for this review (studio.mjs wait) */
+.reviewhead_claude {
+  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--yellow);
+}
+.reviewhead_claude::before {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-right: 0.5em;
+  border-radius: 50%;
+  background: var(--yellow);
+}
+.reviewhead_claude[hidden] {
+  display: none;
+}
+/* what saving said, and a download's progress: a thin notice across the bar, under its row, that slides down when
+   there's something to say */
+.reviewhead_notice {
+  display: grid;
+  grid-template-rows: 0fr;
+}
+.reviewhead_notice:has(.reviewhead_message:not(:empty)) {
+  grid-template-rows: 1fr;
+}
+.reviewhead_notice > div {
+  min-height: 0;
+  overflow: hidden;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reviewhead_notice {
+    transition: grid-template-rows 0.3s var(--ease);
+  }
+}
+.reviewhead_message {
+  margin: 0;
+  padding: var(--space-2) var(--page-margin);
+  border-top: var(--border-width) solid var(--border);
+  background: var(--background-2);
+  font-size: var(--text-small);
+  text-align: center;
+  text-wrap: balance;
+}
+.reviewhead_message:empty {
+  display: none;
+}
+.reviewhead_message.is-error {
+  border-top-color: var(--error);
+  background: var(--error);
+  color: var(--white);
+}
+/* the decision: Approve, or Changes needed, side by side; the one chosen is filled to its edges */
+.decide {
+  display: inline-grid;
+  grid-auto-flow: column;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  border: 0;
+}
+.review_option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.8rem;
+  border: var(--border-width) solid var(--border-strong);
+  font: 600 var(--text-tiny) / 1.1 var(--font-body);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--hover) var(--ease),
+    border-color var(--hover) var(--ease),
+    color var(--hover) var(--ease);
+}
+.review_option:first-of-type {
+  border-radius: var(--radius-s) 0 0 var(--radius-s);
+}
+.review_option:last-of-type {
+  border-left: 0;
+  border-radius: 0 var(--radius-s) var(--radius-s) 0;
+}
+.review_option input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.review_option:has(input:focus-visible) {
+  outline: 2px dashed var(--text);
+  outline-offset: -4px;
+}
+.review_option:hover {
+  background: var(--background-3);
+}
+.review_option--approved:has(input:checked) {
+  border-color: var(--success);
+  background: var(--success);
+  color: var(--white);
+}
+.review_option--feedback:has(input:checked) {
+  border-color: var(--pink);
+  background: var(--pink);
+  color: var(--white);
+}
+.review_option:has(input:disabled) {
+  cursor: default;
+}
+
+/* the room: the content, and the notes beside it on a wide screen (under it on a phone), in view as the content scrolls */
+.reviewroom {
+  display: grid;
+  gap: var(--space-6);
+  padding-block: var(--space-6) var(--space-8);
+}
+.reviewroom_content {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-6);
+  align-content: start;
+}
+@media (min-width: 52rem) {
+  .reviewhead {
+    position: sticky;
+    top: var(--masthead-h, 3.6rem);
+  }
+  .reviewroom {
+    grid-template-columns: minmax(0, 7fr) minmax(17rem, 3fr);
+    align-items: start;
+  }
+  .notespanel {
+    position: sticky;
+    top: calc(var(--masthead-h, 3.6rem) + var(--reviewhead-h, 5rem) + var(--space-4));
+    max-height: calc(100vh - var(--masthead-h, 3.6rem) - var(--reviewhead-h, 5rem) - var(--space-6));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+.notespanel {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background-2);
+}
+.notespanel_head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.notespanel_title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-h4);
+}
+.notespanel_count {
+  min-width: 1.6rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--radius-s);
+  background: var(--background-3);
+  font: 600 var(--text-tiny) / 1.2 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.notespanel_add {
+  display: flex;
+}
+.notespanel_empty {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--text-2);
+}
+.notespanel_general {
+  display: grid;
+  gap: var(--space-2);
+}
+.notespanel_general textarea {
+  min-height: 5rem;
+}
+.notespanel_hint {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--text-2);
+}
+.notespanel_hint:empty {
+  display: none;
+}
+/* what changed in this version and how to review: a label that opens and closes (both closed to begin with) */
+.notespanel_fold {
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--yellow);
+  background: var(--background-3);
+  font-size: var(--text-small);
+}
+.notespanel_fold > summary {
+  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.notespanel_fold > :not(summary) {
+  margin: var(--space-2) 0 0;
+}
+.notespanel_earlier {
+  border-left-color: var(--pink);
+}
+
+/* a note: its place (a cell, a scene or a moment: back to it), the note, and a button to remove it */
+.notecards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.notecards:empty {
+  display: none;
+}
+.notecard {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--background);
+  border: var(--border-width) solid var(--border);
+  border-left: 3px solid var(--pink);
+  border-radius: var(--radius-s);
+  transition: border-color var(--hover) var(--ease);
+}
+.notecard.is-selected {
+  border-color: var(--text);
+  border-left-color: var(--pink);
+}
+.notecard_head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.notecard_place {
+  padding: 0.3rem 0.5rem;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: var(--ink);
+  color: var(--paper);
+  font: 600 var(--text-tiny) / 1.2 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+  cursor: pointer;
+}
+.notecard_place:hover {
+  background: color-mix(in lab, var(--ink) 80%, var(--yellow));
+}
+.notecard_remove {
+  flex: none;
+  padding: 0.1rem 0.45rem;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: transparent;
+  color: var(--text-2);
+  font: 400 1.3rem / 1 var(--font-body);
+  cursor: pointer;
+}
+.notecard_remove:hover {
+  background: var(--background-3);
+  color: var(--text);
+}
+.notecard_remove[hidden] {
+  display: none;
+}
+.notecard textarea {
+  min-height: 4.5rem;
+}
+
 /* ───────── storyboard page ───────── */
-/* the scene strip: every scene's number and how it's marked, kept under the masthead; a click jumps to the scene */
+/* the scene strip: every scene's number and how it's marked, kept under the bar; a click jumps to the scene */
 .scenestrip {
-  --_x: calc((100% - min(100% - 2 * var(--page-margin), var(--max) + 2 * var(--rail-pad))) / 2);
   position: sticky;
-  top: var(--masthead-h, 3.6rem);
+  top: calc(var(--masthead-h, 3.6rem) + var(--reviewhead-h, 5rem));
   z-index: 35;
-  background:
-    linear-gradient(var(--border), var(--border)) left var(--_x) top 0 / var(--border-width) 100% no-repeat,
-    linear-gradient(var(--border), var(--border)) right var(--_x) top 0 / var(--border-width) 100% no-repeat,
-    color-mix(in lab, var(--paper) 92%, transparent);
+  margin-top: calc(-1 * var(--space-4));
+  background: color-mix(in lab, var(--paper) 94%, transparent);
   backdrop-filter: blur(8px);
   transition: box-shadow var(--hover) var(--ease);
 }
@@ -1174,12 +1613,35 @@ a.frame_stage:hover .frame_media > img {
 .scenestrip_item.is-feedback .scenestrip_dot {
   background: var(--pink);
 }
+/* a scene: its number and times, its frames, then what it says; a rule between scenes */
+.scene {
+  display: grid;
+  gap: var(--space-4);
+  padding-top: var(--space-6);
+  border-top: var(--border-width) solid var(--border);
+}
+.scene:first-of-type {
+  border-top: 0;
+  padding-top: var(--space-2);
+}
+.scene h2 {
+  margin: 0;
+  font-size: var(--text-h3);
+}
 .scene_head {
   display: flex;
   flex-wrap: wrap;
-  align-items: end;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+}
+.scene.is-selected .scene_add {
+  border-color: var(--text);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .scene.is-flash {
+    animation: note-flash 1.4s var(--ease);
+  }
 }
 /* frames at a size that's easy to review: at most 300 px wide and 400 px tall (--_fmax keeps the shape), a scene's
    frames on one row, so they sit above what the scene says. They shrink a little to fit; past that the row scrolls
@@ -1202,15 +1664,8 @@ a.frame_stage:hover .frame_media > img {
 .frame_stage--zoom {
   cursor: zoom-in;
 }
-.scene_grid {
-  display: grid;
-  gap: var(--space-6);
-}
-@media (min-width: 64rem) {
-  .scene_grid {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    align-items: start;
-  }
+.scene_words {
+  max-width: 48rem;
 }
 .script {
   margin: 0;
@@ -1237,86 +1692,6 @@ a.frame_stage:hover .frame_media > img {
   line-height: 1.4;
   white-space: pre-line;
 }
-/* a review control: its label sits just above the box, not on its border */
-.review {
-  border: 0;
-  padding: 0;
-  margin: 0;
-  min-width: 0;
-}
-.review_legend {
-  float: left;
-  width: 100%;
-  padding: 0;
-  margin: 0 0 var(--space-2);
-}
-.review_box {
-  clear: both;
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
-  background: var(--background-2);
-  padding: var(--space-4);
-  display: grid;
-  gap: var(--space-3);
-}
-.review_options {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  border: var(--border-width) solid var(--border-strong);
-  border-radius: var(--radius-s);
-  overflow: clip;
-}
-.review_option {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  min-height: 2.75rem;
-  padding: var(--space-2);
-  font: 600 var(--text-small) / 1.1 var(--font-body);
-  text-align: center;
-  cursor: pointer;
-  border-left: var(--border-width) solid var(--border);
-  transition: background-color var(--hover) var(--ease), color var(--hover) var(--ease);
-}
-.review_option:first-child {
-  border-left: 0;
-}
-.review_option input {
-  position: absolute;
-  opacity: 0;
-  inset: 0;
-  margin: 0;
-  cursor: pointer;
-}
-.review_option:has(input:focus-visible) {
-  outline: 2px dashed var(--text);
-  outline-offset: -4px;
-}
-.review_option:hover {
-  background: var(--background-3);
-}
-.review_option:has(input:checked) {
-  background: var(--ink);
-  color: var(--paper);
-}
-.review_option--approved:has(input:checked) {
-  background: var(--success);
-  color: var(--white);
-}
-.review_option--feedback:has(input:checked) {
-  background: var(--pink);
-  color: var(--white);
-}
-.review_note {
-  display: grid;
-  gap: var(--space-2);
-}
-.review_note[hidden] {
-  display: none;
-}
 textarea {
   width: 100%;
   min-height: 7rem;
@@ -1324,16 +1699,9 @@ textarea {
   padding: var(--space-3);
   border: var(--border-width) solid var(--border-strong);
   border-radius: var(--radius-s);
-  background: var(--background-3);
-  color: var(--text);
-  font: 400 var(--text-main) / 1.5 var(--font-body);
-}
-textarea:focus {
   background: var(--white);
-}
-.review_hint {
-  font-size: var(--text-small);
-  color: var(--text-2);
+  color: var(--ink);
+  font: 400 var(--text-main) / 1.5 var(--font-body);
 }
 .scene.is-approved .eyebrow_index {
   background: var(--success);
@@ -1345,148 +1713,8 @@ textarea:focus {
   border-color: var(--pink);
   color: var(--white);
 }
-/* the floating save bar: dark, so it stands out as it passes over the paper */
-.reviewbar {
-  --background: var(--ink);
-  --text: var(--paper);
-  --text-2: color-mix(in lab, var(--paper) 72%, transparent);
-  --border: color-mix(in lab, var(--paper) 20%, transparent);
-  --border-strong: color-mix(in lab, var(--paper) 45%, transparent);
-  position: sticky;
-  bottom: var(--space-4);
-  z-index: 30;
-  width: min(100% - 2 * var(--page-margin), 52rem);
-  margin: var(--space-6) auto var(--space-4);
-  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  background: var(--background);
-  color: var(--text);
-  border-radius: var(--radius);
-  box-shadow: 0 1rem 2.5rem -0.75rem color-mix(in lab, var(--ink) 60%, transparent);
-}
-.reviewbar_counts {
-  flex: 1 1 11rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-4);
-  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.reviewbar .button {
-  flex: none;
-}
-@media (max-width: 40rem) {
-  /* a phone: the counts on a line of their own, the buttons together on the right under them */
-  .reviewbar {
-    bottom: var(--space-2);
-    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
-    gap: var(--space-2);
-  }
-  .reviewbar_counts {
-    flex-basis: 100%;
-    gap: 0.15rem var(--space-3);
-    font-size: 0.6875rem;
-    letter-spacing: 0.04em;
-  }
-  .reviewbar .button,
-  .reviewbar_jump {
-    margin-left: auto;
-  }
-  .reviewbar_jump:not([hidden]) + .button {
-    margin-left: 0;
-  }
-  .reviewbar .button {
-    min-height: 2.5rem;
-    padding: 0.55rem 0.9rem;
-  }
-  .reviewbar_message {
-    font-size: var(--text-tiny);
-  }
-}
-.reviewbar_counts b {
-  font-variant-numeric: tabular-nums;
-}
-/* "Next note": to each row with a note in turn (ui/script.js) */
-.reviewbar_jump {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4em;
-  min-height: 2.75rem;
-  padding: 0.55rem 0.8rem;
-  border: var(--border-width) solid var(--border-strong);
-  border-radius: var(--radius-s);
-  background: transparent;
-  color: var(--text);
-  font: 500 var(--text-tiny) / 1 var(--font-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: border-color var(--hover) var(--ease), color var(--hover) var(--ease);
-}
-.reviewbar_jump:hover {
-  border-color: var(--yellow);
-  color: var(--yellow);
-}
-.reviewbar_jump[hidden] {
-  display: none;
-}
-@media (max-width: 40rem) {
-  .reviewbar_jump {
-    min-height: 2.5rem;
-    padding: 0.5rem 0.6rem;
-  }
-}
-/* shown while Claude waits in the background for this review (studio.mjs wait) */
-.reviewbar_claude {
-  color: var(--yellow);
-}
-.reviewbar_claude::before {
-  content: "";
-  display: inline-block;
-  width: 0.55em;
-  height: 0.55em;
-  margin-right: 0.5em;
-  border-radius: 50%;
-  background: currentColor;
-}
-.reviewbar_claude[hidden] {
-  display: none;
-}
-.reviewbar_message {
-  flex-basis: 100%;
-  font-size: var(--text-small);
-}
-.reviewbar_message:empty {
-  display: none;
-}
-.reviewbar_message.is-error {
-  color: #ffab9a;
-}
 
-/* video review page: player beside the notes on wide screens; "Add a note" heads the notes */
-.review-layout {
-  display: grid;
-  gap: var(--space-6);
-}
-@media (min-width: 64rem) {
-  .review-layout {
-    grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
-    align-items: start;
-  }
-  .review-side {
-    position: sticky;
-    top: 5rem;
-  }
-}
-.review-side_add {
-  display: flex;
-}
+/* video review page: the player, and its chapters under it */
 .player_tools {
   display: flex;
   flex-wrap: wrap;
@@ -1505,61 +1733,6 @@ textarea:focus {
 }
 .chapter:hover {
   background: var(--background-3);
-}
-.notes {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: var(--space-3);
-}
-.notes:empty {
-  display: none;
-}
-.note {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: var(--space-2);
-  align-items: start;
-  padding: var(--space-3);
-  background: var(--background-2);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
-}
-.note textarea {
-  min-height: 4.5rem;
-}
-@media (max-width: 40rem) {
-  .note {
-    grid-template-columns: auto 1fr auto;
-  }
-  .note textarea {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-}
-.note_time {
-  padding: 0.5rem 0.55rem;
-  border: 0;
-  border-radius: var(--radius-s);
-  background: var(--ink);
-  color: var(--paper);
-  font: 600 var(--text-tiny) / 1 var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  cursor: pointer;
-}
-.note_remove {
-  padding: 0.2rem 0.45rem;
-  border: 0;
-  border-radius: var(--radius-s);
-  background: transparent;
-  color: var(--text-2);
-  font: 400 1.4rem / 1 var(--font-body);
-  cursor: pointer;
-}
-.note_remove:hover {
-  background: var(--background-3);
-  color: var(--text);
 }
 .callout {
   border-left: 2px solid var(--yellow);
@@ -2274,7 +2447,7 @@ kbd {
   .masthead,
   .scenestrip,
   .itempop,
-  .reviewbar {
+  .reviewhead {
     display: none;
   }
 }
@@ -2318,37 +2491,9 @@ kbd {
   text-decoration-color: var(--yellow);
 }
 
-/* ───────── sharing outside the studio: a version's PDF (or video) download, and where feedback goes ───────── */
-.share {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-4);
-}
-.share .button {
-  flex: none;
-}
-.share .button[aria-busy="true"] {
-  cursor: progress;
-  opacity: 0.7;
-}
-.share_note {
-  flex: 1 1 16rem;
-  max-width: 34rem;
-  font-size: var(--text-small);
-  color: var(--text-2);
-}
-.share_note:empty {
-  display: none;
-}
-.share_note a,
+/* a download's copy in the video's folder, under the review bar: "Show in Finder" (ui/page.js) */
 .share_reveal {
   color: var(--text);
-}
-.share_note.is-error {
-  color: #ff9a85;
-}
-.share_reveal {
   padding: 0;
   border: 0;
   background: none;
@@ -2430,9 +2575,6 @@ a.stages_item:hover {
   display: grid;
   gap: var(--space-6);
   max-width: 62.5rem;
-}
-.checks_panel .now {
-  margin-top: 0;
 }
 .checks_group {
   display: grid;
@@ -2683,7 +2825,6 @@ a.stages_item:hover {
 /* ───────── a video's overview ───────── */
 /* what's happening now, and the one thing to do next */
 .now {
-  margin-top: var(--space-6);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -3294,7 +3435,6 @@ a.stages_item:hover {
 }
 .point_pop textarea {
   min-height: 4.5rem;
-  background: var(--paper);
   color: var(--ink);
   border-color: color-mix(in lab, var(--ink) 30%, transparent);
   font-size: var(--text-small);
@@ -3311,14 +3451,6 @@ a.stages_item:hover {
   max-height: 10rem;
   border-radius: var(--radius-s);
   background: #111;
-}
-.note--pointed {
-  grid-template-columns: auto minmax(0, 1fr) auto;
-}
-.note_body {
-  display: grid;
-  gap: var(--space-2);
-  min-width: 0;
 }
 .note_point {
   display: block;
@@ -3337,13 +3469,7 @@ a.stages_item:hover {
   text-transform: uppercase;
   color: var(--text-2);
 }
-@media (max-width: 40rem) {
-  .note--pointed .note_body {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-}
-/* a storyboard scene's pointed notes, under its note */
+/* a storyboard scene's pointed notes, under its note: the close-up (and the button to remove it), then its note */
 .points {
   list-style: none;
   margin: 0;
@@ -3356,18 +3482,22 @@ a.stages_item:hover {
 }
 .point_note {
   display: grid;
-  grid-template-columns: 7rem minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
-  gap: var(--space-3);
+  gap: var(--space-2);
   padding: var(--space-2);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-s);
   background: var(--background-3);
 }
 .point_note .note_point .point_thumb {
-  max-height: 6rem;
+  max-height: 7rem;
+}
+.point_note .notecard_remove {
+  grid-area: 1 / 2;
 }
 .point_note_body {
+  grid-area: 2 / 1 / auto / -1;
   display: grid;
   gap: var(--space-1);
   min-width: 0;
@@ -3443,7 +3573,6 @@ a.stages_item:hover {
 .scriptsheet_length {
   display: grid;
   gap: var(--space-1);
-  margin-bottom: var(--space-4);
   padding: var(--space-3) var(--space-4);
   border-left: 2px solid var(--yellow);
   background: var(--background-3);
@@ -3473,6 +3602,10 @@ a.stages_item:hover {
   vertical-align: top;
   text-align: left;
 }
+/* a line between the columns */
+.scriptsheet_table :is(th, td) + :is(th, td) {
+  border-left: var(--border-width) solid var(--border);
+}
 .scriptsheet_table thead th {
   font: 500 var(--text-tiny) / 1.2 var(--font-mono);
   letter-spacing: 0.12em;
@@ -3493,12 +3626,17 @@ a.stages_item:hover {
   position: relative;
   transition: background-color var(--hover) var(--ease);
 }
-.scriptsheet_cell:not(:has(textarea:disabled)) {
+.scriptsheet_cell:has(.scriptsheet_add:not([hidden])) {
   cursor: pointer;
 }
 /* hover: the deeper paper of the table's header */
-.scriptsheet_cell:not(:has(textarea:disabled)):hover {
+.scriptsheet_cell:has(.scriptsheet_add:not([hidden])):hover {
   background: var(--background-3);
+}
+/* the cell whose note is in hand */
+.scriptsheet_cell.is-selected {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
 }
 /* a cell with a note: a pink edge, as feedback is pink everywhere, and a pink dot by the row's number */
 .scriptsheet_cell.has-note {
@@ -3517,7 +3655,7 @@ a.stages_item:hover {
   background: var(--pink);
   vertical-align: 0.1em;
 }
-/* the note "Next note" jumped to, lit for a moment */
+/* the cell a note's place jumped to, lit for a moment */
 @media (prefers-reduced-motion: no-preference) {
   .scriptsheet_cell.is-flash {
     animation: note-flash 1.4s var(--ease);
@@ -3560,46 +3698,17 @@ a.stages_item:hover {
   transition: opacity var(--hover) var(--ease);
 }
 .scriptsheet_cell:hover .scriptsheet_add,
-.scriptsheet_add:focus-visible,
-.scriptsheet_cell.is-open .scriptsheet_add {
+.scriptsheet_add:focus-visible {
   opacity: 1;
 }
-.scriptsheet_cell.is-open .scriptsheet_add {
+/* its note is open in the panel */
+.scriptsheet_cell.is-selected .scriptsheet_add {
   display: none;
 }
 @media (hover: none) {
   .scriptsheet_add {
     opacity: 1;
   }
-}
-.scriptsheet_note:not(:empty) {
-  display: grid;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-}
-.scriptsheet_note textarea {
-  min-height: 4.5rem;
-  cursor: text;
-}
-.scriptsheet_note_remove {
-  justify-self: start;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--text-2);
-  font: inherit;
-  font-size: var(--text-small);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-  cursor: pointer;
-}
-.scriptsheet_note_remove:hover {
-  color: var(--text);
-}
-.scriptsheet_decision {
-  display: grid;
-  gap: var(--space-5);
-  max-width: 48rem;
 }
 /* on a phone each row stacks: its number, then each column under its own label */
 @media (max-width: 48rem) {
@@ -3627,6 +3736,7 @@ a.stages_item:hover {
   }
   .scriptsheet_table td {
     border-bottom: 0;
+    border-left: 0;
   }
   .scriptsheet_table td::before {
     content: attr(data-label);

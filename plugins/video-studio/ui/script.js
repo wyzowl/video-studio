@@ -1,32 +1,36 @@
-// Script review: a note on any cell (a row's voiceover or text on screen, or its action on screen), general notes,
-// then the decision: Approve script, unless there are notes (they switch it to Changes needed). The save button says
-// which ("Approve and save" or "Send changes"), and "Next note" steps through the cells with notes. Saving posts the
-// review to the studio server, which writes feedback.json beside the script, then opens the video's overview.
+// Script review: a note on any cell (a row's voiceover or text on screen, or its action on screen), kept in the notes
+// beside the script, general notes, then the decision: Approve, unless there are notes (they switch it to Changes
+// needed). The save button says which ("Approve and save" or "Send changes"). A click on a cell opens its note in the
+// panel, and a note's place takes you back to its cell. Saving posts the review to the studio server, which writes
+// feedback.json beside the script, then opens the video's overview.
 (() => {
   const state = JSON.parse(document.getElementById("script-state").textContent);
+  const list = document.querySelector("[data-notes]");
+  const empty = document.querySelector("[data-notes-empty]");
   const general = document.querySelector("[data-general]");
   const saveBtn = document.querySelector("[data-save]");
   const message = document.querySelector("[data-message]");
   const countEl = document.querySelector('[data-count="notes"]');
-  const countWord = document.querySelector("[data-count-word]");
-  const decisionLabel = document.querySelector("[data-decision-label]");
   const hint = document.querySelector("[data-decision-hint]");
   const radios = [...document.querySelectorAll('input[name="decision"]')];
-  const jump = document.querySelector("[data-next-note]");
-  const LABEL = { approved: "Approve", changes: "Changes needed" };
   const SAVE = { approved: "Approve and save", changes: "Send changes" };
   const HINT = {
-    approved: "Claude will make the storyboard. Any notes are treated as small last tweaks.",
-    changes: "Claude will make the changes in your notes and share a new version of the script.",
+    approved: "Saving approves the script: Claude makes the storyboard. Any notes are treated as small last tweaks.",
+    changes: "Saving sends your notes: Claude makes the changes and shares a new version of the script.",
   };
   const rowNumber = Object.fromEntries(state.rows.map((r) => [r.id, r.n]));
+  const smooth = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
   // a note per cell, by "<row id>:<words|action>"
   const notes = new Map();
+  let selected = null;
   let dirty = false;
-  // live.js reads window.studioDirty, so an update never reloads over unsaved notes
+  // live.js reads window.studioDirty, so an update never reloads over unsaved notes; the save button shows a dot
   const setDirty = (value) => {
     dirty = value;
     window.studioDirty = value;
+    saveBtn?.classList.toggle("is-unsaved", value);
+    if (value) saveBtn?.setAttribute("data-tip", "Not saved yet");
+    else saveBtn?.removeAttribute("data-tip");
   };
   const say = (text, isError = false) => {
     if (!message) return;
@@ -35,11 +39,24 @@
   };
   const changed = () => {
     setDirty(true);
-    say("Unsaved changes.");
+    say("");
   };
   const decision = () => radios.find((r) => r.checked)?.value || "approved";
   const keyOf = (cell) => `${cell.closest("[data-row]").dataset.row}:${cell.dataset.cell}`;
-  const where = (cell) => `row ${rowNumber[cell.closest("[data-row]").dataset.row]}, ${state.columns[cell.dataset.cell].toLowerCase()}`;
+  const cellOf = (key) => {
+    const [row, column] = key.split(":");
+    return document.querySelector(`[data-row="${CSS.escape(row)}"] [data-cell="${CSS.escape(column)}"]`);
+  };
+  // the script's order: by row, the words before the action
+  const order = (key) => {
+    const [row, column] = key.split(":");
+    return (rowNumber[row] || 0) * 2 + (column === "action" ? 1 : 0);
+  };
+  const where = (key) => {
+    const [row, column] = key.split(":");
+    return `Row ${rowNumber[row]} · ${state.columns[column]}`;
+  };
+  const written = () => [...notes].filter(([, text]) => text.trim()).sort(([a], [b]) => order(a) - order(b));
 
   // The decision is Approve unless there are notes: the first note switches it to Changes needed, and removing the last
   // switches it back. The general comments count too, so feedback pasted in from someone outside the studio switches
@@ -53,75 +70,129 @@
     r.checked = true;
     showDecision();
   }
-
   function count() {
-    const n = [...notes.values()].filter((t) => t.trim()).length;
-    countEl.textContent = String(n);
-    countWord.textContent = n === 1 ? "note" : "notes";
-    if (jump) jump.hidden = n === 0;
+    const n = written().length;
+    if (countEl) countEl.textContent = String(n);
     const any = n + (general?.value.trim() ? 1 : 0);
     if (following && noted === 0 && any > 0) setDecision("changes");
     if (following && noted > 0 && any === 0) setDecision("approved");
     noted = any;
-    return n;
   }
-
-  /** Opens the note under a cell's text (or focuses it), filled with what's saved. */
-  function openNote(cell, focus = true) {
-    const key = keyOf(cell);
-    const slot = cell.querySelector("[data-note-slot]");
-    let text = slot.querySelector("textarea");
-    if (!text) {
-      const id = `note-${key.replace(/[^A-Za-z0-9-]/g, "-")}`;
-      const label = document.createElement("label");
-      label.className = "field-label";
-      label.htmlFor = id;
-      label.textContent = `Your note on ${where(cell)}`;
-      text = document.createElement("textarea");
-      text.id = id;
-      text.rows = 3;
-      text.placeholder = "What should change?";
-      text.value = notes.get(key) || "";
-      text.disabled = !state.latest;
-      text.addEventListener("input", () => {
-        notes.set(key, text.value);
-        cell.classList.toggle("has-note", Boolean(text.value.trim()));
-        count();
-        changed();
-      });
-      // an empty note closes when you move on
-      text.addEventListener("blur", () => {
-        if (!text.value.trim() && state.latest) setTimeout(() => !slot.contains(document.activeElement) && closeNote(cell), 150);
-      });
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.className = "scriptsheet_note_remove";
-      remove.textContent = "Remove note";
-      remove.hidden = !state.latest;
-      remove.addEventListener("click", (event) => {
-        event.stopPropagation();
-        const had = Boolean(notes.get(key)?.trim());
-        closeNote(cell);
-        if (had) changed();
-      });
-      slot.replaceChildren(label, text, remove);
-      cell.classList.add("is-open");
-    }
-    if (focus) text.focus();
-  }
-
-  function closeNote(cell) {
-    notes.delete(keyOf(cell));
-    cell.querySelector("[data-note-slot]").replaceChildren();
-    cell.classList.remove("is-open", "has-note");
-    count();
-  }
-
   function showDecision() {
     const d = decision();
-    decisionLabel.textContent = LABEL[d];
-    hint.textContent = HINT[d];
+    if (hint) hint.textContent = state.latest ? HINT[d] : "";
     if (state.latest && saveBtn) saveBtn.textContent = SAVE[d];
+  }
+
+  /** Lights a cell for a moment, as a note's place takes you to it. */
+  function flash(cell) {
+    if (!cell) return;
+    cell.classList.remove("is-flash");
+    void cell.offsetWidth; // restarts the light if it's still on
+    cell.classList.add("is-flash");
+    setTimeout(() => cell.classList.remove("is-flash"), 1500);
+  }
+
+  /** Marks a note and its cell as the one in hand; `go` scrolls to the cell, `focus` puts the cursor in the note. */
+  function select(key, { go = false, focus = false } = {}) {
+    selected = key;
+    document.querySelectorAll(".scriptsheet_cell.is-selected").forEach((c) => c.classList.remove("is-selected"));
+    const cell = cellOf(key);
+    cell?.classList.add("is-selected");
+    let card = null;
+    for (const c of list.children) {
+      c.classList.toggle("is-selected", c.dataset.key === key);
+      if (c.dataset.key === key) card = c;
+    }
+    if (go && cell) {
+      cell.scrollIntoView({ block: "center", behavior: smooth() });
+      flash(cell);
+    }
+    card?.scrollIntoView({ block: "nearest", behavior: smooth() });
+    if (focus) card?.querySelector("textarea")?.focus({ preventScroll: true });
+  }
+
+  /** A note in the panel: its place (back to the cell), the note, and a button to remove it. */
+  function card(key) {
+    const li = document.createElement("li");
+    li.className = "notecard";
+    li.dataset.key = key;
+    if (key === selected) li.classList.add("is-selected");
+    const place = document.createElement("button");
+    place.type = "button";
+    place.className = "notecard_place";
+    place.textContent = where(key);
+    place.title = "Show it in the script";
+    place.addEventListener("click", () => select(key, { go: true }));
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "notecard_remove";
+    remove.textContent = "×";
+    remove.title = "Remove this note";
+    remove.setAttribute("aria-label", `Remove the note on ${where(key).toLowerCase()}`);
+    remove.hidden = !state.latest;
+    remove.addEventListener("click", () => {
+      const had = Boolean(notes.get(key)?.trim());
+      drop(key);
+      if (had) changed();
+    });
+    const text = document.createElement("textarea");
+    text.rows = 3;
+    text.value = notes.get(key) || "";
+    text.placeholder = "What should change?";
+    text.disabled = !state.latest;
+    text.setAttribute("aria-label", `Your note on ${where(key).toLowerCase()}`);
+    text.addEventListener("focus", () => select(key));
+    text.addEventListener("input", () => {
+      notes.set(key, text.value);
+      cellOf(key)?.classList.toggle("has-note", Boolean(text.value.trim()));
+      count();
+      changed();
+    });
+    // an empty note closes when you move on
+    text.addEventListener("blur", () => {
+      if (!state.latest) return;
+      setTimeout(() => {
+        if (!li.contains(document.activeElement) && notes.has(key) && !notes.get(key).trim()) drop(key);
+      }, 150);
+    });
+    const head = document.createElement("div");
+    head.className = "notecard_head";
+    head.append(place, remove);
+    li.append(head, text);
+    return li;
+  }
+
+  // the cards come and go one at a time, so the note being written keeps the cursor
+  const tidy = () => {
+    if (empty) empty.hidden = notes.size > 0;
+    count();
+  };
+  /** Puts a note's card in the panel, in the script's order. */
+  function add(key) {
+    const li = card(key);
+    const after = [...list.children].find((c) => order(c.dataset.key) > order(key));
+    list.insertBefore(li, after || null);
+    cellOf(key)?.classList.toggle("has-note", Boolean(notes.get(key)?.trim()));
+  }
+  /** Takes a note away, with its card. */
+  function drop(key) {
+    notes.delete(key);
+    list.querySelector(`.notecard[data-key="${CSS.escape(key)}"]`)?.remove();
+    cellOf(key)?.classList.remove("has-note", "is-selected");
+    if (selected === key) selected = null;
+    tidy();
+  }
+
+  /** A click on a cell: its note, opened in the panel (a new one if there isn't one yet). */
+  function open(cell) {
+    const key = keyOf(cell);
+    if (!notes.has(key)) {
+      notes.set(key, "");
+      add(key);
+      tidy();
+    }
+    select(key, { focus: true });
   }
 
   // restore what was saved
@@ -129,37 +200,16 @@
   if (fb) {
     for (const n of fb.notes || []) {
       const cell = document.querySelector(`[data-row="${CSS.escape(String(n.rowId))}"] [data-cell="${CSS.escape(String(n.cell))}"]`);
-      if (!cell || !String(n.text || "").trim()) continue;
-      notes.set(keyOf(cell), String(n.text));
-      openNote(cell, false);
-      cell.classList.add("has-note");
+      if (cell && String(n.text || "").trim()) notes.set(keyOf(cell), String(n.text));
     }
     if (general) general.value = fb.general || "";
     const r = radios.find((x) => x.value === fb.decision);
     if (r) r.checked = true;
   }
-  count();
+  for (const key of [...notes.keys()].sort((a, b) => order(a) - order(b))) add(key);
+  tidy();
   showDecision();
   following = true;
-
-  // "Next note": to the next cell with a note, in the middle of the window, lit for a moment. After a jump it goes on
-  // from that one; once the page has been scrolled by hand, from the first note below the middle of the window.
-  let lastJump = null;
-  const byHand = () => (lastJump = null);
-  addEventListener("wheel", byHand, { passive: true });
-  addEventListener("touchmove", byHand, { passive: true });
-  jump?.addEventListener("click", () => {
-    const cells = [...document.querySelectorAll(".scriptsheet_cell.has-note")];
-    if (!cells.length) return;
-    const at = cells.indexOf(lastJump);
-    const next = at >= 0 ? cells[(at + 1) % cells.length] : cells.find((c) => c.getBoundingClientRect().top > innerHeight * 0.55) || cells[0];
-    lastJump = next;
-    next.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-    next.classList.remove("is-flash");
-    void next.offsetWidth; // restarts the light if it's still on
-    next.classList.add("is-flash");
-    setTimeout(() => next.classList.remove("is-flash"), 1500);
-  });
 
   if (!state.latest) {
     general && (general.disabled = true);
@@ -170,9 +220,9 @@
   // a click anywhere on a cell (or its "+ Note") opens its note
   document.querySelectorAll(".scriptsheet_cell").forEach((cell) =>
     cell.addEventListener("click", (event) => {
-      if (event.target.closest("textarea, .scriptsheet_note_remove, a")) return;
+      if (event.target.closest("a")) return;
       if (window.getSelection()?.toString()) return; // selecting text to copy isn't a request for a note
-      openNote(cell);
+      open(cell);
     }),
   );
   general?.addEventListener("input", () => {
@@ -192,8 +242,8 @@
   });
 
   saveBtn?.addEventListener("click", async () => {
-    const written = [...notes].filter(([, text]) => text.trim());
-    if (decision() === "changes" && !written.length && !general?.value.trim()) {
+    const notesNow = written();
+    if (decision() === "changes" && !notesNow.length && !general?.value.trim()) {
       say("Add at least one note (or a comment under “Anything else?”) so Claude knows what to change.", true);
       return;
     }
@@ -207,7 +257,7 @@
           project: state.project,
           version: state.version,
           decision: decision(),
-          notes: written.map(([key, text]) => {
+          notes: notesNow.map(([key, text]) => {
             const [rowId, cell] = key.split(":");
             return { rowId, cell, text: text.trim() };
           }),

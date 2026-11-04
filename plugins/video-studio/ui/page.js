@@ -14,20 +14,23 @@
 // - A library item named in a script or storyboard shows itself playing while its chip is hovered or focused.
 // - While Claude makes something for a video, the panel on its overview follows the work as it happens.
 // - The Setup and Health page's checklist follows setup as it happens; the dashboard's "What's new" goes on "Got it".
-// - The masthead's height (and a storyboard's scene strip's) keeps jumps and focus clear of them.
+// - The masthead's height (and a review's bar's, and a storyboard's scene strip's) keeps jumps and focus clear of them.
 (() => {
   // ───────── the sticky bars ─────────
-  // The masthead stays at the top, and a storyboard's scene strip under it: studio.css keeps jumps, focus and the strip
-  // itself clear of them by their heights.
+  // The masthead stays at the top, a review's bar under it, and a storyboard's scene strip under that: studio.css keeps
+  // jumps, focus, the notes panel and the strip itself clear of them by their heights. (On a narrow screen the review's
+  // bar scrolls away with the page, so it counts as nothing.)
   const masthead = document.querySelector(".masthead");
+  const head = document.querySelector(".reviewhead");
   const strip = document.querySelector(".scenestrip");
   const measure = () => {
     const root = document.documentElement.style;
     if (masthead) root.setProperty("--masthead-h", `${masthead.offsetHeight}px`);
+    if (head) root.setProperty("--reviewhead-h", `${getComputedStyle(head).position === "sticky" ? head.offsetHeight : 0}px`);
     if (strip) root.setProperty("--strip-h", `${strip.offsetHeight}px`);
   };
   measure();
-  if ("ResizeObserver" in window) [masthead, strip].forEach((el) => el && new ResizeObserver(measure).observe(el));
+  if ("ResizeObserver" in window) [masthead, head, strip].forEach((el) => el && new ResizeObserver(measure).observe(el));
   else addEventListener("resize", measure);
 
   // ───────── read more ─────────
@@ -275,8 +278,9 @@
     if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
     event.preventDefault();
     if (link.getAttribute("aria-busy") === "true") return;
-    const note = link.closest(".share")?.querySelector("[data-share-note]");
-    const label = link.textContent;
+    const note = link.closest(".reviewhead")?.querySelector("[data-share-note]");
+    // (its markup, so an icon comes back too)
+    const label = link.innerHTML;
     link.setAttribute("aria-busy", "true");
     link.textContent = "Making the PDF…";
     note?.classList.remove("is-error");
@@ -305,7 +309,7 @@
       note.textContent = err.fromStudio ? err.message : "Couldn't reach the studio. In Claude Code, run /video-studio:dashboard and try again.";
       note.classList.add("is-error");
     } finally {
-      link.textContent = label;
+      link.innerHTML = label;
       link.removeAttribute("aria-busy");
     }
   });
@@ -399,7 +403,8 @@
   document.addEventListener("click", async (e) => {
     const button = e.target.closest?.("[data-copy]");
     if (!button || button.dataset.copying) return;
-    const label = button.textContent;
+    // (its markup, so an icon comes back too)
+    const label = button.innerHTML;
     button.dataset.copying = "1";
     try {
       await navigator.clipboard.writeText(button.dataset.copy);
@@ -408,7 +413,7 @@
       button.textContent = "Select the text above to copy it";
     }
     setTimeout(() => {
-      button.textContent = label;
+      button.innerHTML = label;
       delete button.dataset.copying;
     }, 2000);
   });

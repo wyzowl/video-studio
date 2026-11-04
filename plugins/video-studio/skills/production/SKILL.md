@@ -37,9 +37,9 @@ one, npx fetches the newest release on every run.
      `node PLUGIN/scripts/tools/vo-check.mjs inputs/vo.wav <transcript>` and fix drifted words; check key cue words by
      ear; save `inputs/transcript_verified.json`.
    - **A voiceover to come** (`voiceover: supplied` in the brief): once the script is approved, ask the user to have the
-     approved voiceover read (the script page's **Copy the voiceover** gives them its words) and to put the file in
-     `inputs/` (give the full path). Wait for it. Then it's the recorded voiceover: follow the step above, correcting
-     misheard words against the approved script.
+     approved voiceover read (the copy button at the top of the script page, **Copy the voiceover**, gives them its
+     words) and to put the file in `inputs/` (give the full path). Wait for it. Then it's the recorded voiceover:
+     follow the step above, correcting misheard words against the approved script.
    - **No voiceover:** a beat grid is the clock. `TEMPO` and a `PRE` lead-in, with beat *b* at
      `PRE + b × 60 / TEMPO`. Write every cue in beats, so re-timing is one change.
    - **Footage** (`type: footage`): the cut's own speech is the clock. Each kept range plays at its own pace, and
@@ -133,8 +133,8 @@ page server; only one studio's server runs at a time). Follow what it says:
    you'll take it from there, then end your turn.
 
 When the wait finishes, you're woken with the review. Saving a review is the user's go-ahead (each page saves a
-decision: a script or video is approved unless there are notes, and so is each storyboard scene unless it's marked
-Feedback), so carry on straight away without asking them to confirm. If they tell you they've saved ("I've saved my
+decision: a script or video is approved unless there are notes, and so is each storyboard scene unless it has a
+note), so carry on straight away without asking them to confirm. If they tell you they've saved ("I've saved my
 notes on the video", "Video approved") before the wait finishes, carry on the same way; act on each review once.
 
 Open pages refresh themselves when their files change, keeping anything the user hasn't saved, and an older
@@ -234,9 +234,10 @@ the state. A locked item can't be built in: `studio.mjs library <code>` says so,
 ## Sharing outside the studio
 
 The pages only run on the user's Mac, so someone outside the studio (a client, say) reviews a download instead:
-**Download PDF** on a script or storyboard page, or **Download video** on a video's review page. Each PDF asks for replies by
-row or scene number. The user puts the feedback that comes back on the same page, usually pasted into **Anything
-else?**, which asks for changes just as a note does, and saves it, so it reaches you the usual way.
+the download button at the top of a script or storyboard page (**Download PDF**), or of a video's review page
+(**Download video**). Each PDF asks for replies by row or scene number. The user puts the feedback that comes back on
+the same page, usually pasted into **Anything else?**, which asks for changes just as a note does, and saves it, so it
+reaches you the usual way.
 
 - If the user asks you for a PDF, run `node PLUGIN/scripts/studio.mjs pdf /videos/<project>/script/v<N>/` (or
   `…/storyboard/v<N>/`). It saves the PDF in that version's folder and prints its path: give it as a link. For a
