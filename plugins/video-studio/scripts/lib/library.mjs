@@ -181,11 +181,17 @@ export function brandStyle(brand) {
   const style = brand.style && typeof brand.style === "object" ? brand.style : {};
   const background = role(/^(background|ground|paper)$/i) || role(/background/i);
   const card = HEX.test(style.card || "") ? style.card : background?.hex || "#FFFFFF";
-  const text = role(/^(text|ink|body text|copy)$/i) || cs.find((c) => /text/i.test(c.role || "") && !/secondary|muted/i.test(c.role || ""));
-  const ink = text && contrast(text.hex, card) >= 4.5 ? text.hex : isDark(card) ? "#FFFFFF" : "#1E1E1E";
+  const highlight = role(/accent/i) || role(/highlight|action|primary/i);
+  // the text colour: the brand's own that reads on the card. Its text colours first (a kit can name one for light
+  // grounds and one for dark), then whichever of its other colours reads best, never the accent; failing those, plain
+  // near-black or white
+  const reads = (c) => contrast(c.hex, card) >= 4.5;
+  const texts = [role(/^(text|ink|body text|copy)$/i), ...cs.filter((c) => /text/i.test(c.role || "") && !/secondary|muted/i.test(c.role || ""))].filter(Boolean);
+  const own = texts.find(reads) || cs.filter((c) => c !== highlight && reads(c)).sort((a, b) => contrast(b.hex, card) - contrast(a.hex, card))[0];
+  const ink = own ? own.hex : isDark(card) ? "#FFFFFF" : "#1E1E1E";
   const secondary = role(/secondary|muted|subtle/i);
   const muted = secondary && contrast(secondary.hex, card) >= 3 ? secondary.hex : mix(ink, card, 0.7);
-  const accent = (role(/accent/i) || role(/highlight|action|primary/i))?.hex || ink;
+  const accent = highlight?.hex || ink;
   const onAccent = [ink, card, "#FFFFFF", "#1E1E1E"].sort((a, b) => contrast(b, accent) - contrast(a, accent))[0];
   const onVideo = !isDark(card) ? card : !isDark(ink) ? ink : "#FFFFFF";
 
