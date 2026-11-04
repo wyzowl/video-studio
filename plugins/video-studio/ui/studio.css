@@ -1017,6 +1017,11 @@ a.frame_stage:hover .frame_media > img {
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
+/* a brand's fonts as they are: body's Inter features ("ss01") swap in other letters in fonts such as Montserrat */
+.specimen_glyph,
+.specimen_sample {
+  font-feature-settings: normal;
+}
 .specimen_meta {
   font: 500 var(--text-tiny) / 1.6 var(--font-mono);
   letter-spacing: 0.06em;
