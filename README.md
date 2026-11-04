@@ -75,7 +75,7 @@ press **Got it**.
 |---|---|
 | `/video-studio:setup` | Checks and installs what's needed, creates a studio folder, and makes a test render |
 | `/video-studio:new-video` | Asks a few questions (type, brand, script, size, where it's shown, length), sets up the project, then writes a script and makes a storyboard, each for your approval |
-| `/video-studio:new-brand` | Builds a brand kit from a website, logo files, colours and fonts, with a logo ident and its own brand page |
+| `/video-studio:new-brand` | Builds a brand kit from a website, logo files, colours, backgrounds and fonts, with a logo ident and its own brand page |
 | `/video-studio:dashboard` | Shows the studio's pages: recent videos, video overviews, brands, scripts, storyboards, video reviews and the library |
 
 ## How a video is made

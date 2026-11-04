@@ -538,7 +538,7 @@ export function pageStamp(root, path) {
   }
   if ((m = /^\/brands\/([^/]+)\/?$/.exec(path))) {
     const d = join(root, "brands", m[1]);
-    return { stamp: hash([mtime(join(d, "brand.json")), newestIn(join(d, "logos")), newestIn(join(d, "fonts")), newestIn(join(d, "refs"))].join(":")) };
+    return { stamp: hash([mtime(join(d, "brand.json")), newestIn(join(d, "logos")), newestIn(join(d, "fonts")), newestIn(join(d, "refs")), newestIn(join(d, "backgrounds"))].join(":")) };
   }
   if (/^\/library(\/|$)/.test(path)) {
     // the library: its items (in the plugin) and the brands they can be shown in

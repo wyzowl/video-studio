@@ -526,6 +526,47 @@ export function brandPage(studio, slug) {
   </div></section>`
     : "";
 
+  // the brand's backgrounds, the main one first: each shown as a frame with the brand's name in its display face, in
+  // the text colour that reads on it, and the logo for it
+  const GRADIENT = /^(repeating-)?(linear|radial|conic)-gradient\([^;{}<>]*\)$/i;
+  const gradientOf = (g) => (GRADIENT.test(String(g.gradient || "").trim()) ? String(g.gradient).trim() : null);
+  const grounds = (Array.isArray(b.backgrounds) ? b.backgrounds : []).filter((g) => g && (safeHex(g.hex) || gradientOf(g) || g.file));
+  const displayAt = fonts.findIndex((f) => /display|heading|headline|title/i.test(f.role || ""));
+  const displayStyle = fonts.length ? `font-family: ${fontStack(fonts[Math.max(0, displayAt)], Math.max(0, displayAt))}; font-weight: ${Number(fonts[Math.max(0, displayAt)].weight) || 800};` : "";
+  const groundSection = grounds.length
+    ? `<section class="section section--rule"><div class="container">
+    ${eyebrow(next(), "Backgrounds")}
+    <h2>Backgrounds</h2>
+    <div class="grid" style="--_min: 22rem">${grounds
+      .map((g, i) => {
+        const hex = safeHex(g.hex);
+        const gradient = gradientOf(g);
+        // the colour underneath: a flat colour, or a gradient's first colour; an image needs its text colour given. The
+        // text is what the library would set on that ground: the brand's own text colour that reads on it
+        const under = hex || (gradient && (/#[0-9a-f]{6}\b|#[0-9a-f]{3}\b/i.exec(gradient) || [])[0]) || null;
+        const text = safeHex(g.text) || (under ? brandStyle({ ...b, style: { ...(b.style || {}), card: under } }).vars.ink : "#ffffff");
+        const position = /^[\w\s.%-]+$/.test(g.position || "") ? g.position : "50% 50%";
+        const paint = [g.file ? `url("${base}${enc(g.file)}") ${position} / cover no-repeat` : null, gradient, hex].filter(Boolean).join(", ");
+        const logo = pickLogo(b, isDarkHex(text) ? "#ffffff" : "#000000");
+        const kind = g.file ? `Image · ${g.file}` : gradient ? "Gradient" : `Colour · ${hex}`;
+        const reads = under && !g.file ? ` · text ${text}, ${contrast(text, under).toFixed(1)}:1` : ` · text ${text}`;
+        return `<figure class="frame">
+        <div class="frame_stage"><div class="frame_media ground" style="${esc(`background: ${paint}; color: ${text};`)}">
+          ${logo ? `<div class="ground_logo"><img src="${base}${enc(logo.file)}" alt=""></div>` : "<span></span>"}
+          <p class="ground_words" style="${esc(displayStyle)}">${esc(b.name)}</p>
+        </div></div>
+        <figcaption class="frame_caption"><span>${esc(g.name || kind)}</span>${i === 0 ? `<span class="frame_time">Main</span>` : ""}</figcaption>
+        <div class="stack" style="gap: var(--space-1)">
+          ${g.use ? `<p>${esc(g.use)}</p>` : ""}
+          <p class="mono muted">${esc(kind + reads)}</p>
+          ${g.notes ? `<p class="muted">${esc(g.notes)}</p>` : ""}
+        </div>
+      </figure>`;
+      })
+      .join("")}</div>
+  </div></section>`
+    : "";
+
   const typeSection = fonts.length
     ? `<section class="section section--rule"><div class="container">
     ${eyebrow(next(), "Type")}
@@ -638,6 +679,7 @@ export function brandPage(studio, slug) {
         ${cell("Colours", String(colours.length))}
         ${cell("Fonts", fonts.map((f) => f.family).filter(Boolean).join(", "))}
         ${cell("Logos", String(logos.length))}
+        ${grounds.length ? cell("Backgrounds", String(grounds.length)) : ""}
         ${cell("Videos", String(videos.length))}
         ${cell("Updated", (b.updated && formatDate(Date.parse(b.updated))) || b.updated || formatDate(b._updated))}
         ${cell("Folder", `brands/${slug}`)}
@@ -645,7 +687,7 @@ export function brandPage(studio, slug) {
     </div>
   </div>
 </section>
-${logoSection}${colourSection}${typeSection}${motionSection}${soundSection}${rulesSection}${refSection}
+${logoSection}${colourSection}${groundSection}${typeSection}${motionSection}${soundSection}${rulesSection}${refSection}
 <section class="section section--rule"><div class="container">
   ${eyebrow(next(), "Use")}
   <div class="split" style="align-items: start">

@@ -14,8 +14,8 @@ feedback counts.
 - **Storyboards you approve.** Real frames in your brand at the video's size. Approve each scene, or leave a note.
 - **Videos built and checked for you.** Animated videos, and videos cut from your own footage (transcribed, trimmed and
   assembled), reviewed against a seven-point rubric before you see them.
-- **Brand kits.** Colours, fonts, logos, motion and a logo ident, read from your website and files, reused across every
-  video.
+- **Brand kits.** Colours, backgrounds, fonts, logos, motion and a logo ident, read from your website and files,
+  reused across every video.
 - **Sound.** Sound effects from SFX Kit placed on their moments, music, and the voiceover you bring (your own
   recording, or one made with any voice service), with captions.
 - **A library** of ready-made animated items (widgets, layouts, text effects, transitions and data), dressed in your

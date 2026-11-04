@@ -727,6 +727,34 @@ p {
 a.frame_stage:hover .frame_media > img {
   scale: 1.04;
 }
+/* a brand's background, with its words and logo set on it as a scene would (1cqw = 1% of the frame's width) */
+.frame_media.ground {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 6% 7%;
+}
+.ground_logo {
+  height: 11cqw;
+  max-width: 45%;
+}
+.ground_logo img {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: left center;
+}
+.ground_words {
+  margin: 0;
+  font-size: 9cqw;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-feature-settings: normal;
+}
 .frame_media--player {
   background: #000;
 }

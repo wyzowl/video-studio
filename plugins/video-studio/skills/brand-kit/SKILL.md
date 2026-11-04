@@ -11,6 +11,7 @@ A brand kit keeps every video on brand, and lets the next video reuse it. It liv
 brands/<slug>/
   brand.json   the kit: the one source of truth (format below)
   logos/       the brand's own logo files (SVG preferred)
+  backgrounds/ the brand's background images (photography, textures, patterns)
   fonts/       font files the studio may use
   refs/        screenshots and reference images
   sounds/      the logo ident (a sting from SFX Kit)
@@ -24,31 +25,37 @@ files" in the session-start note).
 1. **Gather** (AskUserQuestion where choices help): the brand's name, its website, logo files, and any guidelines,
    colours or fonts they already know. Make the slug from the name (kebab-case).
 2. **Read the website** if there is one: `node PLUGIN/scripts/site-palette.mjs <url>`. You get the colours its CSS uses
-   most (with their CSS variable names), the fonts, and logo candidates. Look at the site itself too, to see which
-   colour is the ground, which is text and which is the accent.
+   most (with their CSS variable names), the colours it uses as backgrounds, its gradients and background images, the
+   fonts, and logo candidates. Look at the site itself too, to see which colour is the ground, which is text and which
+   is the accent.
 3. **Propose, then confirm.** Show the user the colour roles (background, text, one accent unless the brand clearly
    has more), the display and body fonts, and how the logo is used, and let them correct you. Candidates from CSS are
    evidence, not truth.
-4. **Logos.** Never redraw or retype a logo. Use the files the user gives you. If they have none, offer to download
+4. **Backgrounds.** The grounds the brand's scenes stand on: flat colours from its palette, a gradient if the brand
+   uses one, and background images (photography, textures, patterns). Ask the user which the brand prefers for which
+   kind of scene (most scenes, title and end cards, data, social) and anything to avoid, and order them, the main one
+   first. Images are the brand's own: the user's files, or its website's with their OK. They need to be at least
+   1920 px wide; a tall version for 9:16 is a background of its own. Never generate them or use stock images.
+5. **Logos.** Never redraw or retype a logo. Use the files the user gives you. If they have none, offer to download
    the logo from their website, but only with their OK, preferring SVG. If only a small raster image exists, ask for a
    proper file. Note which logo goes on light and on dark backgrounds.
-5. **Fonts.** Only use font files the user is allowed to use.
+6. **Fonts.** Only use font files the user is allowed to use.
    - Google Fonts (SIL Open Font License) can be downloaded with the user's OK. Prefer the variable version.
    - Commercial fonts must come from the user, as licensed files.
    - If neither is possible, propose the closest free match and say so on the kit.
    - Record each font's licence.
-6. **Motion identity.** Propose one personality, signature eases (GSAP names, such as `expo.out` for arrivals,
+7. **Motion identity.** Propose one personality, signature eases (GSAP names, such as `expo.out` for arrivals,
    `power3.inOut` for travel and `sine.inOut` for ambient), a three-step duration palette, one entrance pattern and an
    ambient layer, all from the brand's feel. The user confirms.
-7. **Logo ident.** Choose the brand's sound for its logo from SFX Kit's logo stings: the character that fits the
+8. **Logo ident.** Choose the brand's sound for its logo from SFX Kit's logo stings: the character that fits the
    brand's feel (warm, bright, bold, minimal, playful, tech or airy), short unless its films open on a build. Copy it
    in with `node PLUGIN/scripts/tools/sfx.mjs copy sting-<character>-<short|long> brands/<slug>/sounds/ident.wav` and
    say in a line why it fits. The user hears it on the brand page and can ask for another. If SFX Kit isn't on this
    Mac yet, `node PLUGIN/scripts/studio.mjs install all --wait` gets it first.
-8. **Copy the files** into `logos/`, `fonts/` and `refs/`, then **write `brand.json` last**: writing it publishes the
-   brand page, and the studio tells you its address.
-9. **Show the brand page** `/brands/<slug>/` (see "Showing a page" in the production skill): beside the chat, with
-   its card. Ask the user to check it and tell you anything to change.
+9. **Copy the files** into `logos/`, `backgrounds/`, `fonts/` and `refs/`, then **write `brand.json` last**: writing it
+   publishes the brand page, and the studio tells you its address.
+10. **Show the brand page** `/brands/<slug>/` (see "Showing a page" in the production skill): beside the chat, with
+    its card. Ask the user to check it and tell you anything to change.
 
 ## Update a kit
 
@@ -68,6 +75,12 @@ if it isn't open, show it again. Videos already delivered keep their own copies 
     { "name": "Forest", "hex": "#0F3D2E", "role": "Background", "notes": "The ground for most scenes" },
     { "name": "Cream", "hex": "#F4EDE1", "role": "Text" },
     { "name": "Copper", "hex": "#C8743B", "role": "Accent", "notes": "The one accent. Never body text." }
+  ],
+  "backgrounds": [
+    { "name": "Forest", "hex": "#0F3D2E", "use": "Most scenes" },
+    { "name": "Cream paper", "hex": "#F4EDE1", "use": "Data, and anything with a lot to read" },
+    { "name": "Roastery", "file": "backgrounds/roastery.jpg", "position": "50% 40%", "text": "#F4EDE1",
+      "use": "Openers and end cards", "notes": "Busy on the right: keep words on the left." }
   ],
   "fonts": [
     { "role": "Display", "family": "Fraunces", "file": "fonts/Fraunces-VF.woff2", "weight": 800, "variable": true,
@@ -110,6 +123,12 @@ if it isn't open, show it again. Videos already delivered keep their own copies 
   card, and the accent marks the brand on the dashboard.
 - `logos[].on` is `light`, `dark` or `brand` (shown on the brand's ground colour); add `"background": "#hex"` to force
   a specific panel colour.
+- `backgrounds` are the grounds the brand's scenes stand on, the main one first. Each is a flat colour (`hex`), a CSS
+  gradient (`gradient`, such as `"linear-gradient(160deg, #0F3D2E, #1E5C47)"`) or an image (`file`, in
+  `backgrounds/`, with `position` for the part to keep when it's cropped to another size, as in CSS
+  `background-position`). `use` says when it's used, `text` is the colour that reads on it (give it for images and
+  gradients; it's worked out for flat colours) and `notes` holds anything else, such as where words go. The brand page
+  shows each with the brand's words and logo on it.
 - `fonts[].file` is optional for fonts installed on the machine. `variation` holds `font-variation-settings` for
   variable fonts. `sample` overrides the specimen sentence.
 - `style` dresses the library items (widgets, layouts, text effects, transitions and data) in the brand: `card` is the colour of widget cards

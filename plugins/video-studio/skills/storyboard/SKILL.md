@@ -47,8 +47,8 @@ voiceover), and mark `check` when you look over the frames; rendering them marks
    `node PLUGIN/scripts/studio.mjs library <code> --still <seconds into the item> --brand <brand> --size <size>
    --set key=value … --out videos/<project>/storyboard/v1/items/<name>.png`. Name it in the scene's description by its
    code in square brackets; the page shows it as a link to the item.
-3. **Build `frames.html`.** Design these as the real layouts, in the brand kit's fonts, colours and logo files, with
-   the real words. The build will reuse them. Each frame is an element with `data-frame="<scene>-<n>"` sized exactly
+3. **Build `frames.html`.** Design these as the real layouts, in the brand kit's fonts, colours, backgrounds and logo
+   files, with the real words. The build will reuse them. Each frame is an element with `data-frame="<scene>-<n>"` sized exactly
    to the video, and frames are still: no animation or transitions. Show motion with position, blur trails or
    arrows where it helps.
    ```html

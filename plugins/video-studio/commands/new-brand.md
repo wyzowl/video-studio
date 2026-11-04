@@ -1,5 +1,5 @@
 ---
-description: Add a brand to the studio. Builds a brand kit (logo, colours, fonts and motion style) from the brand's website and files, and gives it a brand page.
+description: Add a brand to the studio. Builds a brand kit (logo, colours, backgrounds, fonts and motion style) from the brand's website and files, and gives it a brand page.
 argument-hint: "[brand name or website]"
 ---
 

@@ -25,6 +25,8 @@ one, npx fetches the newest release on every run.
 1. **Brief.** `/video-studio:new-video` asks the questions and writes `BRIEF.md`. Treat it as the truth: don't ask
    again for anything it answers. Its Request section is the user's own words, shown on the video's overview: never
    edit it (put later changes in Notes). Read the brand kit (`brands/<brand>/brand.json`) before designing anything.
+   Its scenes stand on the brand's backgrounds (`backgrounds`, the main one first), each where its `use` says, with
+   the text colour it gives.
 2. **Script.** Follow the video-studio:script skill: the written script (the voiceover or the text on screen, and
    what happens on screen, a row per beat) on its review page. No storyboard until the user approves the script. With
    a recorded voiceover, transcribe it first (stage 3) and write the script from the clean take. With footage, scan
@@ -212,8 +214,9 @@ To build one in, whether you suggested it or the user named it:
    - a full-frame item as a scene's base, with items that sit over footage on top (a wall of work with captions over
      it, a chart with a name tag);
    - widgets one after another, quick-fire, or side by side;
-   - a ground of one of the brand's colours (a full-frame element in `index.html`), with big words, a widget and
-     captions over it.
+   - a ground from the brand's backgrounds (a full-frame element in `index.html`), with big words, a widget and
+     captions over it. An image background is a `background-image` div covering the frame at its `position`, its file
+     copied into the project's `assets/`; a gradient or colour is the element's background.
 
    `studio.mjs library` marks each item over footage or full frame. Each is its own clip with its own id (a second
    copy of an item gets a new id, as below). Later clips in `index.html` draw on top, so put the base first;
