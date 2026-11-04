@@ -8117,6 +8117,693 @@
       "hash": "45d1a2614c0454b2d7ddd23aae38e6be553356c9ca297024ea5e334ea30c684f"
     },
     {
+      "code": "L27",
+      "name": "Stacked split",
+      "category": "layouts",
+      "summary": "Content on top and the presenter below, both inset on the brand's background.",
+      "use": "For vertical videos where the presenter talks through something worth seeing: a screen, a slide, a chart, or a few points. The content is a video (a screen recording, or any clip, such as an item rendered at the card's size), an image, or words: a label, a heading and up to four points. Set eyesX and eyesY to where the presenter's eyes are in a still of the footage at the video's size, so the face sits in the top half of its card. Captions go on the presenter's chest: set the caption item's y to about 1570 at 9:16, 1180 at 4:5 and 960 at 1:1, and check a snapshot (at 16:9, where the two sit side by side, leave them where they are).",
+      "motion": "The footage shrinks from full screen into its card (0.50 s) as the content card drops in from the top (0.40 s, 0.10 s later), and its points come in one by one. Out: the content lifts away (0.30 s) and the footage grows back to full screen (0.50 s).",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "footageVideo",
+          "label": "Presenter footage (video file; its sound stays on the main track)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "eyesX",
+          "label": "Where the presenter’s eyes are across the footage (px from the left at the video’s size; 0 for the stand-in)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "id": "eyesY",
+          "label": "Where the presenter’s eyes are down the footage (px from the top at the video’s size; 0 for the stand-in)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "id": "contentVideo",
+          "label": "The content as a video: a screen recording or any clip (video file; leave empty for an image or words)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "contentImage",
+          "label": "The content as an image: a screenshot, slide or photo (image file; leave empty for words)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "fit",
+          "label": "The video or image",
+          "type": "enum",
+          "default": "contain",
+          "options": [
+            {
+              "value": "contain",
+              "label": "Show all of it (screens, slides)"
+            },
+            {
+              "value": "cover",
+              "label": "Fill the card (photos)"
+            }
+          ]
+        },
+        {
+          "id": "address",
+          "label": "A web address, to show the content in a browser window (leave empty for a plain card)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "label",
+          "label": "For words instead: a small label over the heading (leave empty for none)",
+          "type": "string",
+          "default": "The plan"
+        },
+        {
+          "id": "heading",
+          "label": "The heading",
+          "type": "string",
+          "default": "Launch in three steps"
+        },
+        {
+          "id": "points",
+          "label": "Up to four points under it, separated by | (leave empty for none)",
+          "type": "string",
+          "default": "Pick one audience|Write one clear offer|Test it for two weeks"
+        },
+        {
+          "id": "marks",
+          "label": "The points are marked with",
+          "type": "enum",
+          "default": "ticks",
+          "options": [
+            {
+              "value": "ticks",
+              "label": "Ticks"
+            },
+            {
+              "value": "numbers",
+              "label": "Numbers"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), or any colour or CSS gradient",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "l27-16x9.png",
+        "1x1": "l27-1x1.png",
+        "4x5": "l27-4x5.png",
+        "9x16": "l27-9x16.png"
+      },
+      "hash": "76e1e99f1a9a30d0616e98aa7cdb35d085d5b3954db14ae9a5b9bd6d7d25bb6a"
+    },
+    {
+      "code": "L28",
+      "name": "Stacked split, head out",
+      "category": "layouts",
+      "summary": "Content on top and the presenter below, with the top of their head breaking out of the footage.",
+      "use": "As L27, with more presence: the top of the presenter's head rises out of their card into the space above it. The content is a video (a screen recording, or any clip), an image, or words: a label, a heading and up to four points. It needs a cut-out of the presenter (the same footage with the background removed, made on the Mac). Set eyesX and eyesY to where the presenter's eyes are in a still of the footage at the video's size: the card's top edge crosses the face just above them. Captions go on the presenter's chest: set the caption item's y to about 1520 at 9:16, 1100 at 4:5 and 910 at 1:1, and check a snapshot (at 16:9, where the two sit side by side, leave them where they are).",
+      "motion": "The footage shrinks from full screen into its card (0.50 s) as the content card drops in from the top (0.40 s, 0.10 s later). As the card settles, its top edge slides down behind the presenter's head (0.30 s), so the head breaks out, and the points come in one by one. Out: the edge slides back up (0.25 s), the content lifts away (0.30 s) and the footage grows back to full screen (0.50 s).",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "footageVideo",
+          "label": "Presenter footage (video file; its sound stays on the main track)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "cutoutVideo",
+          "label": "Cut-out of the presenter (transparent video of the same footage)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "eyesX",
+          "label": "Where the presenter’s eyes are across the footage (px from the left at the video’s size; 0 for the stand-in)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "id": "eyesY",
+          "label": "Where the presenter’s eyes are down the footage (px from the top at the video’s size; 0 for the stand-in)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "id": "contentVideo",
+          "label": "The content as a video: a screen recording or any clip (video file; leave empty for an image or words)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "contentImage",
+          "label": "The content as an image: a screenshot, slide or photo (image file; leave empty for words)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "fit",
+          "label": "The video or image",
+          "type": "enum",
+          "default": "contain",
+          "options": [
+            {
+              "value": "contain",
+              "label": "Show all of it (screens, slides)"
+            },
+            {
+              "value": "cover",
+              "label": "Fill the card (photos)"
+            }
+          ]
+        },
+        {
+          "id": "address",
+          "label": "A web address, to show the content in a browser window (leave empty for a plain card)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "label",
+          "label": "For words instead: a small label over the heading (leave empty for none)",
+          "type": "string",
+          "default": "Prompt"
+        },
+        {
+          "id": "heading",
+          "label": "The heading",
+          "type": "string",
+          "default": "Write 3 headlines for my homepage"
+        },
+        {
+          "id": "points",
+          "label": "Up to four points under it, separated by | (leave empty for none)",
+          "type": "string",
+          "default": "Lead with the problem|Show it working|Make the next step obvious"
+        },
+        {
+          "id": "marks",
+          "label": "The points are marked with",
+          "type": "enum",
+          "default": "numbers",
+          "options": [
+            {
+              "value": "ticks",
+              "label": "Ticks"
+            },
+            {
+              "value": "numbers",
+              "label": "Numbers"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), or any colour or CSS gradient",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "l28-16x9.png",
+        "1x1": "l28-1x1.png",
+        "4x5": "l28-4x5.png",
+        "9x16": "l28-9x16.png"
+      },
+      "hash": "8284a82cf54db9d029fb87c8c4414b802ecc7f1147c6618d3932474530c944cc"
+    },
+    {
+      "code": "L29",
+      "name": "Stacked split, cut-out",
+      "category": "layouts",
+      "summary": "Content on top, with the presenter cut out and standing on the brand's background below it.",
+      "use": "For vertical videos with more presence: the presenter, cut out, stands on the brand's background under the content, head and shoulders down to the frame's foot. The content is a video (a screen recording, or any clip), an image, or words: a label, a heading and up to four points. It needs a cut-out of the presenter (the same footage with the background removed, made on the Mac). Set eyesX and eyesY to where the presenter's eyes are in a still of the footage at the video's size. The background is the brand's accent unless you set another: a colour from the brand kit, a gradient or an image. Captions go on the presenter's chest: set the caption item's y to about 1590 at 9:16, 1130 at 4:5 and 935 at 1:1, and check a snapshot (at 16:9, where the two sit side by side, leave them where they are).",
+      "motion": "The background fills in behind the presenter (a circle wipe from their middle, 0.50 s) as they move down to stand under the content, and the content card drops in from the top (0.40 s); its points come in one by one. Out: the content lifts away (0.30 s), then the background closes back to the footage (0.45 s) as the presenter returns to full screen.",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "footageVideo",
+          "label": "Presenter footage (video file; its sound stays on the main track)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "cutoutVideo",
+          "label": "Cut-out of the presenter (transparent video of the same footage)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "eyesX",
+          "label": "Where the presenter’s eyes are across the footage (px from the left at the video’s size; 0 for the stand-in)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "id": "eyesY",
+          "label": "Where the presenter’s eyes are down the footage (px from the top at the video’s size; 0 for the stand-in)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "id": "contentVideo",
+          "label": "The content as a video: a screen recording or any clip (video file; leave empty for an image or words)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "contentImage",
+          "label": "The content as an image: a screenshot, slide or photo (image file; leave empty for words)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "fit",
+          "label": "The video or image",
+          "type": "enum",
+          "default": "contain",
+          "options": [
+            {
+              "value": "contain",
+              "label": "Show all of it (screens, slides)"
+            },
+            {
+              "value": "cover",
+              "label": "Fill the card (photos)"
+            }
+          ]
+        },
+        {
+          "id": "address",
+          "label": "A web address, to show the content in a browser window (leave empty for a plain card)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "label",
+          "label": "For words instead: a small label over the heading (leave empty for none)",
+          "type": "string",
+          "default": "Homepage checklist"
+        },
+        {
+          "id": "heading",
+          "label": "The heading",
+          "type": "string",
+          "default": "Three things every homepage needs"
+        },
+        {
+          "id": "points",
+          "label": "Up to four points under it, separated by | (leave empty for none)",
+          "type": "string",
+          "default": "One clear headline|One button, not three|Proof near the top"
+        },
+        {
+          "id": "marks",
+          "label": "The points are marked with",
+          "type": "enum",
+          "default": "ticks",
+          "options": [
+            {
+              "value": "ticks",
+              "label": "Ticks"
+            },
+            {
+              "value": "numbers",
+              "label": "Numbers"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), or any colour or CSS gradient",
+          "type": "string",
+          "default": "accent"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "l29-16x9.png",
+        "1x1": "l29-1x1.png",
+        "4x5": "l29-4x5.png",
+        "9x16": "l29-9x16.png"
+      },
+      "hash": "55a38eb17157814ecd5b983dd5bf9f0ddeb28e8eede9e451086ebcd8545909fa"
+    },
+    {
+      "code": "L30",
+      "name": "Stacked split, full bleed",
+      "category": "layouts",
+      "summary": "Content and footage edge to edge, half the frame each, with an optional question across the join.",
+      "use": "For a fast, full-frame look in vertical videos: the content fills the top half and the presenter the bottom, with no margins, and a question can be typed across the join. The content is a video (a screen recording, or any clip), an image, or words: a label, a heading and up to four points. Set eyesX and eyesY to where the presenter's eyes are in a still of the footage at the video's size, so the face sits in the top half of their half. Captions go on the presenter's chest: set the caption item's y to about 1740 at 9:16, 1235 at 4:5 and 975 at 1:1, and check a snapshot (at 16:9, where the two sit side by side, leave them where they are).",
+      "motion": "The content slides down from the top and the footage up from the bottom (in from the sides at 16:9), meeting in the middle (0.50 s); then the question types on (0.04 s a letter) and the points come in one by one. Out: the question fades (0.20 s) and both halves slide away (0.40 s).",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "footageVideo",
+          "label": "Presenter footage (video file; its sound stays on the main track)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "eyesX",
+          "label": "Where the presenter’s eyes are across the footage (px from the left at the video’s size; 0 for the stand-in)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "id": "eyesY",
+          "label": "Where the presenter’s eyes are down the footage (px from the top at the video’s size; 0 for the stand-in)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "id": "contentVideo",
+          "label": "The content as a video: a screen recording or any clip (video file; leave empty for an image or words)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "contentImage",
+          "label": "The content as an image: a screenshot, slide or photo (image file; leave empty for words)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "fit",
+          "label": "The video or image",
+          "type": "enum",
+          "default": "contain",
+          "options": [
+            {
+              "value": "contain",
+              "label": "Show all of it (screens, slides)"
+            },
+            {
+              "value": "cover",
+              "label": "Fill the card (photos)"
+            }
+          ]
+        },
+        {
+          "id": "address",
+          "label": "A web address, to show the content in a browser window (leave empty for a plain card)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "label",
+          "label": "For words instead: a small label over the heading (leave empty for none)",
+          "type": "string",
+          "default": "Services"
+        },
+        {
+          "id": "heading",
+          "label": "The heading",
+          "type": "string",
+          "default": "One page, one job"
+        },
+        {
+          "id": "points",
+          "label": "Up to four points under it, separated by | (leave empty for none)",
+          "type": "string",
+          "default": "Say what you do|Show who it’s for|Give one next step"
+        },
+        {
+          "id": "marks",
+          "label": "The points are marked with",
+          "type": "enum",
+          "default": "ticks",
+          "options": [
+            {
+              "value": "ticks",
+              "label": "Ticks"
+            },
+            {
+              "value": "numbers",
+              "label": "Numbers"
+            }
+          ]
+        },
+        {
+          "id": "question",
+          "label": "A question across the join, typed on (leave empty for none)",
+          "type": "string",
+          "default": "How many buttons should a page have?"
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "l30-16x9.png",
+        "1x1": "l30-1x1.png",
+        "4x5": "l30-4x5.png",
+        "9x16": "l30-9x16.png"
+      },
+      "hash": "4a32774d551ac18844965990b75cd3153fb7a7fcf935c63fced844cca5c5fd9b"
+    },
+    {
+      "code": "L31",
+      "name": "Stacked split, two-thirds",
+      "category": "layouts",
+      "summary": "The content fills the top two-thirds; the presenter's head breaks out of a short strip of footage below.",
+      "use": "For vertical videos where the content needs most of the frame: it fills the top two-thirds, and the presenter's head breaks out of a short strip of footage below it, with the captions between the two. The content is a video (a screen recording, or any clip), an image, or words: a label, a heading and up to four points. It needs a cut-out of the presenter (the same footage with the background removed, made on the Mac). Set eyesX and eyesY to where the presenter's eyes are in a still of the footage at the video's size: the strip's top edge crosses the face just above them. Captions go between the content and the head: set the caption item's y to about 1090 at 9:16, 720 at 4:5 and 560 at 1:1, and check a snapshot (at 16:9, leave them where they are), with boxes that stand out from the background (white on a light one).",
+      "motion": "The content card drops in from the top (0.40 s) as the footage strip rises from the bottom edge (0.40 s); then its top edge settles just above the presenter's eyes (0.30 s), so the head breaks out, and the points come in one by one. Out: the edge slides back up (0.25 s), then the strip sinks and the content lifts away (0.40 s).",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "footageVideo",
+          "label": "Presenter footage (video file; its sound stays on the main track)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "cutoutVideo",
+          "label": "Cut-out of the presenter (transparent video of the same footage)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "eyesX",
+          "label": "Where the presenter’s eyes are across the footage (px from the left at the video’s size; 0 for the stand-in)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "id": "eyesY",
+          "label": "Where the presenter’s eyes are down the footage (px from the top at the video’s size; 0 for the stand-in)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "id": "contentVideo",
+          "label": "The content as a video: a screen recording or any clip (video file; leave empty for an image or words)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "contentImage",
+          "label": "The content as an image: a screenshot, slide or photo (image file; leave empty for words)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "fit",
+          "label": "The video or image",
+          "type": "enum",
+          "default": "contain",
+          "options": [
+            {
+              "value": "contain",
+              "label": "Show all of it (screens, slides)"
+            },
+            {
+              "value": "cover",
+              "label": "Fill the card (photos)"
+            }
+          ]
+        },
+        {
+          "id": "address",
+          "label": "A web address, to show the content in a browser window (leave empty for a plain card)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "label",
+          "label": "For words instead: a small label over the heading (leave empty for none)",
+          "type": "string",
+          "default": "Pricing page"
+        },
+        {
+          "id": "heading",
+          "label": "The heading",
+          "type": "string",
+          "default": "Make one plan the obvious choice"
+        },
+        {
+          "id": "points",
+          "label": "Up to four points under it, separated by | (leave empty for none)",
+          "type": "string",
+          "default": "Lead with your best plan|Mark it Most popular|Keep the rest simple"
+        },
+        {
+          "id": "marks",
+          "label": "The points are marked with",
+          "type": "enum",
+          "default": "ticks",
+          "options": [
+            {
+              "value": "ticks",
+              "label": "Ticks"
+            },
+            {
+              "value": "numbers",
+              "label": "Numbers"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), or any colour or CSS gradient",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "l31-16x9.png",
+        "1x1": "l31-1x1.png",
+        "4x5": "l31-4x5.png",
+        "9x16": "l31-9x16.png"
+      },
+      "hash": "2caf9979f98a9ef11c9483113d73a838ad842d9a877d2c882db11f29a0be9f63"
+    },
+    {
       "code": "T02",
       "name": "Title card",
       "category": "text-effects",
@@ -8300,6 +8987,13 @@
           "default": 3
         },
         {
+          "id": "y",
+          "label": "Where the captions sit: the middle of a two-line caption, in px from the top (0 for their usual place)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
           "id": "exit",
           "label": "At the end",
           "type": "enum",
@@ -8322,7 +9016,7 @@
         "4x5": "t04-4x5.png",
         "9x16": "t04-9x16.png"
       },
-      "hash": "d3facd96f47788df5236ff43c09888768c792b078ae4878a2c6a5256139342f6"
+      "hash": "49b84a68f77fd9b8ffdb87bc178e6a46e769462eb515d1893e59a73b5e9a95a5"
     },
     {
       "code": "T05",
@@ -8353,6 +9047,13 @@
           "default": 2.2
         },
         {
+          "id": "y",
+          "label": "Where the captions sit: the middle of a two-line caption, in px from the top (0 for their usual place)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
           "id": "exit",
           "label": "At the end",
           "type": "enum",
@@ -8375,7 +9076,7 @@
         "4x5": "t05-4x5.png",
         "9x16": "t05-9x16.png"
       },
-      "hash": "75a4b254e07a89ad90a60a501bb94d9b90c7ae7a2827c86f00334c5f2a9b1f73"
+      "hash": "aa75d27a19b21b1ef9c5d295c6eff6e6fea63b0b0973b341f1b92f9916371d5d"
     },
     {
       "code": "T06",
@@ -9859,6 +10560,13 @@
           "default": 2.6
         },
         {
+          "id": "y",
+          "label": "Where the captions sit: the middle of a two-line caption, in px from the top (0 for their usual place)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
           "id": "exit",
           "label": "At the end",
           "type": "enum",
@@ -9881,7 +10589,7 @@
         "4x5": "t32-4x5.png",
         "9x16": "t32-9x16.png"
       },
-      "hash": "dd2bf6171112326500aab65407bbad556acc085bcbde9a979ea195edac62c40f"
+      "hash": "18a703d4b01363c09ca67cd7269851c383d90cfe7be64298cb1f3aa24f4058ae"
     },
     {
       "code": "T33",
@@ -9912,6 +10620,13 @@
           "default": 2.4
         },
         {
+          "id": "y",
+          "label": "Where the word sits: its middle, in px from the top (0 for its usual place)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
           "id": "exit",
           "label": "At the end",
           "type": "enum",
@@ -9934,7 +10649,7 @@
         "4x5": "t33-4x5.png",
         "9x16": "t33-9x16.png"
       },
-      "hash": "8faa9fb85cf793a73a4deb6324a592ff26cbe1da6c9e8587002b1b61c9f663cc"
+      "hash": "ebe229cbf5dff2e3340c638d1d4d263289bc9823e60c8732f4e15d7938af6b68"
     },
     {
       "code": "T34",
@@ -9965,6 +10680,13 @@
           "default": 3
         },
         {
+          "id": "y",
+          "label": "Where the captions sit: the middle of a two-line caption, in px from the top (0 for their usual place)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
           "id": "exit",
           "label": "At the end",
           "type": "enum",
@@ -9987,7 +10709,7 @@
         "4x5": "t34-4x5.png",
         "9x16": "t34-9x16.png"
       },
-      "hash": "ea4b06556536e1f1413795c4cf4dc47a62e9a2b1571551c437a1d2aa8b1d22bd"
+      "hash": "7b23f16fad524eb1faa4e343b47f38284bf60ec36b47e5512085e4faaf41ddbd"
     },
     {
       "code": "T35",
@@ -10024,6 +10746,13 @@
           "default": "accent|#8FB8FF|#A6D9A0|#F4A6A6"
         },
         {
+          "id": "y",
+          "label": "Where the captions sit: the middle of a two-line caption, in px from the top (0 for their usual place)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
           "id": "exit",
           "label": "At the end",
           "type": "enum",
@@ -10046,7 +10775,7 @@
         "4x5": "t35-4x5.png",
         "9x16": "t35-9x16.png"
       },
-      "hash": "b391b717ab109f8b9349d2b4e92f1dfaaeef2f698cda5af63fa119280696aa47"
+      "hash": "58284be2085c7f8cf87153a6a2c2e971122fb1e884ff7a11fe6a470ee644596a"
     },
     {
       "code": "T36",
@@ -10087,6 +10816,13 @@
           ]
         },
         {
+          "id": "y",
+          "label": "Where the word sits: its middle, in px from the top (0 for its usual place)",
+          "type": "number",
+          "default": 0,
+          "unit": "px"
+        },
+        {
           "id": "exit",
           "label": "At the end",
           "type": "enum",
@@ -10109,7 +10845,7 @@
         "4x5": "t36-4x5.png",
         "9x16": "t36-9x16.png"
       },
-      "hash": "842de02df37b65203d95b4c4e10baca70d225f8d43c69481b258866feda0a56a"
+      "hash": "2325f0bf91cf903baf6999396cfc5a64778cdc5ec1d60935942377c035977cb5"
     },
     {
       "code": "T37",
