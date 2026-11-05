@@ -6,8 +6,10 @@ needs it: every tween must give the same frame for the same time, however it's r
 
 ## Loading it
 
-- GSAP 3.14.2, the version HyperFrames' scaffold links. Keep a copy in the project (`assets/vendor/gsap.min.js`) so
-  the film never depends on the network, and load any plugin from the same version's `dist/` folder beside it.
+- GSAP 3.15.0, the version HyperFrames 0.9.16's scaffold links (videos made on 0.8.149 link 3.14.2; keep the one a
+  video has). Keep a copy in the project (`assets/vendor/gsap.min.js`) so the film never depends on the network, and
+  load any plugin from the same version's `dist/` folder beside it. HyperFrames' check and snapshot serve 3.15.0's
+  `gsap.min.js`, `CustomEase` and `MotionPathPlugin` from their own copy when a video links them from jsDelivr.
 - Every plugin is free to use, commercial work included, and needs no key. Register each once before use:
   `gsap.registerPlugin(SplitText, DrawSVGPlugin)`.
 

@@ -6,7 +6,7 @@ here. Each stage skill lists the guides it reads first; beyond those, read what 
 
 | Subject | Start at |
 |---|---|
-| How a video's files are built for HyperFrames 0.8.149 | `format.md` |
+| How a video's files are built for HyperFrames 0.9.16 | `format.md` |
 | The HyperFrames commands Video Studio uses | `cli.md` |
 | Video Studio's numbers: pace, reading time, sizes, safe areas, loudness | `numbers.md` |
 | The animation libraries: GSAP, Lottie, three.js, canvas, WebGPU, anime.js, Web Animations, CSS | `runtimes/` |

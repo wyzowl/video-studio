@@ -76,9 +76,17 @@ not "Learn more"), and a thing keeps one name through the film. How the words ar
 
 ## Working from references
 
-When a video has references (`inputs/refs/` or the brand's `refs/`), take a frame every half second with ffmpeg and
-write `docs/style_guide.md`: palette, type, shot lengths, transitions, camera, texture, and how text enters and leaves.
-Take the reference's grammar, never its content.
+When a video has references (`inputs/refs/` or the brand's `refs/`), measure each one with `HF measure` and write
+`docs/style_guide.md` from the measurements: palette, type, shot lengths, transitions, camera, texture, and how text
+enters and leaves. Take the reference's grammar, never its content.
+- `probe` first, then `cuts` for the shot lengths (whips and flashes come apart from real cuts);
+- `events --map` for when things appear, change and hold against the sound's onsets and beats, with
+  `frames --events` for a strip of each moment worth a look (or `frames --every 0.5` for an overview);
+- `look` for brightness, contrast, saturation and warmth;
+- `curve` on one element's move for its length, overshoot and nearest GSAP ease, and `ink` for the size of its type.
+
+The commands are in `../cli.md`, "Measuring a video". The film can be measured against the reference the same way
+once it's rendered (`look --compare`, `curve --compare`).
 
 ## The last look
 

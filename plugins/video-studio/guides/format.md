@@ -1,6 +1,6 @@
 # How a video's files are built
 
-What HyperFrames 0.8.149 needs from a project, and how Video Studio builds on it. Every frame is rendered by seeking
+What HyperFrames 0.9.16 needs from a project, and how Video Studio builds on it. Every frame is rendered by seeking
 a paused timeline to that frame's time, one frame at a time and not always in order, so everything on screen must be
 worked out from the time alone. The commands are in `cli.md`; the animation libraries in `runtimes/`.
 
@@ -107,12 +107,13 @@ Two ways to build the picture, both on the same contract:
   A timed `<video>` with neither fails lint (`video_missing_muted`).
 - Every `<audio>` needs an `id`, or it's left out of the mix and the render is silent (`media_missing_id`).
 - No `crossorigin` on media (`media_crossorigin_breaks_preview`).
-- Time a `<video>` or its wrapper, never both (`video_nested_in_timed_element`): the frames come from the wrong place
-  and the clip disappears part-way. A scene file's host doesn't count: media inside a scene file plays correctly.
+- Time the `<video>` itself: it takes no timing from a wrapper, so a wrapper only places or animates it and carries
+  no `data-start`. Both timed fails lint (`video_nested_in_timed_element`): the frames come from the wrong place and
+  the clip disappears part-way. A scene file's host doesn't count: media inside a scene file plays correctly.
 - Never animate a timed media element's size or position: move a wrapper around it.
 - `data-media-start` is the in point (seconds into the file), `data-playback-rate` a constant speed (0.1–10),
   `data-volume` the gain (1 is 0 dB, up to 3.98 for +12 dB), and `data-fade-in` / `data-fade-out` edge fades. Volume
-  envelopes and ducking use the `data-automation` volume lane (`audio/mixing.md`).
+  envelopes and ducking use the `data-automation` volume lane, which multiplies `data-volume` (`audio/mixing.md`).
 - **Cutting one file into ranges:** one element per range, each with its own `data-start` (where it plays),
   `data-media-start` and `data-duration`; each keeps its own sound with `data-has-audio="true"`. A separate `<audio>`
   is only for other sound: music, a voiceover, replacement sound, or a J or L cut.
@@ -229,7 +230,8 @@ itself is dropped when the video uses shader transitions or HDR media: put it on
 | `data-layout-allow-overlap` | Deliberate text layering, on that block only |
 | `data-layout-allow-occlusion` | An element meant to cover text (a full-frame transparent canvas, a cut-out in front of words) |
 | `data-layout-allow-caption-zone` | Words meant to sit in the caption band (`--caption-zone`) |
-| `data-layout-ignore` | A decorative element, such as a 3D surface, never measured |
+| `data-layout-ignore` | A decorative element, such as a 3D surface, never measured; also text that's texture rather than reading (a phone's clock, a sign in the world), which the type floor would flag |
+| `data-hold` | A stillness that's meant (a pause on a key word, a chart held to be read), on the element that holds, not the whole stage: the still-stretch finding (`dead_stretch`) |
 
 Words parked behind an `overflow: hidden` mask are still measured: set them to `opacity: 0` while they're hidden. A
 lint error switches the layout and contrast checks off, so "0 samples" isn't a pass: clear lint errors first.

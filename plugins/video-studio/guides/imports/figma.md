@@ -1,7 +1,7 @@
 # From Figma
 
 Bringing the user's Figma work into a video, when they ask for it. Figma is an outside service: it's used only on
-the user's own account and with their OK. HyperFrames 0.8.149 has no Figma command, so designs come in as files the
+the user's own account and with their OK. HyperFrames 0.9.16 has no Figma command, so designs come in as files the
 user exports, or through a Figma connector the user connects themselves.
 
 ## Files
@@ -45,4 +45,4 @@ edges) cancel out, so the score isolates timing and movement.
 
 ---
 Sources: written for Video Studio from HyperFrames' figma skill and its motion check (v0.8.149, Apache-2.0, © HeyGen),
-changed: trimmed to exports and a user's own connector, since HyperFrames 0.8.149 has no Figma command. See NOTICE.
+changed: trimmed to exports and a user's own connector, since HyperFrames 0.9.16 has no Figma command. See NOTICE.

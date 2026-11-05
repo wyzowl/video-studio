@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { PLUGIN_ROOT, readStudio, readJSON, registeredStudios, USER_DIR } from "./studio.mjs";
+import { PLUGIN_ROOT, readJSON, registeredStudios, USER_DIR } from "./studio.mjs";
 import { EXTRAS } from "./extras.mjs";
 import { HYPERFRAMES_VERSION } from "./versions.mjs";
 import { outsideSkills, skillList } from "./outside-skills.mjs";
@@ -139,8 +139,7 @@ export function runChecks({ root = null } = {}) {
   }
 
   if (root) {
-    const studio = readStudio(root);
-    add({ id: "studio", group: "Your studio", name: "Studio folder", ok: true, detail: `${root} (HyperFrames ${studio.hyperframes || "not set"})` });
+    add({ id: "studio", group: "Your studio", name: "Studio folder", ok: true, detail: root });
     // the outside skills setup used to install (up to 0.9): listed so the user can have them removed, with their OK
     const outside = outsideSkills(root);
     add({

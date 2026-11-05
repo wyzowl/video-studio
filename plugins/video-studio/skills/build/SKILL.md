@@ -47,8 +47,9 @@ notes), and the verified word times.
    (`PLUGIN/guides/story/beats.md`).
 5. **Every size laid out for its shape:** layouts built from variables (safe areas, a type scale), so another size is
    a layout change, not a rebuild (`PLUGIN/guides/design/layout.md`). Check text at phone width for 9:16, 4:5 and 1:1.
-6. **References:** if `inputs/refs/` or the brand's `refs/` exists and there's no `docs/style_guide.md` yet, write one
-   (`PLUGIN/guides/design/README.md`, "Working from references").
+6. **References:** if `inputs/refs/` or the brand's `refs/` exists and there's no `docs/style_guide.md` yet, measure
+   them with `HF measure` and write one from the measurements (`PLUGIN/guides/design/README.md`, "Working from
+   references").
 7. **Look before rendering:** `HF check` shows 0 errors (`PLUGIN/guides/cli.md`, "lint and check"); stills of each
    scene's key moment and every transition with `HF snapshot --at <times> --describe false`, compared with the
    storyboard's frames, before the first render. Then the review skill takes over.

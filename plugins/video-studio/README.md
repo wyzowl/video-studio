@@ -48,7 +48,7 @@ it runs, downloads and sends, and when.
 - **Its own scripts,** in Node.js, from the plugin's folder: the studio helper (`scripts/studio.mjs`), the page server,
   and the tools for review, footage, captions and sound. They draw storyboard frames and PDFs in HyperFrames' headless
   browser.
-- **HyperFrames 0.8.149,** through `npx --yes hyperframes@0.8.149`, to make, check, render and take stills of videos,
+- **HyperFrames 0.9.16,** through `npx --yes hyperframes@0.9.16`, to make, check, render and take stills of videos,
   and transcribe speech, all on your Mac. Videos made on an earlier version keep it, through their own scripts.
 - **ffmpeg and ffprobe,** for audio and video; macOS's `open`, to open a page in your browser or show a render or PDF
   in Finder; and `unzip`, to unpack SFX Kit. Setup's checks also run `git --version`, `brew --version` and `sw_vers`.
@@ -81,7 +81,7 @@ All of this happens only in a session inside a studio folder. Anywhere else, Vid
 
 ### What it downloads
 
-- **HyperFrames 0.8.149** and its dependencies, from npm. HyperFrames then fetches its headless browser (Chrome for
+- **HyperFrames 0.9.16** and its dependencies, from npm. HyperFrames then fetches its headless browser (Chrome for
   Testing, from Google) and the two models setup downloads, from their releases on Hugging Face and GitHub:
   transcription (Parakeet, about 640 MB) and presenter cut-outs (about 168 MB).
 - **SFX Kit,** the studio's sound effects (about 55 MB, CC0), from `github.com/wyzowl/sfx-kit`'s release, checked

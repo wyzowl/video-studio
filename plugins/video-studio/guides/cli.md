@@ -4,7 +4,7 @@ HyperFrames' command line, as Video Studio uses it. What the files must contain 
 
 ## Running HyperFrames
 
-`HF` means `HYPERFRAMES_NO_TELEMETRY=1 HYPERFRAMES_NO_UPDATE_CHECK=1 npx --yes hyperframes@0.8.149`: the version
+`HF` means `HYPERFRAMES_NO_TELEMETRY=1 HYPERFRAMES_NO_UPDATE_CHECK=1 npx --yes hyperframes@0.9.16`: the version
 Video Studio is tested with, with no anonymous usage data and no check for a newer release (Video Studio chooses the
 version). Every new project starts on it.
 
@@ -13,9 +13,12 @@ version). Every new project starts on it.
   the same two switches in front, and `studio.mjs render` follows its `render` script.
 - Render through `node PLUGIN/scripts/studio.mjs render -- <HF render's options>`, from the video's folder: it shows
   the render's progress on the video's overview, and uses the graphics chip on Apple silicon by itself.
-- Everything below runs on this Mac. HyperFrames also has commands that send a project or its frames to outside
-  services (cloud renders, publishing, sign-in, frame descriptions by an AI service); one is used only when the user
-  asks for it and connects their own account.
+- Everything below runs on this Mac. HyperFrames also has commands and options that send a project, its frames or
+  its sound to outside services: cloud renders, publishing, sign-in and billing, frame descriptions by an AI service
+  (`snapshot --describe`), HeyGen's speech engine (`transcribe --engine heygen`), HeyGen's audio services
+  (`audio --quality best`), and HyperFrames Pro's `reverse` and `templates`. One is used only when the user asks for it
+  and connects their own account.
+- Leave `HF update`, `HF upgrade` and `HF skills` alone: Video Studio chooses the version and installs no skills.
 
 ## The loop
 
@@ -26,8 +29,9 @@ version). Every new project starts on it.
 5. `HF snapshot --at <times> --describe false` for stills of what changed, and of every scene file's middle.
 6. Render a draft and review it (review skill).
 
-There are no partial renders: any change means a full render. `--resume` (with `HF_SEGMENTED_CAPTURE=true`) only
-recovers a render that crashed. Check changed moments with snapshots and keyframe strips first.
+Check changed moments with snapshots and keyframe strips first. A changed stretch can then be rendered by itself
+(`render --start` and `--end`, below) to watch it moving; a draft for review is always the whole film. `--resume`
+(with `HF_SEGMENTED_CAPTURE=true`) only recovers a render that crashed.
 
 ## init
 
@@ -66,27 +70,40 @@ one is set.
 - **motion**: the assertions in any `*.motion.json` beside the composition (below);
 - **contrast**: WCAG AA on visible text against the real pixels behind it: 4.5:1 for body text, 3:1 for large text
   (24 px and up, or 19 px and up in bold). Each failure gives the colours, the ratio and a `suggestedColor` in the
-  same family.
+  same family. A sample taken over a layer that's still moving is skipped;
+- **craft**, sampled every eighth of a second (warnings): reading text under a type floor of 2.6% of the frame's
+  short side, 28 px at 1080, held half a second or more (`text_below_floor`); a line on screen for less than three
+  quarters of 0.5 s + 0.3 s a word, or 0.4 s for one or two words, and a film's last line for less than 2 s
+  (`line_unread`); nothing changing for more than 3 s before the end card (`dead_stretch`); a first frame showing only
+  the ground, or covered by an opaque layer, when it's the thumbnail on social players (`first_frame_empty`); and a
+  film over 15 s with no sound (`film_silent`). These floors are lower than Video Studio's own (`numbers.md`): a
+  craft warning is always a fault, but passing it doesn't mean the words meet ours. Text that's texture rather than
+  reading takes `data-layout-ignore`, and a stillness that's meant takes `data-hold` (`format.md`);
+- **audio**: sound the render would lose or play as silence.
 
 A frame that never changes for a 3 s+ composition fails as `sweep_static` (the seek isn't driving the page); a
 deliberate still composition takes `data-no-timeline` on its root. An issue seen at only one sample (an entrance or
 exit in flight) is a note; one held across samples counts. Each finding has the selector, the file, the box and the
-time.
+time. Each check also writes its report to `.hyperframes/artifacts/checks/<id>.json` in the project (`saved` in the
+JSON).
 
 | Option | Use |
 |---|---|
-| `--json` | Results to read: `{ ok, lint, runtime, layout, motion, contrast, snapshots }` |
-| `--snapshots` | Annotated frames, and a crop of every error that has a box |
+| `--json` | Results to read: `{ ok, lint, runtime, layout, motion, contrast, craft, audio, snapshots, saved }` |
+| `--snapshots` | Annotated frames, and a crop of every error that has a box (in `.hyperframes/artifacts/snapshots/`) |
 | `--at 1.5,4,7.25` | Check these exact times (each scene's key moment) |
 | `--at-transitions` | Also check every tween's start and end |
 | `--samples 15` | A denser sweep (default 9) |
+| `--range 12,18` | Sample only this stretch, after a change there (lint still covers the whole project; no craft pass) |
+| `--components "#k-tags"` | Report only findings that involve these elements |
 | `--caption-zone "x0=0;y0=.82;x1=1;y1=1;severity=error"` | Flag text in a band kept for captions or platform buttons (fractions of the frame) |
 | `--frame-check` | Images, video and canvases that leave the frame |
 | `--strict` | Fail on warnings too |
 | `--no-contrast` | Skip contrast while iterating |
 
 When check reports "0 samples" or "0/0 text checks", the browser never ran (a lint error): that isn't a pass. The
-opt-out attributes for deliberate layering are in `format.md`.
+opt-out attributes for deliberate layering are in `format.md`. After a check, a warm check process and its Chrome stay
+for five minutes so the next check starts at once, then end by themselves: leave them be.
 
 ### Motion assertions
 
@@ -111,12 +128,19 @@ first, `staysInFrame` when it leaves the frame once visible, and `keepsMoving` w
 
 ## snapshot
 
-Always pass `--describe false`: otherwise snapshot sends frames to an AI service to describe them whenever its API key
-is set.
+Always pass `--describe false`. Descriptions are off unless asked for (since 0.8.201), and `--describe` with anything
+else sends each frame to an AI service whenever its API key is set; `false` keeps them off whatever runs.
 
 - `HF snapshot --at 3,10.5,18 --describe false` captures those exact instants; add `--no-end` to skip the extra
-  end frame. `--frames 8` takes evenly spaced frames instead. `-o <folder>` chooses where they go (each run clears
-  it).
+  end frame. `--frames 8` takes evenly spaced frames instead, `--range 12,18` with `--frames` takes them within a
+  stretch, and `--composition <id>` within one scene file's time.
+- `-o <folder>` chooses where they go, and each run clears it; `--keep` adds to it instead, naming each still
+  `at-<seconds>s.png`, so one moment can be taken again on its own. Without `-o`, each run goes to a new folder in
+  `.hyperframes/artifacts/snapshots/`.
+- `--review` takes a review set from the project, with no render: each timed clip (a scene, a library block, or an
+  element marked `data-beat="<name>"`) at its start + 0.3 s and its middle, a five-frame strip around every cut
+  (`review-seam-NN.jpg`), and those frames at phone width, 360 px (`review-phone.jpg`). In a one-clock film only the
+  library blocks and marked beats are clips of their own.
 - `--zoom "#cta"` (or `--zoom "x,y,w,h"`, with `--zoom-scale 2`) makes a sharp crop of one element or region.
 - `--angle iso` (or `top`, `side`, `"yaw,pitch"`) tilts the stage to show depth and overlap.
 - `--against ref.mp4` saves the reference video's frame at each time too, with a side-by-side sheet: for footage
@@ -137,18 +161,25 @@ samples; `--samples N`), with `--layout strip` for motion in place, `--from` and
 |---|---|
 | `--quality draft` / `looks` / `delivery` | Review drafts / a first real encode (the default) / the master |
 | `--fps 30` or `60` | Drafts at 30, the master at 60 (twice the time) |
-| `--output <file>` | A stable name; the default is timestamped |
+| `--output <file>` | A stable name; the default is `renders/<project>_<date>_<time>.mp4` |
+| `--start 14 --end 18` | Only that stretch of the film, as its own MP4 with its sound, starting at 0 (MP4, a whole frame rate of 24, 25, 30 or 60, and not HDR) |
 | `-c compositions/<file>.html` | Render one scene file on its own |
-| `--format webm` or `mov` | With transparency, for a piece laid over something else; `png-sequence` for frames, `gif` (no sound, 30 fps at most) |
+| `--format webm` or `mov` | With transparency, for a piece laid over something else (`mov` is ProRes 4444; `--prores-profile hq`, `422`, `lt` or `proxy` drop the transparency); `png-sequence` for frames, `gif` (no sound, 30 fps at most) |
 | `--crf <n>` or `--video-bitrate 10M` | Encoder quality, one or the other |
+| `--max-bitrate 8M`, `--keyframe-interval 2` | A peak bitrate and a keyframe at least this often (seconds), for a platform that asks for them |
 | `--workers <n>` | Chrome instances (about 256 MB each); fewer when memory is short |
 | `--variables '{…}'`, `--batch rows.json` | Values for one render; one render per row (`--output "renders/{name}.mp4"`, never with `--variables`) |
+| `--page-motion-blur off` | Leave out the film's motion blur, for a quicker look (`motion/techniques/effects.md`) |
 | `--strict` | Fail on lint errors |
 
-Read the line under the output path: the capture path, the GPU mode and each stage's time. A CSS `filter` (a blur)
-anywhere in the film switches HyperFrames from its fast capture to screenshot capture, which renders noticeably slower
-(the log says so): keep blur for the moments that earn it. Check the file afterwards:
-it exists, isn't empty, and `ffprobe -v error -show_format -show_streams` gives the root's duration (and fps).
+One render runs at a time on the Mac: a second waits for the first to finish (`--no-wait` stops it instead).
+
+Read the line under the output path: the capture path, the GPU mode and each stage's time. Where HyperFrames' fast
+capture can't draw something (a CSS `filter` such as a blur, a 3D context), it falls back to screenshot capture,
+spread over several Chrome workers that encode as they go; since 0.8.183 the fallback keeps all its workers, so a
+blur costs little render time. The sound's ceiling is in `audio/mixing.md`. The last lines may suggest editing on in
+HyperFrames' desktop app: that's for the user to choose, not a step. Check the file afterwards: it exists, isn't
+empty, and `ffprobe -v error -show_format -show_streams` gives the root's duration (and fps).
 
 ## Comparing
 
@@ -156,21 +187,56 @@ it exists, isn't empty, and `ffprobe -v error -show_format -show_streams` gives 
   or more versions into one labelled sheet (up to 16): a before and after for a motion or feel change.
 - `HF grade-compare --for frame.png --grades grades.json --project . --out grades.png` tries colour grades on one frame
   (`footage/grading.md`).
+- `HF diff <original.mp4> <render.mp4 or project> --json` scores one against the other frame by frame: SSIM, the
+  worst moments, and cuts missing or added (`--sbs` also writes a side-by-side video). For footage being rebuilt, or
+  two renders of the same film.
+
+## Measuring a video
+
+`HF measure <what> <video>` reads a finished video on the Mac and answers in JSON: a reference the user supplied, a
+render, footage. Start with `probe` (its size, frame rate, length and sound, and what to fix before measuring; a
+variable frame rate takes `--normalize <copy.mp4>`).
+
+| What | Gives |
+|---|---|
+| `cuts` | The hard cuts and the shots between them; flashes, whips and fast moves listed apart (`not_cuts`) |
+| `events --map` | When things appear, change, disappear and hold, on a 4×4 grid, with the sound's onsets and beats, grouped into windows worth a look |
+| `frames` | Pictures: an overview sheet (`--every 0.5`), chosen moments (`--at`), consecutive frames (`--range a,b`), or a strip around each event (`--events`) |
+| `look` | Brightness, contrast, saturation, black-and-white share and warmth over a stretch; `--compare <video>` for another |
+| `curve --roi x,y,w,h` | One element's moves on a plain ground: start, length, overshoot and the closest GSAP ease; `--compare <render>` for ours |
+| `ink --at <s> --roi x,y,w,h` | The size and lines of the text in a region, in the video's pixels |
+| `energy <a> <b>` | How much two clips move, and whether they move at the same moments |
+| `face` | How big a face is and where, over a stretch: room for words and cards around a person |
+| `sync --roi <the mouth>` | The lag between a speaker's mouth and their voice |
+| `extract` | A still (`--at`) or a clip (`--from`, `--to`) cut from a video and cropped (`--roi`), as project media |
+
+Pictures go to `.hyperframes/measure/<what>/` unless `--out` names a folder. A reference is measured for its grammar
+(`design/README.md`, "Working from references"), never copied.
 
 ## Sound and speech
 
 - **Transcribe** with `HF transcribe <file> --engine parakeet --json` (Parakeet runs on the Mac; setup downloads it).
-  Always name the engine: on its own default, HyperFrames can install whisper-cpp with Homebrew by itself. It writes
-  word times as `[{ "id": "w0", "text": "Hello", "start": 0.0, "end": 0.5 }, …]`; `--to srt` or `--to vtt` writes a
-  caption file, and an existing `.srt`, `.vtt` or `.json` transcript can be imported the same way.
+  Always name the engine: on its own default, HyperFrames can install whisper-cpp with Homebrew by itself, and
+  `--engine heygen` is HeyGen's paid speech service (an outside service, only when the user asks). It writes
+  `transcript.json` beside the file, word times as `[{ "id": "w0", "text": "Hello", "start": 0.0, "end": 0.5 }, …]`;
+  `--to srt` or `--to vtt` writes a caption file, and an existing `.srt`, `.vtt` or `.json` transcript can be
+  imported the same way.
   - Whisper's `.en` models translate other languages into English: for speech in another language, a model without
     `.en` and `--language <code>`.
   - Whisper's word times can drift by more than a second. After Parakeet, run
     `node PLUGIN/scripts/tools/vo-check.mjs <audio> <transcript>` and listen to the cue words.
   - Caption craft and transcript clean-up: `captions/`.
-- **Beats:** `HF beats --json` writes `beats/<audio>.json` for the project's music (an `<audio>` marked
-  `data-timeline-role="music"`, or with `music`, `bgm` or `soundtrack` in its id). It fails, writing nothing, when it
-  finds no beats. Its use: `audio/sync.md`.
+- **Beats:** `HF beats --json` writes `beats/<the audio's path>.json` (`beats/assets/audio/music.wav.json`) for the
+  project's music (an `<audio>` marked `data-timeline-role="music"`, or with `music`, `bgm` or `soundtrack` in its
+  id), with each beat's time and strength; `HF beats <file>` measures a track that isn't in the film yet. With no
+  music, or no beats it can trust, it answers an empty result and writes nothing. It only keeps beats it can hear, so
+  a quiet intro or a fade-out can come back without its first or last few: carry the grid on from the tempo (the
+  score's own, or the spacing of the beats it found) rather than leaving the ends without bar lines. Its use:
+  `audio/sync.md`.
+- **Where sound lands:** `HF audio --element "#sfx" --json` (or a file) measures a track in the film's time: its
+  onsets and their strength, its loudest moment and tail, loudness and silence; `--at <s>` or `--range a,b` lists
+  every sound playing then. It measures on the Mac by default (`--quality local`); `--quality best` and its
+  `describe` measure send the sound to HeyGen's services, only when the user asks.
 - `HF normalize-audio` matches one clip's loudness to another's; levels and ducking are in `audio/mixing.md`.
 
 ## Footage
@@ -188,13 +254,15 @@ it exists, isn't empty, and `ffprobe -v error -show_format -show_streams` gives 
   level of scene files; `laneError` is an automation or effects attribute that doesn't parse.
 - `HF preview --background` opens the project in HyperFrames' own preview and editor (its address ends
   `#project/<name>`); `HF preview --context --json --context-fields selection` says what the user has selected
-  there, so "this one" is never a guess. `HF preview --stop` closes it.
+  there, so "this one" is never a guess. `HF preview --stop` closes it. `HF open .` hands the project to HyperFrames'
+  desktop app instead, when the user has it installed.
 - `HF history begin --who claude --label "…"` and `HF history end` bracket a round of edits;
   `HF history --since mine --who claude` lists what changed since; `HF history undo --who claude` undoes Claude's own
   last round and leaves the user's edits alone. `HF catch-up` lists what was done in the HyperFrames desktop app since
   Claude last looked. The production skill says when to use them.
 - `HF doctor --json` (gate on its `ok`) and `HF browser ensure` when a render or preview fails to start.
-- `HF clean --dry-run` lists what failed renders left behind; Video Studio's own tidy-up is `studio.mjs tidy`.
+- `HF clean --dry-run` lists what failed renders left behind; Video Studio's own tidy-up is `studio.mjs tidy` (it
+  also clears `.hyperframes/artifacts/`, where each snapshot run and check report is kept).
 
 ## On this Mac
 

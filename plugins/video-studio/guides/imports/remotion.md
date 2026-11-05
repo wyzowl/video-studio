@@ -58,5 +58,5 @@ ramp approximated) in `TRANSLATION_NOTES.md` beside the project.
 
 ---
 Sources: written for Video Studio from HyperFrames' remotion-to-hyperframes skill and its references (v0.8.149,
-Apache-2.0, © HeyGen), changed: trimmed to what HyperFrames 0.8.149 supports (its runtime interop isn't in this
+Apache-2.0, © HeyGen), changed: trimmed to what HyperFrames 0.9.16 supports (its runtime interop isn't in this
 version) and rewritten as notes. See NOTICE.

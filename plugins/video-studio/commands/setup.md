@@ -46,7 +46,7 @@ jargon.
      the check: `node "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.mjs"`.
    - **Node.js, ffmpeg, git:** run `HOMEBREW_NO_ANALYTICS=1 brew install` with just the missing ones (Homebrew's
      anonymous usage data stays off, as it does for everything Video Studio runs).
-5. **HyperFrames.** Video Studio uses HyperFrames 0.8.149, the version it's tested with: every new video starts on it,
+5. **HyperFrames.** Video Studio uses HyperFrames 0.9.16, the version it's tested with: every new video starts on it,
    and it runs through npx, so there's nothing to install.
 6. **Create the studio:**
    `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" init "<folder>" --name "<studio name>"`.
@@ -61,7 +61,7 @@ jargon.
 8. **Test render**, from the studio folder. The first render also downloads HyperFrames' headless Chrome:
    ```bash
    export HYPERFRAMES_NO_TELEMETRY=1 HYPERFRAMES_NO_UPDATE_CHECK=1
-   HYPERFRAMES_SKIP_SKILLS=1 npx --yes hyperframes@0.8.149 init videos/_setup-test --non-interactive
+   HYPERFRAMES_SKIP_SKILLS=1 npx --yes hyperframes@0.9.16 init videos/_setup-test --non-interactive
    cd videos/_setup-test && npm run check && npm run render -- --quality draft --fps 30 --output renders/test.mp4
    ```
    Run it as one command, so the first line's switches (no usage data, no update check) reach HyperFrames. If it

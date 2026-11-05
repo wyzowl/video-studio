@@ -40,6 +40,7 @@ import { SCORES, stageTitle, stepsNow } from "./progress.mjs";
 import { deliveryFiles, deliveryWords, hasDelivery } from "./delivery.mjs";
 import { checksNow, setupNotes } from "./checks.mjs";
 import { TIDY_MIN_BYTES, lastTidy, sizeLabel, studioTidy, tidyPlan, tidyWhat } from "./tidy.mjs";
+import { HYPERFRAMES_VERSION } from "./versions.mjs";
 
 export const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -119,7 +120,7 @@ function footer(studio) {
       ${cell("Studio", studio.name)}
       ${cell("Folder", studio.root)}
       ${cell("Plugin", `Wyzowl Video Studio ${pluginVersion()}`)}
-      ${cell("HyperFrames", studio.hyperframes || "not set")}
+      ${cell("HyperFrames", HYPERFRAMES_VERSION)}
     </dl>
     <p class="footer_note">Pages update themselves when Claude changes something. To change anything, ask Claude in your studio session.${studio.root ? ` <a href="/health">Studio health</a>` : ""}</p>
   </div>
@@ -1548,7 +1549,7 @@ export function healthPage(studio, { setup = false } = {}) {
       </div>
       <dl class="titleblock">
         ${cell("Plugin", `Wyzowl Video Studio ${pluginVersion()}`)}
-        ${cell("HyperFrames", studio?.hyperframes || "not set yet")}
+        ${cell("HyperFrames", HYPERFRAMES_VERSION)}
         ${cell("Studio folder", root || "not made yet")}
         ${cell("Full library", l?.status === "active" && pack ? `unlocked, ${plural(pack.items, "item")}` : "not unlocked")}
       </dl>

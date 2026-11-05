@@ -137,7 +137,8 @@ export function tidyPlan(root, slug) {
   if (history?.bytes)
     items.push({ key: "history", label: "Its edit history in HyperFrames", paths: [], home: history.home, busy: history.busy, bytes: history.bytes, note: "HyperFrames' undo record of every change to the video's files" });
   add("drafts", "Draft and test renders", ["renders/drafts"]);
-  add("stills", "Review stills and snapshots", ["docs/review", "docs/snapshots", "snapshots"]);
+  // HyperFrames keeps each snapshot run and check report in .hyperframes/artifacts/ (a new folder a run)
+  add("stills", "Review stills and snapshots", ["docs/review", "docs/snapshots", "snapshots", ".hyperframes/artifacts"]);
   const sb = replacedStoryboards(root, slug);
   if (sb.older.length) add("storyboards", `Storyboard ${and(sb.older.map((v) => `v${v}`))}, replaced by v${sb.approved} (the approved one)`, sb.older.map((v) => `storyboard/v${v}`));
   add("proxies", "Footage previews", ["footage/proxies"], "a scan makes them again if they're needed");

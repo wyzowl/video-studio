@@ -13,7 +13,7 @@ storyboard, build, review, brand-kit) and the guides they point to. Every film m
 
 **Paths.** `PLUGIN` means this plugin's folder: the session-start note calls it "Plugin files", and commands see it as
 `${CLAUDE_PLUGIN_ROOT}`. `HF` means
-`HYPERFRAMES_NO_TELEMETRY=1 HYPERFRAMES_NO_UPDATE_CHECK=1 npx --yes hyperframes@0.8.149`: the HyperFrames Video Studio
+`HYPERFRAMES_NO_TELEMETRY=1 HYPERFRAMES_NO_UPDATE_CHECK=1 npx --yes hyperframes@0.9.16`: the HyperFrames Video Studio
 is tested with, which every new project starts on, with its two switches (no anonymous usage data, and no check for a
 newer release: Video Studio chooses the version). A project made on an earlier version keeps it: its `package.json`
 scripts name it, so run `npm run check` there with the same two switches before it, and `studio.mjs render` follows
