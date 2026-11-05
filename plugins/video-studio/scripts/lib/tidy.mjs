@@ -7,11 +7,11 @@
 // tidy-up, for the pages.
 import { randomUUID } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
 import { basename, dirname, join, resolve, sep } from "node:path";
 import { hasDelivery } from "./delivery.mjs";
 import { readProgress } from "./progress.mjs";
 import { listVideos, readJSON, readStoryboard, storyboardVersions } from "./studio.mjs";
+import { hyperframesCache } from "./versions.mjs";
 
 /** What's worth offering: a video with less than this to free isn't. */
 export const TIDY_MIN_BYTES = 20e6;
@@ -19,7 +19,7 @@ export const TIDY_MIN_BYTES = 20e6;
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** HyperFrames' edit histories, a folder for each project it has recorded. */
-export const historyRoot = () => join(homedir(), ".cache", "hyperframes", "history");
+export const historyRoot = () => hyperframesCache("history");
 
 /** A size as the pages and Claude say it: 2.9 GB, 277 MB, 40 KB. */
 export const sizeLabel = (bytes) =>

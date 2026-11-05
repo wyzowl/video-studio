@@ -7,6 +7,7 @@ import { createRequire } from "node:module";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
+import { hyperframesCache } from "../lib/versions.mjs";
 
 const argv = process.argv.slice(2);
 const opt = (k, d) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : d; };
@@ -19,7 +20,7 @@ const font = opt("--font", null);
 const newest = (paths) => paths.filter(existsSync).sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0];
 const npx = join(homedir(), ".npm/_npx");
 const PUP = process.env.PUPPETEER_CORE || newest(readdirSync(npx).map((d) => join(npx, d, "node_modules/puppeteer-core")));
-const chromeRoot = join(homedir(), ".cache/hyperframes/chrome/chrome-headless-shell");
+const chromeRoot = hyperframesCache("chrome", "chrome-headless-shell");
 const CHROME = process.env.CHROME || newest(existsSync(chromeRoot) ? readdirSync(chromeRoot).flatMap((v) => readdirSync(join(chromeRoot, v)).map((d) => join(chromeRoot, v, d, "chrome-headless-shell"))) : []);
 if (!PUP || !CHROME) { console.error("puppeteer-core or HyperFrames' Chrome not found: run a HyperFrames render once, or set PUPPETEER_CORE / CHROME"); process.exit(1); }
 

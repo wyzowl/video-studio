@@ -2,13 +2,12 @@
 // user's go-ahead for them: setup installs them all (saying up front what it downloads), and when a session starts,
 // any that aren't on this Mac yet (a new version's, or one that didn't finish) download in the background.
 import { readdirSync } from "node:fs";
-import { homedir } from "node:os";
 import { join } from "node:path";
 import { PLUGIN_ROOT } from "./studio.mjs";
 import { SFX_KIT, kitInstalled, readGaps, readKit } from "./sfx.mjs";
-import { HYPERFRAMES, HYPERFRAMES_SWITCHES } from "./versions.mjs";
+import { HYPERFRAMES, HYPERFRAMES_SWITCHES, hyperframesCache } from "./versions.mjs";
 
-const cache = join(homedir(), ".cache", "hyperframes");
+const cache = hyperframesCache();
 const has = (dir, re) => {
   try {
     return readdirSync(dir).some((n) => re.test(n));

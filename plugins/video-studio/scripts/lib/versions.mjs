@@ -4,6 +4,9 @@
 // that name it (search the plugin for "hyperframes@" and the version number; a guide's Sources line names the version
 // it was written from, so leave those), and recheck the guides against its changes.
 
+import { homedir } from "node:os";
+import { join, resolve } from "node:path";
+
 /** HyperFrames, as npx runs it. */
 export const HYPERFRAMES = "hyperframes@0.9.16";
 /** Its version alone, as a studio records it. */
@@ -13,3 +16,8 @@ export const HYPERFRAMES_VERSION = HYPERFRAMES.split("@")[1];
 export const HYPERFRAMES_ENV = { HYPERFRAMES_NO_TELEMETRY: "1", HYPERFRAMES_NO_UPDATE_CHECK: "1" };
 /** The same switches, to go before a command. */
 export const HYPERFRAMES_SWITCHES = Object.entries(HYPERFRAMES_ENV).map(([k, v]) => `${k}=${v}`).join(" ");
+/** HyperFrames' own folder for this user (its Chrome, models, fonts and edit histories), or a path inside it.
+    `HYPERFRAMES_CACHE_DIR` moves it, and HyperFrames follows that everywhere, so Video Studio does too. */
+const cacheRoot = () =>
+  process.env.HYPERFRAMES_CACHE_DIR ? resolve(process.env.HYPERFRAMES_CACHE_DIR) : join(homedir(), ".cache", "hyperframes");
+export const hyperframesCache = (...parts) => join(cacheRoot(), ...parts);

@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { hyperframesCache } from "./versions.mjs";
 
 const newest = (paths) => paths.filter((p) => existsSync(p)).sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0];
 const list = (dir) => {
@@ -17,7 +18,7 @@ const list = (dir) => {
 export function findChrome() {
   const npx = join(homedir(), ".npm/_npx");
   const pup = process.env.PUPPETEER_CORE || newest(list(npx).map((d) => join(npx, d, "node_modules/puppeteer-core")));
-  const shells = join(homedir(), ".cache/hyperframes/chrome/chrome-headless-shell");
+  const shells = hyperframesCache("chrome", "chrome-headless-shell");
   const chrome =
     process.env.CHROME ||
     newest(list(shells).flatMap((v) => list(join(shells, v)).map((d) => join(shells, v, d, process.platform === "win32" ? "chrome-headless-shell.exe" : "chrome-headless-shell"))));

@@ -7,7 +7,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { PLUGIN_ROOT, readJSON, registeredStudios, USER_DIR } from "./studio.mjs";
 import { EXTRAS } from "./extras.mjs";
-import { HYPERFRAMES_VERSION } from "./versions.mjs";
+import { HYPERFRAMES_VERSION, hyperframesCache } from "./versions.mjs";
 import { outsideSkills, skillList } from "./outside-skills.mjs";
 
 const PATH = `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH || ""}`;
@@ -109,7 +109,7 @@ export function runChecks({ root = null } = {}) {
     time: "nothing to install",
   });
 
-  const chrome = list(join(homedir(), ".cache/hyperframes/chrome/chrome-headless-shell"));
+  const chrome = list(hyperframesCache("chrome", "chrome-headless-shell"));
   add({
     id: "chrome",
     group: "HyperFrames",

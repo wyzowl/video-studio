@@ -72,7 +72,9 @@ By default a voiceover is a file the user brings, and Video Studio doesn't offer
 1. Choose a short kebab-case project name from the title, and check `videos/<project>` is free.
 2. Scaffold with Video Studio's HyperFrames, 0.9.16:
    `HYPERFRAMES_SKIP_SKILLS=1 HYPERFRAMES_NO_TELEMETRY=1 HYPERFRAMES_NO_UPDATE_CHECK=1 npx --yes hyperframes@0.9.16 init "videos/<project>" --non-interactive`
-   Add `--resolution portrait` for 9:16 or `--resolution square` for 1:1. For 4:5 and custom sizes, set the
+   Then swap the notes HyperFrames writes for coding agents (they send Claude to HyperFrames' own skills) for Video
+   Studio's: `cp "${CLAUDE_PLUGIN_ROOT}/templates/video-CLAUDE.md" "videos/<project>/CLAUDE.md" && rm -f "videos/<project>/AGENTS.md"`.
+   Add `--resolution portrait` to `init` for 9:16 or `--resolution square` for 1:1. For 4:5 and custom sizes, set the
    composition's `data-width` and `data-height` after `init`. For a footage video, scaffold it, put the clips in
    `inputs/footage/` and scan them (production skill, "Footage videos"), then set `data-width` and `data-height` to
    the size the scan gives.
