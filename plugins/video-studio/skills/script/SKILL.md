@@ -76,11 +76,14 @@ Mark the work on the video's overview as you go (production skill, "Work in prog
    action cell.
 7. **Library items.** Suggest the studio's ready-made items wherever one makes a beat clearer or richer, so every
    video gets them without anyone having to ask (see "Library items" below).
-8. **Length:** the page counts the voiceover's words and shows the length: 135 words is about 60 seconds (from
-   footage, the takes' own lengths). Aim for the brief's length, and say in `summary` if the script runs long or
-   short.
-9. **Write `script.json` last** (format below). Writing it publishes the review page, and the studio tells you how to
-   show it.
+8. **Length and the measurable rules:** aim for the brief's length; the page counts the voiceover's words and shows
+   the length at the pace in `PLUGIN/guides/numbers.md` (from footage, the takes' own lengths). Once `script.json`
+   is written, run `node PLUGIN/scripts/studio.mjs check <project> --script`: it measures how long the opening takes
+   to land, the words each row puts on screen, the pace against the brief's length and the longest beat, against the
+   same numbers the film's checks use. Fix what it finds before sharing (writing the file again), or say in `summary`
+   why it stays (a script that runs long or short, say).
+9. **Write `script.json` last** (format below), then check it (step 8). Writing it publishes the review page, and the
+   studio tells you how to show it.
 10. **Share it** (production skill, "Showing a page"): beside the chat, with its card and link, then wait for the
     review in the background. Say in one sentence how to review: read it, click any cell to leave a note (that
     switches the decision to Changes needed), then press Send changes (Approve and save, with no notes). Mention any

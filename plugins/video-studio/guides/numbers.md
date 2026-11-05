@@ -1,7 +1,10 @@
 # Numbers
 
-The numbers the standards use, kept in one place so the script, storyboard, build, checks and review measure the
-same way. Each is a default: a brief, a brand kit or the user can set its own, and the video's docs say so.
+The numbers the standards use, explained. They live in one place, `rules.json` beside this page, which Video
+Studio's checks read (`studio.mjs check`, `cli.md`), so the script, storyboard, build, checks and review measure the
+same way; skills and guides point here rather than repeating them. Each is a default: a brief, a brand kit or the
+user can set its own in the video's `docs/rules.json`, holding only the numbers that changed (the same keys as
+`rules.json`), and the checks read it over these.
 
 ## Speech
 
@@ -23,8 +26,8 @@ same way. Each is a default: a brief, a brand kit or the user can set its own, a
 ## Words on screen
 
 - **A headline:** 2–7 words.
-- **All at once:** about 12 words at most on screen at one time, not counting captions or an interface shown as a
-  picture.
+- **All at once:** about 12 words at most on screen at one time (for a second or more), not counting captions, an
+  interface shown as a picture, or texture.
 - **A line** at headline size: up to about 35 characters at 16:9, 25 at 1:1 and 4:5, and 20 at 9:16.
 - Captions have their own numbers: `captions/`.
 
@@ -72,10 +75,21 @@ bottom of a 9:16 frame (`cli.md`).
 
 ## Sound
 
-- **The mix:** about −14 LUFS integrated, the voiceover clearly on top; stems levelled to sum to −1.8 dBTP or lower
-  before rendering (`audio/mixing.md`).
+- **The mix:** about −14 LUFS integrated (within 1 LU), the voiceover clearly on top; stems levelled to sum to −1.8
+  dBTP or lower before rendering (`audio/mixing.md`), and the render's true peak −1 dBTP at most.
+- **Music under a voice:** at least 10 dB under it while it speaks.
 - **A voiceover** sits at about −16 LUFS integrated, the level SFX Kit's sounds are matched to.
 - **Effects** about 2.5 dB under the music; a calm, informational film about 1 dB quieter still.
+- **Endings:** every sound ends on its own tail or a fade. One still sounding (−35 dB or louder, held for 50 ms) that
+  drops to silence (−60 dB) within a hundredth of a second has stopped dead; a click or a tick is over before that.
+- **A stuck picture:** frames that don't change at all for 3 seconds, other than the film's last hold.
+
+## The checks themselves
+
+Video Studio's own pass samples the film every eighth of a second; a line counts once it's held half a second, and a
+planned word lands within half a second of its time in the scene plan. HyperFrames' check samples at least once
+every 4 seconds, as well as every storyboard frame and scene change. Words count as covering a face once they cover
+5% of it.
 
 ---
 Sources: Video Studio's own numbers, gathered from its skills and tools, with type sizes informed by HyperFrames'

@@ -6,18 +6,22 @@ description: Review a built Wyzowl Video Studio video - Claude's draft rounds sc
 # Review
 
 Claude reviews every draft before the user sees it, then the user reviews it on its page. The review judges taste:
-anything a check can measure is the checks' (`HF check`, and Video Studio's checks as they arrive). Always review the
-rendered file, never the code. `PLUGIN` and `HF` are as in the production skill.
+anything that can be measured is Video Studio's checks' (`studio.mjs check`, `PLUGIN/guides/cli.md`, "lint and
+check"), and their findings are fixed, not scored. Always review the rendered file, never the code. `PLUGIN` and `HF`
+are as in the production skill.
 
 ## A round
 
-1. `HF check` must show 0 errors; read the warnings.
+1. `node PLUGIN/scripts/studio.mjs check <project>` shows no must fix. Fix each should fix, or keep it with its reason
+   in `docs/decisions.md` (a quick-fire run meant to be glanced at, a label that's texture).
 2. Render a draft: `node PLUGIN/scripts/studio.mjs render -- --quality draft --fps 30 --output
    renders/drafts/<project>_v1_draft_r1.mp4` (`HF render`, pinned, with its progress on the video's overview).
-3. Make the review sheets from it:
+3. Check the render: `node PLUGIN/scripts/studio.mjs check <project> --render renders/drafts/<project>_v1_draft_r1.mp4`
+   adds its loudness, peaks, sounds that stop dead and a stuck picture (and words over a face, on footage).
+4. Make the review sheets from it:
    `node PLUGIN/scripts/tools/sheets.mjs renders/drafts/<project>_v1_draft_r1.mp4 docs/review/r1`
-4. Look at every sheet (Read tool) and score the round against the standards (below).
-5. Log it, then put the scores and the three worst problems on the video's overview in one call (`studio.mjs progress
+5. Look at every sheet (Read tool) and score the round against the standards (below).
+6. Log it, then put the scores and the three worst problems on the video's overview in one call (`studio.mjs progress
    <project> fixes --round <n> --scores … --fix "<where>: <what>"`, production skill, "Work in progress"). Fix them
    (build skill, "Changes after a review") and start the next round.
 
@@ -45,13 +49,15 @@ Repeat until every score is 8 or more, with at least two rounds. Only then show 
 ## Scores (1–10)
 
 Each score is judged against its standard in the guides: what good looks like, what lowers it, and what each score
-means. Read the standard before scoring it. Judge the film as agency-grade work (`PLUGIN/guides/README.md`,
-"Agency-grade"): one that only avoids faults, with plain frames and a still world, isn't an 8.
+means. Read the standard before scoring it; the table only points to it. Judge the film as agency-grade work
+(`PLUGIN/guides/README.md`, "Agency-grade"): one that only avoids faults, with plain frames and a still world, isn't
+an 8. A score judges what the checks can't: a film whose checks are clear can still read slowly, move without
+weight or tell its story badly.
 
 | Score | `--scores` key | The question | Standard |
 |---|---|---|---|
 | Hook | `hook` | Do the first seconds earn the rest? | `PLUGIN/guides/story/hooks.md` |
-| Readability at phone size | `phone` | Does every word read at a glance on the 360 px sheet, in time? | `PLUGIN/guides/design/readability.md` |
+| Reads at a glance | `phone` | Does it read at a glance on the 360 px sheet: one thing at a time, the eye led to it? | `PLUGIN/guides/design/readability.md` |
 | Motion quality | `motion` | Weight, a job for every move, one personality, invisible seams | `PLUGIN/guides/motion/quality.md` |
 | Variety | `variety` | Something new every few seconds, no device repeated | `PLUGIN/guides/motion/variety.md` |
 | Composition | `composition` | One focal point, balance, margins and safe areas, a system | `PLUGIN/guides/design/layout.md` |
@@ -69,9 +75,15 @@ Round 0 lists problems fixed on snapshot stills before the first render. Then, f
 ```markdown
 ## Round 1 — draft r1
 
-| Hook | Phone | Motion | Variety | Composition | Brand | Sync | Story |
+| Hook | Glance | Motion | Variety | Composition | Brand | Sync | Story |
 |---|---|---|---|---|---|---|---|
 | … | … | … | … | … | … | … | … |
+
+Checks: 0 must fix; the should fix fixed, or kept and why.
+
+Motion notes: the film against the Motion quality standard (`PLUGIN/guides/motion/quality.md`: weight, jobs,
+hierarchy, reading at full speed, seams, cleanness), and what each transition does, in a few lines. The checks test
+the planned timings; these notes judge the feel.
 
 Worst problems:
 1. **12.4–13.0 s:** what is wrong, and where.
@@ -82,11 +94,6 @@ Fixes: what changed; confirmed in the next round's sheets.
 ```
 
 The user's notes get a section per version, each with how it was applied. End with "What I'd improve next".
-
-## Motion audit: `docs/motion_audit.md`
-
-Check the film against the Motion quality standard (`PLUGIN/guides/motion/quality.md`: weight, jobs, hierarchy,
-reading at full speed, seams, cleanness), and table what each transition does.
 
 ## The user's video review
 

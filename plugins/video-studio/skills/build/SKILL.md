@@ -50,9 +50,11 @@ notes), and the verified word times.
 6. **References:** if `inputs/refs/` or the brand's `refs/` exists and there's no `docs/style_guide.md` yet, measure
    them with `HF measure` and write one from the measurements (`PLUGIN/guides/design/README.md`, "Working from
    references").
-7. **Look before rendering:** `HF check` shows 0 errors (`PLUGIN/guides/cli.md`, "lint and check"); stills of each
-   scene's key moment and every transition with `HF snapshot --at <times> --describe false`, compared with the
-   storyboard's frames, before the first render. Then the review skill takes over.
+7. **Look before rendering:** `node PLUGIN/scripts/studio.mjs check <project>` shows no must fix
+   (`PLUGIN/guides/cli.md`, "lint and check"), and each should fix is fixed or kept with its reason in
+   `docs/decisions.md`; stills of each scene's key moment and every transition with `HF snapshot --at <times>
+   --describe false`, compared with the storyboard's frames, before the first render. Then the review skill takes
+   over.
 
 ## A footage video
 
@@ -113,12 +115,13 @@ asking. To build one in, whether it was suggested or the user named it:
    breaks the word.
 4. Keep the item's motion and look: the brand kit dresses it, so don't restyle it by hand. Its colours can be any
    others from the same kit, such as a full-frame item on the brand's accent: set its colour settings to those
-   colours and keep its words readable (4.5:1 contrast at body size, 3:1 for large type). If something doesn't fit
-   the brand, fix the kit's `style` (brand-kit skill). `HF check` as usual.
+   colours and keep its words readable (the contrast in `PLUGIN/guides/numbers.md`). If something doesn't fit the
+   brand, fix the kit's `style` (brand-kit skill). The checks as usual.
 5. Words that must read at phone size (`PLUGIN/guides/numbers.md`, "Type sizes"): the cards (W08, W26, W36, W41, W49,
    W52) take a Size, up to 2, and grow from their own side; set it rather than scaling a wrapper, and check the frame
-   in a snapshot. Widgets over a presenter go on the side they aren't facing. Each stays on screen for at least 3 seconds or twice
-   its reading time, counted from when its words are in (its own entrance comes first); a quick-fire run, one after another, can go faster when it's meant to be glanced at.
+   in a snapshot. Widgets over a presenter go on the side they aren't facing. Each stays on screen long enough to take
+   in, counted from when its words are in (its own entrance comes first: `PLUGIN/guides/numbers.md`, "Reading"); a
+   quick-fire run, one after another, can go faster when it's meant to be glanced at.
 6. Data items, and the other words that fill the frame (T10, T46 and the rest `studio.mjs library` marks full frame),
    fill the screen in the brand's colours. Give figures their real values and source; if a transition follows, set
    `exit` to `"hold"` so the scene stays whole until the transition takes it, and let its clip run until that
@@ -161,5 +164,5 @@ registry is a second source, used with care (`PLUGIN/guides/library.md`).
 ## Changes after a review
 
 The review's fixes and the user's notes come back here. Change what each one asks for and nothing more; a change to
-something the user approved (a scene's look, a word of the script) is said on the next review page. Re-run `HF check`
-and stills of what changed, then the review loop again.
+something the user approved (a scene's look, a word of the script) is said on the next review page. Re-run
+`studio.mjs check <project>` and stills of what changed, then the review loop again.

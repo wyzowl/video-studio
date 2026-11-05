@@ -246,7 +246,8 @@ export function summariseReview(fb) {
 // videos/<p>/script/v<N>/script.json is the written script Claude shares before the storyboard: a row per beat, the
 // voiceover (or the text on screen, without one) beside what happens on screen. feedback.json is written by its page.
 
-export const WORDS_PER_MINUTE = 135;
+// the pace a script is timed at (guides/rules.json, which Video Studio's checks read too)
+export const WORDS_PER_MINUTE = JSON.parse(readFileSync(join(PLUGIN_ROOT, "guides", "rules.json"), "utf8")).speech.wordsPerMinute;
 
 export function scriptVersions(root, slug) {
   return sharedVersions(join(root, "videos", slug, "script"), "script.json");
@@ -290,7 +291,7 @@ export function voiceoverText(script) {
   return lines.join("\n");
 }
 
-/** The voiceover's words (bold marks and notes in parentheses left out) and the length they make at 135 a minute. */
+/** The voiceover's words (bold marks and notes in parentheses left out) and the length they make at the pace. */
 export function scriptLength(script) {
   if (!scriptHasVoiceover(script)) return null;
   const said = scriptRows(script)

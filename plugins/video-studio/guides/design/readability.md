@@ -1,8 +1,8 @@
 # The Readability standard
 
-The review's **Readability at phone size** score is judged against this page: whether every word reads at a
-glance, on a phone, in the time it's on screen. The script and storyboard plan to it, the build sets type to it, and
-the checks measure what can be measured. The sizes, times and word counts are in `../numbers.md`; choosing and
+The review's **Reads at a glance** score is judged against this page: whether every word reads at a glance, on a
+phone, in the time it's on screen. The script and storyboard plan to it, the build sets type to it, and the checks
+measure what can be measured. The sizes, times and word counts are in `../numbers.md`; choosing and
 setting type is in `type.md`.
 
 ## What good looks like
@@ -55,10 +55,13 @@ setting type is in `type.md`.
 | 4–5 | Several lines don't read on a phone or vanish before they're read |
 | 1–3 | Much of the text can't be read on a phone |
 
-HyperFrames' check measures text that runs out of its box or the frame, covered text, and contrast on sampled
-frames, and it can flag text in a kept band (`../cli.md`, "lint and check"). Its contrast counts anything from 24 px
-as large text (3:1), so body text between 3:1 and 4.5:1 passes the check but not this standard: the review looks for
-it. The review also judges what can't be measured: whether it reads in time, at a glance, on the phone sheet.
+Video Studio's checks measure what can be (`../cli.md`, "lint and check"), before the review: HyperFrames' check
+finds text that runs out of its box or the frame, covered text and contrast on sampled frames, and Video Studio's
+own pass finds words under the frame's minimum size, lines and cards that don't hold for their reading time, too many
+words at once, long headlines, words outside the safe areas, and key words that land after they're said. HyperFrames'
+contrast counts anything from 24 px as large text (3:1), so body text between 3:1 and 4.5:1 passes the check but not
+this standard: the review looks for it. The review judges the rest: whether the film reads at a glance on the phone
+sheet, one thing at a time, with the eye led to it.
 
 ---
 Sources: Video Studio's own standard, with HyperFrames' video type guardrails in hyperframes-creative (v0.8.149,

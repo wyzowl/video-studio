@@ -18,6 +18,14 @@
 //                                              --end ends the stage without its result
 //   node studio.mjs render [HF render options]  `HF render …` with the project's HyperFrames, run from the video's
 //                                              folder, that also shows the render's progress on the video's pages
+//   node studio.mjs check [<video>] [--render <file.mp4>]
+//                                              Video Studio's checks: HyperFrames' check with the video's settings and
+//                                              the scene plans' timings, and what it lacks (guides/rules.json), in one
+//                                              ranked report saved in docs/checks/film.json and shown on the video's
+//                                              overview; --render adds a rendered file's sound and picture
+//   node studio.mjs check <video> --script     the latest script's measurable rules (the hook, words on screen, the
+//                                              pace against the length, the longest beat), saved in
+//                                              docs/checks/script.json
 //   node studio.mjs pdf <path>                 make the PDF of a script or storyboard version, to share outside the
 //                                              studio (as its page's Download PDF does), and print where it's saved
 //   node studio.mjs library [code] [--brand b] the library's items; with a code, how to use that item in a video,
@@ -226,6 +234,7 @@ async function main() {
   if (cmd === "ready") return ready();
   if (cmd === "progress") return progressCommand();
   if (cmd === "render") return renderCommand();
+  if (cmd === "check") return checkCommand();
   if (cmd === "pdf") return pdf();
   if ((cmd === "library" || cmd === "gallery") && arg === "check") return libraryCheck();
   if (cmd === "library" || cmd === "gallery") return library();
@@ -237,7 +246,7 @@ async function main() {
   if (cmd === "hook") return hook();
   if (cmd === "page-ready") return pageReady().catch(() => {}); // a hook: never in the way, silent on any problem
   if (cmd === "context") return context();
-  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, setup-page, setup-note, pdf, library, install, tidy, skills, serve, stop, page-ready`);
+  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, check, setup-page, setup-note, pdf, library, install, tidy, skills, serve, stop, page-ready`);
 }
 
 function init(root) {
@@ -663,6 +672,33 @@ async function renderCommand() {
     } catch {}
   }
   process.exitCode = code;
+}
+
+/** `check [<video>] [--render <file>]`: Video Studio's checks on a built video (lib/check.mjs), from its folder or by
+    its name; `--script` checks the latest script instead (lib/check-script.mjs). Prints the ranked report and saves it
+    in the video's docs/checks/. Exits 1 when there's something to fix before a render (a must fix). */
+async function checkCommand() {
+  const at = videoAt(process.cwd());
+  const root = at && !arg ? at.root : studioRoot();
+  const slug = arg || at?.slug;
+  if (!slug) throw new Error("Which video? node studio.mjs check <video> [--render <file.mp4>] (or --script), or run it from the video's folder.");
+  if (!existsSync(join(root, "videos", slug))) throw new Error(`There's no video "${slug}" in this studio.`);
+  if (argv.includes("--script")) {
+    const { checkScript } = await import("./lib/check-script.mjs");
+    const { describeReport } = await import("./lib/check.mjs");
+    const { report, path } = checkScript(root, slug);
+    // the script stage's step under way: its length and measurable rules
+    try {
+      if (readProgress(root, slug)?.stage === "script") updateProgress(root, slug, (q) => ((q.step = "length"), q));
+    } catch {}
+    console.log(describeReport(report, { path: relative(root, path), page: false }));
+    return;
+  }
+  const { checkFilm, describeReport } = await import("./lib/check.mjs");
+  const render = opt("--render");
+  const { report, path } = await checkFilm(root, slug, { render: render ? resolve(process.cwd(), render) : null, log: (s) => process.stderr.write(`${s}\n`) });
+  console.log(describeReport(report, { path: relative(root, path) }));
+  if (report.counts.must) process.exitCode = 1;
 }
 
 /** `pdf`: the PDF of a script or storyboard version, made by the page server as its Download PDF button does. It's

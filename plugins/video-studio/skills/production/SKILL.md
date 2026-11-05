@@ -233,7 +233,8 @@ is missing, ask the user for one.
 - `renders/delivery.json`, the words to go with it: `{ "title": "…", "description": "…", "altText": "…" }`, written for
   the platform the brief names (`PLUGIN/guides/story/post-words.md`). The delivery page shows them, each with a Copy
   button.
-- `docs/review_log.md` and `docs/motion_audit.md` (review skill).
+- `docs/review_log.md` (review skill), with its motion notes, and the checks' last report in
+  `docs/checks/`.
 - Say what you would improve next.
 
 ## Tidying up

@@ -27,7 +27,7 @@ when a beat needs something neither covers and the user agrees.
 - **It's online, and newer than our pin.** `HF catalog` lists and searches it (`--query "<what it should do>"`, in
   English; `--type block` or `component`; `--json`), and `HF add <name>` downloads an item's files every time. The
   registry served is HyperFrames' current one, not one matched to 0.9.16, so an item can expect newer features:
-  check it with `HF check` and a snapshot before relying on it.
+  check it with Video Studio's checks (`cli.md`, "lint and check") and a snapshot before relying on it.
 - **Blocks** install to `compositions/<name>.html` and mount like any scene file: a host `<div>` with
   `data-composition-id` (matching the block's own id), `data-composition-src`, `data-start`, `data-duration` (at most
   the block's own), `data-track-index`, `data-width` and `data-height` (the block's size); position it with CSS.

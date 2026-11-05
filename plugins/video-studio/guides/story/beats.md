@@ -95,7 +95,8 @@ follows them (the storyboard skill has the format). The user can open each plan 
 - **Atmosphere:** the two to five pieces drawn from the subject, and the slow motion each keeps
   (`../design/README.md`, "Taste, as defaults"); or why this scene is a deliberate flat pause.
 - **Moves:** each moment with its time, what moves and how, named as the guides name them (the pattern, techniques
-  and transitions: `../motion/README.md`, "Planning with names").
+  and transitions: `../motion/README.md`, "Planning with names"). Name each word on screen in the move that brings it
+  in, with its time ("17.46 s Two minutes sets in on the right"): Video Studio's checks test that it lands then.
 - **Sound:** the moments that take a sound from SFX Kit, and what the music does.
 - **Hand-over:** how the scene hands on to the next.
 

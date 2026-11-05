@@ -14,6 +14,7 @@
 import { spawnSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { readJSON } from "../lib/studio.mjs";
 import { KIT_DIR, SFX_KIT, findSounds, kitSound, logGap, readGaps } from "../lib/sfx.mjs";
 
@@ -25,8 +26,9 @@ const opt = (k, d = null) => {
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1].startsWith("--")));
 const [cmd, ...rest] = positional;
 const SR = 48000;
-// the kit's levels suit a voiceover mixed to about −16 LUFS integrated (its GUIDE): the effects move with the real one
-const REFERENCE_LUFS = -16;
+// the kit's levels suit a voiceover mixed to about −16 LUFS integrated (its GUIDE; guides/rules.json): the effects move
+// with the real one
+const REFERENCE_LUFS = JSON.parse(readFileSync(fileURLToPath(new URL("../../guides/rules.json", import.meta.url)), "utf8")).sound.voiceLufs;
 const fromDb = (x) => 10 ** (x / 20);
 const signed = (x) => `${x < 0 ? "−" : x > 0 ? "+" : ""}${Math.abs(x).toFixed(1)}`;
 

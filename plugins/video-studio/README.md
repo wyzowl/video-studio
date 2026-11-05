@@ -90,6 +90,9 @@ All of this happens only in a session inside a studio folder. Anywhere else, Vid
   render it) or one of the library's preview pages.
 - **Fonts a video names without including,** which HyperFrames fetches from Google Fonts as it renders (asking for the
   font and the characters the video uses), and keeps in its cache.
+- **HyperFrames' face finder** (about 12 MB, once: OpenCV's browser build from `cdn.jsdelivr.net` and its two face
+  models from OpenCV's GitHub), the first time Video Studio's checks look for words over the presenter's face in a
+  footage video. The frames are looked at on your Mac.
 - **Your brand's website,** when you ask for a brand kit from it: its pages, styles, fonts and logo files. Logo files
   and Google Fonts are downloaded only with your OK.
 - **With a licence key:** the full library's items, from Wyzowl's library service, checked against their checksum.

@@ -8,7 +8,7 @@ here. Each stage skill lists the guides it reads first; beyond those, read what 
 |---|---|
 | How a video's files are built for HyperFrames 0.9.16 | `format.md` |
 | The HyperFrames commands Video Studio uses | `cli.md` |
-| Video Studio's numbers: pace, reading time, sizes, safe areas, loudness | `numbers.md` |
+| Video Studio's numbers: pace, reading time, sizes, safe areas, loudness (the checks read them from `rules.json`) | `numbers.md` |
 | The animation libraries: GSAP, Lottie, three.js, canvas, WebGPU, anime.js, Web Animations, CSS | `runtimes/` |
 | Motion: principles, timing, choreography, camera, transitions, scene patterns, techniques | `motion/` |
 | Design: type, readability, layout, colour, data, brand, illustration, generative | `design/` |
@@ -28,7 +28,7 @@ measure whatever in it can be measured. A score of 8 or more on each is the bar 
 | Score | The question | Standard |
 |---|---|---|
 | Hook | Do the first seconds earn the rest? | `story/hooks.md` |
-| Readability at phone size | Does every word read at a glance, on a phone, in time? | `design/readability.md` |
+| Reads at a glance | Does every word read at a glance, on a phone, in time? | `design/readability.md` |
 | Motion quality | Weight, a job for every move, one personality, invisible seams | `motion/quality.md` |
 | Variety | Something new every few seconds, no device repeated | `motion/variety.md` |
 | Composition | One focal point, balance, margins and safe areas, a system | `design/layout.md` |

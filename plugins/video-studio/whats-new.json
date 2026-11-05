@@ -27,6 +27,9 @@
     },
     {
       "text": "New videos are made with HyperFrames 0.9.16: renders are quicker, fast moves get a real motion blur, and its check also catches words too small or too quick to read before you see a draft."
+    },
+    {
+      "text": "Before Claude reviews a draft, Video Studio's own checks go over it: words too small or gone too soon for a phone, too many at once, anything outside the safe areas or off your brand, words that land after they're said, the planned moves landing on time, and the sound's level, its balance under the voice and sounds cut short. What they find shows on the video's page, ranked, with what to do."
     }
   ],
   "0.9.0": [

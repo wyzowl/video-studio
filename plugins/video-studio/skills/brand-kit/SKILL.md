@@ -137,8 +137,9 @@ if it isn't open, show it again. Videos already delivered keep their own copies 
   cards or buttons; default 16px), and `labelFont` the family for small capitals labels, such as a mono (include its
   file under `fonts` with the role `Label`). The rest comes from the colours (text, secondary text, accent), the
   display and body fonts, and the "Travel" ease. Text on the card takes the first colour with "text" in its role that
-  reads on it (4.5:1), so a brand whose text changes with the ground names both (`Text` and `Text on dark`, say);
-  failing those, the brand colour that reads best, never the accent. Open the library in the brand to check it.
+  reads on it (the body text contrast in `PLUGIN/guides/numbers.md`), so a brand whose text changes with the ground
+  names both (`Text` and `Text on dark`, say); failing those, the brand colour that reads best, never the accent. Open
+  the library in the brand to check it.
 - `ident` is the logo ident: the SFX Kit sting (`sound`) the brand uses for its logo, copied to `file`. Videos use it
   for the logo unless the brief asks for something else.
 - Everything except `name` is optional, but a kit isn't ready for a video until it has colours, fonts and a logo (or

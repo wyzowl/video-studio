@@ -32,6 +32,7 @@ import {
   readFavourites,
   whatsNew,
   timecode,
+  readJSON,
   contrast,
 } from "./studio.mjs";
 import { CATEGORIES, SIZES, BRAND_VARS, libraryItems, libraryItem, lockedItems, findItem, brokenItems, contentVariables, brandStyle } from "./library.mjs";
@@ -1055,6 +1056,53 @@ export function progressState(studio, slug) {
   return { active: true, quiet: Boolean(video.progress.quiet), parts: progressParts({ ...video, root: studio.root }, video.progress, readBrief(studio.root, slug)) };
 }
 
+// ───────── Video Studio's checks ─────────
+
+const CHECK_LEVELS = { must: "Must fix", should: "Should fix", note: "Notes" };
+
+/** The newest report of Video Studio's checks (`studio.mjs check`, lib/check.mjs) on a video's overview: what to fix,
+    ranked, each with its time, the element and what to do; the notes folded away. */
+function checksSection(root, slug, index) {
+  const report = readJSON(join(root, "videos", slug, "docs", "checks", "film.json"));
+  if (!Array.isArray(report?.findings)) return "";
+  const c = { must: 0, should: 0, note: 0, ...(report.counts || {}) };
+  const when = (f) => (f.time == null ? "The film" : `${timecode(f.time, true)}${f.until != null && f.until > f.time ? `–${timecode(f.until, true)}` : ""}`);
+  const item = (f) => `<li class="checks_item checks_item--${esc(f.level)}">
+  <span class="checks_time">${esc(when(f))}</span>
+  <div class="checks_body"><p>${esc(f.what)}</p>${f.fix ? `<p class="checks_fix">${esc(f.fix)}</p>` : ""}<p class="checks_where">${esc([f.element, f.file, f.source].filter(Boolean).join(" · "))}</p></div>
+</li>`;
+  const level = (key) => {
+    const list = report.findings.filter((f) => f.level === key);
+    if (!list.length) return "";
+    const ol = `<ol class="checks_list">${list.map(item).join("")}</ol>`;
+    return key === "note" ? `<details class="checks_more"><summary>${esc(plural(list.length, "note"))}</summary>${ol}</details>` : `<div class="checks_level"><h3 class="field-label">${CHECK_LEVELS[key]} · ${list.length}</h3>${ol}</div>`;
+  };
+  const chip = (key, cls) => `<span class="chip chip--${cls}">${esc(`${c[key]} ${CHECK_LEVELS[key].toLowerCase().replace(/s$/, c[key] === 1 ? "" : "s")}`)}</span>`;
+  const what = [`Checked ${formatDateTime(Date.parse(report.checked))}`, report.hyperframes && `HyperFrames ${report.hyperframes}`, report.storyboard && `storyboard v${report.storyboard}`, report.render && `the render ${report.render}`].filter(Boolean).join(" · ");
+  const clear = !c.must && !c.should;
+  return `<section class="section section--rule" id="checks">
+  <div class="container">
+    ${eyebrow(tc(index), "Checks")}
+    <h2>Video Studio's checks</h2>
+    <div class="checks">
+      <div class="checks_head">${chip("must", c.must ? "must" : "plain")}${chip("should", c.should ? "should" : "plain")}${chip("note", "plain")}<span class="checks_when">${esc(what)}</span></div>
+      ${clear ? `<p class="muted">Nothing to fix: what the checks measure is in order, so Claude's review judges the rest.</p>` : ""}
+      ${level("must")}${level("should")}${level("note")}
+      <details class="checks_more"><summary>What ran</summary><ul class="checks_ran">${(report.ran || []).map((r) => `<li><b>${esc(r.name)}</b> ${esc(r.detail)}</li>`).join("")}</ul></details>
+    </div>
+  </div>
+</section>`;
+}
+
+/** A line for a script's stage card: what Video Studio's checks found in it, if they ran on this version. */
+function scriptChecks(root, slug, v) {
+  const r = readJSON(join(root, "videos", slug, "docs", "checks", "script.json"));
+  if (!r || r.script !== v) return "";
+  const c = r.counts || {};
+  const parts = [c.must && `${c.must} must fix`, c.should && `${c.should} should fix`, c.note && plural(c.note, "note")].filter(Boolean);
+  return `Video Studio's checks: ${parts.length ? parts.join(", ") : "nothing to fix"}.`;
+}
+
 /** A video's overview: where it stands, and every stage from the brief to the final video, to move between them. */
 export function projectPage(studio, slug) {
   const video = /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(slug) ? readVideo(studio.root, slug) : null;
@@ -1094,7 +1142,7 @@ export function projectPage(studio, slug) {
         title: `Script v${v}`,
         chip: chip(st),
         meta: [plural(rows.length, "row"), length ? `${length.words} words ≈ ${length.seconds} s` : "text on screen", reviewed(data.summary)].filter(Boolean).join(" · "),
-        text: [opening && `Opens: “${clip(opening, 16)}”`, sc.changes && `What changed: ${clip(sc.changes)}`],
+        text: [opening && `Opens: “${clip(opening, 16)}”`, sc.changes && `What changed: ${clip(sc.changes)}`, scriptChecks(studio.root, slug, v)],
         actions: `<a class="button${st.key === "ready" ? " button--corners" : " button--secondary"}" href="${href}">Open script v${v}</a>`,
       }),
     );
@@ -1169,6 +1217,7 @@ export function projectPage(studio, slug) {
     scVersions.length ? readScript(studio.root, slug, scVersions.at(-1))?.script?.summary : "",
     sbVersions.length ? readStoryboard(studio.root, slug, sbVersions.at(-1))?.storyboard?.summary : "",
   );
+  const checks = checksSection(studio.root, slug, 1);
   const body = `
 <section class="section section--hero">
   <div class="container">
@@ -1194,9 +1243,10 @@ export function projectPage(studio, slug) {
     ${video.progress ? progressPanel({ ...video, root: studio.root }, brief) : nowPanel(video)}
   </div>
 </section>
+${checks}
 <section class="section section--rule">
   <div class="container">
-    ${eyebrow(tc(1), "Stages")}
+    ${eyebrow(tc(checks ? 2 : 1), "Stages")}
     <h2>Every stage, newest first</h2>
     <ol class="timeline timeline--stages">${items.reverse().join("\n")}</ol>
   </div>

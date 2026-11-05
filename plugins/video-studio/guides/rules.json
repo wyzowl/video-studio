@@ -1,0 +1,76 @@
+{
+  "about": "Video Studio's own numbers, as its checks read them (studio.mjs check). numbers.md explains each one; HyperFrames' own numbers (contrast, its craft floors) stay HyperFrames'. Every number is a default: a video's own docs/rules.json, holding only what the brief or the user changed, is read over this one.",
+  "version": 1,
+  "speech": {
+    "wordsPerMinute": 135,
+    "calm": [120, 130],
+    "brisk": [150, 160],
+    "rushedOver": 170,
+    "beatSeconds": [2, 8],
+    "sceneSeconds": [2, 8],
+    "keyWordEarly": 0.15,
+    "keyWordLate": 0.05,
+    "cutGapSeconds": 0.15
+  },
+  "reading": {
+    "findSeconds": 0.5,
+    "perWord": 0.3,
+    "holdExtra": 0.5,
+    "holdMin": 1,
+    "takeInMin": 3,
+    "takeInTimes": 2,
+    "heldAtLeast": 0.5
+  },
+  "words": {
+    "headline": [2, 7],
+    "atOnce": 12,
+    "atOnceFor": 1,
+    "lineChars": { "16x9": 35, "1x1": 25, "4x5": 25, "9x16": 20 }
+  },
+  "type": {
+    "16x9": { "width": 1920, "smallest": 40, "body": 48, "headline": 80 },
+    "1x1": { "width": 1080, "smallest": 32, "body": 40, "headline": 72 },
+    "4x5": { "width": 1080, "smallest": 32, "body": 40, "headline": 72 },
+    "9x16": { "width": 1080, "smallest": 36, "body": 44, "headline": 80 }
+  },
+  "contrast": { "body": 4.5, "large": 3 },
+  "safe": {
+    "16x9": { "top": 0.05, "right": 0.05, "bottom": 0.05, "left": 0.05, "captions": 0.1667 },
+    "1x1": { "top": 0.06, "right": 0.06, "bottom": 0.06, "left": 0.06, "captions": 0.1667 },
+    "4x5": { "top": 0.06, "right": 0.06, "bottom": 0.06, "left": 0.06, "captions": 0.1667 },
+    "9x16": { "top": 0.14, "right": 0.15, "bottom": 0.25, "left": 0.06, "captions": 0.25 },
+    "captionsGap": 20
+  },
+  "something": {
+    "newEvery": [2, 4],
+    "stillMax": 4,
+    "staleAfter": 6,
+    "slowestTimes": 3
+  },
+  "hook": {
+    "promiseBy": 3,
+    "promiseByVertical": 1.5,
+    "askHolds": 2.5
+  },
+  "sound": {
+    "mixLufs": -14,
+    "mixTolerance": 1,
+    "stemsPeak": -1.8,
+    "peakMax": -1,
+    "voiceLufs": -16,
+    "effectsUnderMusic": 2.5,
+    "calmQuieter": 1,
+    "musicUnderVoice": 10,
+    "stopDeadFrom": -35,
+    "stopDeadTo": -60,
+    "stopDeadWithin": 0.01,
+    "frozenFor": 3,
+    "frozenFloor": -80
+  },
+  "check": {
+    "step": 0.125,
+    "samplesEvery": 4,
+    "plannedLandWithin": 0.5,
+    "faceOverlap": 0.05
+  }
+}
