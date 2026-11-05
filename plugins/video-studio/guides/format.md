@@ -16,12 +16,13 @@ videos/<project>/
 
 Two ways to build the picture, both on the same contract:
 
-- **One clock** (Video Studio's usual way for an animated film). `index.html` holds one full-length stage, and one
-  function `render(t)` draws the whole film for any time `t`. A single tween moves a clock from 0 to the video's
-  length, and a setter on the clock calls `render`, so every seek, in any order, draws exactly that frame. Big films
-  keep each scene in `src/` and a build script writes `index.html`.
+- **One clock** (Video Studio's usual way for a short animated film). `index.html` holds one full-length stage, and
+  one function `render(t)` draws the whole film for any time `t`. A single tween moves a clock from 0 to the video's
+  length, and a setter on the clock calls `render`, so every seek, in any order, draws exactly that frame.
 - **Scenes as files** (sub-compositions). Each scene, and each library block, is its own file mounted at its time in
-  `index.html`, with its own paused timeline. HyperFrames seeks each one by itself.
+  `index.html`, with its own paused timeline. HyperFrames seeks each one by itself. A long animated film is built this
+  way, its scenes at the same time (the build skill's "A long film"), each scene drawing itself with a clock of its
+  own and anything that carries across scenes coming from the film's shared code ("Scene files", below).
 
 ```html
 <div id="root" data-composition-id="main" data-start="0" data-duration="30.5" data-width="1920" data-height="1080"
@@ -178,10 +179,26 @@ Two ways to build the picture, both on the same contract:
   twice.
 - Several beats that share state (a headline carried across a cut, one canvas, a chat that grows) are one scene file
   with a div per phase, not several hosts.
+- **Shared code:** a `<script src="assets/…">` inside a scene's `<template>` runs before the scene's own script, so
+  code several scenes use (the brand's eases, a world they all draw) lives in one file. Load it from `index.html`'s
+  head too, and have it build itself once (`if (window.Film) return;`), so a scene also works alone. Lint reads it with
+  each file that loads it: no template literal in a selector (`template_literal_selector`).
+- A scene can't reliably read its own host: HyperFrames renames the host's attributes when it mounts the file
+  (`data-composition-src` becomes `data-composition-file`). A scene that needs the film's time takes its slot's start
+  from the film's shared code.
+- **Library items inside a scene file** work as they do at the root: the host's `data-start` in the scene's own time,
+  and its id the `<code>-slot` that `studio.mjs library` gives, never the item's own root id (the item's styles then
+  select the host, and it lays out wrong). `HF timeline` lists them with their film times.
 - Sound that plays across scenes lives at the root of `index.html`. A picture that follows the sound reads values
   measured from it beforehand, never from the playing audio (`motion/techniques/` "Motion from the music").
-- In a scenes-as-files film, `index.html` stays thin: the hosts, the sound, and a root timeline with at most a final
-  fade.
+- In a scenes-as-files film, `index.html` stays thin: the hosts (each in a plain wrapper when a join moves it), any
+  ground that spans scenes, the sound, and a root timeline for the joins, which moves the wrappers from the film's
+  time and never reaches inside a scene.
+- In the HyperFrames app, each host is a clip on the timeline, with the library items inside it at their film times,
+  and each scene file a composition that opens and renders alone (`HF render -c compositions/<scene>.html` waits 45 s
+  first, for a root timeline the file doesn't have). Moving a scene there changes only its host's `data-start`: the
+  joins at the root stay where they were. Every untimed element at the root (a ground, a wrapper) shows as a
+  full-length row, so keep them few.
 
 ## Variables
 
