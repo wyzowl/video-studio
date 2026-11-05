@@ -251,7 +251,7 @@ itself is dropped when the video uses shader transitions or HDR media: put it on
 | `data-layout-allow-overlap` | Deliberate text layering, on that block only |
 | `data-layout-allow-occlusion` | An element meant to cover text (a full-frame transparent canvas, a cut-out in front of words) |
 | `data-layout-allow-caption-zone` | Words meant to sit in the caption band (`--caption-zone`) |
-| `data-layout-ignore` | A decorative element, such as a 3D surface, never measured; also text that's texture rather than reading (a phone's clock, a sign in the world), which the type floor would flag |
+| `data-layout-ignore` | A decorative element, such as a 3D surface, never measured; also text that's texture rather than reading (a phone's clock, a sign in the world), which the type floor would flag. Mark the words themselves, not a container that moves: the motion checks skip whatever it marks, so an interface marked whole reads as nothing moving |
 | `data-hold` | A stillness that's meant (a pause on a key word, a chart held to be read), on the element that holds, not the whole stage: the still-stretch finding (`dead_stretch`) |
 
 Words parked behind an `overflow: hidden` mask are still measured: set them to `opacity: 0` while they're hidden. A

@@ -158,8 +158,8 @@ asking. To build one in, whether it was suggested or the user named it:
    colours and keep its words readable (the contrast in `PLUGIN/guides/numbers.md`). If something doesn't fit the
    brand, fix the kit's `style` (brand-kit skill). The checks as usual.
 5. Words that must read at phone size (`PLUGIN/guides/numbers.md`, "Type sizes"): the cards (W08, W26, W36, W41, W49,
-   W52) take a Size, up to 2, and grow from their own side; set it rather than scaling a wrapper, and check the frame
-   in a snapshot. Widgets over a presenter go on the side they aren't facing. Each stays on screen long enough to take
+   W52) take a Size (1 reads on a phone, up to 2 for more) and grow from their own side; set it rather than scaling
+   a wrapper, and check the frame in a snapshot. Widgets over a presenter go on the side they aren't facing. Each stays on screen long enough to take
    in, counted from when its words are in (its own entrance comes first: `PLUGIN/guides/numbers.md`, "Reading"); a
    quick-fire run, one after another, can go faster when it's meant to be glanced at.
 6. Data items, and the other words that fill the frame (T10, T46 and the rest `studio.mjs library` marks full frame),

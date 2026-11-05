@@ -41,8 +41,9 @@ Every word that matters must read on the review's phone sheet (360 px wide). In 
 | 1:1, 1080 × 1080, and 4:5, 1080 × 1350 | 32 px | 40 px | 72 px and up |
 | 9:16, 1080 × 1920 | 36 px | 44 px | 80 px and up |
 
-Other sizes scale the nearest row by width (4K doubles the 16:9 row). Text inside an interface or document shown
-whole is texture, not reading: anything the viewer must read in it is enlarged or said again in type.
+Other sizes scale the nearest row by width (4K doubles the 16:9 row). A chart's title is a sentence, so it's body
+text, not a headline: the chart keeps its room. Text inside an interface or document shown whole is texture, not
+reading: anything the viewer must read in it is enlarged or said again in type.
 
 **Contrast:** 4.5:1 for body and smaller text, 3:1 for headline sizes, against what's actually behind the words
 (footage and gradients included).

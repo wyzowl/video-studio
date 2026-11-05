@@ -175,6 +175,10 @@ else sends each frame to an AI service whenever its API key is set; `false` keep
   being rebuilt, or a reference whose grammar you're matching.
 - Treat tiny unstyled text, icons blown up to the frame, missing hero elements or a registration timeout in a scene
   file's snapshot as a broken mount (`format.md`, "Scene files").
+- A still jumps straight to its time, so something a library block draws over time can show as it was a moment
+  earlier, or not yet drawn (T51's typing, a count-up about 0.1 s ahead), when the render is right. Look at the
+  draft render before changing a block for what a still shows. A film's own drawing stays exact if one clock draws
+  each frame from its time, with no zero-length `set` to show or hide things (`format.md`, "A project").
 
 ## keyframes
 

@@ -114,6 +114,8 @@ backfaces), HyperFrames uses a lighter filter instead, which softens turns and z
 - **Kept sharp:** `data-motion-blur="off"` on a subtree that mustn't soften while it moves fast (a logo whose
   geometry is exact, an interface read as it scrolls). A brief or brand kit that wants crisp, graphic motion turns it
   off on the root.
+- **Over a soft glow:** an element with clear areas, moving over a radial glow or a soft gradient, can show a lighter
+  box its own size while it moves: turn the shutter off for that element.
 - **The cost:** about one and a half times the render time with the full method, and little with the lighter filter.
   It's off in a stretch rendered with `--start` and `--end` and in HDR renders, so judge it on a whole draft;
   `render --page-motion-blur off` leaves it out for a quick look at timing (`../../cli.md`).
