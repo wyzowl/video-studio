@@ -66,8 +66,9 @@ press **Got it**.
 - **Claude Code**, kept up to date. The band above the message box and the answer box use plugin features from
   Claude Code 2.1.295.
 - **About 6 GB of disk space** for HyperFrames' browser and models, plus 0.3–1.5 GB per video.
-- Setup installs the rest: Node.js, ffmpeg and git (through Homebrew), the HyperFrames skills, the LottieFiles
-  motion-design skill, the on-device transcription model, and SFX Kit, the studio's sound effects.
+- Setup installs the rest: Node.js, ffmpeg and git (through Homebrew), the on-device transcription model, and SFX
+  Kit, the studio's sound effects. It installs no skills into your studio: Video Studio's own skills and guides come
+  with the plugin.
 
 ## Commands
 
@@ -99,7 +100,8 @@ press **Got it**.
    sound.
 5. **Build and review.** Claude builds the video, adds its sound effects from SFX Kit (as many as the brief calls for,
    each placed exactly on its moment and set under the voiceover), renders drafts and reviews them against a
-   seven-point rubric, for at least two rounds, until every score is 8 or more.
+   eight-point rubric (hook, readability on a phone, motion, variety, composition, brand, sync and story, each against
+   its standard in the guides), for at least two rounds, until every score is 8 or more.
 6. **Video review.** On the video's review page you watch it and pin notes to moments in it. The decision is
    **Approve video** unless you add a note or write under **Anything else?**, which switches it to **Changes needed**.
 7. **Delivery.** Once you approve, Claude renders the 60 fps master, a web copy, a poster and a contact sheet.
@@ -230,7 +232,7 @@ you've saved.
 
 ```
 .claude-plugin/marketplace.json   the "wyzowl" marketplace, listing the plugin
-plugins/video-studio/             the plugin: commands, skills, hook, scripts, page styles, templates
+plugins/video-studio/             the plugin: commands, skills, guides, hook, scripts, page styles, templates
 ```
 
 ## Development
@@ -255,8 +257,13 @@ plugins/video-studio/             the plugin: commands, skills, hook, scripts, p
 - The **Wyzowl logo** (`plugins/video-studio/ui/wyzowl-logo.svg` and `wyzowl-icon.svg`) is a trademark of 4040 Media
   Limited, trading as Wyzowl. It's
   included for the plugin's own pages and isn't covered by the repository's licence.
-- HyperFrames and its skills (HeyGen) and the motion-design skill (LottieFiles) are installed from their own sources
-  by setup, under their own licences.
+- HyperFrames (HeyGen) runs from npm, under its own licence. Parts of the guides
+  (`plugins/video-studio/guides/`) were written from HyperFrames' skills, LottieFiles' motion-design skill,
+  GreenSock's GSAP skills, DiffusionStudio's text-to-lottie, Anthropic's frontend-design, canvas-design and
+  algorithmic-art skills and vtake-skills: those parts keep their own licences, with their notices in
+  `plugins/video-studio/guides/NOTICE`.
+- Anything done because you asked for it, such as an AI voice or an outside service on your own account, runs at your
+  request and under that tool's own terms.
 - **SFX Kit** (CC0 1.0), the studio's sound effects, is downloaded by setup from
   [github.com/wyzowl/sfx-kit](https://github.com/wyzowl/sfx-kit).
 - **Video Studio itself** is under the [Wyzowl Video Studio Licence](LICENSE): free to use to make videos, commercial

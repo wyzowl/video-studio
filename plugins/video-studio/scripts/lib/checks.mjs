@@ -2,12 +2,13 @@
 // use, whether it's here, a line on what's there (or what's wrong), the command that fixes it (for Claude), and the
 // words the person can say to Claude to have it fixed. doctor.mjs prints them; the Setup and Health page shows them.
 import { spawnSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { readStudio, readJSON, registeredStudios, USER_DIR } from "./studio.mjs";
+import { PLUGIN_ROOT, readStudio, readJSON, registeredStudios, USER_DIR } from "./studio.mjs";
 import { EXTRAS } from "./extras.mjs";
-import { HYPERFRAMES_VERSION, SKILL_INSTALLS } from "./versions.mjs";
+import { HYPERFRAMES_VERSION } from "./versions.mjs";
+import { outsideSkills, skillList } from "./outside-skills.mjs";
 
 const PATH = `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH || ""}`;
 const run = (cmd, args) => {
@@ -81,7 +82,7 @@ export function runChecks({ root = null } = {}) {
   });
 
   const git = run("git", ["--version"]);
-  add({ id: "git", group: "This Mac", name: "git", ok: Boolean(git), detail: git || "not installed: the skills installer needs it", fix: "HOMEBREW_NO_ANALYTICS=1 brew install git", say: "Install git for my studio.", time: "under a minute", doing: "Installing git" });
+  add({ id: "git", group: "This Mac", name: "git", ok: Boolean(git), detail: git || "not installed: HyperFrames uses it to compare edits and to build its transcriber", fix: "HOMEBREW_NO_ANALYTICS=1 brew install git", say: "Install git for my studio.", time: "under a minute", doing: "Installing git" });
 
   const npx = join(homedir(), ".npm/_npx");
   const cached = [
@@ -140,28 +141,20 @@ export function runChecks({ root = null } = {}) {
   if (root) {
     const studio = readStudio(root);
     add({ id: "studio", group: "Your studio", name: "Studio folder", ok: true, detail: `${root} (HyperFrames ${studio.hyperframes || "not set"})` });
-    const skill = (n) => existsSync(join(root, ".claude/skills", n, "SKILL.md"));
+    // the outside skills setup used to install (up to 0.9): listed so the user can have them removed, with their OK
+    const outside = outsideSkills(root);
     add({
-      id: "skills",
+      id: "outside-skills",
       group: "Your studio",
-      name: "HyperFrames skills",
-      ok: skill("hyperframes"),
-      detail: skill("hyperframes") ? "installed in this studio" : "not installed in this studio",
-      fix: `From the studio folder: ${SKILL_INSTALLS.hyperframes}`,
-      say: "Install the HyperFrames skills in my studio.",
+      name: "Old outside skills",
+      ok: !outside.names.length,
+      detail: outside.names.length
+        ? `${outside.names.length} from an older setup (${skillList(outside.names)}): Video Studio's guides do their job now`
+        : "none: Video Studio's own guides do their job",
+      fix: `node "${join(PLUGIN_ROOT, "scripts", "studio.mjs")}" skills lists them; with the user's OK, add --remove --yes`,
+      say: "Remove the old outside skills from my studio.",
       time: "under a minute",
-      doing: "Installing the HyperFrames skills",
-    });
-    add({
-      id: "motion",
-      group: "Your studio",
-      name: "Motion design skill",
-      ok: skill("motion-design"),
-      detail: skill("motion-design") ? "installed in this studio" : "not installed in this studio",
-      fix: `From the studio folder: ${SKILL_INSTALLS.motion}`,
-      say: "Install the motion design skill in my studio.",
-      time: "under a minute",
-      doing: "Installing the motion design skill",
+      doing: "Removing the old outside skills",
     });
   } else {
     const known = registeredStudios()[0]?.path;

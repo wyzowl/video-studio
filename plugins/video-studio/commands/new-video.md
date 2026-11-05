@@ -61,10 +61,11 @@ Then a second panel:
   with any voice service, read from the approved script: Video Studio waits for the file once the script is approved).
 - **Neither yet:** ask what the video should achieve, who it's for, the key messages in order, the call to action and
   the tone, and how it should be voiced (as for a script only). Draft the script (with a voiceover: the voiceover and
-  what's on screen; without one: the text on screen and what happens) and get it approved before the storyboard. If
-  the `wyzowl-explainer-script` skill is available, use it for the draft.
+  what's on screen; without one: the text on screen and what happens) and get it approved before the storyboard
+  (script skill).
 
-Video Studio doesn't make voiceovers: a voiceover is always a file the user brings.
+By default a voiceover is a file the user brings, and Video Studio doesn't offer to make one (production skill,
+"Voiceovers").
 
 ### 3. Set up the project
 
@@ -103,7 +104,6 @@ Video Studio doesn't make voiceovers: a voiceover is always a file the user brin
    size: <16:9 | 1:1 | 4:5 | 9:16 | WxH>
    aspect: <width>x<height>
    voiceover: <recorded | supplied | none>
-   workflow: general-video
    flow: companion
    storyboard: yes
    destination: <website | youtube | social | presentation | …>

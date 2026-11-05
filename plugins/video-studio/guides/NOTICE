@@ -1,0 +1,347 @@
+Wyzowl Video Studio: notices for the guides
+
+The guides in this folder are Video Studio's own, written in its own words. Parts of them were written from the
+sources below: their know-how was read, rewritten, trimmed to what works with HyperFrames 0.8.149 and merged with
+Video Studio's own guidance. No source file is copied as it is. Each guide ends with a "Sources" line naming what it
+came from and saying that it was changed. The parts that came from these sources keep their sources' licences, which
+are reproduced below; the rest of Video Studio is under its own licence (LICENSE, one folder up).
+
+Sources
+=======
+
+1. HyperFrames skills
+  https://github.com/heygen-com/hyperframes, tag v0.8.149 (commit bf881bf), its skills/ folder; its current skills
+  (v0.9.15, commit 33c17df) were read as a model for how the guides read, and nothing was taken from them
+  Apache License 2.0. Copyright 2026 HeyGen, Inc.
+  Changes: rewritten as Video Studio's guides; trimmed; merged with other sources and Video Studio's own guidance.
+  Guides that use it (82):
+    audio/README.md, audio/mixing.md, audio/music.md, captions/README.md, captions/grouping.md,
+    captions/placement.md, captions/style.md, cli.md, design/README.md, design/brand.md, design/colour.md,
+    design/data.md, design/layout.md, design/readability.md, design/type.md, footage/cutouts.md, footage/editing.md,
+    footage/grading.md, footage/overlays.md, format.md, imports/figma.md, imports/remotion.md, library.md,
+    motion/README.md, motion/camera.md, motion/choreography.md, motion/patterns/README.md,
+    motion/patterns/assembling-grid.md, motion/patterns/camera-journey.md, motion/patterns/closing-in.md,
+    motion/patterns/cursor-demo.md, motion/patterns/data-hero.md, motion/patterns/device-showcase.md,
+    motion/patterns/fixed-anchor.md, motion/patterns/hub-and-satellites.md, motion/patterns/live-edit.md,
+    motion/patterns/logo-lockup.md, motion/patterns/machine-at-work.md, motion/patterns/mark-to-button.md,
+    motion/patterns/pan-across-stations.md, motion/patterns/prompt-and-answer.md,
+    motion/patterns/scroll-to-deliverable.md, motion/patterns/side-by-side.md, motion/patterns/takeover.md,
+    motion/patterns/title-card.md, motion/patterns/typed-line.md, motion/patterns/video-to-figure.md,
+    motion/patterns/words-in-beats.md, motion/patterns/zoom-out-reveal.md, motion/principles.md, motion/quality.md,
+    motion/techniques/README.md, motion/techniques/camera.md, motion/techniques/cursor.md, motion/techniques/data.md,
+    motion/techniques/effects.md, motion/techniques/layout.md, motion/techniques/text.md, motion/timing.md,
+    motion/transitions.md, motion/variety.md, numbers.md, runtimes/README.md, runtimes/animejs.md,
+    runtimes/canvas.md, runtimes/css.md, runtimes/gsap.md, runtimes/lottie.md, runtimes/three.md, runtimes/waapi.md,
+    runtimes/webgpu.md, story/README.md, story/beats.md, story/hooks.md, story/narration.md, story/principles.md,
+    story/types/code.md, story/types/decks.md, story/types/explainer.md, story/types/launch.md,
+    story/types/motion-graphics.md, story/types/music.md
+
+2. vtake-skills (vtake-cut), through HyperFrames' talking-head-recut skill
+  https://github.com/notedit/vtake-skills
+  MIT License. Copyright (c) 2026 leeoxiang
+  Changes: rewritten as Video Studio's guides; trimmed; merged with other sources and Video Studio's own guidance.
+  Guides that use it (1):
+    footage/overlays.md
+
+3. LottieFiles' motion-design skill
+  https://github.com/LottieFiles/motion-design-skill, commit f9a8a041
+  MIT License. Copyright (c) 2025 LottieFiles
+  Changes: rewritten as Video Studio's guides; trimmed; merged with other sources and Video Studio's own guidance.
+  Guides that use it (4):
+    motion/choreography.md, motion/principles.md, motion/quality.md, motion/timing.md
+
+4. GreenSock's GSAP skills
+  https://github.com/greensock/gsap-skills, commit aed9cfd (gsap-core, gsap-timeline, gsap-plugins, gsap-utils and
+  gsap-performance)
+  MIT License. Copyright (c) 2026 GreenSock
+  Changes: rewritten as Video Studio's guides; trimmed; merged with other sources and Video Studio's own guidance.
+  Guides that use it (1):
+    runtimes/gsap.md
+
+5. DiffusionStudio's text-to-lottie skill
+  https://github.com/diffusionstudio/lottie, commit 3c72912
+  MIT License. Copyright (c) 2026 Diffusion Studio Inc.
+  Changes: rewritten as Video Studio's guides; trimmed; merged with other sources and Video Studio's own guidance.
+  Guides that use it (10):
+    design/README.md, design/colour.md, design/data.md, design/generative.md, design/layout.md, design/type.md,
+    motion/choreography.md, motion/principles.md, motion/transitions.md, runtimes/lottie.md
+
+6. Anthropic's frontend-design, canvas-design and algorithmic-art skills
+  https://github.com/anthropics/skills, commit ca45fc4
+  Apache License 2.0. Copyright 2026 Anthropic, PBC.
+  Changes: rewritten as Video Studio's guides; trimmed; merged with other sources and Video Studio's own guidance.
+  Guides that use it (5):
+    design/README.md, design/colour.md, design/generative.md, design/type.md, runtimes/canvas.md
+
+Licence texts
+=============
+
+The Apache License 2.0 (sources 1 and 6)
+----------------------------------------
+
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to the Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by the Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding any notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+
+vtake-skills (source 2)
+-----------------------
+
+MIT License
+
+Copyright (c) 2026 leeoxiang
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+LottieFiles' motion-design skill (source 3)
+-------------------------------------------
+
+MIT License
+
+Copyright (c) 2025 LottieFiles
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+GreenSock's GSAP skills (source 4)
+----------------------------------
+
+MIT License
+
+Copyright (c) 2026 GreenSock
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+DiffusionStudio's text-to-lottie (source 5)
+-------------------------------------------
+
+Copyright (c) 2026 Diffusion Studio Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

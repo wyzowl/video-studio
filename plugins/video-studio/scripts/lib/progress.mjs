@@ -9,8 +9,8 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync,
 import { dirname, join, relative, resolve, sep } from "node:path";
 
 export const STAGES = ["script", "storyboard", "video", "final"];
-// the scores of a video's review loop (production skill, references/review.md), as the panel names them
-export const SCORES = { hook: "Hook", phone: "Phone size", motion: "Motion", variety: "Variety", composition: "Composition", brand: "Brand", sync: "Sync" };
+// the scores of a video's review loop (review skill; each one's standard is in guides/), as the panel names them
+export const SCORES = { hook: "Hook", phone: "Phone size", motion: "Motion", variety: "Variety", composition: "Composition", brand: "Brand", sync: "Sync", story: "Story" };
 // a stage with no news for this long says so, in case Claude has stopped
 export const QUIET_MS = 20 * 60e3;
 const LAPSE_MS = 12 * 3600e3;

@@ -1,4 +1,16 @@
 {
+  "0.10.0": [
+    {
+      "text": "Video Studio has its own guides now: how it makes every part of a film, from motion and design to story, captions, sound and footage. Setup installs no outside skills into your studio, and Studio health offers to remove the ones an older setup put there.",
+      "href": "/health"
+    },
+    {
+      "text": "Every draft is scored on its story too: one clear message, a hook whose promise is paid off, and one clear ask at the end."
+    },
+    {
+      "text": "Your voiceover is your own file by default. If you ask for an AI voice or an outside service on your own account, Claude can use it, at your request and under that tool's own terms."
+    }
+  ],
   "0.9.0": [
     {
       "text": "Tidy up finished videos: once a video is delivered, Video Studio can remove its drafts, review stills, replaced storyboards and edit history, after you say yes. The delivery page and Studio health show how much space each one would free.",

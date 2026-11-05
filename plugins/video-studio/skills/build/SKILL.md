@@ -1,0 +1,148 @@
+---
+name: build
+description: Build an approved Wyzowl Video Studio storyboard into the video - the HyperFrames code, library items, footage cuts, captions and sound - ready for the review loop. Use once every storyboard scene is approved, and for every change to a built video (the review's fixes, the user's notes).
+---
+
+# Build
+
+The build turns the approved plan into the video. It owns the code, and it changes nothing creative: the approved
+script's words, the storyboard's scenes and frames, and the brand kit stay as they were approved. When the plan
+leaves something open, choose from the guides' defaults; when something approved can't work as planned, change as
+little as possible and flag it, so the review page says so (review skill, "The user's video review").
+
+`PLUGIN` and `HF` are as in the production skill. Read the guides as the job needs them (`PLUGIN/guides/README.md`):
+- always `format.md` (the HyperFrames contract) and `cli.md` (the commands);
+- `motion/README.md`, and the patterns and techniques the storyboard names (`motion/patterns/`, `motion/techniques/`);
+- `design/README.md`, and `design/type.md`, `layout.md`, `readability.md` for type and layout;
+- `audio/` for the sound, `captions/` for captions, `footage/` for a footage video;
+- `runtimes/` for anything beyond GSAP (Lottie, three.js, canvas, WebGPU).
+
+## Start
+
+Mark it on the overview: `node PLUGIN/scripts/studio.mjs progress <project> video <version> build` (and `notes`
+first for a later version), then `check` and each round's steps as you go (production skill, "Work in progress").
+Read `BRIEF.md`, the brand kit (`brand.json`), the approved script and storyboard (its frames, descriptions and
+notes), and the verified word times.
+
+## An animated video
+
+1. **One clock.** One `index.html` with a pure `render(t)` on one paused GSAP clock, or `src/` plus a build script
+   that generates `index.html` for bigger films (`PLUGIN/guides/format.md`, "A project"). Scenes as their own files
+   when a scene needs its own timeline (a library item, a block).
+2. **The approved frames are the layouts.** Reuse the storyboard's `frames.html` layouts, words and assets; the motion
+   between them is what the build adds.
+3. **The brand kit as defaults:** its colours and fonts as variables (never retyped by eye), its backgrounds as
+   grounds, and its `motion` (eases, durations, entrance, spring) as the timeline's defaults
+   (`PLUGIN/guides/motion/quality.md`). The variable font rests on the brand's weight
+   (`PLUGIN/guides/design/type.md`).
+4. **Timed to the words or the beat:** key words arrive on their spoken times, cuts fall in phrase gaps, scenes change
+   on bar lines with music (`PLUGIN/guides/audio/sync.md`); reveals pace each scene through its length
+   (`PLUGIN/guides/story/beats.md`).
+5. **Every size laid out for its shape:** layouts built from variables (safe areas, a type scale), so another size is
+   a layout change, not a rebuild (`PLUGIN/guides/design/layout.md`). Check text at phone width for 9:16, 4:5 and 1:1.
+6. **References:** if `inputs/refs/` or the brand's `refs/` exists and there's no `docs/style_guide.md` yet, write one
+   (`PLUGIN/guides/design/README.md`, "Working from references").
+7. **Look before rendering:** `HF check` shows 0 errors (`PLUGIN/guides/cli.md`, "lint and check"); stills of each
+   scene's key moment and every transition with `HF snapshot --at <times> --describe false`, compared with the
+   storyboard's frames, before the first render. Then the review skill takes over.
+
+## A footage video
+
+Build the cut in HyperFrames' clip-and-track structure, so the user can open it in the HyperFrames app and adjust it
+(`PLUGIN/guides/footage/editing.md`):
+- one `<video>` per kept range: `data-start` where it sits in the video, `data-media-start` its in point and
+  `data-duration` its length, with `data-has-audio="true"` so its sound plays;
+- B-roll as muted `<video>` clips on the track above;
+- library items, captions and titles on the tracks above those.
+
+Use the original files in `inputs/footage/`, not the previews.
+- Cut in the pauses: a beat after the last word and before the next, never mid-word, and keep breaths natural.
+  Hide a jump cut inside a take with a punch-in (scale the next range by about 1.1) or B-roll over it.
+- Anything timed to the words (captions, items' cues) takes the scan's word times, moved to the cut: time in the
+  video = the range's `data-start` + the word's time − the range's in point.
+- Sound: the speech leads. Music sits under it and ducks while people speak (`PLUGIN/guides/audio/mixing.md`);
+  B-roll's own sound stays off unless it's the point.
+- Check every join: transcribe the draft (`HF transcribe <draft> --engine parakeet`) and compare its words with the
+  script's, so no word is clipped, doubled or missing; and look at the cuts with `HF snapshot --describe false`.
+
+## A timeline that reads in the app
+
+The HyperFrames app draws a row per top-level element, so keep each row one kind of thing the user can select, mute or
+move: the base video, scene hosts and graphics (`data-track-kind="graphics"` on their hosts), one captions track (a
+single host marked `data-track-kind="captions"` carrying every caption group), and the audio. Give each kind its own
+`data-track-index`; it orders the app's rows only, never what draws on top (that's CSS).
+
+## Library items
+
+The studio's library (`/library/`) holds ready-made HyperFrames blocks in seven categories: widgets (cards that show
+information over footage), layouts (ways to show the presenter beside a screen or other clips), text effects,
+transitions (ways to move from one scene to the next), data (full-screen charts and graphs), interface (browser and
+app windows, devices, AI tools, messages, social posts, search and shopping) and forms (forms and controls filled in
+and clicked). Each item has a code whose letter is its category (W03, L01, T01; X for transitions, D for data, I for
+interface, F for forms), takes its colours, fonts and corner rounding from a brand kit, and lays itself out for every
+size. The script and storyboard suggest them from what `studio.mjs library` lists, so videos get them without anyone
+asking. To build one in, whether it was suggested or the user named it:
+
+1. Run `node PLUGIN/scripts/studio.mjs library <code> --brand <brand> --size <16x9|1x1|4x5|9x16>`. It gives the block's
+   file, a clip for `index.html` with the brand's settings filled in, the fonts it needs and the words it takes.
+2. Copy the block into the project's `compositions/`, add the clip where it plays, and set its words and options in
+   `data-variable-values`; its `duration` matches the clip's `data-duration`. Time cues (ticks, current points,
+   highlights) to the voiceover's words.
+3. Media (L01, L07, L15, T01): write each file as the `src` of its element in the copy and remove the elements you
+   don't use.
+   T01 needs a cut-out of the presenter, made on the Mac:
+   `HF remove-background <segment>.mp4 -o <segment>_cutout.webm`, from the same cut of footage (the model downloads
+   once; setup offers it). Check a few frames: anything the cut-out wrongly keeps or drops (a mic arm, a held phone)
+   shows in front of or behind the word (`PLUGIN/guides/footage/cutouts.md`). Then measure the head:
+   `node PLUGIN/scripts/tools/head-top.mjs <segment>_cutout.webm --size <W>x<H>` and pass its `headTop`. The word then
+   sits so the head covers at most half of it, which keeps it readable; placing it by hand so the head covers more
+   breaks the word.
+4. Keep the item's motion and look: the brand kit dresses it, so don't restyle it by hand. Its colours can be any
+   others from the same kit, such as a full-frame item on the brand's accent: set its colour settings to those
+   colours and keep its words readable (4.5:1 contrast at body size, 3:1 for large type). If something doesn't fit
+   the brand, fix the kit's `style` (brand-kit skill). `HF check` as usual.
+5. Widgets over a presenter go on the side they aren't facing. Each stays on screen for at least 3 seconds or twice
+   its reading time; a quick-fire run, one after another, can go faster when it's meant to be glanced at.
+6. Data items, and the other words that fill the frame (T10, T46 and the rest `studio.mjs library` marks full frame),
+   fill the screen in the brand's colours. Give figures their real values and source; if a transition follows, set
+   `exit` to `"hold"` so the scene stays whole until the transition takes it.
+7. Transitions come in two kinds, and `studio.mjs library <code>` gives the steps for each:
+   - **Covers the cut** (X01, X17): a block on top of both scenes, placed after them in `index.html`. Scene A's clip
+     ends and scene B's starts at the transition's cut, behind it.
+   - **Both scenes** (X05, X19): a recipe for the main timeline, since a block can't move the scenes around it. Paste
+     its layer and script into `index.html` once, wrap each scene in a plain full-frame element (B after A in the
+     page), overlap the two for the transition's length, and call it on the main timeline with the two scenes and its
+     options, such as where the iris opens or where scene A lands in scene B.
+8. **Combine them.** Items work together, at once or one after another:
+   - a full-frame item as a scene's base, with items that sit over footage on top (a wall of work with captions over
+     it, a chart with a name tag);
+   - widgets one after another, quick-fire, or side by side;
+   - a ground from the brand's backgrounds (a full-frame element in `index.html`), with big words, a widget and
+     captions over it. An image background is a `background-image` div covering the frame at its `position`, its file
+     copied into the project's `assets/`; a gradient or colour is the element's background.
+
+   `studio.mjs library` marks each item over footage or full frame. Each is its own clip with its own id (a second
+   copy of an item gets a new id, as below). Later clips in `index.html` draw on top, so put the base first;
+   `data-track-index` is only the app's timeline row, so give each item playing at once its own. Make them work
+   together: nothing covers the words, another item's key part or the presenter's face (move one with its options,
+   such as `side`, or time them apart), their entrances don't all land at once, and each stays on screen long enough
+   to read. Look at the moments they overlap in snapshots.
+
+To use one twice in a video, copy it under a new id (change its id everywhere in the copy). HyperFrames' own online
+registry is a second source, used with care (`PLUGIN/guides/library.md`).
+
+## Sound
+
+- **Music:** the user's track if there is one; otherwise propose a music bed (a score made with the score kit), and
+  don't add one silently (`PLUGIN/guides/audio/music.md`).
+- **Sound effects** come from SFX Kit and are made with the video, as much as the brief calls for: the user first
+  hears them in the video and asks for changes there (`PLUGIN/guides/audio/sfx.md`).
+- **The mix:** level the stems, make room for the voice, and measure the render (`PLUGIN/guides/audio/mixing.md`).
+- **Captions** burnt in when the brief asks, or for a feed that plays muted (`PLUGIN/guides/captions/`); the `.srt`
+  and `.vtt` files come with the deliverables either way.
+
+## Changes after a review
+
+The review's fixes and the user's notes come back here. Change what each one asks for and nothing more; a change to
+something the user approved (a scene's look, a word of the script) is said on the next review page. Re-run `HF check`
+and stills of what changed, then the review loop again.

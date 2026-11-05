@@ -37,6 +37,9 @@
 //                                              (--unfinished: a video with no final render yet, asked for by name)
 //   node studio.mjs tidy --all [--yes]         the same for every finished video, and the edit history of deleted ones
 //   node studio.mjs tidy --deleted [--yes]     just the edit history HyperFrames still keeps for deleted videos
+//   node studio.mjs skills [--remove --yes]    the outside skills an older setup put in this studio (HyperFrames' own
+//                                              and the motion-design skill); with --remove --yes, take them out, once
+//                                              the user has said yes
 //   node studio.mjs install all [--wait]       everything Video Studio needs that isn't on this Mac yet, smallest
 //                                              first, shown on the Setup and Studio health pages as it goes (--wait:
 //                                              if another session is already downloading, wait for it to finish)
@@ -54,7 +57,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   PLUGIN_ROOT,
@@ -88,6 +91,7 @@ import { HYPERFRAMES, HYPERFRAMES_ENV, HYPERFRAMES_VERSION } from "./lib/version
 import { CATEGORIES, SIZES, BRAND_VARS, BUNDLED_FONTS, libraryItems, libraryItem, lockedItems, findItem, contentVariables, brandStyle, itemLayer } from "./lib/library.mjs";
 import { catalogue, checkDue, checkLibrary, installedPack, licence } from "./lib/paid.mjs";
 import { goneHistories, sizeLabel, studioTidy, tidyGone, tidyPlan, tidyVideo, tidyWhat } from "./lib/tidy.mjs";
+import { outsideSkills, removeOutsideSkills } from "./lib/outside-skills.mjs";
 
 const SELF = fileURLToPath(import.meta.url);
 // HyperFrames' switches, for every HyperFrames run from here (renders, models, cut-outs): no usage data, no update check
@@ -228,11 +232,12 @@ async function main() {
   if (cmd === "licence" || cmd === "license") return licenceCommand();
   if (cmd === "install") return install();
   if (cmd === "tidy") return tidyCommand();
+  if (cmd === "skills") return skillsCommand();
   if (cmd === "wait") return waitForReview();
   if (cmd === "hook") return hook();
   if (cmd === "page-ready") return pageReady().catch(() => {}); // a hook: never in the way, silent on any problem
   if (cmd === "context") return context();
-  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, setup-page, setup-note, pdf, library, install, tidy, serve, stop, page-ready`);
+  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, setup-page, setup-note, pdf, library, install, tidy, skills, serve, stop, page-ready`);
 }
 
 function init(root) {
@@ -366,7 +371,8 @@ async function hook() {
   const node = Number(process.versions.node.split(".")[0]);
   if (node < 20) warn.push(`Node.js ${process.versions.node} is old; 20 or newer is needed`);
   if (spawnSync("ffmpeg", ["-version"], { stdio: "ignore" }).status !== 0) warn.push("ffmpeg is missing");
-  if (!existsSync(join(root, ".claude", "skills", "hyperframes", "SKILL.md"))) warn.push("the HyperFrames skills aren't installed in this studio");
+  // the outside skills an older setup installed: Video Studio's own skills and guides replace them
+  const outside = outsideSkills(root).names;
   const open = videos.filter((v) => v.status.key !== "delivered");
   // the full library's daily check, in the background so the session never waits on the network
   if (checkDue()) {
@@ -399,9 +405,12 @@ async function hook() {
     `Plugin files: ${PLUGIN_ROOT} (helpers in scripts/, review tools in scripts/tools/, score kit in scripts/score-kit/).`,
     `Sound effects: SFX Kit ${SFX_KIT.version}${kitInstalled() ? ` in ${KIT_DIR} (scripts/tools/sfx.mjs)` : ", downloading (below)"}.`,
     `HyperFrames for new videos: ${HYPERFRAMES_VERSION}. Brands: ${brands.map((b) => b.slug).join(", ") || "none"}. Videos: ${videos.length} (${open.length} in progress${open[0] ? `; latest: ${open[0].slug}, ${open[0].status.label.toLowerCase()}` : ""}).`,
-    "For any video work here, follow the video-studio production skill (with the storyboard and brand-kit skills). New videos: /video-studio:new-video. New brands: /video-studio:new-brand. Pages: /video-studio:dashboard.",
+    "For any video work here, follow the video-studio production skill (it brings in the script, storyboard, build, review and brand-kit skills, and the guides in the plugin's guides/ folder). New videos: /video-studio:new-video. New brands: /video-studio:new-brand. Pages: /video-studio:dashboard.",
     `To tidy up a finished video, use \`node "${SELF}" tidy <video>\` (production skill, "Tidying up"): show the user what it lists and ask before \`--yes\`. Never delete a video's files any other way.`,
     warn.length ? `Setup problems: ${warn.join("; ")}. Suggest /video-studio:setup before making videos; the Studio health page (/health) shows what's missing.` : "",
+    outside.length
+      ? `This studio still has ${outside.length} outside skills from an older setup (${outside.slice(0, 3).join(", ")}…): Video Studio's own skills and guides replace them, so follow those. Studio health offers to remove them; only with the user's OK (\`node "${SELF}" skills\`).`
+      : "",
     update,
     downloads,
   ]
@@ -937,6 +946,27 @@ function tidyDeleted(root, yes) {
   console.log(`Removed the edit history of ${what}: ${sizeLabel(g.freed)} freed.`);
 }
 
+/** `skills [--remove --yes]`: the outside skills an older setup put in this studio (HyperFrames' own and the
+    motion-design skill), for Claude to show the user; with --remove --yes, removing them once the user has said yes. */
+function skillsCommand() {
+  const root = studioRoot();
+  const found = outsideSkills(root);
+  if (!found.names.length) return console.log("This studio has none of the outside skills an older setup installed: Video Studio's own skills and guides do their job.");
+  const what = `${found.names.length} outside skill${found.names.length === 1 ? "" : "s"} from an older setup (${found.names.join(", ")})`;
+  const where = [...new Set(found.paths.map((p) => relative(root, dirname(p))))].join(" and ");
+  if (argv.includes("--remove") && argv.includes("--yes")) {
+    removeOutsideSkills(root);
+    return console.log(`Removed ${what}${where ? ` from ${where}` : ""}${found.lock ? ", and their entries in skills-lock.json" : ""}: ${sizeLabel(found.bytes)} freed. Nothing else was touched.`);
+  }
+  console.log(
+    [
+      `This studio still has ${what}${where ? `: ${sizeLabel(found.bytes)} in ${where}` : ""}${found.lock ? `${where ? "," : ":"} listed in skills-lock.json` : ""}.`,
+      "Video Studio's own skills and guides do their job now, and the old skills can pull Claude towards their own steps and tools. Removing them takes out only those skills' folders and their entries in skills-lock.json: nothing of the user's, and none of Video Studio's own.",
+      `Ask the user before removing them: it can't be undone. Then: node "${SELF}" skills --remove --yes`,
+    ].join("\n"),
+  );
+}
+
 async function install() {
   if (arg === "all") return installAll();
   if (arg === "sfx-kit") {
@@ -1060,7 +1090,7 @@ function describeReview(page, { dir, feedback, summary: s }) {
     (s.approved
       ? `they approved the video${s.notes ? `, with ${plural(s.notes, "note")} to treat as small last tweaks` : ""}`
       : `they asked for changes: ${plural(s.notes, "note")}${s.hasGeneral ? " and a general comment" : ""}`) + pictures;
-  return `The user has finished reviewing video v${page.version} of ${page.project} (saved ${saved}): ${detail}. ${next} stage 8 (video review) of the production skill.`;
+  return `The user has finished reviewing video v${page.version} of ${page.project} (saved ${saved}): ${detail}. ${next} the review skill ("The user's video review").`;
 }
 
 main().catch((err) => {

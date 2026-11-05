@@ -13,8 +13,11 @@ comment counts); they save, which writes `feedback.json` beside the script. No s
 approved. The page also downloads the script as a PDF, for someone outside the studio (production skill, "Sharing
 outside the studio").
 
-`PLUGIN` is this plugin's folder ("Plugin files" in the session-start note). If a script-writing skill is available
-(for example wyzowl-explainer-script), follow its craft for the writing; this skill sets the format and the review.
+`PLUGIN` is this plugin's folder ("Plugin files" in the session-start note). This skill sets the format and the
+review; the craft is in the story guides: `PLUGIN/guides/story/principles.md` (the Story standard the review scores
+against), `hooks.md` (the Hook standard and the openings), `narration.md` (writing for the ear and words that sound
+like a person), `beats.md`, and the guide for the video's type in `PLUGIN/guides/story/types/`. The script's numbers
+(pace, words on screen, reading time) are in `PLUGIN/guides/numbers.md`.
 
 ## Files
 
@@ -30,8 +33,9 @@ Mark the work on the video's overview as you go (production skill, "Work in prog
 `node PLUGIN/scripts/studio.mjs progress <project> script 1 brief`, then mark `draft` as you start writing and
 `length` as you check it. For a footage video, the scan marks `scan` by itself.
 
-1. **Know the story first.** Read the brief (`BRIEF.md`): who it's for, the one message, the call to action, the
-   length and the tone. If something that changes the story is missing, ask before writing.
+1. **Know the story first.** Read the brief (`BRIEF.md`): what the product or idea really does, who it's for, the
+   one message, the call to action, the length and the tone (`PLUGIN/guides/story/principles.md`, "Before writing: know the brief").
+   If something that changes the story is missing, ask before writing.
 2. **Where the words come from:**
    - **Recorded voiceover** (`voiceover: recorded`: the file came with the request): transcribe it first (production
      skill, stage 3) and use the clean take: no retakes, false starts or anything that will be cut. The voiceover
@@ -56,8 +60,10 @@ Mark the work on the video's overview as you go (production skill, "Work in prog
    its own row and split the voiceover across them, carrying a sentence on with ellipses ("Manage your work…",
    "…track tasks…"). Each row's words then match its action, so it's easy to see whether there's enough motion for
    the words. People refer to rows by number ("in row 4…").
-4. **Voiceover:** write for the ear. Talk to one person, one or two sentences a row, lead with what they get, open
-   with a hook and end with a clear call to action.
+4. **Voiceover:** write for the ear (`PLUGIN/guides/story/narration.md`). Talk to one person, one or two sentences a
+   row, lead with what they get, and end with a clear call to action. **Open with a hook:** write two or three
+   openings from different patterns (`PLUGIN/guides/story/hooks.md`), use the strongest in row 1, and give the others
+   in `summary` so the user can swap.
 5. **Action on screen:** the director's notes, in the present tense ("We see…", "Zoom through…", "The logo
    animates on"). For an animated video, describe the scene and its motion, and how each beat flows into the next.
    For a footage video, say what plays, what's added on top (text, graphics) and the transitions. Put collaborative

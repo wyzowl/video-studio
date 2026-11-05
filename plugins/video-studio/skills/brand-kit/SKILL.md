@@ -35,8 +35,9 @@ files" in the session-start note).
    uses one, and background images (photography, textures, patterns). Ask the user which the brand prefers for which
    kind of scene (most scenes, title and end cards, data, social) and anything to avoid, and order them, the main one
    first. Images are the brand's own: the user's files, or its website's with their OK. They need to be at least
-   1920 px wide; a tall version for 9:16 is a background of its own. Never generate them or use stock images.
-5. **Logos.** Never redraw or retype a logo. Use the files the user gives you. If they have none, offer to download
+   1920 px wide; a tall version for 9:16 is a background of its own. By default they're the brand's own: a generated
+   or stock image only when the user asks for one and supplies it (or its licence).
+5. **Logos.** A logo is the brand's real file, never redrawn or retyped. Use the files the user gives you. If they have none, offer to download
    the logo from their website, but only with their OK, preferring SVG. If only a small raster image exists, ask for a
    proper file. Note which logo goes on light and on dark backgrounds.
 6. **Fonts.** Only use font files the user is allowed to use.

@@ -12,9 +12,15 @@ words, and what happens. The studio's review page shows it; every scene is appro
 every scene is approved.
 
 Sound effects aren't part of the storyboard: they're made with the video, once there's something on screen to sync
-them to (production skill, `references/audio.md`).
+them to (`PLUGIN/guides/audio/sfx.md`).
 
-`PLUGIN` is this plugin's folder ("Plugin files" in the session-start note).
+`PLUGIN` is this plugin's folder ("Plugin files" in the session-start note). The storyboard makes every design and
+motion decision the build will follow, so its craft is in the guides: what each scene decides
+(`PLUGIN/guides/story/beats.md`), the frame's design (`PLUGIN/guides/design/`, with the Composition, Readability and
+Brand accuracy standards), the motion (`PLUGIN/guides/motion/README.md`: the film's personality, scene patterns,
+techniques and transitions, with the Motion and Variety standards), and the type of video
+(`PLUGIN/guides/story/types/`). Name each scene's pattern and moves in its description in the guides' own words, so
+the build can look them up (`PLUGIN/guides/motion/README.md`, "Planning with names").
 
 ## Files
 
@@ -41,7 +47,7 @@ voiceover), and mark `check` when you look over the frames; rendering them marks
    how it leaves). One frame for a simple hold; four or five for a scene with a big move.
    **Library items:** carry over every one the script names (`[W03]` and so on), and suggest more where a scene would
    be clearer or richer with one, from what `node PLUGIN/scripts/studio.mjs library` lists (script skill, "Library
-   items"). Items can share a scene (see the production skill, "Library items"). Show each in its frames as it will
+   items"). Items can share a scene (build skill, "Library items"). Show each in its frames as it will
    look. Make a still of it at the video's size and lay it over the frame (several in the order they draw, the base
    first):
    `node PLUGIN/scripts/studio.mjs library <code> --still <seconds into the item> --brand <brand> --size <size>
@@ -100,7 +106,7 @@ go-ahead: carry on without asking them to confirm. Read `feedback.json`. A scene
 `points`, or both: each point is a note on one of its frames (`frame`, `text`, a `box` or an `arrow` in fractions of the
 frame, x and y from its top-left, and `picture`, the frame with their mark drawn on it, in the version's `points/`
 folder). Look at every point's picture (Read tool) before changing that frame: it shows exactly what they mean.
-- **Every scene approved, and no general notes:** confirm, then go to the build stage of the production skill.
+- **Every scene approved, and no general notes:** confirm, then build it (build skill; production skill, stage 5).
 - **Feedback on some scenes, or general notes** (the page counts general notes as asking for changes; feedback from
   someone outside the studio is often pasted there, naming scenes by number): make the next version. If the general
   notes turn out to ask for nothing (just praise, say), tell the user and go to the build stage instead.

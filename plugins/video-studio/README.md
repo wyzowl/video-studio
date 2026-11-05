@@ -13,7 +13,7 @@ feedback counts.
   script with the voiceover beside what happens on screen, for your approval.
 - **Storyboards you approve.** Real frames in your brand at the video's size. Approve each scene, or leave a note.
 - **Videos built and checked for you.** Animated videos, and videos cut from your own footage (transcribed, trimmed and
-  assembled), reviewed against a seven-point rubric before you see them.
+  assembled), reviewed against an eight-point rubric before you see them.
 - **Brand kits.** Colours, backgrounds, fonts, logos, motion and a logo ident, read from your website and files,
   reused across every video.
 - **Sound.** Sound effects from SFX Kit placed on their moments, music, and the voiceover you bring (your own
@@ -52,8 +52,8 @@ it runs, downloads and sends, and when.
   and transcribe speech, all on your Mac. Videos made on an earlier version keep it, through their own scripts.
 - **ffmpeg and ffprobe,** for audio and video; macOS's `open`, to open a page in your browser or show a render or PDF
   in Finder; and `unzip`, to unpack SFX Kit. Setup's checks also run `git --version`, `brew --version` and `sw_vers`.
-- **Setup's installs:** Node.js, ffmpeg and git through Homebrew (you install Homebrew itself, with your Mac password),
-  and two skills for Claude Code in your studio folder, through `npx --yes skills@1.7.4`.
+- **Setup's installs:** Node.js, ffmpeg and git through Homebrew (you install Homebrew itself, with your Mac password).
+  Setup installs no skills of its own into your studio: Video Studio's skills and guides come with the plugin.
 - **A page server** for the studio's pages, at `http://127.0.0.1:4747` (or the next free port up to 4756). It answers
   only this Mac, serves only your studio's files, and refuses requests from websites.
 
@@ -84,9 +84,6 @@ All of this happens only in a session inside a studio folder. Anywhere else, Vid
 - **HyperFrames 0.8.149** and its dependencies, from npm. HyperFrames then fetches its headless browser (Chrome for
   Testing, from Google) and the two models setup downloads, from their releases on Hugging Face and GitHub:
   transcription (Parakeet, about 640 MB) and presenter cut-outs (about 168 MB).
-- **Two skills,** at setup:
-  - HyperFrames' skills, from `github.com/heygen-com/hyperframes`, at its `v0.8.149` release;
-  - LottieFiles' motion-design skill, from a fixed commit of `github.com/LottieFiles/motion-design-skill`.
 - **SFX Kit,** the studio's sound effects (about 55 MB, CC0), from `github.com/wyzowl/sfx-kit`'s release, checked
   against its checksum and then file by file.
 - **The GSAP animation library,** from `cdn.jsdelivr.net`, whenever a browser plays a video (to preview, check or
@@ -106,12 +103,14 @@ All of this happens only in a session inside a studio folder. Anywhere else, Vid
 
   The server says whether the key is valid and whether a newer library is available. Without a key, nothing is sent.
 - **Nothing else.** Video Studio never sends your work anywhere.
-  - For everything it runs, it turns off the anonymous usage data that HyperFrames, the skills tool and Homebrew would
-    otherwise send, and HyperFrames' daily check for a newer release, since Video Studio chooses the version
-    (`HYPERFRAMES_NO_TELEMETRY=1`, `HYPERFRAMES_NO_UPDATE_CHECK=1`, `DISABLE_TELEMETRY=1` and
-    `HOMEBREW_NO_ANALYTICS=1`).
+  - For everything it runs, it turns off the anonymous usage data that HyperFrames and Homebrew would otherwise send,
+    and HyperFrames' daily check for a newer release, since Video Studio chooses the version
+    (`HYPERFRAMES_NO_TELEMETRY=1`, `HYPERFRAMES_NO_UPDATE_CHECK=1` and `HOMEBREW_NO_ANALYTICS=1`).
   - It takes HyperFrames' stills with `--describe false`, so frames are never sent to a service to describe them.
   - Claude sees what you share in the chat, as usual in Claude Code.
+- **Only if you ask.** Anything done because you asked for it, such as an AI voice or an outside service on your own
+  account (a cloud render, a voice or media service), runs at your request and under that tool's own terms. Video
+  Studio doesn't offer them.
 
 ### What it keeps, and where
 
@@ -123,7 +122,7 @@ All of this happens only in a session inside a studio folder. Anywhere else, Vid
   - setup's notes and the download log.
 - **HyperFrames' own folders:** its settings and logs (`~/.hyperframes`), and its cache (`~/.cache/hyperframes`): its
   browser, models and fonts, and each video's edit history.
-- **npm's cache,** with HyperFrames and the skills tool.
+- **npm's cache,** with HyperFrames.
 
 **Tidying up.** When a video is finished, Video Studio offers to tidy it up. Once you've said yes, it deletes the
 video's draft renders, review stills, replaced storyboards and footage previews, and its edit history in HyperFrames'
@@ -142,7 +141,8 @@ settings.
 
 Video Studio is free to use to make videos, commercial or not, client work included, under the
 [Wyzowl Video Studio Licence](LICENSE). Share links to it rather than copies, and don't release your own versions.
-SFX Kit is CC0; the bundled fonts are under the SIL Open Font License; and HyperFrames, its skills and the other tools
-setup installs are under their own licences.
+SFX Kit is CC0; the bundled fonts are under the SIL Open Font License; HyperFrames and the other tools setup installs
+are under their own licences; and the parts of the guides written from other skills keep those skills' licences
+(listed in `guides/NOTICE`).
 
 Full documentation: https://github.com/wyzowl/video-studio

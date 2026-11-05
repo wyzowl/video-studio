@@ -4,7 +4,7 @@
 //                                         sounds for a moment, best first, with what places and fits each one
 //   node <plugin>/scripts/tools/sfx.mjs show <id>         everything the kit says about one sound
 //   node <plugin>/scripts/tools/sfx.mjs build [<cues>]    from the video's folder: assets/audio/sfx_raw.wav from
-//                                         assets/audio/sfx-cues.json (the format is in references/audio.md)
+//                                         assets/audio/sfx-cues.json (the format is in guides/audio/sfx.md)
 //   node <plugin>/scripts/tools/sfx.mjs copy <id> <file>  a kit sound into a file (a brand's logo ident)
 //   node <plugin>/scripts/tools/sfx.mjs gaps              the sounds the kit didn't have, as the studio met them
 // The build places each sound by the kit's one rule (start = the moment − sync.at, divided by its rate), trims what
@@ -106,7 +106,7 @@ function writeFloatWav(path, L, R) {
 
 function build() {
   const cuesPath = resolve(rest[0] || "assets/audio/sfx-cues.json");
-  if (!existsSync(cuesPath)) throw new Error(`No cue list at ${cuesPath}. Write one first (the format is in references/audio.md).`);
+  if (!existsSync(cuesPath)) throw new Error(`No cue list at ${cuesPath}. Write one first (the format is in guides/audio/sfx.md).`);
   const plan = JSON.parse(readFileSync(cuesPath, "utf8"));
   const cues = Array.isArray(plan.cues) ? plan.cues : [];
   const video = basename(process.cwd());
@@ -245,7 +245,7 @@ function build() {
   }
   if (notes.length) console.log(`Notes:\n- ${notes.join("\n- ")}`);
   if (checks.length) console.log(`Worth a look:\n- ${checks.join("\n- ")}`);
-  console.log(`Next: level it with the other stems (references/audio.md), marking it :limit if its transients carry the peaks.`);
+  console.log(`Next: level it with the other stems (guides/audio/mixing.md), marking it :limit if its transients carry the peaks.`);
 }
 
 const commands = { find, show, copy, gaps, build };

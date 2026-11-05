@@ -24,20 +24,22 @@ jargon.
    you go: run `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" setup-page`, then open the address it prints in your
    Browser pane, beside the chat (preview_start with that url); without a Browser pane, `open <address>`. Tell the
    user in a sentence that it ticks off each step as it's done. Before each install below, say so on the page:
-   `studio.mjs setup-note <check> installing`, where the check is `node`, `ffmpeg`, `git`, `skills`, `motion` or
-   `chrome` (the test render); if it fails, `setup-note <check> failed`. The downloads in step 8 mark themselves. A
-   check that's done ticks off by itself. Without Node.js, open the page once it's installed (step 4).
+   `studio.mjs setup-note <check> installing`, where the check is `node`, `ffmpeg`, `git` or `chrome` (the test
+   render); if it fails, `setup-note <check> failed`. The downloads in step 7 mark themselves. A check that's done
+   ticks off by itself. Without Node.js, open the page once it's installed (step 4).
 1. **macOS only.** If the check shows this isn't macOS, stop here: Wyzowl Video Studio runs on macOS only.
    Install nothing.
 2. **Say what's coming, once.** In a few lines, from what the check marked missing: setup installs what Video Studio
-   runs on (Node.js, ffmpeg and git, through Homebrew), its skills, and its downloads: SFX Kit, the studio's sound
+   runs on (Node.js, ffmpeg and git, through Homebrew) and its downloads: SFX Kit, the studio's sound
    effects (about 55 MB), presenter cut-outs (about 168 MB), the transcription model (about 640 MB), and HyperFrames'
    browser with the test render. About 1 GB in all, a few minutes on a good connection. Then carry on, without asking
    about each one.
 3. **Where the studio lives.** Use the folder in `$ARGUMENTS` if one was given. Otherwise ask with AskUserQuestion
    ("Where should your studio live?"), offering `~/Wyzowl Video Studio` (recommended) and, if the current folder is
    empty, "This folder". "Other" lets them type a path. If the folder is already a studio (it has `studio.json`),
-   say so and offer to check and update it instead of starting again.
+   say so and offer to check and update it instead of starting again. If the check lists old outside skills in it
+   (from an older setup), say that Video Studio's own guides replace them and offer to remove them (production skill,
+   "Old outside skills"); remove them only on a yes.
 4. **Missing tools**, in this order, only for what the check marked "no":
    - **Homebrew:** you can't install it for them, because its installer asks for their password. Give them the one
      install command from https://brew.sh to paste into the Terminal app, wait until they say it's done, then re-run
@@ -50,16 +52,13 @@ jargon.
    `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" init "<folder>" --name "<studio name>"`.
    Use the folder's name as the studio name unless they gave another. Don't offer to make the studio a git
    repository: it keeps its own versions (storyboards, drafts, renders).
-7. **Skills**, run from the studio folder (they install for Claude Code, in this folder only):
-   - `DISABLE_TELEMETRY=1 npx --yes skills@1.7.4 add heygen-com/hyperframes#v0.8.149 --skill '*' --agent claude-code --copy -y`
-   - `DISABLE_TELEMETRY=1 npx --yes skills@1.7.4 add https://codeload.github.com/LottieFiles/motion-design-skill/tar.gz/f9a8a041b85185ee4881b3471d3415e939aac772 --skill motion-design --agent claude-code --copy -y`
-8. **Downloads**, from the studio folder: `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" install all`. It
+7. **Downloads**, from the studio folder: `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" install all`. It
    downloads whatever isn't on this Mac yet, smallest first, and ticks each off on the setup page: SFX Kit (the studio's
    sound effects), presenter cut-outs (they let text sit behind a presenter in footage) and the transcription model
    (it turns voiceovers into word timings). It takes a few minutes; say so while it runs. If one doesn't finish, the
    next session tries again by itself. Faster renders need nothing: on Apple silicon, Video Studio's renders use the
    graphics chip by themselves.
-9. **Test render**, from the studio folder. The first render also downloads HyperFrames' headless Chrome:
+8. **Test render**, from the studio folder. The first render also downloads HyperFrames' headless Chrome:
    ```bash
    export HYPERFRAMES_NO_TELEMETRY=1 HYPERFRAMES_NO_UPDATE_CHECK=1
    HYPERFRAMES_SKIP_SKILLS=1 npx --yes hyperframes@0.8.149 init videos/_setup-test --non-interactive
@@ -67,10 +66,10 @@ jargon.
    ```
    Run it as one command, so the first line's switches (no usage data, no update check) reach HyperFrames. If it
    works, delete `videos/_setup-test`. If it fails, show the error and the likely fix.
-10. **Finish.** Run the check from the studio folder and show the table. Show the dashboard: run
+9. **Finish.** Run the check from the studio folder and show the table. Show the dashboard: run
     `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" show / --studio "<folder>"` and follow what it says (beside the
     chat, with its card). Then tell them the one thing that matters next: **open Claude Code in the studio folder** (in the
-    desktop app, start a session in that folder; in the terminal, `cd` there and run `claude`), so the studio's skills
-    load. From there, `/video-studio:new-brand` adds a brand and `/video-studio:new-video` starts a video. Any time
+    desktop app, start a session in that folder; in the terminal, `cd` there and run `claude`), so Video Studio
+    knows the studio. From there, `/video-studio:new-brand` adds a brand and `/video-studio:new-video` starts a video. Any time
     later, the Studio health page (`/health`, linked at the foot of every studio page) shows what's on this Mac and,
     beside anything that isn't working, what to say to Claude to fix it.

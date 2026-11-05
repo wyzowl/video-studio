@@ -40,8 +40,11 @@ library items, templates and tools ("Video Studio"). By installing or using Vide
    - SFX Kit, the studio's sound effects, under CC0 1.0 (https://github.com/wyzowl/sfx-kit);
    - the bundled fonts, under the SIL Open Font License 1.1, with their licences beside them in the plugin's ui/fonts
      folder;
-   - HyperFrames, its skills, the motion-design skill and the other tools that setup installs, under their own
-     licences, from their own sources.
+   - HyperFrames and the other tools that setup installs, under their own licences, from their own sources;
+   - the parts of the guides (the plugin's guides folder) written from HyperFrames' skills and Anthropic's
+     frontend-design, canvas-design and algorithmic-art skills (Apache License 2.0), and from LottieFiles'
+     motion-design skill, GreenSock's GSAP skills, DiffusionStudio's text-to-lottie and vtake-skills (MIT): those
+     parts keep their own licences, set out with their notices in the guides' NOTICE file.
 
 5. Wyzowl's name and logo
 
