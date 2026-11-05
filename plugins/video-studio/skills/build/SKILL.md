@@ -31,7 +31,7 @@ notes), and the verified word times.
 
 1. **One clock.** One `index.html` with a pure `render(t)` on one paused GSAP clock, or `src/` plus a build script
    that generates `index.html` for bigger films (`PLUGIN/guides/format.md`, "A project"). Scenes as their own files
-   when a scene needs its own timeline (a library item, a block).
+   when a scene needs its own timeline (a library item, a block). The root has motion blur on, as that example does.
 2. **The approved frames are the layouts, and the scene plans are the brief.** Reuse the storyboard's `frames.html`
    layouts, words and assets, and build each scene to its plan (`storyboard.json` `plan`): its world and drawing
    style, its depth and atmosphere, its moves on their times, its sound and its hand-over. Where a plan leaves
@@ -61,7 +61,9 @@ Build the cut in HyperFrames' clip-and-track structure, so the user can open it 
 - one `<video>` per kept range: `data-start` where it sits in the video, `data-media-start` its in point and
   `data-duration` its length, with `data-has-audio="true"` so its sound plays;
 - B-roll as muted `<video>` clips on the track above;
-- library items, captions and titles on the tracks above those.
+- library items, captions and titles on the tracks above those;
+- motion blur on the root, as in an animated film (`PLUGIN/guides/format.md`, "A project"), so cards and titles that
+  move fast smear.
 
 Use the original files in `inputs/footage/`, not the previews.
 - Cut in the pauses: a beat after the last word and before the next, never mid-word, and keep breaths natural.

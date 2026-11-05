@@ -101,18 +101,25 @@ Calm and premium; good on footage and big type.
 ## Speed
 
 ### Motion blur
-Only on moves fast enough to smear: a slam, a whip, a fast fly-in, a quick push of the camera. One to three in a
-film. Leave sharp: travel under about the element's own width a frame, fades and colour changes, slow drift, a
-container that isn't the thing moving, and words while they're meant to be read (blur the approach, land sharp, hold
-at least a second).
-- **HyperFrames' shutter:** `data-motion-blur="on"` on the root smears every fast mover along its real path, turns
-  and zooms included, from several samples inside each frame (a 240° shutter by default,
-  `data-motion-blur-shutter`); `data-motion-blur="off"` keeps a subtree sharp. A one-clock film also needs
-  `data-motion-blur-events="on"`, since its motion is set from the clock's setter. It roughly doubles the render
-  time, it's off in a stretch rendered with `--start` and `--end` and in HDR renders (render the whole film to see
-  it), `HF check` reports its `motion_blur_*` findings, and `render --page-motion-blur off` leaves it out for a
-  quicker look (`../../cli.md`). It's the truest smear, and it acts on every fast move in the film; to smear one move
-  only, or in a style of its own, draw it by hand (the next two).
+Every film renders with HyperFrames' shutter by default (`../../format.md`, "A project"): `data-motion-blur="on"` and
+`data-motion-blur-events="on"` on the root. Whatever moves fast smears along its real path, turns and zooms included,
+from several samples inside each frame (a 240° shutter, `data-motion-blur-shutter`); whatever moves slowly or holds
+stays sharp. The events attribute lets it find movers drawn from a tween's `onUpdate`; what the clock's setter moves
+it finds either way. Where a film has something the full method can't draw (a CSS 3D page turn with hidden
+backfaces), HyperFrames uses a lighter filter instead, which softens turns and zooms rather than smearing them
+(`check` notes it as `motion_blur_filter_fallback`).
+- **Fast moves are still chosen:** a slam, a whip, a fast fly-in, a quick push of the camera, one to three in a film,
+  and the rest at speeds that stay sharp. Words being read are still (`../../design/readability.md`): they smear on
+  the way in and land sharp, held at least a second.
+- **Kept sharp:** `data-motion-blur="off"` on a subtree that mustn't soften while it moves fast (a logo whose
+  geometry is exact, an interface read as it scrolls). A brief or brand kit that wants crisp, graphic motion turns it
+  off on the root.
+- **The cost:** about one and a half times the render time with the full method, and little with the lighter filter.
+  It's off in a stretch rendered with `--start` and `--end` and in HDR renders, so judge it on a whole draft;
+  `render --page-motion-blur off` leaves it out for a quick look at timing (`../../cli.md`).
+
+By hand, for a stylised smear or a film with the shutter off (give a move smeared by hand `data-motion-blur="off"`,
+so it isn't smeared twice):
 - **Directional blur:** an SVG `feGaussianBlur` along the move's axis only (`stdDeviation="X 0"` sideways, `"0 Y"`
   up or down, both only for a push in depth), with a filter region of `x="-50%" y="-50%" width="200%"
   height="200%"` so the smear isn't clipped. Its amount comes from the element's real speed each frame: the

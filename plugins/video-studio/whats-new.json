@@ -26,7 +26,7 @@
       "text": "The delivery page opens from the chat like the others."
     },
     {
-      "text": "New videos are made with HyperFrames 0.9.16: renders are up to twice as fast, and its check also catches words too small or too quick to read before you see a draft."
+      "text": "New videos are made with HyperFrames 0.9.16: renders are quicker, fast moves get a real motion blur, and its check also catches words too small or too quick to read before you see a draft."
     }
   ],
   "0.9.0": [

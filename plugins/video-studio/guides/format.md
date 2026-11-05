@@ -24,7 +24,8 @@ Two ways to build the picture, both on the same contract:
   `index.html`, with its own paused timeline. HyperFrames seeks each one by itself.
 
 ```html
-<div id="root" data-composition-id="main" data-start="0" data-duration="30.5" data-width="1920" data-height="1080">
+<div id="root" data-composition-id="main" data-start="0" data-duration="30.5" data-width="1920" data-height="1080"
+     data-motion-blur="on" data-motion-blur-events="on">
   <section id="stage" class="clip layer" data-start="0" data-duration="30.5" data-track-index="0"></section>
   <audio id="mix" src="assets/audio/mix.wav" data-start="0" data-duration="30.5" data-track-index="1"></audio>
 </div>
@@ -47,6 +48,9 @@ Two ways to build the picture, both on the same contract:
 - Inside `render(t)`, every element's state comes from `t` and nothing else: ease with `gsap.parseEase("power3.out")`
   applied to a 0–1 progress, never with state carried over from the last frame.
 - In a one-clock film `HF keyframes` sees only the clock tween. Look at the motion in snapshots and review strips.
+- **Motion blur is on by default,** in every film: `data-motion-blur="on"` on the root gives every fast move
+  HyperFrames' shutter smear, and `data-motion-blur-events="on"` lets it also find what a tween's `onUpdate` draws
+  (`motion/techniques/effects.md`, "Motion blur").
 
 ## The contract
 
