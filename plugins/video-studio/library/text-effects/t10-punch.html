@@ -79,8 +79,8 @@
           gap: 20px;
           height: 56px;
           font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
-          font-size: 28px;
-          line-height: 36px;
+          font-size: 40px;
+          line-height: 48px;
           letter-spacing: 0.08em;
           text-transform: uppercase;
           color: var(--muted, #5f5e5b);
@@ -88,6 +88,9 @@
         }
         #t10-punch .caption b { font-weight: 600; color: var(--ink, #1e1e1e); }
         #t10-punch .caption .dot { letter-spacing: 0; }
+        #t10-punch[data-fmt="1x1"] .caption,
+        #t10-punch[data-fmt="4x5"] .caption { font-size: 32px; line-height: 40px; }
+        #t10-punch[data-fmt="9x16"] .caption { font-size: 36px; line-height: 44px; }
         #t10-punch[data-fmt="16x9"] .caption { left: 192px; top: 962px; }
         #t10-punch[data-fmt="1x1"] .caption { left: 108px; top: 912px; }
         #t10-punch[data-fmt="4x5"] .caption { left: 108px; top: 1156px; }

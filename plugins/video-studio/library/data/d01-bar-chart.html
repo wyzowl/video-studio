@@ -68,8 +68,8 @@
         #d01-bar-chart[data-fmt="9x16"] .head { gap: 16px; }
         #d01-bar-chart .eyebrow {
           font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
-          font-size: 24px;
-          line-height: 32px;
+          font-size: 40px;
+          line-height: 48px;
           letter-spacing: 0.08em;
           text-transform: uppercase;
           color: var(--muted, #5f5e5b);
@@ -78,25 +78,25 @@
           max-width: 1300px;
           font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
           font-weight: 800;
-          font-size: 50px;
-          line-height: 58px;
+          font-size: 56px;
+          line-height: 64px;
           letter-spacing: -0.02em;
         }
         #d01-bar-chart .subtitle {
           font-family: var(--fontBody, "Inter"), system-ui, sans-serif;
-          font-size: 26px;
-          line-height: 36px;
+          font-size: 40px;
+          line-height: 50px;
           color: var(--muted, #5f5e5b);
         }
         #d01-bar-chart[data-fmt="1x1"] .eyebrow,
-        #d01-bar-chart[data-fmt="4x5"] .eyebrow { font-size: 20px; line-height: 28px; }
-        #d01-bar-chart[data-fmt="9x16"] .eyebrow { font-size: 22px; line-height: 30px; }
-        #d01-bar-chart[data-fmt="1x1"] .title { font-size: 40px; line-height: 46px; }
-        #d01-bar-chart[data-fmt="4x5"] .title { font-size: 44px; line-height: 50px; }
-        #d01-bar-chart[data-fmt="9x16"] .title { font-size: 50px; line-height: 56px; }
+        #d01-bar-chart[data-fmt="4x5"] .eyebrow { font-size: 32px; line-height: 40px; }
+        #d01-bar-chart[data-fmt="9x16"] .eyebrow { font-size: 36px; line-height: 44px; }
+        #d01-bar-chart[data-fmt="1x1"] .title { font-size: 44px; line-height: 50px; }
+        #d01-bar-chart[data-fmt="4x5"] .title { font-size: 48px; line-height: 54px; }
+        #d01-bar-chart[data-fmt="9x16"] .title { font-size: 56px; line-height: 62px; }
         #d01-bar-chart[data-fmt="1x1"] .subtitle,
-        #d01-bar-chart[data-fmt="4x5"] .subtitle { font-size: 22px; line-height: 30px; }
-        #d01-bar-chart[data-fmt="9x16"] .subtitle { font-size: 24px; line-height: 34px; }
+        #d01-bar-chart[data-fmt="4x5"] .subtitle { font-size: 32px; line-height: 40px; }
+        #d01-bar-chart[data-fmt="9x16"] .subtitle { font-size: 36px; line-height: 46px; }
 
         /* the bars: labels beside them at 16:9, above them at the other sizes */
         #d01-bar-chart .bars { position: relative; display: flex; flex-direction: column; flex-shrink: 0; }
@@ -110,7 +110,7 @@
           font-family: var(--fontBody, "Inter"), system-ui, sans-serif;
           font-weight: 500;
         }
-        #d01-bar-chart[data-fmt="16x9"] .label { flex: 0 0 400px; font-size: 30px; line-height: 36px; }
+        #d01-bar-chart[data-fmt="16x9"] .label { flex: 0 0 400px; font-size: 40px; line-height: 46px; }
         #d01-bar-chart:not([data-fmt="16x9"]) .label { padding-left: 16px; }
         #d01-bar-chart .track { display: flex; align-items: center; gap: 16px; }
         #d01-bar-chart:not([data-fmt="16x9"]) .track { gap: 14px; padding-left: 2px; }
@@ -124,20 +124,20 @@
           font-variant-numeric: tabular-nums;
           white-space: nowrap;
         }
-        #d01-bar-chart[data-fmt="16x9"] .val { font-size: 32px; line-height: 36px; }
+        #d01-bar-chart[data-fmt="16x9"] .val { font-size: 40px; line-height: 44px; }
         /* 1:1, 4:5 and 9:16: label, bar height, value, the gap under the label, the space between rows */
-        #d01-bar-chart[data-fmt="1x1"] .label { font-size: 22px; line-height: 28px; }
-        #d01-bar-chart[data-fmt="1x1"] .row { gap: 6px; padding-bottom: 14px; }
-        #d01-bar-chart[data-fmt="1x1"] .bar { height: 26px; }
-        #d01-bar-chart[data-fmt="1x1"] .val { font-size: 24px; line-height: 28px; }
-        #d01-bar-chart[data-fmt="4x5"] .label { font-size: 26px; line-height: 32px; }
-        #d01-bar-chart[data-fmt="4x5"] .row { gap: 8px; padding-bottom: 20px; }
-        #d01-bar-chart[data-fmt="4x5"] .bar { height: 36px; }
-        #d01-bar-chart[data-fmt="4x5"] .val { font-size: 28px; line-height: 32px; }
-        #d01-bar-chart[data-fmt="9x16"] .label { font-size: 28px; line-height: 34px; }
-        #d01-bar-chart[data-fmt="9x16"] .row { gap: 10px; padding-bottom: 28px; }
-        #d01-bar-chart[data-fmt="9x16"] .bar { height: 44px; }
-        #d01-bar-chart[data-fmt="9x16"] .val { font-size: 32px; line-height: 36px; }
+        #d01-bar-chart[data-fmt="1x1"] .label { font-size: 32px; line-height: 38px; }
+        #d01-bar-chart[data-fmt="1x1"] .row { gap: 4px; padding-bottom: 10px; }
+        #d01-bar-chart[data-fmt="1x1"] .bar { height: 20px; }
+        #d01-bar-chart[data-fmt="1x1"] .val { font-size: 32px; line-height: 36px; }
+        #d01-bar-chart[data-fmt="4x5"] .label { font-size: 32px; line-height: 38px; }
+        #d01-bar-chart[data-fmt="4x5"] .row { gap: 6px; padding-bottom: 16px; }
+        #d01-bar-chart[data-fmt="4x5"] .bar { height: 30px; }
+        #d01-bar-chart[data-fmt="4x5"] .val { font-size: 32px; line-height: 36px; }
+        #d01-bar-chart[data-fmt="9x16"] .label { font-size: 36px; line-height: 42px; }
+        #d01-bar-chart[data-fmt="9x16"] .row { gap: 8px; padding-bottom: 24px; }
+        #d01-bar-chart[data-fmt="9x16"] .bar { height: 40px; }
+        #d01-bar-chart[data-fmt="9x16"] .val { font-size: 36px; line-height: 40px; }
         #d01-bar-chart:not([data-fmt="16x9"]) .row:last-child { padding-bottom: 0; }
         /* fewer bars than the six it's laid out for (data-few): the rows grow by --grow, up to half as tall again, and
            sit in the middle of the space under the title rather than at its foot */
@@ -145,12 +145,19 @@
         #d01-bar-chart[data-few] .bars { margin-block: auto; }
         #d01-bar-chart[data-few][data-fmt="16x9"] .row { min-height: calc(68px * var(--grow, 1)); }
         #d01-bar-chart[data-few][data-fmt="16x9"] .bar { height: calc(44px * var(--grow, 1)); }
-        #d01-bar-chart[data-few][data-fmt="1x1"] .row:not(:last-child) { padding-bottom: calc(14px * var(--grow, 1)); }
-        #d01-bar-chart[data-few][data-fmt="1x1"] .bar { height: calc(26px * var(--grow, 1)); }
-        #d01-bar-chart[data-few][data-fmt="4x5"] .row:not(:last-child) { padding-bottom: calc(20px * var(--grow, 1)); }
-        #d01-bar-chart[data-few][data-fmt="4x5"] .bar { height: calc(36px * var(--grow, 1)); }
-        #d01-bar-chart[data-few][data-fmt="9x16"] .row:not(:last-child) { padding-bottom: calc(28px * var(--grow, 1)); }
-        #d01-bar-chart[data-few][data-fmt="9x16"] .bar { height: calc(44px * var(--grow, 1)); }
+        #d01-bar-chart[data-few][data-fmt="1x1"] .row:not(:last-child) { padding-bottom: calc(10px * var(--grow, 1)); }
+        #d01-bar-chart[data-few][data-fmt="1x1"] .bar { height: calc(20px * var(--grow, 1)); }
+        #d01-bar-chart[data-few][data-fmt="4x5"] .row:not(:last-child) { padding-bottom: calc(16px * var(--grow, 1)); }
+        #d01-bar-chart[data-few][data-fmt="4x5"] .bar { height: calc(30px * var(--grow, 1)); }
+        #d01-bar-chart[data-few][data-fmt="9x16"] .row:not(:last-child) { padding-bottom: calc(24px * var(--grow, 1)); }
+        #d01-bar-chart[data-few][data-fmt="9x16"] .bar { height: calc(40px * var(--grow, 1)); }
+        /* 1:1, when the names are short enough: beside their bars, as at 16:9 (data-beside), so the rows fit under the
+           head at this type size */
+        #d01-bar-chart[data-beside][data-fmt="1x1"] .row { flex-direction: row; align-items: center; gap: 24px; min-height: 46px; }
+        #d01-bar-chart[data-beside][data-fmt="1x1"] .row:not(:last-child) { padding-bottom: calc(8px * var(--grow, 1)); }
+        #d01-bar-chart[data-beside][data-fmt="1x1"] .label { flex: 0 0 var(--labw, 240px); padding-left: 0; }
+        #d01-bar-chart[data-beside][data-fmt="1x1"] .track { padding-left: 0; }
+        #d01-bar-chart[data-beside][data-fmt="1x1"] .bar { height: calc(30px * var(--grow, 1)); }
 
         #d01-bar-chart .source {
           position: absolute;
@@ -159,8 +166,8 @@
           gap: 20px;
           height: 56px;
           font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
-          font-size: 28px;
-          line-height: 36px;
+          font-size: 40px;
+          line-height: 48px;
           letter-spacing: 0.08em;
           text-transform: uppercase;
           color: var(--muted, #5f5e5b);
@@ -168,6 +175,9 @@
         }
         #d01-bar-chart .source b { font-weight: 600; color: var(--ink, #1e1e1e); }
         #d01-bar-chart .source .dot { letter-spacing: 0; }
+        #d01-bar-chart[data-fmt="1x1"] .source,
+        #d01-bar-chart[data-fmt="4x5"] .source { font-size: 32px; line-height: 40px; }
+        #d01-bar-chart[data-fmt="9x16"] .source { font-size: 36px; line-height: 44px; }
         #d01-bar-chart[data-fmt="16x9"] .source { left: 192px; top: 962px; }
         #d01-bar-chart[data-fmt="1x1"] .source { left: 108px; top: 912px; }
         #d01-bar-chart[data-fmt="4x5"] .source { left: 108px; top: 1156px; }
@@ -263,11 +273,19 @@
           }
           // widths: the room left after the labels and the widest value
           function measure() {
-            const size = { "16x9": 32, "1x1": 24, "4x5": 28, "9x16": 32 }[fmt];
+            const size = { "16x9": 40, "1x1": 32, "4x5": 32, "9x16": 36 }[fmt];
             const font = `800 ${size}px ${String(v("fontDisplay", "Inter") || "Inter")}, system-ui, sans-serif`;
             const wide = Math.max(0, ...rows.map((b) => textWidth(show(b.value), font, `${-0.01 * size}px`)));
-            // the axis sits just left of where the bars start: after the 400 px labels and their 24 px gap at 16:9
-            const axisX = fmt === "16x9" ? 400 + 24 : 0;
+            // at 1:1 the names go beside their bars when the longest fits in 320 px
+            const labFont = `500 32px ${String(v("fontBody", "Inter") || "Inter")}, system-ui, sans-serif`;
+            const labW = Math.ceil(Math.max(0, ...rows.map((b) => textWidth(b.label.textContent, labFont, "0px"))));
+            const beside = fmt === "1x1" && labW <= 320;
+            if (beside) {
+              root.dataset.beside = "";
+              root.style.setProperty("--labw", `${labW}px`);
+            }
+            // the axis sits just left of where the bars start: after the labels and their gap (400 px at 16:9)
+            const axisX = fmt === "16x9" ? 400 + 24 : beside ? labW + 22 : 0;
             q(".axis").style.left = `${axisX}px`;
             const room = (fmt === "16x9" ? 1392 : 768) - (axisX + 2) - (fmt === "16x9" ? 16 : 14) - wide - 8;
             for (const b of rows) b.width = Math.max(0, (b.value / top) * room);

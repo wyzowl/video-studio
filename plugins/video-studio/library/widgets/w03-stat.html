@@ -143,8 +143,8 @@
           padding-top: 18px;
           border-top: 2px dashed var(--line, #cbc8c1);
           font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
-          font-size: 18px;
-          line-height: 24px;
+          font-size: 24px;
+          line-height: 32px;
           letter-spacing: 0.08em;
           text-transform: uppercase;
           color: var(--muted, #5f5e5b);
@@ -181,6 +181,25 @@
           root.dataset.fmt = r > 1.5 ? "16x9" : r > 0.9 ? "1x1" : r > 0.7 ? "4x5" : "9x16";
           root.dataset.side = v("side", "left") === "right" ? "right" : "left";
           root.dataset.level = ["middle", "high"].includes(v("level", "low")) ? v("level", "low") : "low";
+          // the card's scale at this size, so its smallest words read on a phone (numbers.md, "Type sizes"): it grows
+          // from where it sits (its side and its edge, from the place's own layout), and past the frame's room (at 9:16,
+          // the platforms' buttons) it keeps that span and lays its words out narrower
+          {
+            const fmt = root.dataset.fmt;
+            const scale = { "16x9": 1.7, "1x1": 1.35, "4x5": 1.35, "9x16": 1.5 }[fmt];
+            const span = { "16x9": 600, "1x1": 700, "4x5": 700, "9x16": 820 }[fmt];
+            const fit = Math.min(1, (fmt === "16x9" ? W - 240 : fmt === "9x16" ? W - 260 : W - 128) / (span * scale));
+            if (fit < 1) {
+              root.querySelector(".card").style.width = `${span * fit}px`;
+              root.dataset.narrow = "";
+            }
+            // the place is laid out at 1/scale of the frame (its margins too) and scaled back up to fill it exactly, so the
+            // card grows from where it sits and nothing reaches outside the frame
+            const place = root.querySelector(".place");
+            const cs = getComputedStyle(place);
+            const un = (k) => `${parseFloat(cs[k]) / scale}px`;
+            Object.assign(place.style, { inset: "auto", left: "0px", top: "0px", width: `${W / scale}px`, height: `${H / scale}px`, padding: `${un("paddingTop")} ${un("paddingRight")} ${un("paddingBottom")} ${un("paddingLeft")}`, transformOrigin: "0 0", transform: `scale(${scale})` });
+          }
 
           const EASE = v("ease", "power3.inOut") || "power3.inOut";
           const D = Math.max(2, Number(v("duration", 6)) || 6);

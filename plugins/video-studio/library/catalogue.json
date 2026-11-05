@@ -28,13 +28,13 @@
           "id": "subtitle",
           "label": "What was measured",
           "type": "string",
-          "default": "What frustrates customers most when they contact a company · multiple choice"
+          "default": "What frustrates customers most · multiple choice"
         },
         {
           "id": "bars",
-          "label": "Bars, as JSON: [{\"label\":\"…\",\"value\":58}, …] (up to 8)",
+          "label": "Bars, as JSON: [{\"label\":\"…\",\"value\":58}, …] (up to 8; 5 or fewer fit best at 16:9)",
           "type": "string",
-          "default": "[{\"label\":\"Waiting a long time on the phone to speak to someone\",\"value\":58},{\"label\":\"Being passed between departments more than once\",\"value\":46},{\"label\":\"Having to repeat the same details every time\",\"value\":41},{\"label\":\"Not hearing back after being promised a call\",\"value\":33},{\"label\":\"Opening hours that don’t suit people who work\",\"value\":24},{\"label\":\"Getting different answers from different people\",\"value\":19}]"
+          "default": "[{\"label\":\"Long waits on the phone\",\"value\":58},{\"label\":\"Being passed between departments\",\"value\":46},{\"label\":\"Repeating the same details\",\"value\":41},{\"label\":\"No call back when promised\",\"value\":33},{\"label\":\"Opening hours that don’t fit work\",\"value\":24}]"
         },
         {
           "id": "order",
@@ -105,7 +105,7 @@
         "4x5": "d04-4x5.png",
         "9x16": "d04-9x16.png"
       },
-      "hash": "6c9a360e5337632b4b591a477d8c8fe3226ec7f3e18ecdd4a9eb0e224aa2b3fb"
+      "hash": "d3257e40a9eaba5f7cc0158bf5ebc38d8217407f51689ba28095293746b8caa0"
     },
     {
       "code": "D05",
@@ -199,7 +199,7 @@
         "4x5": "d05-4x5.png",
         "9x16": "d05-9x16.png"
       },
-      "hash": "e78c5c401fbc762cf8797b25e860dd01955fae93efe963b6764d7755d72fe151"
+      "hash": "75d55637e37b3a4825dab99ed133b121acd5682f574108b591c05a4427884199"
     },
     {
       "code": "D06",
@@ -287,7 +287,7 @@
         "4x5": "d06-4x5.png",
         "9x16": "d06-9x16.png"
       },
-      "hash": "c73a8b012344ca32a69cad7d358e6432dc3f6291f9ead33783ef60644fb49016"
+      "hash": "9ffa69fc5155a575b6d3622b1e27346aa2b2561d32c0db27a71c9fa0ae62824c"
     },
     {
       "code": "D07",
@@ -363,7 +363,7 @@
         "4x5": "d07-4x5.png",
         "9x16": "d07-9x16.png"
       },
-      "hash": "f55ea5206637bab42ebf3c9d029e24e81da4442ece15d4ebc4b02f7eb31b7b6c"
+      "hash": "e6d459365f4c1cb5dc2d760b6fef53d6a2a1fa156e1d6bb8feab3fdfcfb705a9"
     },
     {
       "code": "D08",
@@ -451,7 +451,7 @@
         "4x5": "d08-4x5.png",
         "9x16": "d08-9x16.png"
       },
-      "hash": "bec5fe99d58b2dcdb0b92dc1969c816e5fa48679ecc40c89b48d29a307e07029"
+      "hash": "b4c05a0cc243315df8b39cc2e5e2fc24a8afdfc155eaf2f5f18597eec1006059"
     },
     {
       "code": "D09",
@@ -484,7 +484,7 @@
           "id": "items",
           "label": "Items, as JSON: [{\"label\":\"Leeds\",\"value\":8.9}, …] (up to 12)",
           "type": "string",
-          "default": "[{\"label\":\"Leeds\",\"value\":8.9},{\"label\":\"York\",\"value\":8.6},{\"label\":\"Bristol\",\"value\":8.4},{\"label\":\"Bath\",\"value\":8.3},{\"label\":\"Leicester\",\"value\":8.1},{\"label\":\"Norwich\",\"value\":7.9},{\"label\":\"Cardiff\",\"value\":7.8},{\"label\":\"Derby\",\"value\":7.6},{\"label\":\"Hull\",\"value\":7.3},{\"label\":\"Luton\",\"value\":7.0}]"
+          "default": "[{\"label\":\"Leeds\",\"value\":8.9},{\"label\":\"York\",\"value\":8.6},{\"label\":\"Bristol\",\"value\":8.4},{\"label\":\"Bath\",\"value\":8.3},{\"label\":\"Exeter\",\"value\":8.1},{\"label\":\"Norwich\",\"value\":7.9},{\"label\":\"Cardiff\",\"value\":7.8},{\"label\":\"Derby\",\"value\":7.6},{\"label\":\"Hull\",\"value\":7.3},{\"label\":\"Luton\",\"value\":7.0}]"
         },
         {
           "id": "order",
@@ -555,7 +555,7 @@
         "4x5": "d09-4x5.png",
         "9x16": "d09-9x16.png"
       },
-      "hash": "7a88d6a0610eecf00a7166684bfbe4671480ec8aaccb0b9dd952bc16424fc4b9"
+      "hash": "1b85e29325455907813c2203541ee8ca3267d9362b30876fc05eab0522067a60"
     },
     {
       "code": "D10",
@@ -655,7 +655,7 @@
         "4x5": "d10-4x5.png",
         "9x16": "d10-9x16.png"
       },
-      "hash": "d73826e1716eef41daed3719eeb39475882121e07668e75f90d56f81b713ecd0"
+      "hash": "674deb1e32b4a743d27ea917ca8fc4a6cc4e8acfcf02d8c5f34b5e51a5a8ba1f"
     },
     {
       "code": "D11",
@@ -767,7 +767,7 @@
         "4x5": "d11-4x5.png",
         "9x16": "d11-9x16.png"
       },
-      "hash": "81e577e97282e775dc25febf8e2fbce338d7062bebba630ad1246e66e06721cb"
+      "hash": "cf169301882b57b947689f09ea048f5795535fffd376d0c94ff460e30c35e411"
     },
     {
       "code": "D12",
@@ -873,7 +873,7 @@
         "4x5": "d12-4x5.png",
         "9x16": "d12-9x16.png"
       },
-      "hash": "dcb085e7b76a30cc667ceae52d025fc8da7f54dfdfa70f45ea77c887884ef80b"
+      "hash": "d79c30596f8e044a5df75bdc265545316bc910ce2958c08abfe760d71e93ff08"
     },
     {
       "code": "D13",
@@ -967,7 +967,7 @@
         "4x5": "d13-4x5.png",
         "9x16": "d13-9x16.png"
       },
-      "hash": "46910e45420bc212f36fc09b7425a839651c49577b28829064949af591abd404"
+      "hash": "44d5b088e81781694a2de5c89349cca8e27c2302c34b5fd6c95ff8ec6b7fa0bf"
     },
     {
       "code": "D14",
@@ -1067,7 +1067,7 @@
         "4x5": "d14-4x5.png",
         "9x16": "d14-9x16.png"
       },
-      "hash": "788080f65536f496d94a8187a514a1615b7123fd43a8db6c1108b17fdf9b5c38"
+      "hash": "a4bbaa0e0fb2da52e3d09bd6876eaa76ae8bf87d4aa993ed32dd2fdfb943bdfe"
     },
     {
       "code": "D15",
@@ -1167,7 +1167,7 @@
         "4x5": "d15-4x5.png",
         "9x16": "d15-9x16.png"
       },
-      "hash": "62e976a3d5541441286fc233e8c63e8f37c4ef840e65492a9bcd4d877bcd1bf3"
+      "hash": "cfe179af013465e79edb668f29430067a2e7207c946879eb82fdbdc852704770"
     },
     {
       "code": "D16",
@@ -1261,7 +1261,7 @@
         "4x5": "d16-4x5.png",
         "9x16": "d16-9x16.png"
       },
-      "hash": "d7406cfbe8a27b9f87d3622cbec4d27da2eab0509803ecc4fda29828aec9444b"
+      "hash": "3126319238c30a339a17fa3fc91ddcdd823babccc0295c531e62a09d405f7a9b"
     },
     {
       "code": "D17",
@@ -1331,7 +1331,7 @@
         "4x5": "d17-4x5.png",
         "9x16": "d17-9x16.png"
       },
-      "hash": "cf2bcaa1f9a4ab96c82c41541e8d11f076413298593415627fd682dcebeaf295"
+      "hash": "4349edc6d460e044eb9dad4e709150544826ae37b5397829b6d45a2ad120ac09"
     },
     {
       "code": "D18",
@@ -1431,7 +1431,7 @@
         "4x5": "d18-4x5.png",
         "9x16": "d18-9x16.png"
       },
-      "hash": "97099c5bffafef62535806bad6a4fdf571f608084dc5af63a1999909c6218796"
+      "hash": "1c8f5b1ba437a7bea2d82fce3a59ae2a00e4bd96c10afd2c8743814123dbf708"
     },
     {
       "code": "D19",
@@ -1543,7 +1543,7 @@
         "4x5": "d19-4x5.png",
         "9x16": "d19-9x16.png"
       },
-      "hash": "d4fc738025a64f4cfbcbf0088d298c0c7504cc628030b18e7e970eae26624846"
+      "hash": "61d3a2912c7766c4073e54380ff3688a39de3bf22f6e8f9b7aa9a8b34ac31d4a"
     },
     {
       "code": "D20",
@@ -1625,7 +1625,7 @@
         "4x5": "d20-4x5.png",
         "9x16": "d20-9x16.png"
       },
-      "hash": "dc98fce599c9bffec13b66cafcd560d21ea952fad2d256fe88442eb7d7802dee"
+      "hash": "d69b666752e4d107b99dcb484966f9a866702cf67bd9455b5836ccca9d6448b8"
     },
     {
       "code": "D21",
@@ -1719,7 +1719,7 @@
         "4x5": "d21-4x5.png",
         "9x16": "d21-9x16.png"
       },
-      "hash": "db367cd83a4e51536455ff0a9807cdf4175d60da748f660a7fc7b55453fd95df"
+      "hash": "e3776bd0876e52f0d6d524b86f9197c6310dea02f313bc151ed2011ad98f00bb"
     },
     {
       "code": "D22",
@@ -1795,7 +1795,7 @@
         "4x5": "d22-4x5.png",
         "9x16": "d22-9x16.png"
       },
-      "hash": "7052ed2cd7dd1ea6a5a0a3ecbd0eb3a56dd3037c6cd5c109e5c76bba2ece583c"
+      "hash": "63c1e387897849f4b967a491c07ebfa3e85e6926981087a1d19693cc191e2129"
     },
     {
       "code": "D23",
@@ -1877,7 +1877,7 @@
         "4x5": "d23-4x5.png",
         "9x16": "d23-9x16.png"
       },
-      "hash": "284630be1715c636abc125ee94d0931812e6084d070d878ff4868a1ad7163515"
+      "hash": "8606807378a59881ee5d80e712ed8bd276cf48450d8ead2f8a3f8e2dc415e86c"
     },
     {
       "code": "D24",
@@ -1959,7 +1959,7 @@
         "4x5": "d24-4x5.png",
         "9x16": "d24-9x16.png"
       },
-      "hash": "71f6175601a16e6a6f632dc8a2c00c5abd6635881292f4850601e0f72e2ba271"
+      "hash": "cfa5b2d1d94d778722e7f1c72b47201c7245956dbb0c4601e007542da80fd101"
     },
     {
       "code": "D25",
@@ -2047,7 +2047,7 @@
         "4x5": "d25-4x5.png",
         "9x16": "d25-9x16.png"
       },
-      "hash": "f9c9d7ff63e88bce2d2992c1a58f51cde00d4a8205f1807dc2aa231adef2ba8a"
+      "hash": "057ed5ce60fd847b2c19427a1b2f3b0f07254fe233fdbe19c92ef43bb04020f0"
     },
     {
       "code": "D26",
@@ -2135,7 +2135,7 @@
         "4x5": "d26-4x5.png",
         "9x16": "d26-9x16.png"
       },
-      "hash": "5ad240a5dd29c011f31bb4ad69a7a79d81b976e56ddbec51ec6abbd545ae5332"
+      "hash": "dbf280974f31b432baf2eb763b1b793c83bd9f4fad95fc37b09a2da130e96a9a"
     },
     {
       "code": "D27",
@@ -2223,7 +2223,7 @@
         "4x5": "d27-4x5.png",
         "9x16": "d27-9x16.png"
       },
-      "hash": "9524c9241d628f4ce497a422085a154dddb4c100418c5f4aedf31af12c400721"
+      "hash": "57bd9dbb5ddab3891330f2801def04a5b5f8615723d3eab35e9e84726cc0b78c"
     },
     {
       "code": "D28",
@@ -2299,7 +2299,7 @@
         "4x5": "d28-4x5.png",
         "9x16": "d28-9x16.png"
       },
-      "hash": "e43f99cbe01343dfd3a4116b01eff5ee25324c16f4a822a415cfd17cfc2edadb"
+      "hash": "00eda5ef8e1455d4fe8f1318e5050b24a194fec295c71f745751fe6682847899"
     },
     {
       "code": "D29",
@@ -2393,7 +2393,7 @@
         "4x5": "d29-4x5.png",
         "9x16": "d29-9x16.png"
       },
-      "hash": "be77941180f7971783e3c89543d0afbf8b7068dd0d8db75d92d6f4831236de0c"
+      "hash": "1c2eef947f4d00320fd804c4671f009de357ccc1dfce9a2153b60e70e257575f"
     },
     {
       "code": "D30",
@@ -2493,7 +2493,7 @@
         "4x5": "d30-4x5.png",
         "9x16": "d30-9x16.png"
       },
-      "hash": "fb22c0ea243ca52d94c7153b6b831784e87da5862e1ae5992fb61eda6650e6cd"
+      "hash": "850a5b091bbd71aced28a5c77cc42859b5dbc982627154c7fb97552d903458e9"
     },
     {
       "code": "D31",
@@ -2611,7 +2611,7 @@
         "4x5": "d31-4x5.png",
         "9x16": "d31-9x16.png"
       },
-      "hash": "66f4807a76496fa4b1b18ed31d1e5d054769feffe0eea5840bdda63b26572d0d"
+      "hash": "5b6d48f97aa3db8d68349759ae1c577a32293bbdf0e4217ebc5606429b7ae5fb"
     },
     {
       "code": "D32",
@@ -2687,7 +2687,7 @@
         "4x5": "d32-4x5.png",
         "9x16": "d32-9x16.png"
       },
-      "hash": "dcceb6c06963b3107e3bc9d3706f463b1a8da841bec96ebbf55f2f7daced2a2b"
+      "hash": "b76dc309ddf47a59c953f85f7c48472ade22413d6a95e3fda24d7999b7b85e06"
     },
     {
       "code": "D33",
@@ -2797,7 +2797,7 @@
         "4x5": "d33-4x5.png",
         "9x16": "d33-9x16.png"
       },
-      "hash": "1063ddac8dad875b26bb295efd2eccdf7e84773ec8ccbf9139af5c1203992d2d"
+      "hash": "faa85c651c5f299884f80d94cb6c9915b42f6046cd8e693699d65bd05fc6d256"
     },
     {
       "code": "D34",
@@ -2909,7 +2909,7 @@
         "4x5": "d34-4x5.png",
         "9x16": "d34-9x16.png"
       },
-      "hash": "537e75658761ab4c98c9635655ee043838ec98fe1f4c02b1be1eeda551da2b21"
+      "hash": "0880fa12bb106f8bbfeba825a1bb9ae44d892d86a2ee525810e664a1d72ec292"
     },
     {
       "code": "D35",
@@ -3021,7 +3021,7 @@
         "4x5": "d35-4x5.png",
         "9x16": "d35-9x16.png"
       },
-      "hash": "8d890010579b4d97ab62dd25f33c5127a5a2792f1830b4925051b022be5e96c1"
+      "hash": "f71b71b12e5be5cc4197bd81fabc27cbfa001f5e9432d065a503250e556e1e41"
     },
     {
       "code": "D36",
@@ -3121,7 +3121,7 @@
         "4x5": "d36-4x5.png",
         "9x16": "d36-9x16.png"
       },
-      "hash": "03beedf35070ae96ad32cc390a847c2d05ccf5222e967ba3e158ee5803b57d82"
+      "hash": "d972b9c3f05a398d9a544d1f59abf3afac815f17206dff29ef0d1cc7d6768305"
     },
     {
       "code": "D37",
@@ -3231,7 +3231,7 @@
         "4x5": "d37-4x5.png",
         "9x16": "d37-9x16.png"
       },
-      "hash": "49c1e7aff056fa1a9bb1db0edd895a6aaafe27de89dcf41cbe5e5493b8a8bc08"
+      "hash": "39b29dce4d5a94b5882cc3adf37379efe9f13e946f63b22faa684e7a7f92a9af"
     },
     {
       "code": "D38",
@@ -3313,7 +3313,7 @@
         "4x5": "d38-4x5.png",
         "9x16": "d38-9x16.png"
       },
-      "hash": "d99bf762c85d1668ab30dda34f000867d7a953fa41caf425c77193ba8de8cd37"
+      "hash": "f9dd7cdc4b843236a5f3f3e0907f843116c3f5c17368987eb56d5cd786fccef6"
     },
     {
       "code": "D39",
@@ -3346,7 +3346,7 @@
           "id": "items",
           "label": "Ideas, as JSON: [{\"label\":\"Live chat\",\"x\":2.2,\"y\":8.4}, …] (up to 16)",
           "type": "string",
-          "default": "[{\"label\":\"Live chat\",\"x\":2.2,\"y\":8.4},{\"label\":\"Shorter forms\",\"x\":1.6,\"y\":6.8},{\"label\":\"Price review\",\"x\":3.5,\"y\":6.0},{\"label\":\"Weekly newsletter\",\"x\":3.0,\"y\":3.1},{\"label\":\"Loyalty scheme\",\"x\":6.5,\"y\":7.2},{\"label\":\"New website\",\"x\":8.6,\"y\":8.4},{\"label\":\"Rebrand\",\"x\":7.5,\"y\":4.5},{\"label\":\"New office\",\"x\":8.2,\"y\":2.4}]"
+          "default": "[{\"label\":\"Live chat\",\"x\":2.2,\"y\":8.4},{\"label\":\"Shorter forms\",\"x\":1.2,\"y\":6.0},{\"label\":\"Price review\",\"x\":3.8,\"y\":7.0},{\"label\":\"Weekly newsletter\",\"x\":3.0,\"y\":3.1},{\"label\":\"Loyalty scheme\",\"x\":6.5,\"y\":7.2},{\"label\":\"New website\",\"x\":8.6,\"y\":8.4},{\"label\":\"Rebrand\",\"x\":7.5,\"y\":4.5},{\"label\":\"New office\",\"x\":8.2,\"y\":2.4}]"
         },
         {
           "id": "pick",
@@ -3413,7 +3413,7 @@
         "4x5": "d39-4x5.png",
         "9x16": "d39-9x16.png"
       },
-      "hash": "6be0969595a0370a0f6e07a72a81a714f45d399b147252c0000ede690bceb2ff"
+      "hash": "521f68d10955b9973e545b5f8aa367d2529f28605e67e339adfd747be28807c1"
     },
     {
       "code": "D40",
@@ -3489,7 +3489,7 @@
         "4x5": "d40-4x5.png",
         "9x16": "d40-9x16.png"
       },
-      "hash": "412fa00f2763aafa4072c04cff8dc17ee14b5b9a0712143aa7e659279cd79172"
+      "hash": "7355402a01c423513bfddbee320620563d5d50798641bb9daf9424d8b45d877e"
     },
     {
       "code": "D41",
@@ -3577,7 +3577,7 @@
         "4x5": "d41-4x5.png",
         "9x16": "d41-9x16.png"
       },
-      "hash": "c6fcacc9ef155ac05a4b1f3c59aab13edce27f86d268490d0705bb1bbe21c645"
+      "hash": "0b47772f3c31f60de3c35838759d3f9c99bbc871ebec9bd177670d102b338ca6"
     },
     {
       "code": "D42",
@@ -3681,7 +3681,7 @@
         "4x5": "d42-4x5.png",
         "9x16": "d42-9x16.png"
       },
-      "hash": "43f5635b69a64ff6a49e9eeb5ba505928332762494d2530d338f9a99397bf1fa"
+      "hash": "78aba455f218637a787e453d5ecfda5926756c638a5689991c94142e11c9dab4"
     },
     {
       "code": "D43",
@@ -3781,7 +3781,7 @@
         "4x5": "d43-4x5.png",
         "9x16": "d43-9x16.png"
       },
-      "hash": "c1c99f0b9277b22ee4c6e1467c0c38c3940c379a524640aff8d299c889cbd05a"
+      "hash": "92efb0feddd6d6092d9d2e59b97f1561eb0a30263531bf12ffcc63d8447b1828"
     },
     {
       "code": "D44",
@@ -3875,7 +3875,7 @@
         "4x5": "d44-4x5.png",
         "9x16": "d44-9x16.png"
       },
-      "hash": "ff0e5de56b57249394c601197686b51b2ba6e50c4105d44955eb3524b62d43be"
+      "hash": "74de49c012fc27dedacec907e6ad093db775e5d269e349048dfa59c360030366"
     },
     {
       "code": "D45",
@@ -3951,7 +3951,7 @@
         "4x5": "d45-4x5.png",
         "9x16": "d45-9x16.png"
       },
-      "hash": "4d49d7c9bffad1038cde67f8f93c8719c0fb3d7c1f173cde0615c957e355b39d"
+      "hash": "a76a72195535df5ba84bf0cd35020eb1a6e1b07dcc32752d8b3c0d3936c95015"
     },
     {
       "code": "D46",
@@ -4033,7 +4033,7 @@
         "4x5": "d46-4x5.png",
         "9x16": "d46-9x16.png"
       },
-      "hash": "143e9b6ed5556acfeb68b32bef83295d09dd6b2ff36adb590823ba5bf59e4df2"
+      "hash": "c31f7fe14745249cd3a3ca67b1e6f5b86847ff9200a2108477bd43e437c8a2bd"
     },
     {
       "code": "D47",
@@ -4121,7 +4121,7 @@
         "4x5": "d47-4x5.png",
         "9x16": "d47-9x16.png"
       },
-      "hash": "261667b3ea3554d9bf04bbba7be9a9b73df071b392106821dbc6712eafd7cad9"
+      "hash": "c55f55a8c6d008f3f06ca3be7c224867622bd513fc64a8aadb213fc53e64cd85"
     },
     {
       "code": "D48",
@@ -4203,7 +4203,7 @@
         "4x5": "d48-4x5.png",
         "9x16": "d48-9x16.png"
       },
-      "hash": "077f75dbf1ea1aada3fb5f7d7e6d70e200c2bd8084f113ddd3eb0bc460ea31ba"
+      "hash": "a9032253c1869dfa6fb872686a8b24cfc2ff18e9c6c5b89f6f4e92b04a91c87e"
     },
     {
       "code": "D49",
@@ -4279,7 +4279,7 @@
         "4x5": "d49-4x5.png",
         "9x16": "d49-9x16.png"
       },
-      "hash": "82484cec21767cdf141416b32415bdde03b4f1ea47e5c6e85754e6b453d63c4a"
+      "hash": "57a2129b2cbc5a105ba6f02c3305396c43e1029388b468761be23b04e172a91b"
     },
     {
       "code": "D50",
@@ -4361,7 +4361,7 @@
         "4x5": "d50-4x5.png",
         "9x16": "d50-9x16.png"
       },
-      "hash": "8437b27fc5efe27e75be0563e6d381fbe2e27266376bc87b2f1a07fb1d9a7362"
+      "hash": "f3b70b70658136aecf9c92a2e1cf56e1ab130a4bbeff12537daff91e16bdcd83"
     },
     {
       "code": "D51",
@@ -4455,7 +4455,7 @@
         "4x5": "d51-4x5.png",
         "9x16": "d51-9x16.png"
       },
-      "hash": "7169962e9b335555ef68ea9f064dbe5da2ab3dee0c1a6336703628fbc0157d77"
+      "hash": "c881efc989205c40b5bc39d862ee4183b777de0f149bcf3a386e984655ae6f30"
     },
     {
       "code": "D52",
@@ -4525,7 +4525,7 @@
         "4x5": "d52-4x5.png",
         "9x16": "d52-9x16.png"
       },
-      "hash": "64e1da1f4a7bb7461ec83ddf68eb4d0acef9fab86e6df2f8321e60bcd6b18ad5"
+      "hash": "3f2aef726c96730f874656f6e55027a68ce354ea0a474dc54d60ff48710ac219"
     },
     {
       "code": "D53",
@@ -4601,7 +4601,7 @@
         "4x5": "d53-4x5.png",
         "9x16": "d53-9x16.png"
       },
-      "hash": "f8c8d5c7719ebb059b501840ffa68a5ebc1a8424ef617954dc431602b8412f32"
+      "hash": "98715af0b5a72fd981d02e7c3c078c1365a20b7ba7bb82cf7c1c36b495971743"
     },
     {
       "code": "D54",
@@ -4695,7 +4695,7 @@
         "4x5": "d54-4x5.png",
         "9x16": "d54-9x16.png"
       },
-      "hash": "2e2580a714b2228ca3c780f07f2183f5e307175dc0479330a093a4c374da0963"
+      "hash": "9d39dd2ff4f8e67a80473226a2ffa35e71a202f0e3ad325b947fc44ec1b28670"
     },
     {
       "code": "D55",
@@ -4777,7 +4777,7 @@
         "4x5": "d55-4x5.png",
         "9x16": "d55-9x16.png"
       },
-      "hash": "516a2deadf0a1f47356c2d8f4bac7a30ae008b49648fe158e4582d725eff4cbb"
+      "hash": "0019bd7f496d111c5935e05bef3261b3098b87c012852c45e01a49488939adb9"
     },
     {
       "code": "D56",
@@ -4865,7 +4865,7 @@
         "4x5": "d56-4x5.png",
         "9x16": "d56-9x16.png"
       },
-      "hash": "2b0fda569b25c76aaedcb843af8228b2e45d83b4741ac86769be71a0392b7338"
+      "hash": "e7c4d5e750f66e8bc9a318a904f9988e393549518d8c1b2ef7217fd2d6f2a613"
     },
     {
       "code": "D57",
@@ -4953,7 +4953,7 @@
         "4x5": "d57-4x5.png",
         "9x16": "d57-9x16.png"
       },
-      "hash": "7d1c7464baa5608e978ccc28ac55d8eeac9b1f5e18bc356c88ac82a1e54bd864"
+      "hash": "02e37a132dfda18025d7c09b9993d7a95fbb43325c96724f476bc94c3db2af2c"
     },
     {
       "code": "D58",
@@ -5029,7 +5029,7 @@
         "4x5": "d58-4x5.png",
         "9x16": "d58-9x16.png"
       },
-      "hash": "1a3c495aa68c90d64ce0bb936c60eb26b9b25bf108867675ad2108edf4aa5ddb"
+      "hash": "fd477627d1315b6d3fec09c8191b7ff1c29245558feb21afe42574d78a608570"
     },
     {
       "code": "D59",
@@ -5093,7 +5093,7 @@
         "4x5": "d59-4x5.png",
         "9x16": "d59-9x16.png"
       },
-      "hash": "da7c4b1876ac61b3e1d5e487a2615d2c76cafaaab0c7ec5706498d5573b570a9"
+      "hash": "105d99c8cae0b465c941fea5620fbeff389f225fc2937c9ade737b7b48b52007"
     },
     {
       "code": "D60",
@@ -5175,7 +5175,7 @@
         "4x5": "d60-4x5.png",
         "9x16": "d60-9x16.png"
       },
-      "hash": "880f22914a736356b0730f6e985e79333664d3160bd617a9d51ba1c0cc3cc114"
+      "hash": "23a9d5df0f24414f334c9fd26e9d003100a520465863787389b456f0958d825d"
     },
     {
       "code": "D61",
@@ -5263,7 +5263,7 @@
         "4x5": "d61-4x5.png",
         "9x16": "d61-9x16.png"
       },
-      "hash": "61a2ddccd4402560dae028b2e8b7d26d8761de66ea27e31715c71e20e4300309"
+      "hash": "e4859a72d2b3e66484c58102014e06fceda84a0dc7f615660b29c7d70f7e6207"
     },
     {
       "code": "D62",
@@ -5351,7 +5351,7 @@
         "4x5": "d62-4x5.png",
         "9x16": "d62-9x16.png"
       },
-      "hash": "05d31ebc2471eb63a4e8bc3492e6dd88843589d2a7afb4709adfba0812d39857"
+      "hash": "be2bfba758f0c76fe47449ff7907610ef8e3f9cd7d1e9ace19dd1b4f8a7a7c57"
     },
     {
       "code": "D63",
@@ -5457,7 +5457,7 @@
         "4x5": "d63-4x5.png",
         "9x16": "d63-9x16.png"
       },
-      "hash": "4c42614b027551d6d3f51e865a57544ae31d1d0e32b9d22051d945e416afe48c"
+      "hash": "0f9bfe83c4f5cd433f7e421cf402bcf1a3a024b24e37bfe118ba00271c2db103"
     },
     {
       "code": "D64",
@@ -5539,7 +5539,7 @@
         "4x5": "d64-4x5.png",
         "9x16": "d64-9x16.png"
       },
-      "hash": "083b875b2e4cd50e142c928135daa3820009a4ac57fa236d00614e5096f8d843"
+      "hash": "6cd14c43170cc6b077cb9cc6fb6d81fa94197d9bdc9fe271f0aebc34eafc0279"
     },
     {
       "code": "D65",
@@ -5615,7 +5615,7 @@
         "4x5": "d65-4x5.png",
         "9x16": "d65-9x16.png"
       },
-      "hash": "4db4ae38ae76e452ab24b8ebe3ff7dd43e9dcc52e6f7b843ec1a434eceabd388"
+      "hash": "d711ca5df142187c37d131f00a2f6b5459dd12d78c399658c005c31e41c471d0"
     },
     {
       "code": "D66",
@@ -5679,7 +5679,7 @@
         "4x5": "d66-4x5.png",
         "9x16": "d66-9x16.png"
       },
-      "hash": "44a4f31b01284397b0894b52d94be8152e3daf760fc09804617c316980e586a1"
+      "hash": "36afcb01b47bd28ec9ff1a6df2f4b687a212112d821988ae79a9cacb7c9490a8"
     },
     {
       "code": "D67",
@@ -5767,7 +5767,7 @@
         "4x5": "d67-4x5.png",
         "9x16": "d67-9x16.png"
       },
-      "hash": "0368604b1a046f82a3de1457e66d7ecad0d4eea00b572915619208b4c5858a55"
+      "hash": "735ac9f16f7b82ee3ac954122646059ec3beef45a2d2c15204ec5a1dcd108f2c"
     },
     {
       "code": "D68",
@@ -5855,7 +5855,7 @@
         "4x5": "d68-4x5.png",
         "9x16": "d68-9x16.png"
       },
-      "hash": "80cdb49920a31ce5e471d5ffec9d0930e4292b554323fa795a8d1e105155d650"
+      "hash": "d159dec811a4c123b05379a0a30149aa0e54cbcf8fc435499251d5d96879182d"
     },
     {
       "code": "D69",
@@ -5937,7 +5937,7 @@
         "4x5": "d69-4x5.png",
         "9x16": "d69-9x16.png"
       },
-      "hash": "bb53cb583349a6ecd96ce8c371196abde2d797dbd976ff028c8511739d17f175"
+      "hash": "49f5dbe4632b404c434c73f0b5dc0e421ed396f490bd261b82c8c87356c6df00"
     },
     {
       "code": "D70",
@@ -6019,7 +6019,7 @@
         "4x5": "d70-4x5.png",
         "9x16": "d70-9x16.png"
       },
-      "hash": "178c479243392b4fcf59816dd3c104135e44dd89045a3320a1a1caf845b49ea5"
+      "hash": "6fd59458d87d8c7d21966f930627c0286be64f0c273eac72cb85b7382373e451"
     },
     {
       "code": "D71",
@@ -6089,7 +6089,7 @@
         "4x5": "d71-4x5.png",
         "9x16": "d71-9x16.png"
       },
-      "hash": "7abe0e3684018bbdc673d8d681933b3b60c5a3e3c02c01a1d050a5275b73aef2"
+      "hash": "0d665b348ce65fa8f3d171fdf82a1a867d0ab4e3e3b47ab70dabece69f34fd95"
     },
     {
       "code": "D72",
@@ -6189,7 +6189,7 @@
         "4x5": "d72-4x5.png",
         "9x16": "d72-9x16.png"
       },
-      "hash": "69a3fa14aa7f9958afa760516cf9ebcfd2ee52855703fead0dea301b7570ebc8"
+      "hash": "93c13dc33199e431b75c6afa3b9bb8f87eae0b782381fa6d4de99150e42a8466"
     },
     {
       "code": "D73",
@@ -6313,7 +6313,7 @@
         "4x5": "d73-4x5.png",
         "9x16": "d73-9x16.png"
       },
-      "hash": "4f51ee7f3e479f156e7069bd9f1ab8b3a9c271f1a3f54adfd9fa2c61441a0f75"
+      "hash": "3930a14efe09389a9291e9aa5b9b320fed93cd7f38e50118b7869d4e1c4795a0"
     },
     {
       "code": "F01",
@@ -6470,7 +6470,7 @@
         "4x5": "f01-4x5.png",
         "9x16": "f01-9x16.png"
       },
-      "hash": "50c764564e6ae92bf1bb665a9ec1bce9c8600d293c4b012e30d5562a104b1f2b"
+      "hash": "d479f3e6cf92ef79a6def09ad52c9ceb89cc0ac8bd5f812324b5d6b16b8ee66a"
     },
     {
       "code": "F02",
@@ -6643,7 +6643,7 @@
         "4x5": "f02-4x5.png",
         "9x16": "f02-9x16.png"
       },
-      "hash": "7483f382030c50ea162810cf8b737c369521df2a5bad781ca5b0bb07d805cb53"
+      "hash": "3509e2503669166bfb58910f2a7ec96f8f0d0ec4e4ab9c883ca166631c381b0b"
     },
     {
       "code": "F03",
@@ -6818,7 +6818,7 @@
         "4x5": "f03-4x5.png",
         "9x16": "f03-9x16.png"
       },
-      "hash": "ea41093a1cebe163691dc9bce6f14421751db1630cc291352ad50934b7409447"
+      "hash": "641517ea6ee1a2600ef61fc03f79aa8b895fe7e48b8f6eac8c976f2a479d5ae1"
     },
     {
       "code": "F04",
@@ -6941,7 +6941,7 @@
         "4x5": "f04-4x5.png",
         "9x16": "f04-9x16.png"
       },
-      "hash": "a0878aeedfc1ad6b6f9ef6472770d7c18f3561401422cf0fa795248052e445f0"
+      "hash": "558ab7f3ab1f8d8ca14433de84db574043a61856d02894a6a3b4fffb1203057b"
     },
     {
       "code": "F05",
@@ -7056,7 +7056,7 @@
         "4x5": "f05-4x5.png",
         "9x16": "f05-9x16.png"
       },
-      "hash": "f63eec2ae414505a8cf291bdadce35dd8bc8979ea2ba4c8229e1a8b0ca40c5d8"
+      "hash": "5666d46d6e782c6b4fb171ace8851a473f9d49a569467b8a3af9c43cbb89bfbe"
     },
     {
       "code": "F06",
@@ -7189,7 +7189,7 @@
         "4x5": "f06-4x5.png",
         "9x16": "f06-9x16.png"
       },
-      "hash": "42e181ada0f8064e0b311f0041913f56db13a888362a2b590789a493f8d3e877"
+      "hash": "5baaef69595de98c33a0508e5109c398a5e2fa3a64373c757d22e2c90d18dc8b"
     },
     {
       "code": "F07",
@@ -7340,7 +7340,7 @@
         "4x5": "f07-4x5.png",
         "9x16": "f07-9x16.png"
       },
-      "hash": "157bc30c15446f2d5df6f5e75d5557b86138ab58310b9b4ed0a3e266c1fdd3b2"
+      "hash": "36f4c557aa90b683388cfcddb8c94a2899779c578ada0d3a41b109dc791c4626"
     },
     {
       "code": "F08",
@@ -7473,7 +7473,7 @@
         "4x5": "f08-4x5.png",
         "9x16": "f08-9x16.png"
       },
-      "hash": "e12ee8917252d332e1adad43725d5903afb2f6f7a8caf815544abded35aa0ffd"
+      "hash": "6c2dc804d55cfce5eaa200e8e2d612d1127963aede728f47e59a149d4018a4dc"
     },
     {
       "code": "F09",
@@ -7588,7 +7588,7 @@
         "4x5": "f09-4x5.png",
         "9x16": "f09-9x16.png"
       },
-      "hash": "1732dacfff0853a594e9f7565508b0507550258e29272b4e862edacd2e36fbd0"
+      "hash": "2e939078c5ff6fffc8cf2e14ea83727c5aa8d4065c2630c465d7c7aadd059e7a"
     },
     {
       "code": "F10",
@@ -7737,7 +7737,7 @@
         "4x5": "f10-4x5.png",
         "9x16": "f10-9x16.png"
       },
-      "hash": "c4186f178204d56efb992f239b01d8e65a403c4f45a6b13f73e68d09af6a844d"
+      "hash": "eacdfe37a2d893cfafe6c6a39d50cf0bf72edd8cedfbc1324f98a3dcd071fe5a"
     },
     {
       "code": "F11",
@@ -7852,7 +7852,7 @@
         "4x5": "f11-4x5.png",
         "9x16": "f11-9x16.png"
       },
-      "hash": "e92fc564c30db22a771364a04d2f8e2e0be5a90d53b479993d9dd5526d3c85d4"
+      "hash": "89a454deeb89eb68e0700d189d0a0fa5467598f0b6b622c88fa67d2df59a44b9"
     },
     {
       "code": "F12",
@@ -7989,7 +7989,7 @@
         "4x5": "f12-4x5.png",
         "9x16": "f12-9x16.png"
       },
-      "hash": "047b1ba1125bcc5b18d88dbc64cf41da3886583c4c6f794ec32ae8d4ac17da9f"
+      "hash": "43b35ec111cace01e83d45c3fc98285bff6dfb3f8c2249bda4590c398068af16"
     },
     {
       "code": "F13",
@@ -8142,7 +8142,7 @@
         "4x5": "f13-4x5.png",
         "9x16": "f13-9x16.png"
       },
-      "hash": "a343403e86a370cfd0ee1235a76e2d7ba1b67684fab7d28215e37c6dbffc0af8"
+      "hash": "31b1d36462738f25e4688faae01764e043070ae01defe5f9120d5e4000bf3424"
     },
     {
       "code": "F14",
@@ -8259,7 +8259,7 @@
         "4x5": "f14-4x5.png",
         "9x16": "f14-9x16.png"
       },
-      "hash": "4b8b88beaa78c9ac448e9e20535ca108d89958abcf4199d8aef9ddbb3a6211c8"
+      "hash": "44aab89bb644afc2d935f40dae2d94d4ccfdd5540d432808f6ff5b37bf8b9e74"
     },
     {
       "code": "F15",
@@ -8394,7 +8394,7 @@
         "4x5": "f15-4x5.png",
         "9x16": "f15-9x16.png"
       },
-      "hash": "0fcffcd3d18d547d343e59086f5a74d770647027a0d7f65ea9627db538eda89e"
+      "hash": "620b3390000eba28f81daaf607f018f8a1ca5ad8c84b6804e748d5a6603ccede"
     },
     {
       "code": "I01",
@@ -8563,7 +8563,7 @@
         "4x5": "i01-4x5.png",
         "9x16": "i01-9x16.png"
       },
-      "hash": "d95794154d71c0f5cd34f7d7832e4ecefde4cf0dcb7e02a88753cd38164f89e9"
+      "hash": "0f5f2648ac3c1a8379484026048eefa70b3c9bee6c0c1e37d546c0b1a716e0d3"
     },
     {
       "code": "I02",
@@ -8718,7 +8718,7 @@
         "4x5": "i02-4x5.png",
         "9x16": "i02-9x16.png"
       },
-      "hash": "35ebbe00b4dce77746269b73ce2da6cd5ab2ff32b788f25594ecc3d48238f714"
+      "hash": "8d47bf501ab0ac1bcf79c98e8939f8d1f74b0e5a3d7adc848f6446a31067921f"
     },
     {
       "code": "I03",
@@ -8903,7 +8903,7 @@
         "4x5": "i03-4x5.png",
         "9x16": "i03-9x16.png"
       },
-      "hash": "3fe338e5ab8cfd98b53bd3108771efda172e74df8db349a6323267b737788dfb"
+      "hash": "8b242300212a668297239ca3252e5b8663722117e7fb3011a0320cc9d8055a19"
     },
     {
       "code": "I04",
@@ -9058,7 +9058,7 @@
         "4x5": "i04-4x5.png",
         "9x16": "i04-9x16.png"
       },
-      "hash": "c83a582295ab1986fd78c38473dfbb83de1a9e73428720a60cd73b01ccd588c8"
+      "hash": "12cd93dfb034798634e50e482c8787471d02917604bfb7d491cdeedfbef68fad"
     },
     {
       "code": "I05",
@@ -9263,7 +9263,7 @@
         "4x5": "i05-4x5.png",
         "9x16": "i05-9x16.png"
       },
-      "hash": "69a795ba2d8090356eb5af574fcb4f0dba6f027a5fea5d5d4fdab186f71d239c"
+      "hash": "e4cd726e3979d60bf864f55e5ad90e5beba542390c19e3a3c81f3dc579564fa6"
     },
     {
       "code": "I06",
@@ -9488,7 +9488,7 @@
         "4x5": "i06-4x5.png",
         "9x16": "i06-9x16.png"
       },
-      "hash": "7aa4ba03d776aef9c4c6fe2893b7fec83ce8c635d30b4576da74d3c252718d3d"
+      "hash": "7c7f36b5575bdd64946bf45f22364ea5eebee52372a0ae9e55f12366e0aa3d20"
     },
     {
       "code": "I07",
@@ -9673,7 +9673,7 @@
         "4x5": "i07-4x5.png",
         "9x16": "i07-9x16.png"
       },
-      "hash": "5b6e420c555a9e95ddc03d3d89421825f72d372f52afeae6f756a25ad74cf31c"
+      "hash": "c7245cd08c95c323da8d86ef7567baef5aeafbf7586833965379e699e8f6ac0e"
     },
     {
       "code": "I08",
@@ -9846,7 +9846,7 @@
         "4x5": "i08-4x5.png",
         "9x16": "i08-9x16.png"
       },
-      "hash": "73ebbe685a642b074976d341b7c65c4414172877a551c1c77e3fc52f71f3ec44"
+      "hash": "9758e4ea8281a47b98f6f248626986fad4f22d8b684ef2b9e690910e4b636d34"
     },
     {
       "code": "I09",
@@ -10013,7 +10013,7 @@
         "4x5": "i09-4x5.png",
         "9x16": "i09-9x16.png"
       },
-      "hash": "1c4ee3cc1456138049c98a27a4b642a465266d5be4f040e22723b038e9c4fa86"
+      "hash": "d201a3306d274f04fc5a10ab35c5687858998d4b9abd1e79a830155a950879eb"
     },
     {
       "code": "I10",
@@ -10162,7 +10162,7 @@
         "4x5": "i10-4x5.png",
         "9x16": "i10-9x16.png"
       },
-      "hash": "43b62ae92e8d386da7bea53a4b279f27bc2593567c58322c57811b81e8e4c2db"
+      "hash": "33787546fe9109e7d372b9e51973d366754e6cb2843b5ab790a5b77abd99bfda"
     },
     {
       "code": "I11",
@@ -10273,7 +10273,7 @@
         "4x5": "i11-4x5.png",
         "9x16": "i11-9x16.png"
       },
-      "hash": "210f09205a197cf739cd8119d1b48bb86e13b4e143cb6ee84b47b6b85bfbe991"
+      "hash": "83af3203e93c91175c2048b682762779af8fa80d17161a1a773e831e8b8e3464"
     },
     {
       "code": "I12",
@@ -10450,7 +10450,7 @@
         "4x5": "i12-4x5.png",
         "9x16": "i12-9x16.png"
       },
-      "hash": "f6a2116844c56181bf925ec19852d3b8c7c3f60ae693257c97b98d9747ffe295"
+      "hash": "44564e73e9e1b833ac38d110aa16b752a5d03077c0f6db0f4f45fa930f5742ec"
     },
     {
       "code": "I13",
@@ -10621,7 +10621,7 @@
         "4x5": "i13-4x5.png",
         "9x16": "i13-9x16.png"
       },
-      "hash": "fbfad8e7555515bf26bc4468a2c2fa3630e602de7cf139a0f1fa27b0f500c023"
+      "hash": "a57c22a191a450649f858b0ca38d1e63589ffd209f279f23a73b74f5ba574dfc"
     },
     {
       "code": "I14",
@@ -10786,7 +10786,7 @@
         "4x5": "i14-4x5.png",
         "9x16": "i14-9x16.png"
       },
-      "hash": "9b543e7968dd60a0bfa53dd18e9e3f7f5a0cdf2af84ec243f99e948aa1b40db0"
+      "hash": "7b686d816001fa83d2a715747f24d5de47ee76ac5fad49ac6680211fa721805b"
     },
     {
       "code": "I15",
@@ -10937,7 +10937,7 @@
         "4x5": "i15-4x5.png",
         "9x16": "i15-9x16.png"
       },
-      "hash": "73f56c14a2e4f6e10717a6087ad772be402e34757933782c9c4b5c21b705f74d"
+      "hash": "5ec6eca04bfa9d808bd12b6e7b71aabc8202133964564cce772bccf712d73949"
     },
     {
       "code": "I16",
@@ -11078,7 +11078,7 @@
         "4x5": "i16-4x5.png",
         "9x16": "i16-9x16.png"
       },
-      "hash": "56d13defc09c647b0ff3e54a8f1648ddcc3c48b2bdffe5641db78feb73643c82"
+      "hash": "0430edfb811afe5775cb534daa8b6cdecc6fb6b5637ed15264cc484f57ed380a"
     },
     {
       "code": "I17",
@@ -11247,7 +11247,7 @@
         "4x5": "i17-4x5.png",
         "9x16": "i17-9x16.png"
       },
-      "hash": "5330c3e00032912038a05f5d809c7ba9b7108e00cfa7be454ea9b3c691d57f34"
+      "hash": "5af010b7e9559192e4171e901225718a3d9bca044e5533a98da9341dfe39839a"
     },
     {
       "code": "I18",
@@ -11428,7 +11428,7 @@
         "4x5": "i18-4x5.png",
         "9x16": "i18-9x16.png"
       },
-      "hash": "1ffe94274354f858993f51bdd15fac233281b766a588ca1b8cb583b21821742c"
+      "hash": "0293ce4053228c79e19b1a9d04a07b1bce1b4ac88bb1ea8a74233a04c2ce9ea5"
     },
     {
       "code": "I19",
@@ -11603,7 +11603,7 @@
         "4x5": "i19-4x5.png",
         "9x16": "i19-9x16.png"
       },
-      "hash": "614fb5a3c307db50af36bfb9cb77871426b652e85fcda6712b29d29f8ca3129f"
+      "hash": "83e63a90252304766fa97bb6ada339477c7f4fb7d2a8d68dd8e8cad312988bb0"
     },
     {
       "code": "I20",
@@ -11782,7 +11782,7 @@
         "4x5": "i20-4x5.png",
         "9x16": "i20-9x16.png"
       },
-      "hash": "daacd85c7dc3c8170262ac18f2cffafea8816ee79727de37f9012179c2c616f4"
+      "hash": "8b3c00d03a7f6f4f1b9e8bffd029ae0bb18c17064d23b912f68806933f527ed6"
     },
     {
       "code": "I21",
@@ -11955,7 +11955,7 @@
         "4x5": "i21-4x5.png",
         "9x16": "i21-9x16.png"
       },
-      "hash": "31700b54dfe4fe6522201adc077a2c5c89c5ddb41055aaaa0e906d09a5d55aae"
+      "hash": "2ee550669c10276f8e2585fe9fea6e8ece74040239b87d45375796468602f573"
     },
     {
       "code": "I22",
@@ -12098,7 +12098,7 @@
         "4x5": "i22-4x5.png",
         "9x16": "i22-9x16.png"
       },
-      "hash": "53c3e3b4744f9ee83d3880cf8aa3ce35bbf6237cd319e1c22d740ea61cea1122"
+      "hash": "f89614724da7063df949906e9ffb672ff00603744e749134ba89e1424346b859"
     },
     {
       "code": "I23",
@@ -12245,7 +12245,7 @@
         "4x5": "i23-4x5.png",
         "9x16": "i23-9x16.png"
       },
-      "hash": "7b3d284a1aa7acb08a8c9b789ca37160f391fa2df616b0b15f36f2d2e9ec1383"
+      "hash": "c72130a72d419702b59d48f8e79b83a9caa4810112edac792ab82a16647bf1d9"
     },
     {
       "code": "I24",
@@ -12410,7 +12410,7 @@
         "4x5": "i24-4x5.png",
         "9x16": "i24-9x16.png"
       },
-      "hash": "3016cdb16376fcc4a10cfeae7f3d365c12f8373df25a8a4ab363212d5011d67b"
+      "hash": "8e323868cfc64a46a0b43c7a8b937bd854b00518c079e1a89fbf75b156ce3091"
     },
     {
       "code": "L02",
@@ -12508,7 +12508,7 @@
         "4x5": "l02-4x5.png",
         "9x16": "l02-9x16.png"
       },
-      "hash": "e328849b8a8be6f270365569666616935cf98bd376ed6a47a7d3a27e3fa1f102"
+      "hash": "94e2d9619dcd6f1d8b5f838d832dc5e0eab9c873dd7c68d8363269d96c316b8a"
     },
     {
       "code": "L03",
@@ -12586,7 +12586,7 @@
         "4x5": "l03-4x5.png",
         "9x16": "l03-9x16.png"
       },
-      "hash": "2ae9b4b905499751187aebb6d47b35ec783186fc95bd144fb589787c85a2f3ff"
+      "hash": "b92216801324fda82577af6d122e70079d9a9a5b2bb1456b47db0786bc6b6209"
     },
     {
       "code": "L04",
@@ -12756,7 +12756,7 @@
         "4x5": "l05-4x5.png",
         "9x16": "l05-9x16.png"
       },
-      "hash": "ee7912087eec2e2c64da1fde05aa988de9077cbcc3dda09b70bad444f60d4f67"
+      "hash": "b04adf65938d38b1d4c2573a5f0bb6f51a96cbd9ba68b8a97788861aba3c8c1a"
     },
     {
       "code": "L06",
@@ -12881,7 +12881,7 @@
         "4x5": "l08-4x5.png",
         "9x16": "l08-9x16.png"
       },
-      "hash": "797d33040c1a1840983bb34320131d16888e145eb714a4265a63a62ab896202f"
+      "hash": "104ab5b85bef2199d9d40512a826aa6e96aade8dd61c245a7d6dafe48edbff66"
     },
     {
       "code": "L09",
@@ -12962,7 +12962,7 @@
         "4x5": "l09-4x5.png",
         "9x16": "l09-9x16.png"
       },
-      "hash": "573fba16c5f2f3593c0586fa2f44b98d2764656f75bab625e6028b26303d1e7f"
+      "hash": "b70e3aa461fad3fcf97ff8ca70693b802afd3a99fbbbcfd67c17a913da89ed04"
     },
     {
       "code": "L10",
@@ -13040,7 +13040,7 @@
         "4x5": "l10-4x5.png",
         "9x16": "l10-9x16.png"
       },
-      "hash": "6a4df02cfe0cd93bc95544a6c1b2453a25fbe7300526f449bc59738c2af0bdf3"
+      "hash": "5b221a660ad45621b84fbd914adac841932b21759e5942aa81883538d6bca092"
     },
     {
       "code": "L11",
@@ -13117,7 +13117,7 @@
         "4x5": "l11-4x5.png",
         "9x16": "l11-9x16.png"
       },
-      "hash": "972be15df936ad125c5f90c2110036f109f677a1d00885db4d51f87287af25ac"
+      "hash": "78040d23946e0fe40632fba5e96817e30571d03c6199af7fd41a4ca783c815b9"
     },
     {
       "code": "L12",
@@ -13200,7 +13200,7 @@
         "4x5": "l12-4x5.png",
         "9x16": "l12-9x16.png"
       },
-      "hash": "02e796fe0ec91da51cfddc07f56314982f2b465c0eb1e9ba57239d3ec8e11814"
+      "hash": "7635fa712ecd120c5e6132331d8c2ca5ea98a75ce41a71df8b258ae092c7b6b9"
     },
     {
       "code": "L13",
@@ -13289,7 +13289,7 @@
         "4x5": "l13-4x5.png",
         "9x16": "l13-9x16.png"
       },
-      "hash": "adc78975fb140d88bdca2838dc9ec28999b929d4e591f87b0db839f09900e345"
+      "hash": "14bcf0d0d318b6131527b883b9dc9321bbd371c58049f79977b63677bce8723b"
     },
     {
       "code": "L14",
@@ -13366,7 +13366,7 @@
         "4x5": "l14-4x5.png",
         "9x16": "l14-9x16.png"
       },
-      "hash": "5e39f8d61fd181addf71897e3ee28c56cd9cb9d3b35e9a65e50d26b8d77945fb"
+      "hash": "64f2f12d8703112d7e5462e142df037bb2584e51dfd062a32956bd9ca91747a2"
     },
     {
       "code": "L16",
@@ -13450,7 +13450,7 @@
         "4x5": "l16-4x5.png",
         "9x16": "l16-9x16.png"
       },
-      "hash": "6b24358553c3fed9151df02571b8030210cf6891a3fc08611e8aff0f4a0b816f"
+      "hash": "ec57cba0140d751b668c8049683c953e5b003c3b5a5f9fb97a8e3699cc486d05"
     },
     {
       "code": "L17",
@@ -13533,7 +13533,7 @@
         "4x5": "l17-4x5.png",
         "9x16": "l17-9x16.png"
       },
-      "hash": "c5f464e07a2b310a22ca94ede50d4fc45d899474095915a07cd839a63e5e2b5e"
+      "hash": "af4dcc10c5386b4c76ecc71c1e5d772ba8bd8bec38c27e50a6fc07d58f7e45a1"
     },
     {
       "code": "L18",
@@ -13757,7 +13757,7 @@
         "4x5": "l20-4x5.png",
         "9x16": "l20-9x16.png"
       },
-      "hash": "f8083e177d955da4accfc21681169a6604a99780abce5d77bf114dceb673ee22"
+      "hash": "10c699f89265068367ad0252bcb3a0dc04e57f74589782594db9e8270eb10b94"
     },
     {
       "code": "L21",
@@ -13888,7 +13888,7 @@
         "4x5": "l22-4x5.png",
         "9x16": "l22-9x16.png"
       },
-      "hash": "c7296d5df74682a3e63318399939b2fac7273188e0c8fd02ff8dbe278f714da4"
+      "hash": "cdd1a9ad005a8d070363dfc0008ff5196c52cb19aaa26d147c4b51c4a702df28"
     },
     {
       "code": "L23",
@@ -13947,7 +13947,7 @@
         "4x5": "l23-4x5.png",
         "9x16": "l23-9x16.png"
       },
-      "hash": "53cb3b8e47233b0318c8b9da6e264812d7ef988689b2f38ac6f066db8e4b401c"
+      "hash": "a162fd5b18034fb426149e1416ec531b6dd9204e293d642f11b807f05c9a0d08"
     },
     {
       "code": "L24",
@@ -14020,7 +14020,7 @@
         "4x5": "l24-4x5.png",
         "9x16": "l24-9x16.png"
       },
-      "hash": "fe5fc21fa260fa7e3b05662b9ee25c7af17088b0e343d1b50255823e793c8c9f"
+      "hash": "1e932bf80cf5c749dc1cd15e4f28c40e706532b76d9d19e361fdd73a8d67e18b"
     },
     {
       "code": "L25",
@@ -14080,7 +14080,7 @@
         "4x5": "l25-4x5.png",
         "9x16": "l25-9x16.png"
       },
-      "hash": "f46231dd7bc0e821cb5bfcd2c5edee2d6215543db285eb1aeccc30a7947ef3c0"
+      "hash": "15ab0f256ca64b349e5be35c1ee6209cf9d7bbeb45f6ccb2e42d8bfd4b82e97a"
     },
     {
       "code": "L26",
@@ -14346,7 +14346,7 @@
         "4x5": "l27-4x5.png",
         "9x16": "l27-9x16.png"
       },
-      "hash": "628436597536316899a76a0f7e0ba29ba40f6e792c266279b575a4c212b2287a"
+      "hash": "6ae864d5a3c0b610775d43eb706f2113ffdcec8f64beaf3f4f37fdddcd70a6ba"
     },
     {
       "code": "L28",
@@ -14487,7 +14487,7 @@
         "4x5": "l28-4x5.png",
         "9x16": "l28-9x16.png"
       },
-      "hash": "90a9cb9a9554cb2fce58a8fbf55b6e38c84934f55b44e1a31df560078f5a3af8"
+      "hash": "04e68466620335828eac6e46ab385f98bc28517bc701833b87cab2930d6d2ab4"
     },
     {
       "code": "L29",
@@ -14628,7 +14628,7 @@
         "4x5": "l29-4x5.png",
         "9x16": "l29-9x16.png"
       },
-      "hash": "a44d42a85124732604671893e66cf32499f72be41555323c3b78435772d98299"
+      "hash": "fadd893e797e862b7f4d5b68b5720bdf4fa05adac70c5c5a3fa6f104f87015d0"
     },
     {
       "code": "L30",
@@ -14757,7 +14757,7 @@
         "4x5": "l30-4x5.png",
         "9x16": "l30-9x16.png"
       },
-      "hash": "4a32774d551ac18844965990b75cd3153fb7a7fcf935c63fced844cca5c5fd9b"
+      "hash": "d44de421409027bd5034f1c15943f009bb56192f65ac9078840068d296012062"
     },
     {
       "code": "L31",
@@ -14898,7 +14898,7 @@
         "4x5": "l31-4x5.png",
         "9x16": "l31-9x16.png"
       },
-      "hash": "456d389b1c8c4b971c00989bd83e3ab04d57726dab37a41db3e51c9b0fd362af"
+      "hash": "a417ee167fd3658ead14c109fc470c7323e1841965ac6984d539f2ae07aa39bb"
     },
     {
       "code": "T02",
@@ -14983,7 +14983,7 @@
         "4x5": "t02-4x5.png",
         "9x16": "t02-9x16.png"
       },
-      "hash": "3f574426904f560d8502a8e7194cd4354054af1480088daff255ccf4a058e3f0"
+      "hash": "36bcac8c9469ce05283924a9ba3b26bb522e99a3e34254f162f32ba86b5634fd"
     },
     {
       "code": "T03",
@@ -15053,7 +15053,7 @@
         "4x5": "t03-4x5.png",
         "9x16": "t03-9x16.png"
       },
-      "hash": "d00bf3f8a2a5d7d91543345753fb6f38743f6d8f15b7ba13894bd7f7e1092755"
+      "hash": "104f60f2610e53918ae91c35f5ec6ec7869bcb53e3ddcced555720fb4cd59c73"
     },
     {
       "code": "T04",
@@ -15231,7 +15231,7 @@
         "4x5": "t06-4x5.png",
         "9x16": "t06-9x16.png"
       },
-      "hash": "4ae04072246a74a8367a44280f36979433697f732b4baf9fc5c81c52599c7602"
+      "hash": "437433d58e2b66ee14ff094623d6112effe884c68fc8eb7794f8f4fc104dc6c5"
     },
     {
       "code": "T07",
@@ -15284,7 +15284,7 @@
         "4x5": "t07-4x5.png",
         "9x16": "t07-9x16.png"
       },
-      "hash": "ed62edfa6889f63247c52d06d845a859551a0a4844993f73eef28f60f8ab9832"
+      "hash": "9f972970f157274f68a3af3ea25d508d63c5815b9b10e4f7d0fc3239f1582954"
     },
     {
       "code": "T08",
@@ -15337,7 +15337,7 @@
         "4x5": "t08-4x5.png",
         "9x16": "t08-9x16.png"
       },
-      "hash": "edf748add89620d7a5cd2e791ee49685d9e106481c6bd530ef02a63b27910bfd"
+      "hash": "1d7d40e6f6d21e117f3722b72d9bd108b31854b7ffba2e3026d4443163c48590"
     },
     {
       "code": "T09",
@@ -15383,7 +15383,7 @@
         "4x5": "t09-4x5.png",
         "9x16": "t09-9x16.png"
       },
-      "hash": "d8c1a9a5b4b984ae6b0a04f3107cd18b7a25ae983b80d52ccd211c69999dbf16"
+      "hash": "2c6ce63a21dfd9fdfc236e80c541fa361eb65e009f54205f1d14bc1ad9395296"
     },
     {
       "code": "T11",
@@ -15429,7 +15429,7 @@
         "4x5": "t11-4x5.png",
         "9x16": "t11-9x16.png"
       },
-      "hash": "5d7c552cad492a5f4b213f15715782af072a6a2a3372523fe533de4e7c9c7013"
+      "hash": "81eac78f4035865d40d25e5c90b8a975ce861ae156d82e9ba85861dfd3842729"
     },
     {
       "code": "T12",
@@ -15481,7 +15481,7 @@
         "4x5": "t12-4x5.png",
         "9x16": "t12-9x16.png"
       },
-      "hash": "a34a9c2c9aa88f52ec7f3dea3090e498ad873bb22a78b12b5e9e8d3edb008308"
+      "hash": "445fc78cc9e3d1ac8358fa05a903a4fb21cb13c9f7570e20911cb0857d1b76ec"
     },
     {
       "code": "T13",
@@ -15533,7 +15533,7 @@
         "4x5": "t13-4x5.png",
         "9x16": "t13-9x16.png"
       },
-      "hash": "c8090968ec3e20c18cec5884fec9b93fda528866eb571f9043b69d9ac370bf54"
+      "hash": "b9fba04ea5525e9fc9b0ab8ec66288300ea6f40b6168040925abcfc30b557db8"
     },
     {
       "code": "T14",
@@ -15579,7 +15579,7 @@
         "4x5": "t14-4x5.png",
         "9x16": "t14-9x16.png"
       },
-      "hash": "c910db357edc9adc0fc94a549e301812f5c6ae71d8321f9e65e784923346867b"
+      "hash": "25a45b6f965792243a892dbbadf14579b49e02d7191a4c3abad1e2561cf32b1b"
     },
     {
       "code": "T15",
@@ -15625,7 +15625,7 @@
         "4x5": "t15-4x5.png",
         "9x16": "t15-9x16.png"
       },
-      "hash": "17741c99630c6bb82eee4cec168e7d4c453dd8c59eac3eafc9d8d9bba252520c"
+      "hash": "8ee86cfd97b1716c53e6fb2fe99db0861630617587df8720dad988e9c5ecd7e8"
     },
     {
       "code": "T16",
@@ -15671,7 +15671,7 @@
         "4x5": "t16-4x5.png",
         "9x16": "t16-9x16.png"
       },
-      "hash": "9f292399d869c512de1e0aed3870219e1b76f265cd754052c22c0e8da386942f"
+      "hash": "3937fd45e31ea801d04d3b6ecb435793c511cb3fb0f846ee1bdfe84975f81a0c"
     },
     {
       "code": "T17",
@@ -15730,7 +15730,7 @@
         "4x5": "t17-4x5.png",
         "9x16": "t17-9x16.png"
       },
-      "hash": "1d251a4b92f72554aa6ee526f06b3942140c571489b84ebb6649fd65f4fb8a1a"
+      "hash": "615fb08970f7d4a58425cec35047e97f91c94a762f7cf1c8c4db3d1f9ab049b1"
     },
     {
       "code": "T18",
@@ -15792,7 +15792,7 @@
         "4x5": "t18-4x5.png",
         "9x16": "t18-9x16.png"
       },
-      "hash": "8207e3bf7de6e4fb3a117caf3fc6ecc4defd91ca73788ebedbba23eb168c6fec"
+      "hash": "58e0aa80c4c124c80e8d7c1e26cde4b2cad6882f25fd49dccec57700a52c74ad"
     },
     {
       "code": "T19",
@@ -15844,7 +15844,7 @@
         "4x5": "t19-4x5.png",
         "9x16": "t19-9x16.png"
       },
-      "hash": "fcc74cd64dce962aefda97f483ebc266f7df7c16a4c68feaedc78ce3d2d6a15f"
+      "hash": "6bbee75c229c80197489ffcf66e5949c988173bfa28767aa2c7b975c08a3e2f7"
     },
     {
       "code": "T20",
@@ -15896,7 +15896,7 @@
         "4x5": "t20-4x5.png",
         "9x16": "t20-9x16.png"
       },
-      "hash": "94201bb5d17020197b2477e589ec1ba7103f6c279a9317a071aa5cc2496b92b1"
+      "hash": "2394d65c007b46206ffac5c21531be2b7700bc587480642bfd0e31a581ce3664"
     },
     {
       "code": "T21",
@@ -15948,7 +15948,7 @@
         "4x5": "t21-4x5.png",
         "9x16": "t21-9x16.png"
       },
-      "hash": "5ea69a68e683add4ac8b654d01e136ef5a64c2b8665c371910f17414bfbaf4b2"
+      "hash": "af5fc81a65eed511009657e9377c5df558122543a6f4b7b1e325bf1b4315d741"
     },
     {
       "code": "T22",
@@ -16012,7 +16012,7 @@
         "4x5": "t22-4x5.png",
         "9x16": "t22-9x16.png"
       },
-      "hash": "4678c290c6eb0fbaae995701136def84e1f3642c5390e73db4caa8bd725b79cd"
+      "hash": "e156b29e60e3e117e3f6592f4afa7fc22ad494fe8dc9fcc748fe25d186d139de"
     },
     {
       "code": "T23",
@@ -16071,7 +16071,7 @@
         "4x5": "t23-4x5.png",
         "9x16": "t23-9x16.png"
       },
-      "hash": "8adc24200acaed6ebf03a50aba8cd43a0c089a0e4be7cc729c3b66295beb7dce"
+      "hash": "a99561e79c4f9294aba819a41d5ea98d2d1ff5a38a798ebdb08aef1620b0d08e"
     },
     {
       "code": "T24",
@@ -16123,7 +16123,7 @@
         "4x5": "t24-4x5.png",
         "9x16": "t24-9x16.png"
       },
-      "hash": "d3b18d7ae1afa60d24a8f6fce7ef15dd6fefefaa08f52a9462e6defde8eb2a1e"
+      "hash": "3070e89ecf81d5e215a855cbb34aa9baec25274b21d99b3ae9bd7ad0f062596e"
     },
     {
       "code": "T25",
@@ -16175,7 +16175,7 @@
         "4x5": "t25-4x5.png",
         "9x16": "t25-9x16.png"
       },
-      "hash": "dd6811609975d02bc3145579da7d8bfcaae1ed7535e2eeed771e02330326d0dd"
+      "hash": "db490b34cebcf14ff57a7b5a45719d061cd1f84a5d4d4675dce6e387cbb15961"
     },
     {
       "code": "T26",
@@ -16239,7 +16239,7 @@
         "4x5": "t26-4x5.png",
         "9x16": "t26-9x16.png"
       },
-      "hash": "36a74d28efa048d67bcf9b13b2e224368533073f6d7a54a3f040ed6ee7f6bff8"
+      "hash": "91ab3a598167c66eee0724cc5a7f38adedebf5c0c787f06a3814e9ae17b84da9"
     },
     {
       "code": "T27",
@@ -16320,7 +16320,7 @@
         "4x5": "t27-4x5.png",
         "9x16": "t27-9x16.png"
       },
-      "hash": "5887ac4e5a16ab5e85fc42366d0d1a2fc8be383043d92dd56eba502d06fe0689"
+      "hash": "4d01291e86defbb10c7ca521369c61fbb0e3105ba10a7a7dfbf65f9780bc97ba"
     },
     {
       "code": "T28",
@@ -16483,7 +16483,7 @@
         "4x5": "t29-4x5.png",
         "9x16": "t29-9x16.png"
       },
-      "hash": "234949dac3f2ad9bd3fec1eba0ab1fc8e667cae3aa9f865946b747212acef4bb"
+      "hash": "8d7c4b0f16a7aa79556eb3629d243a4b6104dd3bff270b12788cf27278ad68b7"
     },
     {
       "code": "T30",
@@ -16872,7 +16872,7 @@
         "4x5": "t35-4x5.png",
         "9x16": "t35-9x16.png"
       },
-      "hash": "58284be2085c7f8cf87153a6a2c2e971122fb1e884ff7a11fe6a470ee644596a"
+      "hash": "7f16c51af38629bceb36906c4df4e24aa4f1ceb47796edb47ef4453373651869"
     },
     {
       "code": "T36",
@@ -16988,7 +16988,7 @@
         "4x5": "t37-4x5.png",
         "9x16": "t37-9x16.png"
       },
-      "hash": "58895c0f3d4e2a8ac4d41bd5c8984e88c41fa014ac38509309a34bc481743661"
+      "hash": "4bf296a988c02ddc1bda6bae7540437cc002fc568af3017afb1118f90f14905a"
     },
     {
       "code": "T38",
@@ -17134,7 +17134,7 @@
         "4x5": "t40-4x5.png",
         "9x16": "t40-9x16.png"
       },
-      "hash": "fc57c7cebac66b1f265367454bd6990a2d8156fb9ff9619e553240c893931283"
+      "hash": "0457ec1e06f600fc11e93288d4b1de7af97c3d310011422d48bb2f506673bafc"
     },
     {
       "code": "T41",
@@ -17250,7 +17250,7 @@
         "4x5": "t43-4x5.png",
         "9x16": "t43-9x16.png"
       },
-      "hash": "39987f8b1d5f0aef3553392bbcf0a5edc553805e9533759cfcfeb8899e5fb808"
+      "hash": "c326aff394c0c60f9fdb9eecb665ddb165211bc997587427fddef11b9f053aa2"
     },
     {
       "code": "T44",
@@ -17303,7 +17303,7 @@
         "4x5": "t44-4x5.png",
         "9x16": "t44-9x16.png"
       },
-      "hash": "3636a77be80fb50a2ca0f07e8985699af3cef2053b728347812f98d353d1af5b"
+      "hash": "7c7cbde13e1445f73bed3fdd96a728aec76329fab99a86d02ab84872b414868c"
     },
     {
       "code": "T45",
@@ -17355,7 +17355,7 @@
         "4x5": "t45-4x5.png",
         "9x16": "t45-9x16.png"
       },
-      "hash": "6923b22ee4609089cb64b73683dc345f59ef8ee0c622bc8a473862a414e3aa07"
+      "hash": "eff5401e669b4cd97a2d362571a742e151ca12abc30e2bb33c879727972ee1aa"
     },
     {
       "code": "T47",
@@ -17413,7 +17413,7 @@
         "4x5": "t47-4x5.png",
         "9x16": "t47-9x16.png"
       },
-      "hash": "7fc33396a9e87cc270e5d42f1036988360cb2938322e94e43d49cfecbc62cd1f"
+      "hash": "a05edfda641311d75f2ddd505d3f4e38efbd82971fac59653fd498f914ea7aca"
     },
     {
       "code": "T48",
@@ -17476,7 +17476,7 @@
         "4x5": "t48-4x5.png",
         "9x16": "t48-9x16.png"
       },
-      "hash": "b5f2c284e08d330322a6f8a14cb8d3a2ee0d473f0ac4883c7ebb90c471cad2c3"
+      "hash": "751481e5985bf60b6f9c6e736b8966ce6d67ac42bd6ffafe7c1aa13ef60986d1"
     },
     {
       "code": "T49",
@@ -17529,7 +17529,7 @@
         "4x5": "t49-4x5.png",
         "9x16": "t49-9x16.png"
       },
-      "hash": "cbd89586f0d560a8f69972ca0d2519dd24772250c7968c4a4959d43142506d2d"
+      "hash": "7d7f2f62dac1793f79e2c604b1498c5868c4ecfec816790c48922308cc968624"
     },
     {
       "code": "T50",
@@ -17685,7 +17685,7 @@
         "4x5": "t51-4x5.png",
         "9x16": "t51-9x16.png"
       },
-      "hash": "5cd68445b2dd5bf1b3854ddb6c62179f176cda5c260db0c52b2e985953635451"
+      "hash": "7b130bfe8bfcc29e01f9cca96b3d472e5694c5cedaf0271b26a467fe87f4bcca"
     },
     {
       "code": "T52",
@@ -17737,7 +17737,7 @@
         "4x5": "t52-4x5.png",
         "9x16": "t52-9x16.png"
       },
-      "hash": "862e13cb67243eca8c147b179729374f891a2c2dbb5c39b5814f7031a4caba3c"
+      "hash": "aad127e88e8b536649b45749b37dfde6972739b4c35f1c00a95caa2993f4a772"
     },
     {
       "code": "T53",
@@ -17783,7 +17783,7 @@
         "4x5": "t53-4x5.png",
         "9x16": "t53-9x16.png"
       },
-      "hash": "f6a579b086a1bf70e0dd36c16959346e0a07ac0a15e580a7889f60abd37201ae"
+      "hash": "4fcea042d8dbc4bd6019f76035a8a09916966963b3ce7e8852068a02c71758c2"
     },
     {
       "code": "W04",
@@ -17896,7 +17896,7 @@
         "4x5": "w04-4x5.png",
         "9x16": "w04-9x16.png"
       },
-      "hash": "c95f4b800b48a0505c422dbf087052e2f7a0ca1ef3fc41b5fcb68b20c0315248"
+      "hash": "832bba2d20caae5edd63ed277ff63500d2f2ce5688a1f85e9ec50b83ab9c9f78"
     },
     {
       "code": "W06",
@@ -17998,7 +17998,7 @@
         "4x5": "w06-4x5.png",
         "9x16": "w06-9x16.png"
       },
-      "hash": "27b2789777f581002039100987f185fe79eafb1a3768e5e0647511128eca5992"
+      "hash": "43f480de1f96f7a8d53c2c1ed4206080662ca5b8bba9fe6f26a2eb3dd0274f6e"
     },
     {
       "code": "W07",
@@ -18093,7 +18093,7 @@
         "4x5": "w07-4x5.png",
         "9x16": "w07-9x16.png"
       },
-      "hash": "88b70e5c714716cd6a195f9faedfb3672c76792bb2a4d652fe1d4bb61666b86b"
+      "hash": "3b4025a44b3a6de3bd9b225b464ec4f045f59f9b52f51048ac1db2957fd58db4"
     },
     {
       "code": "W08",
@@ -18135,7 +18135,7 @@
         },
         {
           "id": "size",
-          "label": "Size: 1 as designed, up to 2 so its words read on a phone (it grows from its own side)",
+          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side)",
           "type": "number",
           "default": 1
         },
@@ -18182,7 +18182,7 @@
         "4x5": "w08-4x5.png",
         "9x16": "w08-9x16.png"
       },
-      "hash": "b016dba41b04ad2dd9dfd26a0f0fd4cea0a33fac8469a764bba36c240c9352c7"
+      "hash": "fa024ac22862f5b657d93192f4b9d112182ee72f3ad08f0df476274e76d52de3"
     },
     {
       "code": "W09",
@@ -18271,7 +18271,7 @@
         "4x5": "w09-4x5.png",
         "9x16": "w09-9x16.png"
       },
-      "hash": "409c4b113bddfb4de37608124d38abfe01a72a6051067011b19e2798941e0d85"
+      "hash": "914275471512c62c7b1c6a834cddec86815b2deca6da6b80e92ffb2004b0302f"
     },
     {
       "code": "W10",
@@ -18366,7 +18366,7 @@
         "4x5": "w10-4x5.png",
         "9x16": "w10-9x16.png"
       },
-      "hash": "124be6e97124b00200f325e78404f27cda099b24491a7f6334c7a03ac17e7281"
+      "hash": "b7f00bdaf246de4a0dac33e5ca28bc9bd6ebd79bb6023da29706cfd4713af338"
     },
     {
       "code": "W11",
@@ -18455,7 +18455,7 @@
         "4x5": "w11-4x5.png",
         "9x16": "w11-9x16.png"
       },
-      "hash": "ea39028a774487e0cf1081a283c3a25b627c391deb9acaadd5c76b5eebe9e194"
+      "hash": "c6881323022a7e515feb7ff7982bd252af7eea749990e5063b2cfd945a29ffe0"
     },
     {
       "code": "W12",
@@ -18518,7 +18518,7 @@
         "4x5": "w12-4x5.png",
         "9x16": "w12-9x16.png"
       },
-      "hash": "17d1241a1cd056e5c9a1cd9ca95892f3bdf2096e744d12e94c5425ab663cc376"
+      "hash": "7178bb4158c56183710050a9a8eb8f144cc0f2bb1671638934c326a859ba080b"
     },
     {
       "code": "W13",
@@ -18637,7 +18637,7 @@
         "4x5": "w13-4x5.png",
         "9x16": "w13-9x16.png"
       },
-      "hash": "09d1a93f2cf7e04627b4a2db8b330e5c9cb578c62ce27e7c396903d1b9f171ec"
+      "hash": "28ec61c6032da74ca0e85026082f85de49074e4c7d5d489166bcf5d5b29b5922"
     },
     {
       "code": "W14",
@@ -18750,7 +18750,7 @@
         "4x5": "w14-4x5.png",
         "9x16": "w14-9x16.png"
       },
-      "hash": "7b78bd09942486248aeef22bde809943a62f3d39bc30e596f42799b223329405"
+      "hash": "7b14ff24d191e8baabb17d453db695e3b1eee0279d817ba08761bbadfbaa3b8d"
     },
     {
       "code": "W15",
@@ -18851,7 +18851,7 @@
         "4x5": "w15-4x5.png",
         "9x16": "w15-9x16.png"
       },
-      "hash": "4ea3b149d3956bfca650eea5321138dd4ef56385b7423cbe5ef1f4492dbe254b"
+      "hash": "232aaf1ac8dd9bc50a8ff08d42ac691d40de99e4962864f3692fc53f2c194f03"
     },
     {
       "code": "W16",
@@ -18952,7 +18952,7 @@
         "4x5": "w16-4x5.png",
         "9x16": "w16-9x16.png"
       },
-      "hash": "0d8cda2590be2b83fbafc611cf4e08d3f7f1bb02e3c39b7f98338624d969b9e3"
+      "hash": "d23512d94b757db960189bd317e14c3fb8f710442572dab15dcbb6e53218db33"
     },
     {
       "code": "W17",
@@ -19069,7 +19069,7 @@
         "4x5": "w17-4x5.png",
         "9x16": "w17-9x16.png"
       },
-      "hash": "cba79de80ba5bc59a8778940262b86dba6a59c3f103933d73a48e77d172e2440"
+      "hash": "3926b484bfa16a0b36b1ea912ecd40ba285755e0eb4f58fa69ce707ca16612a6"
     },
     {
       "code": "W18",
@@ -19174,7 +19174,7 @@
         "4x5": "w18-4x5.png",
         "9x16": "w18-9x16.png"
       },
-      "hash": "36b7b688b15acb072653f955fb79056969f2da422355bfa72aa9d400466f3407"
+      "hash": "3d241c21dc3adaf34d25e094cd1bc2dccf5f6db12279e78c8d6606fff11bc01a"
     },
     {
       "code": "W19",
@@ -19269,7 +19269,7 @@
         "4x5": "w19-4x5.png",
         "9x16": "w19-9x16.png"
       },
-      "hash": "212fe8eb752d45a218c93e2faa297a91a2c52b771511907f67821354b2d7887b"
+      "hash": "da5fed9f463242f1b644d61b826119a5e7a08ba75185f1442a842a0581e78ef5"
     },
     {
       "code": "W20",
@@ -19370,7 +19370,7 @@
         "4x5": "w20-4x5.png",
         "9x16": "w20-9x16.png"
       },
-      "hash": "468286a6fd0dae2978b86ed5d2ca7dbe861248ff6a2ea7cbd15f4d775514565e"
+      "hash": "0c7e48777d19610e270825edd1c8ac3cd5e094ffa91535f6a79c20c76a322cee"
     },
     {
       "code": "W21",
@@ -19481,7 +19481,7 @@
         "4x5": "w21-4x5.png",
         "9x16": "w21-9x16.png"
       },
-      "hash": "6212f4f519e62ad4cd97d2110fcce8b7110daffca01661cde8a7953311dfd0e5"
+      "hash": "4613758c59534b46c2264128b228fab3f54ad21844cc3f70855985df05f6f675"
     },
     {
       "code": "W22",
@@ -19576,7 +19576,7 @@
         "4x5": "w22-4x5.png",
         "9x16": "w22-9x16.png"
       },
-      "hash": "04c1401171164ae7ccada2c6dc0fe738df79ad74f46dfe6ca73245bc666cba71"
+      "hash": "95f8f1da554d915c382d75b1260acae9517fa8bfabbf5ced4e8dd426490b3ee1"
     },
     {
       "code": "W23",
@@ -19683,7 +19683,7 @@
         "4x5": "w23-4x5.png",
         "9x16": "w23-9x16.png"
       },
-      "hash": "b0219903a2dc2a890de1ad4bd635763cdb40a99046662d0e3cb0c4b425c0e106"
+      "hash": "0ebe4dbdb6cd52427378ca6b6874087c104c38930894c8a4b7e3654448189a7e"
     },
     {
       "code": "W24",
@@ -19820,7 +19820,7 @@
         "4x5": "w24-4x5.png",
         "9x16": "w24-9x16.png"
       },
-      "hash": "d7b031a272ab3cecfe6ce896e6e2b8ced17d26a0bc0e135edf7d5fd5b7c8da5e"
+      "hash": "2eb5c96a78d82d2406db84b423dfe466d919ce9175a19fbfed09d8ff16b8a5b2"
     },
     {
       "code": "W25",
@@ -19915,7 +19915,7 @@
         "4x5": "w25-4x5.png",
         "9x16": "w25-9x16.png"
       },
-      "hash": "a16bb3a28b91569d3b6d020824cab0bb8847a6042bbabd11baadca249f611da2"
+      "hash": "870f2a5ba5ccd5881fd5b677546d5b9327cbfbda700932ad756e1d821d700d05"
     },
     {
       "code": "W27",
@@ -20010,7 +20010,7 @@
         "4x5": "w27-4x5.png",
         "9x16": "w27-9x16.png"
       },
-      "hash": "d1eb806e2f3f091d0e651cc0a1b2b08069cb240db9bbebac6b1d67e6c1033183"
+      "hash": "f0faa883e2db4e5359a085df4217eeeaebe2eee9cabf70e7b50c4187a6d0cdae"
     },
     {
       "code": "W28",
@@ -20111,7 +20111,7 @@
         "4x5": "w28-4x5.png",
         "9x16": "w28-9x16.png"
       },
-      "hash": "2deecc9eb431200c5b42163618dee6e72eae870fcbb0f423d37d8251d9e36c2c"
+      "hash": "b683ff9c75755c2faae80e1947f57c4933cd14b33b3d986eec55446e6e8a9934"
     },
     {
       "code": "W29",
@@ -20224,7 +20224,7 @@
         "4x5": "w29-4x5.png",
         "9x16": "w29-9x16.png"
       },
-      "hash": "aeeba24e9aa979d8c8f0182483f87569ad60e5a369d29f7388eb71bdb3b33ccb"
+      "hash": "f959f47b824e6f9352d243017c246c0e914674f853b892a567f571b5dce73a48"
     },
     {
       "code": "W30",
@@ -20307,7 +20307,7 @@
         "4x5": "w30-4x5.png",
         "9x16": "w30-9x16.png"
       },
-      "hash": "aee58ebd70af76778d84d8df026f0c19dcd4c6f6cc3311f9ba1370533c9b731a"
+      "hash": "335526f87ec4e4198fba1ab94a13c8cfc566dfc392c7b6155a7449486f968635"
     },
     {
       "code": "W31",
@@ -20402,7 +20402,7 @@
         "4x5": "w31-4x5.png",
         "9x16": "w31-9x16.png"
       },
-      "hash": "7b9c6f375fd51b9ee788b16d97cfa81163dd373847dc1a700e382e7286d6fa26"
+      "hash": "1d79c1b2493504537b647194c9564f6c81f7ba3f8ebbefd575e5cbce7b4e30e8"
     },
     {
       "code": "W32",
@@ -20515,7 +20515,7 @@
         "4x5": "w32-4x5.png",
         "9x16": "w32-9x16.png"
       },
-      "hash": "87af9efcaf8bf2ed2c49ae16129166d51444aee0fb1bbae6ceabfc9d75ad9cfe"
+      "hash": "03eab10e22f04aaa6d9e1eb8b3c6222e1f37cdd96e6f7fc4514cd64972f3a077"
     },
     {
       "code": "W33",
@@ -20610,7 +20610,7 @@
         "4x5": "w33-4x5.png",
         "9x16": "w33-9x16.png"
       },
-      "hash": "af8f88d433b0c2f101c41ed6b603252754ad1a157a4835655fe82066e2d2d803"
+      "hash": "e27b5765cf1992bbd2bf43d29093ed52e5a4705de4d01d0de2e16005581c1841"
     },
     {
       "code": "W34",
@@ -20711,7 +20711,7 @@
         "4x5": "w34-4x5.png",
         "9x16": "w34-9x16.png"
       },
-      "hash": "1eba0460b1c36cfaf6a59a64959e2689829a7cb980d5ab866ca196d8a9ca3200"
+      "hash": "4a9ba8aa206c35dbc5971c125169a570438388c1cefeeb6cd58b152d5e9b46db"
     },
     {
       "code": "W35",
@@ -20812,7 +20812,7 @@
         "4x5": "w35-4x5.png",
         "9x16": "w35-9x16.png"
       },
-      "hash": "461a17eb29d9136eb62995948c21c809e5197c43a073d8c9f56b967211516c22"
+      "hash": "3d0c922b98353a7f6fa31de5a1e9e37c2a60a3e65738fb123ecba7f8e3dbf555"
     },
     {
       "code": "W36",
@@ -20860,7 +20860,7 @@
         },
         {
           "id": "size",
-          "label": "Size: 1 as designed, up to 2 so its words read on a phone (it grows from its own side)",
+          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side)",
           "type": "number",
           "default": 1
         },
@@ -20907,7 +20907,7 @@
         "4x5": "w36-4x5.png",
         "9x16": "w36-9x16.png"
       },
-      "hash": "509d3b8c5b88c1ab43241bda3e77d89b18cf2dfa5f3a6590ecdefcd03a270a2f"
+      "hash": "a20450e1e4b8881456d4bef879356b20eec2ea925944860e2df2f9e09d3a1535"
     },
     {
       "code": "W37",
@@ -21002,7 +21002,7 @@
         "4x5": "w37-4x5.png",
         "9x16": "w37-9x16.png"
       },
-      "hash": "0d26cc95fb28a7c4c3b45a608b60575c16ac1597c8a4acbbe1d4b1adbe6ec260"
+      "hash": "1f005dbc4a6efee8129cba3c27d6258539e28089ae983911e69af7396202e1fd"
     },
     {
       "code": "W38",
@@ -21091,7 +21091,7 @@
         "4x5": "w38-4x5.png",
         "9x16": "w38-9x16.png"
       },
-      "hash": "435c2e14bde96a064c3c8d36c3d243acc15b9c577d70ecf33e6a7a81ded16b54"
+      "hash": "1f9ae4cdcf1f3384b241624a24e2ab2afd39d82549c8d64cb0861c6c233641cf"
     },
     {
       "code": "W39",
@@ -21180,7 +21180,7 @@
         "4x5": "w39-4x5.png",
         "9x16": "w39-9x16.png"
       },
-      "hash": "ae38c7a7b035411c1ff455d5701ef43836f0e9569833183aa6a7822f855e4aea"
+      "hash": "c6a9a2e99864bfcd7b10fcc4a0c61c8600f4026cbc1c60747b09e62b23281be9"
     },
     {
       "code": "W40",
@@ -21288,7 +21288,7 @@
         "4x5": "w40-4x5.png",
         "9x16": "w40-9x16.png"
       },
-      "hash": "04ab6e01ec383f96294d0ef0518dbe1c2995ca976dcc9340782648ed4722d4bc"
+      "hash": "b73b498619f92202cf55005810215cec6db9f7fa7a91d25404713973ebcaaeb6"
     },
     {
       "code": "W41",
@@ -21342,7 +21342,7 @@
         },
         {
           "id": "size",
-          "label": "Size: 1 as designed, up to 2 so its words read on a phone (it grows from its own side)",
+          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side)",
           "type": "number",
           "default": 1
         },
@@ -21389,7 +21389,7 @@
         "4x5": "w41-4x5.png",
         "9x16": "w41-9x16.png"
       },
-      "hash": "7628c240ee92c073b9b0b300e1fc89b9b67965732569770b3b11d68a782cc10b"
+      "hash": "7df505a7f96c46ef00f4934db01a81a6562ea3041cc871dce83a22083f237b88"
     },
     {
       "code": "W42",
@@ -21484,7 +21484,7 @@
         "4x5": "w42-4x5.png",
         "9x16": "w42-9x16.png"
       },
-      "hash": "d04aa37a1a48c325a87cfaeabfb76a252fa72be5ce9b99104880e94d48871bc8"
+      "hash": "65e84a406783fd52713abc466e1688c921e7ca9953f080380206c4e3f55f7910"
     },
     {
       "code": "W43",
@@ -21585,7 +21585,7 @@
         "4x5": "w43-4x5.png",
         "9x16": "w43-9x16.png"
       },
-      "hash": "1d6e8eb8c3f03b182cb2f98b1d205f99364c120f2bc4a2b057375b071ef6074e"
+      "hash": "5beae96812a258cd14c2c9c8135cdeeae2c5cad772c319792d49aef914b3b206"
     },
     {
       "code": "W44",
@@ -21698,7 +21698,7 @@
         "4x5": "w44-4x5.png",
         "9x16": "w44-9x16.png"
       },
-      "hash": "73bd2c665e67cec2262eb3ad08517a657853e47ee22c458d82018563a2732576"
+      "hash": "8280d062b0e26d884f46b7fbe643c39c1e1b2311cd399b00fecef8cdf5476dec"
     },
     {
       "code": "W45",
@@ -21793,7 +21793,7 @@
         "4x5": "w45-4x5.png",
         "9x16": "w45-9x16.png"
       },
-      "hash": "fb0b9e99740921967bce14256f65f28ab92272651466fc07b827c88d14aa0760"
+      "hash": "cae708320d72a001e1e3c26202bbe3f4bf0af8d8cab78ec38d3a5c68970542b1"
     },
     {
       "code": "W46",
@@ -21888,7 +21888,7 @@
         "4x5": "w46-4x5.png",
         "9x16": "w46-9x16.png"
       },
-      "hash": "c0cd92e0f81e257bea46bbbad4829534756fb329194da6fe0f36ca892b057457"
+      "hash": "e9e254c664747da392844af3079e58f9eb32cef1b4a4a6f38f1e9239aad74d08"
     },
     {
       "code": "W47",
@@ -21977,7 +21977,7 @@
         "4x5": "w47-4x5.png",
         "9x16": "w47-9x16.png"
       },
-      "hash": "f7fa71dcf50d29bbe7e3f794a66a9e930cf6de0addba570b31df067d3db11a4d"
+      "hash": "b5ad3d24eb1329b0f5167dff26185caad7287616ca13c40f3099a60133291f09"
     },
     {
       "code": "W48",
@@ -22090,7 +22090,7 @@
         "4x5": "w48-4x5.png",
         "9x16": "w48-9x16.png"
       },
-      "hash": "5c64415d185fcb30641b730adb11660ff2acf6b04e6f32d67e1abb39a0a7165a"
+      "hash": "07483ffb5dbe0c668a12616d8b8795f3c7ba7824af1c8b746a24077408e3b655"
     },
     {
       "code": "W49",
@@ -22150,7 +22150,7 @@
         },
         {
           "id": "size",
-          "label": "Size: 1 as designed, up to 2 so its words read on a phone (it grows from its own side)",
+          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side)",
           "type": "number",
           "default": 1
         },
@@ -22177,7 +22177,7 @@
         "4x5": "w49-4x5.png",
         "9x16": "w49-9x16.png"
       },
-      "hash": "af705dbc8b1b0b989d681e6c84ea127ed4b39a01ca5627de39bcc45b640fb9d3"
+      "hash": "44ed66603af425f28a246dc586ae9894c44baed879c186059fefa45423ca76a7"
     },
     {
       "code": "W50",
@@ -22260,7 +22260,7 @@
         "4x5": "w50-4x5.png",
         "9x16": "w50-9x16.png"
       },
-      "hash": "9f9d866131117ce54f1453b40b0e0dd704d96b6c763d1d7bd2331152b43629b4"
+      "hash": "36efb28ec5974b76214295b0c634ed7a6ff25c4768af483c0fc71a0ffbdbe147"
     },
     {
       "code": "W51",
@@ -22355,7 +22355,7 @@
         "4x5": "w51-4x5.png",
         "9x16": "w51-9x16.png"
       },
-      "hash": "44da8c3a78792ed7840b0272cc74743f671e734b6988bc897a617b4386c917ce"
+      "hash": "7b09953f219ef45037856baaa64cdbe601524c18214fedc56959a5cd7ec01939"
     },
     {
       "code": "W52",
@@ -22415,7 +22415,7 @@
         },
         {
           "id": "size",
-          "label": "Size: 1 as designed, up to 2 so its words read on a phone (it grows from its own side)",
+          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side)",
           "type": "number",
           "default": 1
         },
@@ -22462,7 +22462,7 @@
         "4x5": "w52-4x5.png",
         "9x16": "w52-9x16.png"
       },
-      "hash": "7337cae8f7dca4c65a60062696f452d643f0630bba643a813ee2599c46d93a84"
+      "hash": "2739b5854a6ed2b2dca79aeeac76e063ba1bdf31c86df7a6aedbded0c489b367"
     },
     {
       "code": "W53",
@@ -22563,7 +22563,7 @@
         "4x5": "w53-4x5.png",
         "9x16": "w53-9x16.png"
       },
-      "hash": "b186d51994e6488c10ae54030ea442a0a64eb7cab489a0544d90bf563ebc6466"
+      "hash": "174e9f2956527e5f3ae7049001669883d7ac8f42319c46056251e5243ae73fb8"
     },
     {
       "code": "W54",
@@ -22670,7 +22670,7 @@
         "4x5": "w54-4x5.png",
         "9x16": "w54-9x16.png"
       },
-      "hash": "72b537ba246cac2c7170b0fec77b8962f750e4719b9f270736f96e60deecb775"
+      "hash": "de95b53c4fc2e49b06bddcb61dd5cbd86b007bd0d49c9da6f34bcd77cea1c8de"
     },
     {
       "code": "W55",
@@ -22783,7 +22783,7 @@
         "4x5": "w55-4x5.png",
         "9x16": "w55-9x16.png"
       },
-      "hash": "29854afbe34fd8e7feb98d0b0d0e86251bb5e2152628b22f6b7bb63a270de766"
+      "hash": "178e2145aab31cd010e1f8aac03ad1c2d3657ad604827fee9d9ef9107983f1a1"
     },
     {
       "code": "W56",
@@ -22879,7 +22879,7 @@
         "4x5": "w56-4x5.png",
         "9x16": "w56-9x16.png"
       },
-      "hash": "bc8f452ca1047f62cdc0da95f078cbed84f9743c9aa76dc91cd53ce7a344033a"
+      "hash": "2b30ef6db5e21c0c7f21592c474b7e05d9dd15d84e6fdb2b0d638a3e0aa85553"
     },
     {
       "code": "W57",
@@ -22974,7 +22974,7 @@
         "4x5": "w57-4x5.png",
         "9x16": "w57-9x16.png"
       },
-      "hash": "6529701852a2eff6f0df7612459305092977d56f8ab5336eed7bb4ce21b42957"
+      "hash": "c7ed1940fe5a6e195b7828394e6de10834018187a30c1415926a59152a6ecd83"
     },
     {
       "code": "W58",
@@ -23069,7 +23069,7 @@
         "4x5": "w58-4x5.png",
         "9x16": "w58-9x16.png"
       },
-      "hash": "e1d8a19eda240c0ce0b21582abb7c8875b10399d68f5b52488f3ce5447ed90cf"
+      "hash": "4c5ffb3efd54e9f68f856c19ef2e2c65659837df616af84a8a4a950977f54ffc"
     },
     {
       "code": "W59",
@@ -23165,7 +23165,7 @@
         "4x5": "w59-4x5.png",
         "9x16": "w59-9x16.png"
       },
-      "hash": "8607ce5e7f5d065a6c2690a2207afad6f59fffe907d7350e0552814b5107bf02"
+      "hash": "ea9e224b9d08186b3322fe9b609c601f722de6df5bd05e704d8e4cb44fd42ce8"
     },
     {
       "code": "W60",
@@ -23266,7 +23266,7 @@
         "4x5": "w60-4x5.png",
         "9x16": "w60-9x16.png"
       },
-      "hash": "58e7171156a9806bb021ffb0e13ddfa81f0918e424ce88989939f0c08696fd26"
+      "hash": "282385d8d5b1e9e6ae8d1dfdd2ded76358d4b97dab00e74f4ad9501d4961369c"
     },
     {
       "code": "W61",
@@ -23361,7 +23361,7 @@
         "4x5": "w61-4x5.png",
         "9x16": "w61-9x16.png"
       },
-      "hash": "6fab25d103d095cf43e5abe8166cc058ad032bf631638d93b2a0bafac8bab65c"
+      "hash": "cd82ed4f060e22619faa1980e3fbacb7a844572d3958b33e6a25595e5174eecb"
     },
     {
       "code": "W62",
@@ -23462,7 +23462,7 @@
         "4x5": "w62-4x5.png",
         "9x16": "w62-9x16.png"
       },
-      "hash": "58a20492eb63b13aaa489a12c73369f990d8e5cebf09ed831c06f4c009856dd0"
+      "hash": "44efa8d30a14603a60f8eb2852224dc6affef7024dd7f2ac63bf70a4b4e03780"
     },
     {
       "code": "W63",
@@ -23563,7 +23563,7 @@
         "4x5": "w63-4x5.png",
         "9x16": "w63-9x16.png"
       },
-      "hash": "a61fb50c2e7a54d36d4df949ac1130be76a623f285aa160d591f72a2f640925e"
+      "hash": "78c2ca238083a15fa22f8f0cf969686045364977fb993b9675288d1d1dddea01"
     },
     {
       "code": "W64",
@@ -23670,7 +23670,7 @@
         "4x5": "w64-4x5.png",
         "9x16": "w64-9x16.png"
       },
-      "hash": "db94e7fd1beba532873f32809f57d6a014bc9759b3b9b1aebdee4ccfa9123fb5"
+      "hash": "8b446f0cc5c5f5161646c45f0a69458f75a2e1bb6cc842cb51683ed3d5c132b7"
     },
     {
       "code": "W65",
@@ -23771,7 +23771,7 @@
         "4x5": "w65-4x5.png",
         "9x16": "w65-9x16.png"
       },
-      "hash": "83da88354e3214eefc13ee5a2e7abf4fc34009b4804a8a34fac28d69dc9ef177"
+      "hash": "10de2f08c73622c2e428fbb2bb25f331df56ef4e5d2323145a3934614016622d"
     },
     {
       "code": "W66",
@@ -23872,7 +23872,7 @@
         "4x5": "w66-4x5.png",
         "9x16": "w66-9x16.png"
       },
-      "hash": "08411b6a99baa9e50456d4efed65909d04e6f91c71acb7aad9db225f25cd94e6"
+      "hash": "213d02d8e0e4eb7b08afa991dc0e38e0ac0ca54d496d726df945470abd6e5d92"
     },
     {
       "code": "W67",
@@ -23973,7 +23973,7 @@
         "4x5": "w67-4x5.png",
         "9x16": "w67-9x16.png"
       },
-      "hash": "d0cf0148ef6ccb439acd8c9353d48c4d426df468a41a4ad875bd70594ff74ffd"
+      "hash": "de2e7acdc27381e531981316ed033abcf466ce25b016d78a8a1bf3be5dd3e5e0"
     },
     {
       "code": "W68",
@@ -24093,7 +24093,7 @@
         "4x5": "w68-4x5.png",
         "9x16": "w68-9x16.png"
       },
-      "hash": "5a9633d623f6e545199f2a7b9640a3d7bdb292b67890edb444b54e5390fc973f"
+      "hash": "83193dc19125d9546f72e228466f6bff019e7ca45a4170d3f206a252e06c11e4"
     },
     {
       "code": "X02",

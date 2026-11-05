@@ -68,8 +68,8 @@
         #d02-line-chart[data-fmt="9x16"] .head { gap: 16px; }
         #d02-line-chart .eyebrow {
           font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
-          font-size: 24px;
-          line-height: 32px;
+          font-size: 40px;
+          line-height: 48px;
           letter-spacing: 0.08em;
           text-transform: uppercase;
           color: var(--muted, #5f5e5b);
@@ -78,25 +78,25 @@
           max-width: 1300px;
           font-family: var(--fontDisplay, "Inter"), system-ui, sans-serif;
           font-weight: 800;
-          font-size: 50px;
-          line-height: 58px;
+          font-size: 56px;
+          line-height: 64px;
           letter-spacing: -0.02em;
         }
         #d02-line-chart .subtitle {
           font-family: var(--fontBody, "Inter"), system-ui, sans-serif;
-          font-size: 26px;
-          line-height: 36px;
+          font-size: 40px;
+          line-height: 50px;
           color: var(--muted, #5f5e5b);
         }
         #d02-line-chart[data-fmt="1x1"] .eyebrow,
-        #d02-line-chart[data-fmt="4x5"] .eyebrow { font-size: 20px; line-height: 28px; }
-        #d02-line-chart[data-fmt="9x16"] .eyebrow { font-size: 22px; line-height: 30px; }
-        #d02-line-chart[data-fmt="1x1"] .title { font-size: 40px; line-height: 46px; }
-        #d02-line-chart[data-fmt="4x5"] .title { font-size: 44px; line-height: 50px; }
-        #d02-line-chart[data-fmt="9x16"] .title { font-size: 50px; line-height: 56px; }
+        #d02-line-chart[data-fmt="4x5"] .eyebrow { font-size: 32px; line-height: 40px; }
+        #d02-line-chart[data-fmt="9x16"] .eyebrow { font-size: 36px; line-height: 44px; }
+        #d02-line-chart[data-fmt="1x1"] .title { font-size: 44px; line-height: 50px; }
+        #d02-line-chart[data-fmt="4x5"] .title { font-size: 48px; line-height: 54px; }
+        #d02-line-chart[data-fmt="9x16"] .title { font-size: 56px; line-height: 62px; }
         #d02-line-chart[data-fmt="1x1"] .subtitle,
-        #d02-line-chart[data-fmt="4x5"] .subtitle { font-size: 22px; line-height: 30px; }
-        #d02-line-chart[data-fmt="9x16"] .subtitle { font-size: 24px; line-height: 34px; }
+        #d02-line-chart[data-fmt="4x5"] .subtitle { font-size: 32px; line-height: 40px; }
+        #d02-line-chart[data-fmt="9x16"] .subtitle { font-size: 36px; line-height: 46px; }
 
         #d02-line-chart .chart { position: relative; flex: 1 1 auto; min-height: 0; display: flex; align-items: flex-end; }
         #d02-line-chart .plot { position: relative; flex-shrink: 0; }
@@ -104,14 +104,16 @@
         #d02-line-chart .tick {
           position: absolute;
           font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
-          font-size: 20px;
-          line-height: 26px;
+          font-size: 40px;
+          line-height: 48px;
           color: var(--muted, #5f5e5b);
           white-space: nowrap;
         }
-        #d02-line-chart:not([data-fmt="16x9"]) .tick { font-size: 18px; line-height: 24px; }
+        #d02-line-chart[data-fmt="1x1"] .tick,
+        #d02-line-chart[data-fmt="4x5"] .tick { font-size: 32px; line-height: 40px; }
+        #d02-line-chart[data-fmt="9x16"] .tick { font-size: 36px; line-height: 44px; }
         #d02-line-chart .tick.y { text-align: right; }
-        #d02-line-chart .tick.x { width: 120px; text-align: center; }
+        #d02-line-chart .tick.x { width: 200px; text-align: center; }
         #d02-line-chart .keyval,
         #d02-line-chart .firstval {
           position: absolute;
@@ -119,10 +121,12 @@
           white-space: nowrap;
           font-variant-numeric: tabular-nums;
         }
-        #d02-line-chart .keyval { font-weight: 800; letter-spacing: -0.02em; font-size: 40px; line-height: 44px; }
-        #d02-line-chart:not([data-fmt="16x9"]) .keyval { font-size: 34px; line-height: 38px; }
-        #d02-line-chart .firstval { font-weight: 600; color: var(--muted, #5f5e5b); font-size: 24px; line-height: 28px; }
-        #d02-line-chart:not([data-fmt="16x9"]) .firstval { font-size: 22px; line-height: 26px; }
+        #d02-line-chart .keyval { font-weight: 800; letter-spacing: -0.02em; font-size: 48px; line-height: 52px; }
+        #d02-line-chart:not([data-fmt="16x9"]) .keyval { font-size: 40px; line-height: 44px; }
+        #d02-line-chart .firstval { font-weight: 600; color: var(--muted, #5f5e5b); font-size: 40px; line-height: 44px; }
+        #d02-line-chart[data-fmt="1x1"] .firstval,
+        #d02-line-chart[data-fmt="4x5"] .firstval { font-size: 32px; line-height: 36px; }
+        #d02-line-chart[data-fmt="9x16"] .firstval { font-size: 36px; line-height: 40px; }
 
         #d02-line-chart .source {
           position: absolute;
@@ -131,8 +135,8 @@
           gap: 20px;
           height: 56px;
           font-family: var(--fontLabel, "JetBrains Mono"), ui-monospace, "SF Mono", Menlo, monospace;
-          font-size: 28px;
-          line-height: 36px;
+          font-size: 40px;
+          line-height: 48px;
           letter-spacing: 0.08em;
           text-transform: uppercase;
           color: var(--muted, #5f5e5b);
@@ -140,6 +144,9 @@
         }
         #d02-line-chart .source b { font-weight: 600; color: var(--ink, #1e1e1e); }
         #d02-line-chart .source .dot { letter-spacing: 0; }
+        #d02-line-chart[data-fmt="1x1"] .source,
+        #d02-line-chart[data-fmt="4x5"] .source { font-size: 32px; line-height: 40px; }
+        #d02-line-chart[data-fmt="9x16"] .source { font-size: 36px; line-height: 44px; }
         #d02-line-chart[data-fmt="16x9"] .source { left: 192px; top: 962px; }
         #d02-line-chart[data-fmt="1x1"] .source { left: 108px; top: 912px; }
         #d02-line-chart[data-fmt="4x5"] .source { left: 108px; top: 1156px; }
@@ -232,6 +239,11 @@
           // text widths off a canvas, as HyperFrames recommends: nothing in the page is measured, so this works while
           // the clip is still hidden (until its start, a clip measures as zero)
           const pen = document.createElement("canvas").getContext("2d");
+          function textWidth(text, font, spacing) {
+            pen.font = font;
+            pen.letterSpacing = spacing || "0px";
+            return pen.measureText(String(text)).width;
+          }
           function lineCount(text, font, spacing, width) {
             pen.font = font;
             pen.letterSpacing = spacing;
@@ -256,10 +268,10 @@
             const width = wide ? 1392 : 768;
             const tallest = { "16x9": 470, "1x1": 440, "4x5": 600, "9x16": 820 }[fmt];
             const [inner, eyeLine, gap, titlePx, titleLine, subPx, subLine, titleWidth] = {
-              "16x9": [764, 32, 14, 50, 58, 26, 36, 1300],
-              "1x1": [712, 28, 12, 40, 46, 22, 30, 768],
-              "4x5": [916, 28, 14, 44, 50, 22, 30, 768],
-              "9x16": [1152, 30, 16, 50, 56, 24, 34, 768],
+              "16x9": [764, 48, 14, 56, 64, 40, 50, 1300],
+              "1x1": [712, 40, 12, 44, 50, 32, 40, 768],
+              "4x5": [916, 40, 14, 48, 54, 32, 40, 768],
+              "9x16": [1152, 44, 16, 56, 62, 36, 46, 768],
             }[fmt];
             const display = String(v("fontDisplay", "Inter") || "Inter");
             const body = String(v("fontBody", "Inter") || "Inter");
@@ -271,10 +283,17 @@
             const height = Math.max(240, Math.min(tallest, inner - head - 40));
             plot.style.width = `${width}px`;
             plot.style.height = `${height}px`;
-            const x0 = wide ? 78 : 66;
-            const x1 = wide ? 1296 : 672;
+            // the labels' sizes (as the style sets them): ticks, the last value and the first
+            const [tickPx, tickLine, keyPx, firstLine] = { "16x9": [40, 48, 48, 44], "1x1": [32, 40, 40, 36], "4x5": [32, 40, 40, 36], "9x16": [36, 44, 40, 40] }[fmt];
+            const mono = String(v("fontLabel", "JetBrains Mono") || "JetBrains Mono");
+            const tickFont = `400 ${tickPx}px ${mono}, ui-monospace, monospace`;
+            const yTicks = [0, 1, 2, 3, 4].map((k) => (k ? prefix + tickFormat.format((top * k) / 4) + suffix : "0"));
+            const tickW = Math.ceil(Math.max(...yTicks.map((t) => textWidth(t, tickFont))));
+            const keyW = data.length ? Math.ceil(textWidth(show(data[data.length - 1].value), `800 ${keyPx}px ${display}, system-ui, sans-serif`, `${-0.02 * keyPx}px`)) : 0;
+            const x0 = tickW + 16;
+            const x1 = Math.min(wide ? 1296 : 672, width - keyW - 30);
             const yTop = 14;
-            const yBase = height - (wide ? 50 : 48);
+            const yBase = height - tickLine * 1.5 - 6;
             const xAt = (i) => (data.length < 2 ? (x0 + x1) / 2 : x0 + ((x1 - x0) * i) / (data.length - 1));
             const yAt = (value) => yBase - ((yBase - yTop) * Math.max(0, Math.min(value, top))) / top;
             const svg = make("svg", { width, height, viewBox: `0 0 ${width} ${height}` }, plot);
@@ -294,14 +313,15 @@
               t.className = "tick y";
               // zero is a plain 0, without the unit
               t.textContent = k ? prefix + tickFormat.format((top * k) / 4) + suffix : "0";
-              t.style.width = `${wide ? 62 : 50}px`;
+              t.style.width = `${tickW}px`;
               t.style.left = "0px";
-              t.style.top = `${yAt((top * k) / 4) - (wide ? 13 : 12)}px`;
+              t.style.top = `${yAt((top * k) / 4) - tickLine / 2}px`;
               plot.appendChild(t);
               labels.push(t);
             }
-            // year labels under the points: every one at 16:9, fewer at the other sizes so they never touch
-            const room = wide ? 12 : 6;
+            // year labels under the points: as many as fit without touching, at the size they're set
+            const widest = Math.max(1, ...data.map((d) => textWidth(d.label, tickFont)));
+            const room = Math.max(2, Math.floor((x1 - x0) / (widest + 32)) + 1);
             const every = Math.max(1, Math.ceil(data.length / room));
             data.forEach((d, i) => {
               const last = i === data.length - 1;
@@ -310,8 +330,8 @@
               const t = document.createElement("div");
               t.className = "tick x";
               t.textContent = d.label;
-              t.style.left = `${xAt(i) - 60}px`;
-              t.style.top = `${yBase + 16}px`;
+              t.style.left = `${xAt(i) - 100}px`;
+              t.style.top = `${yBase + tickLine / 2 + 6}px`;
               plot.appendChild(t);
               labels.push(t);
             });
@@ -335,12 +355,14 @@
             if (pts.length) {
               const [lx, ly] = pts[pts.length - 1];
               key.style.left = `${lx + 22}px`;
-              key.style.top = `${ly - (wide ? 24 : 21)}px`;
+              key.style.top = `${ly - (wide ? 26 : 22)}px`;
               key.textContent = show(0);
               const [fx, fy] = pts[0];
               first.textContent = pts.length > 1 ? show(data[0].value) : "";
+              // above its point, or below it when the line climbs away from it (so the line never crosses it)
+              const climbs = pts.length > 1 && pts[1][1] < fy - 8;
               first.style.left = `${fx + 10}px`;
-              first.style.top = `${fy - (wide ? 52 : 46)}px`;
+              first.style.top = `${climbs ? fy + 14 : fy - firstLine - 8}px`;
             }
             parts = { grid, labels, path, dots, lastDot, along: along.map((a) => a / total), key, first, ink };
           }
@@ -378,7 +400,7 @@
           }
 
           // the title is measured (off a canvas), so draw once the fonts have loaded
-          const fonts = [`800 50px ${v("fontDisplay", "Inter") || "Inter"}`, `400 26px ${v("fontBody", "Inter") || "Inter"}`, `400 20px ${v("fontLabel", "JetBrains Mono") || "JetBrains Mono"}`];
+          const fonts = [`800 56px ${v("fontDisplay", "Inter") || "Inter"}`, `400 40px ${v("fontBody", "Inter") || "Inter"}`, `400 40px ${v("fontLabel", "JetBrains Mono") || "JetBrains Mono"}`];
           const loaded = document.fonts ? Promise.all(fonts.map((f) => document.fonts.load(f).catch(() => null))).then(() => document.fonts.ready) : Promise.resolve();
           loaded.then(() => {
             draw();
