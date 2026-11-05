@@ -91,6 +91,13 @@ Two ways to build the picture, both on the same contract:
     spans' `opacity` instead.
 12. **Ids are unique** across the whole assembled page: prefix a scene file's ids with its own (`#intro-title`).
     Asset paths are relative (`assets/…`, no leading `/`), in scene files too.
+13. **The film's own classes carry a prefix.** Scene files and library blocks are put into the same page, so a rule
+    in `index.html` for `.line` or `.fig` also styles a block's `.line` and `.fig` (a number roll's words end up on
+    top of one another). Give the film's own classes a short prefix (`k-line`), or write its rules under its own ids.
+14. **Moves are seek-safe.** Every element's state comes from the time alone, before, during and after a move: a
+    move that only sets its element while it runs leaves it wherever the last move put it when the timeline is
+    seeked back past it. Draw the whole move from one function of the time (the one clock does), or set the
+    element's resting state for the times on either side.
 
 ## Media
 

@@ -7,6 +7,7 @@
     {"id":"unit","type":"string","label":"Unit after the number","default":"%"},
     {"id":"words","type":"string","label":"What the number is","default":"of customers came back to buy again within a month"},
     {"id":"source","type":"string","label":"Source","default":"Example figures"},
+    {"id":"lands","type":"number","label":"When the number lands, in seconds into it, such as on its spoken word (0 for its usual 1.35 s)","default":0,"min":0,"step":0.05,"unit":"s"},
     {"id":"exit","type":"enum","label":"At the end","default":"animate","options":[{"value":"animate","label":"Animate out"},{"value":"hold","label":"Hold, for a transition"}]},
     {"id":"duration","type":"number","label":"Length","default":5,"min":2.5,"step":0.1,"unit":"s"},
     {"id":"card","type":"color","label":"Background","default":"#F6F3EA"},
@@ -31,7 +32,7 @@
         "free": true,
         "summary": "One number that fills the frame, with what it means and its source.",
         "use": "When one figure is the point of a scene and deserves the whole screen. It counts up from zero and holds long enough to read twice.",
-        "motion": "The eyebrow fades up (0.40 s). The accent marker scales in (0.35 s) and the line draws down from it (0.90 s) while the number counts up from zero (1.00 s, easing out, in tabular figures so the unit never moves). The words fade up as the count settles. Out: the number and words fade (0.30 s), then the line retracts into the marker.",
+        "motion": "The eyebrow fades up (0.40 s). The accent marker scales in (0.35 s) and the line draws down from it (0.90 s) while the number counts up from zero (1.00 s, easing out, in tabular figures so the unit never moves). The words fade up as the count settles. The number lands 1.35 s in, or later when you set it to land on its spoken word; the eyebrow comes first either way. Out: the number and words fade (0.30 s), then the line retracts into the marker.",
         "preview": {}
       }
     </script>
@@ -245,16 +246,19 @@
 
           function build() {
             const tl = gsap.timeline({ paused: true });
+            // the eyebrow first; the number lands at 1.35 s, or when "lands" says (its spoken word), the rest with it
+            const lands = Number(v("lands", 0)) || 0;
+            const s = lands > 0 ? Math.min(Math.max(lands, 1.35), Math.max(1.35, D - 1)) - 1.35 : 0;
             tl.fromTo(eyebrow, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: EASE }, 0);
-            tl.fromTo(q(".marker"), { scale: 0 }, { scale: 1, duration: 0.35, ease: "back.out(1.7)" }, 0.3);
-            tl.fromTo(q(".rule"), { scaleY: 0, transformOrigin: "50% 0%" }, { scaleY: 1, duration: 0.9, ease: EASE }, 0.3);
+            tl.fromTo(q(".marker"), { scale: 0 }, { scale: 1, duration: 0.35, ease: "back.out(1.7)" }, 0.3 + s);
+            tl.fromTo(q(".rule"), { scaleY: 0, transformOrigin: "50% 0%" }, { scaleY: 1, duration: 0.9, ease: EASE }, 0.3 + s);
             if (Number.isFinite(value)) {
-              tl.fromTo(count, { n: 0 }, { n: value, duration: 1, ease: "power2.out", onUpdate: () => (num.textContent = before + digits.format(count.n) + after) }, 0.35);
+              tl.fromTo(count, { n: 0 }, { n: value, duration: 1, ease: "power2.out", onUpdate: () => (num.textContent = before + digits.format(count.n) + after) }, 0.35 + s);
             }
-            tl.fromTo(num, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "none" }, 0.35);
-            tl.fromTo(unit, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "none" }, 0.5);
-            tl.fromTo(words, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: EASE }, 1.05);
-            tl.fromTo(source, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "none" }, 1.2);
+            tl.fromTo(num, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "none" }, 0.35 + s);
+            tl.fromTo(unit, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "none" }, 0.5 + s);
+            tl.fromTo(words, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: EASE }, 1.05 + s);
+            tl.fromTo(source, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "none" }, 1.2 + s);
             if (v("exit", "animate") !== "hold") {
               const out = D - 0.7;
               tl.to([q(".figure"), words], { opacity: 0, duration: 0.3, ease: "none" }, out);

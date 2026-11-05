@@ -28,6 +28,9 @@ A scene is a short sequence of moments timed to the voiceover, not a picture tha
 - At the start only what the voice is saying then is on screen; each further piece arrives as the voice names it,
   through the whole scene and especially its second half. The number of moments follows the line: a two-part line
   is two moments, a list of five is five or six.
+- **An item arrives before its words do.** A library item's own entrance comes first (a card rises, then its words
+  fade up: its Motion line in `studio.mjs library <code>`), so start it early enough that its words, once in, are on
+  screen for their reading time.
 - Once everything has landed, it holds still and reads. A deliberately held beat (before a turn, at a climax) is
   often right; the fault is never "too still" but everything on screen in the first quarter and then nothing.
 - A scene without words paces its reveals to the music or the action instead.
@@ -77,6 +80,24 @@ A film moves the viewer through a curve: open a gap, turn, build, land.
 - **Landing:** satisfaction, resolve, inspiration, motivation to act, "now I get it".
 
 Pairs are often strongest: recognition and relief, surprise and recognition, curiosity and confidence.
+
+## The scene plan
+
+The storyboard writes these decisions into each scene's `plan` in `storyboard.json`, in plain words, and the build
+follows them (the storyboard skill has the format). The user can open each plan on the storyboard page.
+
+- **Idea:** the scene's part of the film's world and the metaphor that drives it, in two or three sentences
+  (`../design/illustration.md`).
+- **Style,** in scene 1 only: the film's drawing style, written down once (stroke weight at the video's size, corner
+  radius, level of detail, shading) and the rhythm of its grounds (`../design/README.md`).
+- **Feeling** and **technique:** the specific feeling, and how the scene makes its point land (the lists above).
+- **Depth:** what's at the back, in the middle and in front.
+- **Atmosphere:** the two to five pieces drawn from the subject, and the slow motion each keeps
+  (`../design/README.md`, "Taste, as defaults"); or why this scene is a deliberate flat pause.
+- **Moves:** each moment with its time, what moves and how, named as the guides name them (the pattern, techniques
+  and transitions: `../motion/README.md`, "Planning with names").
+- **Sound:** the moments that take a sound from SFX Kit, and what the music does.
+- **Hand-over:** how the scene hands on to the next.
 
 ---
 Sources: written for Video Studio from HyperFrames' beat direction in hyperframes-creative and the story and visual

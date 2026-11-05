@@ -10,12 +10,15 @@ script's words, the storyboard's scenes and frames, and the brand kit stay as th
 leaves something open, choose from the guides' defaults; when something approved can't work as planned, change as
 little as possible and flag it, so the review page says so (review skill, "The user's video review").
 
-`PLUGIN` and `HF` are as in the production skill. Read the guides as the job needs them (`PLUGIN/guides/README.md`):
-- always `format.md` (the HyperFrames contract) and `cli.md` (the commands);
-- `motion/README.md`, and the patterns and techniques the storyboard names (`motion/patterns/`, `motion/techniques/`);
-- `design/README.md`, and `design/type.md`, `layout.md`, `readability.md` for type and layout;
-- `audio/` for the sound, `captions/` for captions, `footage/` for a footage video;
-- `runtimes/` for anything beyond GSAP (Lottie, three.js, canvas, WebGPU).
+`PLUGIN` and `HF` are as in the production skill. **Read first,** once a session (`PLUGIN/guides/`; skip any you've already read in this session):
+- `format.md` (the HyperFrames contract) and `cli.md` (the commands);
+- `design/README.md`, `design/illustration.md` for an animated video, and `design/readability.md`;
+- `motion/choreography.md` and `motion/timing.md`, and every pattern and technique the scene plans name
+  (`motion/patterns/`, `motion/techniques/`);
+- `audio/sfx.md`, `audio/mixing.md`, and `audio/music.md` when there's music.
+
+Then as the job needs: `captions/` for captions, `footage/` for a footage video, `runtimes/` for anything beyond GSAP
+(Lottie, three.js, canvas, WebGPU).
 
 ## Start
 
@@ -29,8 +32,12 @@ notes), and the verified word times.
 1. **One clock.** One `index.html` with a pure `render(t)` on one paused GSAP clock, or `src/` plus a build script
    that generates `index.html` for bigger films (`PLUGIN/guides/format.md`, "A project"). Scenes as their own files
    when a scene needs its own timeline (a library item, a block).
-2. **The approved frames are the layouts.** Reuse the storyboard's `frames.html` layouts, words and assets; the motion
-   between them is what the build adds.
+2. **The approved frames are the layouts, and the scene plans are the brief.** Reuse the storyboard's `frames.html`
+   layouts, words and assets, and build each scene to its plan (`storyboard.json` `plan`): its world and drawing
+   style, its depth and atmosphere, its moves on their times, its sound and its hand-over. Where a plan leaves
+   something open, choose from the guides' defaults; where it can't work as written, change as little as possible.
+   Keep `docs/decisions.md`: a line for each choice a plan left open and each change to one, with why. The changes
+   go on the review page (review skill, "The user's video review").
 3. **The brand kit as defaults:** its colours and fonts as variables (never retyped by eye), its backgrounds as
    grounds, and its `motion` (eases, durations, entrance, spring) as the timeline's defaults
    (`PLUGIN/guides/motion/quality.md`). The variable font rests on the brand's weight
@@ -88,8 +95,12 @@ asking. To build one in, whether it was suggested or the user named it:
 2. Copy the block into the project's `compositions/`, add the clip where it plays, and set its words and options in
    `data-variable-values`; its `duration` matches the clip's `data-duration`. Time cues (ticks, current points,
    highlights) to the voiceover's words.
-3. Media (L01, L07, L15, T01): write each file as the `src` of its element in the copy and remove the elements you
-   don't use.
+3. Media: whenever an item takes a file (a recording, a screenshot, footage: L01, L07, L15, T01, the devices I01 and
+   I04–I09, and any item `studio.mjs library` lists with a file), write each file as the `src` of its element in the
+   copy, and remove the `<video>` and `<audio>` elements you don't use (keep its `<img>` elements: its script may read
+   them). A file given only as a variable, or a video
+   element left with no file, isn't found when the render starts: it waits 45 s and then shows a frozen frame. Check
+   in a snapshot that the screen plays.
    T01 needs a cut-out of the presenter, made on the Mac:
    `HF remove-background <segment>.mp4 -o <segment>_cutout.webm`, from the same cut of footage (the model downloads
    once; setup offers it). Check a few frames: anything the cut-out wrongly keeps or drops (a mic arm, a held phone)
@@ -101,11 +112,14 @@ asking. To build one in, whether it was suggested or the user named it:
    others from the same kit, such as a full-frame item on the brand's accent: set its colour settings to those
    colours and keep its words readable (4.5:1 contrast at body size, 3:1 for large type). If something doesn't fit
    the brand, fix the kit's `style` (brand-kit skill). `HF check` as usual.
-5. Widgets over a presenter go on the side they aren't facing. Each stays on screen for at least 3 seconds or twice
-   its reading time; a quick-fire run, one after another, can go faster when it's meant to be glanced at.
+5. Words that must read at phone size (`PLUGIN/guides/numbers.md`, "Type sizes"): the cards (W08, W26, W36, W41, W49,
+   W52) take a Size, up to 2, and grow from their own side; set it rather than scaling a wrapper, and check the frame
+   in a snapshot. Widgets over a presenter go on the side they aren't facing. Each stays on screen for at least 3 seconds or twice
+   its reading time, counted from when its words are in (its own entrance comes first); a quick-fire run, one after another, can go faster when it's meant to be glanced at.
 6. Data items, and the other words that fill the frame (T10, T46 and the rest `studio.mjs library` marks full frame),
    fill the screen in the brand's colours. Give figures their real values and source; if a transition follows, set
-   `exit` to `"hold"` so the scene stays whole until the transition takes it.
+   `exit` to `"hold"` so the scene stays whole until the transition takes it, and let its clip run until that
+   transition has finished: a clip shows only for its `data-duration`, whatever the film's own moves do with it.
 7. Transitions come in two kinds, and `studio.mjs library <code>` gives the steps for each:
    - **Covers the cut** (X01, X17): a block on top of both scenes, placed after them in `index.html`. Scene A's clip
      ends and scene B's starts at the transition's cut, behind it.

@@ -5,6 +5,7 @@
     {"id":"name","type":"string","label":"Name","default":"Presenter name"},
     {"id":"role","type":"string","label":"Role and company","default":"Job title, Company"},
     {"id":"side","type":"enum","label":"Side (the one the presenter is not facing)","default":"left","options":[{"value":"left","label":"Left"},{"value":"right","label":"Right"}]},
+    {"id":"size","type":"number","label":"Size: 1 as designed, up to 2 so its words read on a phone (it grows from its own side)","default":1,"min":1,"max":2,"step":0.05},
     {"id":"level","type":"enum","label":"How high it sits at 1:1, 4:5 and 9:16","default":"low","options":[{"value":"low","label":"Low, under the presenter’s face"},{"value":"middle","label":"In the middle"},{"value":"high","label":"High, near the top"}]},
     {"id":"exit","type":"enum","label":"At the end","default":"animate","options":[{"value":"animate","label":"Animate out"},{"value":"hold","label":"Hold, for a transition"}]},
     {"id":"duration","type":"number","label":"Length","default":6,"min":2.5,"step":0.1,"unit":"s"},
@@ -158,6 +159,17 @@
             // closed, the card is just the bar's strip; open, all of it
             const shut = `inset(0px ${w - 30}px 0px 24px ${round})`;
             const open = `inset(0px 0px 0px 0px ${round})`;
+          // Size: the card grows from where it sits (its side and its edge, from the place's own layout), so it stays
+          // clear of whatever it's beside; the place itself never moves, so the transform is its own. A name stays on one
+          // line, so the card grows only as far as the frame allows (at 9:16, up to the platforms' buttons)
+          const size = Math.min(2, Math.max(1, Number(v("size", 1)) || 1), (fmt === "16x9" ? W - 240 : fmt === "9x16" ? W - 260 : W - 128) / w);
+          if (size > 1) {
+            const place = root.querySelector(".place");
+            const cs = getComputedStyle(place);
+            const at = (val, start, end) => (/end|right|bottom/.test(val) ? `calc(100% - ${end})` : /center/.test(val) ? "50%" : start);
+            place.style.transformOrigin = `${at(cs.justifyContent, cs.paddingLeft, cs.paddingRight)} ${at(cs.alignItems, cs.paddingTop, cs.paddingBottom)}`;
+            place.style.transform = `scale(${size})`;
+          }
             const tl = gsap.timeline({ paused: true });
             tl.fromTo(bar, { scaleY: 0, transformOrigin: "50% 0%" }, { scaleY: 1, duration: 0.3, ease: EASE }, 0);
             tl.fromTo(bg, { clipPath: shut }, { clipPath: open, duration: 0.4, ease: EASE }, 0.25);

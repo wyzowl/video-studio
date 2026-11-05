@@ -36,7 +36,9 @@ to beat (`../beats.md`, "Runs of beats"), and use one kind of transition through
 
 ## Inventing the pictures
 
-With nothing to film, the hero of each beat is designed:
+With nothing to film, the pictures are drawn, and by default they share a world: the place the story happens, built
+once in the brand's style and travelled through (`../../design/illustration.md`). The hero of each beat is designed
+within it:
 - **Type as the subject:** the coined term, the key number, a short enumeration, set big. In many explainers type is
   the main visual.
 - **Shapes that are the idea:** the snowball, the spotlight, the staircase rather than the cliff: build the metaphor

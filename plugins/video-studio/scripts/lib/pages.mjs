@@ -1303,6 +1303,25 @@ ${rows
 
 // ───────── storyboard page ─────────
 
+/** A scene's plan (storyboard.json `plan`), in plain words in a closed box under What happens: each part the
+    storyboard wrote, labelled, so the user can see what the build will follow. */
+const PLAN_PARTS = [
+  ["idea", "The idea"],
+  ["style", "The film's style"],
+  ["feeling", "The feeling"],
+  ["technique", "How it lands"],
+  ["depth", "Depth"],
+  ["atmosphere", "Atmosphere"],
+  ["moves", "The moves"],
+  ["sound", "Sound"],
+  ["handover", "Into the next scene"],
+];
+function planBox(plan, video) {
+  if (!plan || typeof plan !== "object") return "";
+  const parts = PLAN_PARTS.filter(([k]) => plan[k]).map(([k, label]) => `<p><b>${label}:</b> ${itemChips(esc(String(plan[k])), video).replace(/\n/g, "<br>")}</p>`);
+  return parts.length ? `<details class="fold scene_more scene_plan"><summary><span class="field-label">The plan</span></summary>${parts.join("")}</details>` : "";
+}
+
 export function storyboardPage(studio, slug, version) {
   const video = readVideo(studio.root, slug);
   const versions = storyboardVersions(studio.root, slug);
@@ -1365,6 +1384,7 @@ export function storyboardPage(studio, slug, version) {
         ? `<details class="fold scene_more"><summary><span class="field-label">What happens</span></summary>${s.description ? `<p>${itemChips(esc(s.description), video)}</p>` : ""}${s.notes ? `<p class="muted">${esc(s.notes)}</p>` : ""}</details>`
         : ""
     }
+    ${planBox(s.plan, video)}
   </div>
 </article>`;
     })

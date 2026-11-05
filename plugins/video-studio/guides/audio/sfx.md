@@ -27,10 +27,12 @@ The studio's sound effects come from SFX Kit, which setup downloads to `~/.wyzow
    cue list's `gain_db`), set by ear for each video. Single sounds change only for a deliberate accent.
 7. **Placed by the data.** Every sound is placed by its sync point and fitted with its `span_seconds` and
    `fits_seconds`, never by eye: the build works out each start from the moment it meets.
-8. **Consistent, with variety.** The same action gets the same sound through a video, and a brand's logo gets its
+8. **In tune.** Tuned sounds (`tuning` in a sound's record: C major pentatonic) can't be retuned, so the bed is
+   written to fit them (`music.md`, "The score kit").
+9. **Consistent, with variety.** The same action gets the same sound through a video, and a brand's logo gets its
    brand kit's ident (`brand.json` `ident`). Quick repeats get small variations (a sibling, a rate change of a few
    per cent) so they don't sound mechanical.
-9. **Kept with the video.** The build copies every kit sound a video uses, with its record, into `assets/audio/sfx/`,
+10. **Kept with the video.** The build copies every kit sound a video uses, with its record, into `assets/audio/sfx/`,
    and builds from those copies, so a finished film never changes when the kit does.
 
 ## Building the effects track

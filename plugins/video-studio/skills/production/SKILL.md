@@ -8,7 +8,8 @@ description: Wyzowl Video Studio production process for making, changing, review
 Every video goes through the same stages, with three approvals from the user: the **script** (before the storyboard),
 the **storyboard** (before anything is built) and the **video** (before the final render). This skill is the
 process: what happens in which order, and who approves it. How each thing is made is in the stage skills (script,
-storyboard, build, review, brand-kit) and the guides they point to. Every film must be agency-grade.
+storyboard, build, review, brand-kit) and the guides they point to. Every film must be agency-grade
+(`PLUGIN/guides/README.md`, "Agency-grade").
 
 **Paths.** `PLUGIN` means this plugin's folder: the session-start note calls it "Plugin files", and commands see it as
 `${CLAUDE_PLUGIN_ROOT}`. `HF` means
@@ -23,8 +24,8 @@ one, npx fetches the newest release on every run.
 
 **Guides.** `PLUGIN/guides/` holds Video Studio's know-how, one subject to a file: the HyperFrames format and
 commands, motion, the animation libraries, design, story and the types of video, captions, sound, footage, the
-library and imports. `PLUGIN/guides/README.md` is the index, with the review's standards. Read the guide a job
-needs, not all of them.
+library and imports. `PLUGIN/guides/README.md` is the index, with the review's standards. Each stage skill lists
+the guides it reads first; read those once a session, then others as the job needs.
 
 ## Stages
 

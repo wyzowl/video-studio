@@ -580,7 +580,7 @@ export function pageStamp(root, path) {
 }
 
 /** A studio page from its path, made concrete (/videos/<p>/storyboard/ becomes its latest version), or null if it
-    doesn't exist yet. kind is dashboard, project, brand, script, storyboard, review, library or item. */
+    doesn't exist yet. kind is dashboard, project, delivery, brand, script, storyboard, review, library or item. */
 export function resolvePage(root, path = "/") {
   let p = String(path || "/").trim();
   try {
@@ -592,6 +592,9 @@ export function resolvePage(root, path = "/") {
   if (p === "/" || p === "/index.html") return { kind: "dashboard", path: "/", label: "the studio dashboard" };
   if ((m = /^\/videos\/([^/]+)\/?$/.exec(p))) {
     return readVideo(root, m[1]) ? { kind: "project", path: `/videos/${enc(m[1])}/`, project: m[1], label: `the overview of ${m[1]}` } : null;
+  }
+  if ((m = /^\/videos\/([^/]+)\/delivery\/?$/.exec(p))) {
+    return readVideo(root, m[1]) ? { kind: "delivery", path: `/videos/${enc(m[1])}/delivery/`, project: m[1], label: `the delivery page of ${m[1]}` } : null;
   }
   if ((m = /^\/brands\/([^/]+)\/?$/.exec(p))) {
     const brand = readBrand(root, m[1]);

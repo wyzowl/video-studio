@@ -19,6 +19,9 @@ against), `hooks.md` (the Hook standard and the openings), `narration.md` (writi
 like a person), `beats.md`, and the guide for the video's type in `PLUGIN/guides/story/types/`. The script's numbers
 (pace, words on screen, reading time) are in `PLUGIN/guides/numbers.md`.
 
+**Read first,** once a session (in `PLUGIN/guides/`; skip any you've already read in this session): `story/principles.md`, `story/hooks.md`, `story/narration.md`, the video's type in
+`story/types/`, and `numbers.md` ("Speech", "Reading" and "Words on screen").
+
 ## Files
 
 ```

@@ -1,7 +1,7 @@
 # CSS animations
 
 `@keyframes` suit simple motion that belongs to one element: a loop with a known count, a shimmer, a mask moving,
-grain, a slow drift. Scene choreography is clearer in GSAP. HyperFrames finds every element with an
+a slow drift. (Not grain: noise that changes every frame multiplies the file size: `../design/colour.md`.) Scene choreography is clearer in GSAP. HyperFrames finds every element with an
 `animation-name` and seeks its animation (or pauses it with a negative delay).
 
 ```css

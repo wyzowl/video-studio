@@ -79,7 +79,8 @@
           ring.style.opacity = "0";
           layer.appendChild(ring);
 
-          const iris = { r: 0 };
+          // a setter, not onUpdate: HyperFrames seeks with callbacks off, and a setter runs on every seek
+          const iris = { _r: 0, get r() { return this._r; }, set r(x) { this._r = x; apply(); } };
           const apply = () => {
             B.style.clipPath = `circle(${iris.r.toFixed(1)}px at ${px}px ${py}px)`;
             const d = 2 * (iris.r + lead);
@@ -91,7 +92,7 @@
           tl.set(B, { clipPath: `circle(0px at ${px}px ${py}px)` }, T);
           tl.set(ring, { opacity: 1 }, T);
           // the radius passes the farthest corner at 0.42 s, the cut, and carries on to 1.35 times it by 0.65 s
-          tl.fromTo(iris, { r: 0 }, { r: far * 1.35, duration: 0.65, ease: "power2.inOut", onUpdate: apply }, T);
+          tl.fromTo(iris, { r: 0 }, { r: far * 1.35, duration: 0.65, ease: "power2.inOut" }, T);
           tl.to(ring, { opacity: 0, duration: 0.15, ease: "none" }, T + 0.5);
           tl.set(B, { clipPath: "none" }, T + 0.65);
         };

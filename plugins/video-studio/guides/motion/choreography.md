@@ -112,8 +112,9 @@ When a video shows an app or a site being used, its states move like a real inte
 
 ## Ambient motion
 
-When a scene has an ambient layer, it lives behind the content and stays below about a fifth of the main motion's
-energy: a gradient shifting over 8–20 s, a background panning at a fifth of the foreground's speed, a few slow
+Every scene has an ambient layer by default (`../design/README.md`, "Taste, as defaults"): the atmosphere and the
+things in the film's world keep slow motion of their own once they've arrived, so no frame sits dead. It lives behind
+the content and stays below about a fifth of the main motion's energy: a gradient shifting over 8–20 s, a background panning at a fifth of the foreground's speed, a few slow
 particles, a slow orbit of a backdrop (3–5° a second). Layered elements that drift run on different cycle lengths so
 they never fall into step. Words and interface the viewer is reading don't breathe, float or pulse
 (`principles.md`, "Motion that's alive, and motion that's filler").

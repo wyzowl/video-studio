@@ -57,7 +57,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   PLUGIN_ROOT,
@@ -789,7 +789,7 @@ async function library() {
   if (fonts.length) steps.push(`${next()}. Fonts: index.html needs an @font-face for each, as for the rest of the video: ${fonts.map(fontSource).join("; ")}.`);
   if (media.length)
     steps.push(
-      `${next()}. Media: in the copy, write each file as the src of its element (${media.map((d) => d.id).join(", ")}: the elements with data-var-src="…"), and delete the media elements you don't use, so check stays clean.${item.id.startsWith("t01") ? " The cut-out is the same footage with the background removed: HF remove-background <footage.mp4> -o <footage>_cutout.webm. Cut both to the moment it plays; their sound stays on the main track." : " Their sound stays on the main track."}`,
+      `${next()}. Media: in the copy, write each file as the src of its element (${media.map((d) => d.id).join(", ")}: the elements with data-var-src="…"), and delete the <video> and <audio> elements you don't use: one with no file makes the render wait 45 s, then show a frozen frame. Keep the <img> elements: the block's script may read them.${item.id.startsWith("t01") ? " The cut-out is the same footage with the background removed: HF remove-background <footage.mp4> -o <footage>_cutout.webm. Cut both to the moment it plays; their sound stays on the main track." : " Their sound stays on the main track."}`,
     );
   const out = [
     `${item.code} ${item.name} (${CATEGORIES[item.category].title}${item.free ? ", free" : ""}): ${item.summary}`,
@@ -834,7 +834,8 @@ function describeLicence(r) {
 
 /** `library <code> --still <seconds> --out <file.png>`: the item at that moment, in a brand and size, on a transparent
     background (no stand-in), the video's full size: for a storyboard frame to show it as it will look. `--set
-    key=value` (repeatable) fills in its words and options. */
+    key=value` (repeatable) fills in its words and options; a media option (a screenshot, a recording) takes a file in
+    the studio's videos/ or brands/ folders, by its path. */
 async function libraryStill(item, { root, slug, size, at, out }) {
   if (!root) throw new Error(NOT_A_STUDIO);
   if (!out || !Number.isFinite(at)) throw new Error("usage: studio.mjs library <code> --still <seconds> --out <file.png> [--brand b] [--size 16x9] [--set key=value …]");
@@ -844,7 +845,16 @@ async function libraryStill(item, { root, slug, size, at, out }) {
     const [key, ...rest] = argv[i + 1].split("=");
     const d = item.variables.find((x) => x.id === key);
     if (!d) throw new Error(`${item.code} has no "${key}". It takes: ${item.variables.map((x) => x.id).join(", ")}`);
-    sets[key] = d.type === "number" ? Number(rest.join("=")) : rest.join("=");
+    let value = rest.join("=");
+    // a media variable's file: the page server serves it from the studio's videos/ and brands/ folders
+    if (/(Video|Image)$/.test(key) && value && !/^(https?:|data:|\/(videos|brands)\/)/.test(value)) {
+      const file = resolve(value);
+      const rel = relative(root, file).split(sep).join("/");
+      if (!existsSync(file)) throw new Error(`${key}: there's no file ${value}`);
+      if (!/^(videos|brands)\//.test(rel)) throw new Error(`${key}: the file needs to be in the studio's videos/ or brands/ folder for the still`);
+      value = `/${rel.split("/").map(encodeURIComponent).join("/")}`;
+    }
+    sets[key] = d.type === "number" ? Number(value) : value;
   });
   const p = new URLSearchParams({ size, at: String(at), bg: "none" });
   if (slug) p.set("brand", slug);

@@ -145,7 +145,9 @@ samples; `--samples N`), with `--layout strip` for motion in place, `--from` and
 | `--variables '{…}'`, `--batch rows.json` | Values for one render; one render per row (`--output "renders/{name}.mp4"`, never with `--variables`) |
 | `--strict` | Fail on lint errors |
 
-Read the line under the output path: the capture path, the GPU mode and each stage's time. Check the file afterwards:
+Read the line under the output path: the capture path, the GPU mode and each stage's time. A CSS `filter` (a blur)
+anywhere in the film switches HyperFrames from its fast capture to screenshot capture, which renders noticeably slower
+(the log says so): keep blur for the moments that earn it. Check the file afterwards:
 it exists, isn't empty, and `ffprobe -v error -show_format -show_streams` gives the root's duration (and fps).
 
 ## Comparing

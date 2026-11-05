@@ -18,8 +18,9 @@ margins and safe areas are in `../numbers.md`.
   left for any overshoot.
 - **Filled with purpose, not crowded.** The hero is big (a headline often 60–80% of the frame's width); empty space
   is part of the design, not left over; nothing is cramped against an edge or another element.
-- **Depth.** A ground, the content, and perhaps fine details in front: the frame has layers, not a single flat
-  plane, unless flatness is the idea.
+- **Depth, and a world.** A ground with atmosphere, the content, and detail in front: the frame has layers, not a
+  single flat plane, and belongs to the film's world (`README.md`, "Taste, as defaults"; `illustration.md`).
+  A flat or empty frame is a choice the storyboard made, not where the frame stopped.
 - **A system across the film.** The same margins, grid, type roles and accent rule in every scene, so the film looks
   like one piece; scale, framing and polarity change for rhythm.
 - **Every size composed.** A 9:16 or 1:1 version is laid out for its shape, never a 16:9 frame shrunk or cropped.
@@ -40,6 +41,7 @@ margins and safe areas are in `../numbers.md`.
 | A web page, not a video frame | web sizes, a centred stack floating in space, thin borders and soft shadows | video scale (`../numbers.md`); anchor to edges or a grid; heavier structure |
 | Nowhere to look | several things the same size and weight | one hero; the rest smaller, dimmer or later |
 | Empty | small content in a big frame; nothing in the ground | scale the hero up; give the ground depth from the subject (`README.md`) |
+| Plain | one object or a line of type on a bare ground, scene after scene; no world, no atmosphere | build the film's world and each scene's depth (`README.md`, `illustration.md`) |
 | Cramped | too many things; no margins | fewer things at once; the margins in `../numbers.md` |
 | Covered | content in a platform's button zone, under captions or a face | the safe areas; place around the person |
 | Off balance | weight all on one side with nothing answering it | a counterweight, or a deliberate edge anchor |
@@ -50,9 +52,9 @@ margins and safe areas are in `../numbers.md`.
 
 | Score | Means |
 |---|---|
-| 9–10 | Every frame composed like a still: an obvious focal point, deliberate balance, margins kept, a clear system |
-| 8 | Strong; one frame is a little crowded, empty or off-balance |
-| 6–7 | Works, but web-like or generic in places: centred stacks, small content, weak hierarchy |
+| 9–10 | Every frame composed like a still: an obvious focal point in a rich world, deliberate balance, margins kept, a clear system |
+| 8 | Strong and made for this film; one frame is a little crowded, empty or off-balance |
+| 6–7 | Works, but plain, web-like or generic in places: bare grounds, centred stacks, small content, weak hierarchy |
 | 4–5 | Cramped, empty or covered frames; no consistent system |
 | 1–3 | Things off the frame, overlapping or unreadable for layout reasons |
 

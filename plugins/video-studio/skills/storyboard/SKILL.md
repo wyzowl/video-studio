@@ -22,6 +22,11 @@ techniques and transitions, with the Motion and Variety standards), and the type
 (`PLUGIN/guides/story/types/`). Name each scene's pattern and moves in its description in the guides' own words, so
 the build can look them up (`PLUGIN/guides/motion/README.md`, "Planning with names").
 
+**Read first,** once a session (in `PLUGIN/guides/`; skip any you've already read in this session): `story/beats.md`; `design/README.md` and `design/layout.md`; `design/illustration.md` for
+an animated video; `design/colour.md` and `design/type.md`; `motion/README.md`, `motion/choreography.md` and
+`motion/transitions.md`; each scene pattern you use (`motion/patterns/`); and `numbers.md` ("Type sizes", "Safe
+areas").
+
 ## Files
 
 ```
@@ -43,6 +48,10 @@ voiceover), and mark `check` when you look over the frames; rendering them marks
    seconds. The script's rows are the beats, and their `scene` numbers group them into scenes; carry each scene's
    voiceover or text on screen over exactly as approved, and use its action on screen for what happens. With a
    voiceover, scenes start and end at sentence or phrase gaps (use the verified word times). With music, on bar lines.
+   **Write each scene's plan** as you go (`PLUGIN/guides/story/beats.md`, "The scene plan"): its idea in the film's
+   world, its depth and atmosphere, its moves with their times, named as the guides name them, its sound and how it
+   hands on. Scene 1's plan also writes down the film's drawing style. The plan is what the build follows, and the
+   user can open it under each scene.
 2. **Choose 1–5 frames per scene**: as many as it takes to show how the scene works (where it starts, the key moment,
    how it leaves). One frame for a simple hold; four or five for a scene with a big move.
    **Library items:** carry over every one the script names (`[W03]` and so on), and suggest more where a scene would
@@ -144,6 +153,15 @@ folder). Look at every point's picture (Read tool) before changing that frame: i
       "voiceover": "Most coffee is roasted fast.",
       "onScreen": "Roasted fast",
       "description": "What happens and how it moves, including the transition into the next scene.",
+      "plan": {
+        "idea": "The roaster's floor at dawn: the film's world, and the drum as this scene's hero.",
+        "style": "Scene 1 only: 3 px strokes, 20 px corners, flat fills with one shade, the accent for heat.",
+        "depth": "Back: the warehouse wall and its high window. Middle: the drum. Front: sacks at the edge.",
+        "atmosphere": "A warm glow behind the drum, breathing; dust in the window's light, drifting.",
+        "moves": "0.0–1.2 s the drum spins up (camera-push in)\n1.2–3.4 s Roasted fast slams in on its word",
+        "sound": "The drum's whir from SFX Kit under the first line; a hit on Roasted fast.",
+        "handover": "The steam rises and carries the camera up into s02."
+      },
       "frames": [
         { "src": "frames/s01-1.png", "time": 0.4, "caption": "Opening" },
         { "src": "frames/s01-2.png", "time": 3.6, "caption": "Into the bean" }
@@ -156,6 +174,9 @@ folder). Look at every point's picture (Read tool) before changing that frame: i
 ```
 
 - `id` is stable across versions (`s01`, `s02`, …); give a new scene a new id rather than renumbering.
+- `plan`: the scene's plan in plain words (`PLUGIN/guides/story/beats.md`, "The scene plan"): `idea`, `style` (scene
+  1), `feeling`, `technique`, `depth`, `atmosphere`, `moves`, `sound` and `handover`, each a string (a line break
+  starts a new line). The page shows them under **The plan**.
 - Times are seconds of video time. `voiceover`, `onScreen` and `notes` are optional; `description` is not.
 - `frames[].src` is relative to the version folder. Use 1 to 5 frames.
 - `clip` (footage): the scene's rough cut, relative to the version folder (`clips/s01.mp4`). The page shows **Play

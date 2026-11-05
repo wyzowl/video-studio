@@ -2,6 +2,7 @@
 // it (the link alone without the desktop app's widgets) and, for a script, storyboard or video, wait in the background for
 // the user's review.
 // Used by `studio.mjs show` and the page-ready hook, so both say the same thing.
+import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import {
   PLUGIN_ROOT,
@@ -52,6 +53,13 @@ function cardFacts(root, page) {
   if (page.kind === "project") {
     return { icon: "movie", heading: title, facts: [video?.status.label, video?.size.label].filter(Boolean) };
   }
+  if (page.kind === "delivery") {
+    let files = 0;
+    try {
+      files = readdirSync(join(root, "videos", page.project, "renders"), { withFileTypes: true }).filter((e) => e.isFile()).length;
+    } catch {}
+    return { icon: "package", heading: `The final video: ${title}`, facts: [plural(files, "file"), video?.size.label].filter(Boolean) };
+  }
   if (page.kind === "script") {
     const sc = readScript(root, page.project, page.version)?.script || {};
     const length = scriptLength(sc);
@@ -95,7 +103,7 @@ export function showInstructions(root, base, page, { unsaved = [] } = {}) {
   const url = pageUrl(base, page.path);
   const helper = `node "${join(PLUGIN_ROOT, "scripts", "studio.mjs")}"`;
   const studio = `--studio "${root}"`;
-  const link = { dashboard: "Open the dashboard", brand: "Open the brand page", project: "Open the video overview", script: `Open script v${page.version}`, storyboard: `Open storyboard v${page.version}`, review: `Open video v${page.version}`, library: "Open the library", item: `Open ${page.code}` }[page.kind];
+  const link = { dashboard: "Open the dashboard", brand: "Open the brand page", project: "Open the video overview", delivery: "Open the delivery page", script: `Open script v${page.version}`, storyboard: `Open storyboard v${page.version}`, review: `Open video v${page.version}`, library: "Open the library", item: `Open ${page.code}` }[page.kind];
   const id = [page.kind, page.version && `v${page.version}`, page.project || page.slug || page.code || page.category].filter(Boolean).join("_").replace(/[^A-Za-z0-9]+/g, "_").toLowerCase();
   const waits = ["script", "storyboard", "review"].includes(page.kind) && page.latest;
   const steps = [

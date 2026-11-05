@@ -2,7 +2,7 @@
 
 How Video Studio makes a film: one subject to a guide, written once. The skills (production, script, storyboard,
 build, review, brand-kit) say what to do and when; these guides say how, and the review scores against the standards
-here. Read only what the job in hand needs.
+here. Each stage skill lists the guides it reads first; beyond those, read what the job in hand needs.
 
 | Subject | Start at |
 |---|---|
@@ -11,7 +11,7 @@ here. Read only what the job in hand needs.
 | Video Studio's numbers: pace, reading time, sizes, safe areas, loudness | `numbers.md` |
 | The animation libraries: GSAP, Lottie, three.js, canvas, WebGPU, anime.js, Web Animations, CSS | `runtimes/` |
 | Motion: principles, timing, choreography, camera, transitions, scene patterns, techniques | `motion/` |
-| Design: type, readability, layout, colour, data, brand, generative | `design/` |
+| Design: type, readability, layout, colour, data, brand, illustration, generative | `design/` |
 | Story: the message, hooks, words, beats, post words, types of video | `story/` |
 | Captions | `captions/` |
 | Sound: mixing, sound effects, music, sync | `audio/` |
@@ -35,6 +35,15 @@ measure whatever in it can be measured. A score of 8 or more on each is the bar 
 | Brand accuracy | The kit's colours, fonts, logo, motion and real assets | `design/brand.md` |
 | Sync | Words on the spoken word, cuts at phrase gaps, scenes on the bar | `audio/sync.md` |
 | Story | One clear message, a hook whose promise is paid off, one clear ask | `story/principles.md` |
+
+## Agency-grade
+
+Every Video Studio film is agency-grade: what a good studio would deliver to a client. That means a world made for
+this film (its places, objects and atmosphere drawn in the brand's style, not a template or a row of icons), rich but
+clear (one hero in each frame, with depth around it), alive (every move with weight and a job, and the world moving
+softly between them), finished (real words, real assets, nothing that looks like a placeholder), and sounding as good
+as it looks (SFX Kit on the moments, a mix that sits under the voice). The standards say how each part is judged; a
+plain film that only avoids faults isn't agency-grade.
 
 ## Defaults, not bans
 

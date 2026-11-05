@@ -45,7 +45,8 @@ Repeat until every score is 8 or more, with at least two rounds. Only then show 
 ## Scores (1–10)
 
 Each score is judged against its standard in the guides: what good looks like, what lowers it, and what each score
-means. Read the standard before scoring it.
+means. Read the standard before scoring it. Judge the film as agency-grade work (`PLUGIN/guides/README.md`,
+"Agency-grade"): one that only avoids faults, with plain frames and a still world, isn't an 8.
 
 | Score | `--scores` key | The question | Standard |
 |---|---|---|---|
@@ -112,7 +113,8 @@ Once a draft passes the loop, the user reviews it on its review page.
 
    `poster` and `changes` are optional. `version` must match the folder (`v2` → `2`): a video shows up once it does.
 2. Show the page `/videos/<project>/review/v<N>/` (production skill, "Showing a page") with the scores and what you'd
-   improve next. Flag every departure from the brief or the approved storyboard. Then wait for the review in the
+   improve next. Flag every departure from the brief or the approved storyboard (the build's `docs/decisions.md` lists its changes to
+   the scene plans). Then wait for the review in the
    background and end your turn.
 3. When the review comes in (the wait finishes, or the user says they've saved), read `feedback.json` beside
    `review.json` (never write it yourself): `decision` (`approved` or `changes`: it's approved unless the user adds

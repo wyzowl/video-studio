@@ -14,7 +14,10 @@ works to it, and HyperFrames' check measures the parts that can be measured. The
 - **Every move has a job:** it reveals, orders, answers, explains or celebrates. Nothing moves just to look busy,
   and nothing breathes, floats or pulses on words or interface.
 - **The eye always knows where to go.** One main action at a time, the most important thing first, everything else
-  quieter or still.
+  quieter.
+- **The world is alive.** Once things have arrived, the atmosphere and the film's world keep slow motion of their own
+  (`choreography.md`, "Ambient motion"), so no frame sits dead; words and interface stay still while they're read. A
+  fully still frame is a pause the storyboard chose.
 - **It reads at full speed, once.** Words hold long enough to read (`../numbers.md`), nothing important happens
   mid-blur, and a still taken at any moment is a composed frame.
 - **Seams are invisible.** Moves hand over at matched speeds; cuts land on motion (`transitions.md`); nothing jumps,
@@ -44,6 +47,7 @@ works to it, and HyperFrames' check measures the parts that can be measured. The
 | Stutter on a slow move | a layout property animated (`left`, `width`, `font-size`) | the transform that looks the same (`../runtimes/gsap.md`, "What to animate") |
 | A jump at a cut | the two sides don't match | snapshot just before and after the seam; match position, speed and direction |
 | A slideshow | everything on screen in the first quarter, then frozen | reveal each part on its cue (`principles.md`, "Reveal with the words") |
+| Dead | everything arrives, then nothing moves; no atmosphere | slow motion in the world and the atmosphere (`choreography.md`, "Ambient motion") |
 
 ## How it's scored
 
@@ -51,7 +55,7 @@ works to it, and HyperFrames' check measures the parts that can be measured. The
 |---|---|
 | 9–10 | Agency-grade: every move has weight, a job and one personality; the seams are invisible; nothing to fix frame by frame |
 | 8 | Strong: a couple of moves could land better, but nothing a viewer would notice as wrong |
-| 6–7 | Works, but generic: default eases, little secondary action, a seam that jumps or a stretch that freezes |
+| 6–7 | Works, but generic: default eases, little secondary action, a dead world, a seam that jumps or a stretch that freezes |
 | 4–5 | Distracting faults: bounce or drift where it shouldn't be, stutter, things popping in, busy |
 | 1–3 | Broken: elements missing or frozen, motion fighting the words |
 

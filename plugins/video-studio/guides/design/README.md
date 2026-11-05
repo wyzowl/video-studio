@@ -12,6 +12,7 @@ video frame, which is not a web page.
 | Using colour, gradients and grounds | `colour.md` |
 | Showing figures and charts | `data.md` |
 | Using a brand kit well; logos, product screens and photos | `brand.md` (the Brand accuracy standard) |
+| Drawing the film's world: places, objects, people, in one style | `illustration.md` |
 | Making a generative ground or a piece of code art | `generative.md` |
 
 ## Before designing a frame
@@ -32,8 +33,19 @@ video frame, which is not a web page.
 These are where a Video Studio frame starts. The brief, the brand kit or the user overrides any of them; the point is
 that every look is chosen, not that these are forbidden.
 
-- **Spend boldness in one place.** One memorable thing per frame, everything around it quiet. Premium usually means
-  taking away: before a frame is done, remove one thing.
+- **One hero, in a world.** Each frame has one focal thing, and around it a world made for this film: its ground,
+  its atmosphere, the detail that says where we are. Clarity comes from hierarchy (the hero biggest, brightest and
+  sharpest; the world quieter and softer), not from emptiness. When a frame fights itself, quieten or remove what
+  competes with the hero; keep what gives the frame its depth.
+- **Every scene has depth.** A scene stands on a ground from the kit and carries two to five atmosphere pieces drawn
+  from its subject: a soft glow behind the hero, a large faint word or figure, hairlines or an axis, shapes or
+  objects from the film's world. They sit behind the content at 10–25% strength, and each has slow motion of its own
+  (a drift, a breath, a slow turn: `../motion/choreography.md`, "Ambient motion"), so no frame sits dead. Detail in
+  front (a glint on a figure, a label, a cursor, a leaf at the edge) adds a third layer where it helps. A flat ground
+  is the exception: a deliberate pause, or a concept that is itself flat, and the storyboard says which.
+- **Build the film's world.** A film with no footage draws its pictures: a place, its objects, the people or what
+  stands in for them, in one style from the kit (`illustration.md`). A world built once can be travelled through and
+  returned to at the end; a run of unrelated icons on empty grounds reads as slides.
 - **Structure means something.** Borders, cards, dividers, numbers and labels each say something about the content.
   Numbered markers (01, 02, 03) only for a real sequence; a card only where the thing is a card (a product's own
   interface, a real object). A hairline before a card; one divider weight and colour in a film.
@@ -44,16 +56,15 @@ that every look is chosen, not that these are forbidden.
   bursts and floating blobs; gradient text; a coloured stripe down the left of every card; cyan or purple-to-blue
   on near-black; a grid of identical rounded cards with the same soft shadow; a spaced, tracked-out capital label
   above every heading; one word picked out in italic or colour in every headline; pure black or white where a tinted
-  one would do.
+  one would do. These are generic, not rich: depth drawn from the film's own subject is the opposite of them.
 - **Swap generic for meaningful:** an empty card becomes a node with real detail; an arbitrary circle becomes a port,
   a badge or a state, or goes; grid wallpaper becomes real structure (an axis, a baseline) or space; a generic glow
   becomes a focal halo, an active state, or nothing.
 - **One primitive, varied.** A frame or film built from one repeated mark (a dot, a line, a shape), varied by scale,
   density, position and timing, reads designed; many unrelated motifs read cluttered.
-- **A ground with depth, not wallpaper.** A scene stands on a ground from the kit's backgrounds. It may carry depth
-  from the subject (a large faint word, a contour, a hairline axis, grain, a ring for something orbital), two to
-  five pieces at most, low in contrast and behind the content; any motion in it is slow and ambient
-  (`../motion/choreography.md`, "Ambient motion"). A flat ground is fine when the concept is flat.
+- **Vary the grounds through the film.** Move between the kit's grounds: the dark one, the light one, the accent
+  full bleed. A light scene after dark ones, or one full-bleed accent beat, resets the eye; a film that stays on one
+  ground for more than about 15 seconds starts to feel like one long slide.
 - **Keep a system across scenes:** lock the skeleton (margins, grid, type roles, the accent's rule) and vary
   content, scale and polarity (a light scene after dark ones) for rhythm. One signature device for the film.
 
@@ -71,10 +82,10 @@ Take the reference's grammar, never its content.
 
 ## The last look
 
-Before a frame is done, check: the focal point is obvious; placement and spacing are deliberate; the hierarchy
-reads in order; the line breaks are good (no single word alone, no awkward rag); spacing has one rhythm; each colour
-has its role; every object earns its place. Then compare against the brief: refine what's there rather than adding
-something new.
+Before a frame is done, check: the focal point is obvious; the frame has depth (a ground, atmosphere, detail) and
+something alive in it; placement and spacing are deliberate; the hierarchy reads in order; the line breaks are good
+(no single word alone, no awkward rag); spacing has one rhythm; each colour has its role; every object earns its
+place. Then compare against the brief, and against the film's world: does this frame belong to it?
 
 ---
 Sources: written for Video Studio from HyperFrames' creative direction and house style in hyperframes-creative

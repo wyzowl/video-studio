@@ -25,8 +25,8 @@ Muted is fine; flat isn't. Every frame has at least one colour that pulls the ey
 - The accent is visible: about 15–25% strength in atmosphere (a glow, a wash), full strength on the focal element.
   Under about 10% it disappears in compression.
 - **Dark grounds** make accent glows and light type pop. **Light grounds** need more structure (bolder rules and
-  borders, 2 px and up), full-strength accent hits and a little texture (fine grain, a pattern), or they look like
-  an empty slide. Don't swap a light brand to dark: make light look cinematic.
+  borders, 2 px and up), full-strength accent hits and a little texture (a fine pattern; grain only where the picture
+  holds still: "Gradients and banding" below), or they look like an empty slide. Don't swap a light brand to dark: make light look cinematic.
 - Light or dark by the content when the brand allows either: food, wellness and children's subjects usually light;
   technology, cinema and finance often dark.
 
@@ -38,6 +38,10 @@ frame.
   full-frame linear gradient on a dark ground.
 - Add a fine, still grain over large gradients (an SVG `feTurbulence` noise layer at 2–4% opacity): noise breaks the
   steps up before the encoder sees them, the same idea as dithering an image.
+- **Grain costs size.** The encoder has to keep it: a still grain over a picture that moves under it (a camera, a
+  drift) more than doubles the file, and grain that changes every frame multiplies it many times over. Keep grain to
+  stretches where the picture holds still, as faint and small as works, and check the file sizes; over a moving film,
+  break banding with the gradient's shape (radial, a local glow) instead.
 - Render masters at delivery quality, and check gradients in the render itself, not the browser.
 
 ## Without a brand

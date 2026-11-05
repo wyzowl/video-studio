@@ -3,6 +3,10 @@
 Where a video's music comes from, how it's fitted to the cut, and how to make a score. Music is proposed, never added
 silently: informational films get a calm bed; showreels can carry a groove.
 
+The bed is music: chords, a pulse, a melody. The sound effects come from SFX Kit (`sfx.md`), never from the score:
+no whooshes, clicks, pops or impacts made in it. Where an effect lands on a beat the music also marks, keep the
+music's accent soft so the kit's sound carries the moment.
+
 ## Where it comes from
 
 By default, the user's own track (one they're licensed to use) or a score made with the score kit (below). A track
@@ -31,7 +35,12 @@ project (`assets/audio/`) so the film never changes.
 3. Run `node tools/score.mjs` from the project root to get `assets/audio/*_raw.wav`, then level them (`mixing.md`).
 
 The kit is plumbing only: voices, buses, filters, reverb, delay, limiter, WAV output and levelling. Every film designs
-its own harmony, instruments, cue list and master chain. Write cues in the same beats as the picture: the score's
+its own harmony, instruments, cue list and master chain.
+
+**In a key that fits the effects.** SFX Kit's tuned sounds (its chimes, dings, notifications and stings, and a brand
+ident made from one) are in C major pentatonic, and can't be retuned: their rate is fixed (a sound's record gives its
+`tuning` and `adapt.rate`). Write a bed in C major or A minor so they sit in it; in another key they clash wherever
+they play together. Write cues in the same beats as the picture: the score's
 sections, hits and builds land where the scenes change and the big moments happen.
 
 ---

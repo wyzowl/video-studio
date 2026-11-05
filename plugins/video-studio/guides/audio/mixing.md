@@ -17,7 +17,13 @@ Levels, room for the voice, effects, and checking the result. The targets are in
   - For dynamic music, or when peaks in different stems coincide, add `--premix assets/audio/mix.wav`: it limits the
     summed mix once and gives one music-and-effects track.
   - With a voiceover, include it as a stem at its real `data-volume`.
+  - With a duck on the music, give the leveller its lane (`--lane music=tools/duck-lane.json`, the lane's JSON as in
+    its `data-automation`), so the stems are summed as they'll be heard: without it the bed is measured at full
+    level, the voice is limited to make room for it, and the render comes out quieter than the target.
 - `HF normalize-audio` matches one clip's loudness to another's (`../cli.md`).
+- **A mono source plays in both channels.** A voiceover or a phone's footage is often mono, and the render plays it
+  in both channels at full level, which measures 3 dB louder than the mono file. `level.mjs` sums it that way; when
+  levelling by hand, measure it as it will play (`-af "pan=stereo|c0=c0|c1=c0"`).
 - **Measure the render,** since the levelling can't hear the ducking or the effects:
   `ffmpeg -i <render.mp4> -af loudnorm=print_format=json -f null -`. The AAC encode costs about 0.15 dB.
 
@@ -55,7 +61,7 @@ video is finished; skip it only when there's no voice for the music to sit under
 - **The duck, from the word times.** Merge the voiceover's word times into spans (bridging gaps under 0.6 s), then
   write a volume lane on the music: down to about 25% of its level over 0.15 s at each span's start, back over 0.4 s
   at its end, every time in the music clip's own seconds (the video's time minus its `data-start`), with a full-level
-  point at `t: 0`.
+  point at `t: 0`. Keep the lane's JSON in `tools/duck-lane.json` too, for the leveller ("Levels and headroom" above).
 - **The voiceover carve,** the better mix: it takes only the bands the voice needs (roughly 250 Hz to 2.5 kHz) and a
   level that follows the speech, so the music keeps its low end and its top. HyperFrames' app makes it, on the music
   track's effect rack (Voiceover carve, strength 0.8 by default), writing `data-fx-carve`, its chain and its lanes;
