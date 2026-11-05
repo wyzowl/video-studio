@@ -6316,6 +6316,6103 @@
       "hash": "4f51ee7f3e479f156e7069bd9f1ab8b3a9c271f1a3f54adfd9fa2c61441a0f75"
     },
     {
+      "code": "F01",
+      "name": "Login form",
+      "category": "forms",
+      "summary": "A login: the email typed in, the password revealed, and a successful sign-in.",
+      "use": "To show signing in to a product: the start of a demo, an account feature, or how quick it is to get going. Give the email, the password (shown as dots or revealed with the eye) and the welcome that follows.",
+      "motion": "The email types on (0.05 s a letter), then the password as dots; the eye reveals it (0.20 s). Log in: the button shows a spinner (0.60 s), then the card gives way to the welcome, with a tick that draws on (0.30 s).",
+      "backdrop": "none",
+      "duration": 7,
+      "fields": [
+        {
+          "id": "title",
+          "label": "The heading",
+          "type": "string",
+          "default": "Welcome back"
+        },
+        {
+          "id": "subtitle",
+          "label": "The line under it (leave empty for none)",
+          "type": "string",
+          "default": "Log in to your account"
+        },
+        {
+          "id": "who",
+          "label": "The first field’s label",
+          "type": "string",
+          "default": "Email"
+        },
+        {
+          "id": "email",
+          "label": "What’s typed in it",
+          "type": "string",
+          "default": "sam@studio.co"
+        },
+        {
+          "id": "password",
+          "label": "The password typed",
+          "type": "string",
+          "default": "sunflower-42"
+        },
+        {
+          "id": "reveal",
+          "label": "The password",
+          "type": "enum",
+          "default": "reveal",
+          "options": [
+            {
+              "value": "reveal",
+              "label": "Typed as dots, then revealed"
+            },
+            {
+              "value": "dots",
+              "label": "Left as dots"
+            }
+          ]
+        },
+        {
+          "id": "button",
+          "label": "The button",
+          "type": "string",
+          "default": "Log in"
+        },
+        {
+          "id": "link",
+          "label": "The link under it (leave empty for none)",
+          "type": "string",
+          "default": "Forgot password?"
+        },
+        {
+          "id": "welcome",
+          "label": "The welcome once signed in",
+          "type": "string",
+          "default": "Welcome back, Sam"
+        },
+        {
+          "id": "welcomeLine",
+          "label": "The line under the welcome",
+          "type": "string",
+          "default": "Taking you to your dashboard…"
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f01-16x9.png",
+        "1x1": "f01-1x1.png",
+        "4x5": "f01-4x5.png",
+        "9x16": "f01-9x16.png"
+      },
+      "hash": "bc760ef7ad10c0e66c87d7a433b4cfc8a5f4238a3d072d8a6508652e1c41cca5"
+    },
+    {
+      "code": "F02",
+      "name": "Create account",
+      "category": "forms",
+      "summary": "A sign-up: the fields filled in, a mistake caught and fixed, a strength meter, then done.",
+      "use": "To show how easy it is to get started: the sign-up at the start of a demo or a walkthrough. Give the name, email and password, and the message once the account is made. It can show an email typed short and fixed (the error and its message), and the password's strength.",
+      "motion": "The fields fill in one after another (0.05 s a letter). An email typed short shakes the field gently (0.30 s) and its message fades in; finishing it turns the border green. The strength meter fills as the password is typed, the box ticks (0.20 s), and Create account shows a spinner before the success card slides in (0.40 s) with a tick that draws on.",
+      "backdrop": "none",
+      "duration": 9,
+      "fields": [
+        {
+          "id": "title",
+          "label": "The heading",
+          "type": "string",
+          "default": "Create your account"
+        },
+        {
+          "id": "name",
+          "label": "The name typed",
+          "type": "string",
+          "default": "Sam Carter"
+        },
+        {
+          "id": "email",
+          "label": "The email typed",
+          "type": "string",
+          "default": "sam@studio.co"
+        },
+        {
+          "id": "mistake",
+          "label": "A mistake fixed",
+          "type": "enum",
+          "default": "yes",
+          "options": [
+            {
+              "value": "yes",
+              "label": "The email typed short, then fixed"
+            },
+            {
+              "value": "no",
+              "label": "No mistake"
+            }
+          ]
+        },
+        {
+          "id": "error",
+          "label": "The message for the mistake",
+          "type": "string",
+          "default": "Enter a full email address, like sam@studio.co"
+        },
+        {
+          "id": "password",
+          "label": "The password typed (shown as dots)",
+          "type": "string",
+          "default": "sunflower-42"
+        },
+        {
+          "id": "meter",
+          "label": "The password’s strength meter",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "On"
+            },
+            {
+              "value": "off",
+              "label": "Off"
+            }
+          ]
+        },
+        {
+          "id": "terms",
+          "label": "The box to tick (leave empty for none)",
+          "type": "string",
+          "default": "I agree to the terms"
+        },
+        {
+          "id": "button",
+          "label": "The button",
+          "type": "string",
+          "default": "Create account"
+        },
+        {
+          "id": "done",
+          "label": "The heading once it’s done",
+          "type": "string",
+          "default": "Account created"
+        },
+        {
+          "id": "doneLine",
+          "label": "The line under it",
+          "type": "string",
+          "default": "We’ve sent a link to sam@studio.co. Click it to confirm your email."
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f02-16x9.png",
+        "1x1": "f02-1x1.png",
+        "4x5": "f02-4x5.png",
+        "9x16": "f02-9x16.png"
+      },
+      "hash": "b8ff8329b2316251313a7c7ac4483799bbe6015445aae8c64d1c70e581f76fbe"
+    },
+    {
+      "code": "F03",
+      "name": "Checkout",
+      "category": "forms",
+      "summary": "Paying for an order: the card details typed in, processing, then confirmed.",
+      "use": "To show buying something, a plan or a checkout that's quick: an ecommerce demo, a pricing walkthrough, the end of a sales video. Give what's bought and its price, the card details (an example card number only, such as 4242 4242 4242 4242) and the confirmation with its order number.",
+      "motion": "The card number types on in groups of four, then the expiry and the code. Pay: the button turns into a spinner (0.80 s) as the fields dim, then the card flips to the confirmation (0.50 s), with a tick that draws on (0.30 s).",
+      "backdrop": "none",
+      "duration": 8,
+      "fields": [
+        {
+          "id": "title",
+          "label": "The heading",
+          "type": "string",
+          "default": "Checkout"
+        },
+        {
+          "id": "summary",
+          "label": "The order summary",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "On"
+            },
+            {
+              "value": "off",
+              "label": "Off"
+            }
+          ]
+        },
+        {
+          "id": "item",
+          "label": "What’s bought",
+          "type": "string",
+          "default": "Pro plan, yearly"
+        },
+        {
+          "id": "itemLine",
+          "label": "A line under it",
+          "type": "string",
+          "default": "Billed once a year"
+        },
+        {
+          "id": "price",
+          "label": "Its price",
+          "type": "string",
+          "default": "£468.00"
+        },
+        {
+          "id": "productImage",
+          "label": "A picture of it (image file; leave empty for a plain one)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "number",
+          "label": "The card number typed (an example number only)",
+          "type": "string",
+          "default": "4242 4242 4242 4242"
+        },
+        {
+          "id": "expiry",
+          "label": "The expiry date typed",
+          "type": "string",
+          "default": "08 / 28"
+        },
+        {
+          "id": "cvc",
+          "label": "The security code typed",
+          "type": "string",
+          "default": "123"
+        },
+        {
+          "id": "button",
+          "label": "The button",
+          "type": "string",
+          "default": "Pay £468.00"
+        },
+        {
+          "id": "processing",
+          "label": "The button while it pays",
+          "type": "string",
+          "default": "Processing…"
+        },
+        {
+          "id": "done",
+          "label": "The heading once it’s paid",
+          "type": "string",
+          "default": "Payment confirmed"
+        },
+        {
+          "id": "doneLine",
+          "label": "The line under it",
+          "type": "string",
+          "default": "Order #48213 · £468.00. Your receipt is on its way to sam@studio.co."
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f03-16x9.png",
+        "1x1": "f03-1x1.png",
+        "4x5": "f03-4x5.png",
+        "9x16": "f03-9x16.png"
+      },
+      "hash": "87a0c4721d868cdd91c803650c8f886657c5dac9114cd3d90b92abf94174cca4"
+    },
+    {
+      "code": "F04",
+      "name": "Dropdown menu",
+      "category": "forms",
+      "summary": "A dropdown that opens, has an option chosen, and closes.",
+      "use": "To show a choice being made: a plan, a size, a setting. Give the label, the options (with a line of detail on any of them) and the one chosen, and a line confirming it if you like.",
+      "motion": "The menu unfolds from the field (0.20 s, easing out) and its options fade in top to bottom. The highlight moves down to the choice; choosing it folds the menu away (0.15 s), the choice settles in the field, and the confirmation fades in.",
+      "backdrop": "none",
+      "duration": 5,
+      "fields": [
+        {
+          "id": "label",
+          "label": "The field’s label",
+          "type": "string",
+          "default": "Plan"
+        },
+        {
+          "id": "placeholder",
+          "label": "The field before a choice",
+          "type": "string",
+          "default": "Choose a plan"
+        },
+        {
+          "id": "options",
+          "label": "The options, separated by | (up to five)",
+          "type": "string",
+          "default": "Starter|Pro|Business|Enterprise"
+        },
+        {
+          "id": "details",
+          "label": "A short detail for each option, separated by | in the same order (leave any empty)",
+          "type": "string",
+          "default": "|£49||"
+        },
+        {
+          "id": "choice",
+          "label": "The option chosen",
+          "type": "string",
+          "default": "Pro"
+        },
+        {
+          "id": "confirm",
+          "label": "A line confirming the choice (leave empty for none)",
+          "type": "string",
+          "default": "Pro plan chosen"
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f04-16x9.png",
+        "1x1": "f04-1x1.png",
+        "4x5": "f04-4x5.png",
+        "9x16": "f04-9x16.png"
+      },
+      "hash": "945dbd01cedb6f631ff0f0571ea223069847f0a4ab265b52b0e838b8fac3e19e"
+    },
+    {
+      "code": "F05",
+      "name": "Toggle switch",
+      "category": "forms",
+      "summary": "A switch turning on, with the knob sliding and the track filling.",
+      "use": "To show a setting switched on (or off): a feature turned on, notifications, a plan's extra. Give the label and the line under it.",
+      "motion": "The knob slides across (0.25 s, easing in and out) and stretches slightly as it moves; the track fills with the accent behind it.",
+      "backdrop": "none",
+      "duration": 4,
+      "fields": [
+        {
+          "id": "label",
+          "label": "The setting",
+          "type": "string",
+          "default": "Email updates"
+        },
+        {
+          "id": "detail",
+          "label": "The line under it (leave empty for none)",
+          "type": "string",
+          "default": "Weekly tips and new features"
+        },
+        {
+          "id": "turn",
+          "label": "It turns",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "On"
+            },
+            {
+              "value": "off",
+              "label": "Off"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f05-16x9.png",
+        "1x1": "f05-1x1.png",
+        "4x5": "f05-4x5.png",
+        "9x16": "f05-9x16.png"
+      },
+      "hash": "ab69c344b86c832119cbcbf73bc2027632decc8cd591a0893e122612ff0d8c0d"
+    },
+    {
+      "code": "F06",
+      "name": "Checkboxes and radios",
+      "category": "forms",
+      "summary": "Checkboxes ticked one by one, or a radio group with one choice.",
+      "use": "To show options picked: extras added to an order, features chosen, a delivery speed. Give the question, the options (with a line of detail on any of them), and the ones picked: any number of checkboxes, or one radio choice.",
+      "motion": "Ticking: the box fills with the accent (0.15 s) and the tick draws (0.20 s), one option after another. Radio: the dot moves from the old choice to the new one (0.25 s).",
+      "backdrop": "none",
+      "duration": 5,
+      "fields": [
+        {
+          "id": "kind",
+          "label": "The kind",
+          "type": "enum",
+          "default": "checkboxes",
+          "options": [
+            {
+              "value": "checkboxes",
+              "label": "Checkboxes (pick any)"
+            },
+            {
+              "value": "radios",
+              "label": "Radio buttons (pick one)"
+            }
+          ]
+        },
+        {
+          "id": "title",
+          "label": "The question",
+          "type": "string",
+          "default": "Add to your video"
+        },
+        {
+          "id": "options",
+          "label": "The options, separated by | (up to five)",
+          "type": "string",
+          "default": "Captions|Music|Voiceover"
+        },
+        {
+          "id": "details",
+          "label": "A line of detail for each option, separated by | in the same order (leave any empty)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "picked",
+          "label": "The options picked, separated by | (for radios, the one chosen)",
+          "type": "string",
+          "default": "Captions|Voiceover"
+        },
+        {
+          "id": "from",
+          "label": "For radios: the option chosen before (leave empty for the first)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f06-16x9.png",
+        "1x1": "f06-1x1.png",
+        "4x5": "f06-4x5.png",
+        "9x16": "f06-9x16.png"
+      },
+      "hash": "16a6f7721493287fc5f44532d8542b041bdc9416f5892623ede201ea49aec802"
+    },
+    {
+      "code": "F07",
+      "name": "Slider",
+      "category": "forms",
+      "summary": "A slider dragged to a new value, with the result it gives.",
+      "use": "To show a value being set and what it gets you: a budget, a team size, a quantity, a price calculator. Give the label, the range, the values it moves from and to, and the result once it settles.",
+      "motion": "While it's dragged the thumb grows 15% and its value shows in a bubble; it glides to the new value (0.40 s, easing in and out) as the fill follows and the number counts. The result appears once it settles.",
+      "backdrop": "none",
+      "duration": 5,
+      "fields": [
+        {
+          "id": "label",
+          "label": "The label",
+          "type": "string",
+          "default": "Monthly budget"
+        },
+        {
+          "id": "min",
+          "label": "The lowest value",
+          "type": "number",
+          "default": 0
+        },
+        {
+          "id": "max",
+          "label": "The highest value",
+          "type": "number",
+          "default": 1000
+        },
+        {
+          "id": "from",
+          "label": "The value it starts at",
+          "type": "number",
+          "default": 400
+        },
+        {
+          "id": "to",
+          "label": "The value it’s dragged to",
+          "type": "number",
+          "default": 700
+        },
+        {
+          "id": "prefix",
+          "label": "Before the number (such as a currency sign)",
+          "type": "string",
+          "default": "£"
+        },
+        {
+          "id": "suffix",
+          "label": "After the number (such as %)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "result",
+          "label": "The result once it settles (leave empty for none)",
+          "type": "string",
+          "default": "About 14 videos a year"
+        },
+        {
+          "id": "bubble",
+          "label": "The value bubble while dragging",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "On"
+            },
+            {
+              "value": "off",
+              "label": "Off"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f07-16x9.png",
+        "1x1": "f07-1x1.png",
+        "4x5": "f07-4x5.png",
+        "9x16": "f07-9x16.png"
+      },
+      "hash": "ccc4f63a7acb8926e40355e4071ec8f8b73b0df8ddbbdce28447f2a1af069b18"
+    },
+    {
+      "code": "F08",
+      "name": "Date picker",
+      "category": "forms",
+      "summary": "A calendar that opens, moves to the next month and has a date picked.",
+      "use": "To show booking or scheduling: a date picked for a call, a delivery or an appointment. Give the label, the month the calendar opens on, today's date in it, and the date picked (in that month or the next).",
+      "motion": "The calendar drops from the field (0.20 s). Next month: the grid slides left as the new month slides in (0.30 s). Picking a date fills its circle (0.15 s), then the calendar closes and the date types into the field.",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "label",
+          "label": "The field’s label",
+          "type": "string",
+          "default": "Shoot date"
+        },
+        {
+          "id": "placeholder",
+          "label": "The field before a date",
+          "type": "string",
+          "default": "Select a date"
+        },
+        {
+          "id": "month",
+          "label": "The month the calendar opens on, as YYYY-MM",
+          "type": "string",
+          "default": "2026-10"
+        },
+        {
+          "id": "today",
+          "label": "Today’s date in that month (0 for none)",
+          "type": "number",
+          "default": 15
+        },
+        {
+          "id": "picked",
+          "label": "The date picked, as YYYY-MM-DD (in that month or the next)",
+          "type": "string",
+          "default": "2026-11-12"
+        },
+        {
+          "id": "weekStart",
+          "label": "Weeks start on",
+          "type": "enum",
+          "default": "monday",
+          "options": [
+            {
+              "value": "monday",
+              "label": "Monday"
+            },
+            {
+              "value": "sunday",
+              "label": "Sunday"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f08-16x9.png",
+        "1x1": "f08-1x1.png",
+        "4x5": "f08-4x5.png",
+        "9x16": "f08-9x16.png"
+      },
+      "hash": "8b3a5b06935a8b20951de362faf2a9ea561c48066b4bbeb107266d95ec409909"
+    },
+    {
+      "code": "F09",
+      "name": "Tabs",
+      "category": "forms",
+      "summary": "Tabs switching between panels of content.",
+      "use": "To show a product's sections or a page's parts in turn: an overview, features and pricing, or the steps of a setup. Give the tab names (two to five) and the order they're opened in.",
+      "motion": "The indicator slides and stretches to the new tab (0.30 s, easing in and out) as the old panel slides out and the new one slides in from the same side (0.30 s).",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "tabs",
+          "label": "The tab names, separated by | (two to five)",
+          "type": "string",
+          "default": "Overview|Features|Pricing"
+        },
+        {
+          "id": "path",
+          "label": "The tabs opened, in order, as numbers separated by commas",
+          "type": "string",
+          "default": "1,2,3"
+        },
+        {
+          "id": "look",
+          "label": "The tabs’ look",
+          "type": "enum",
+          "default": "underline",
+          "options": [
+            {
+              "value": "underline",
+              "label": "Underlined"
+            },
+            {
+              "value": "pill",
+              "label": "Pill"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f09-16x9.png",
+        "1x1": "f09-1x1.png",
+        "4x5": "f09-4x5.png",
+        "9x16": "f09-9x16.png"
+      },
+      "hash": "a6b3b0386708e89995bd375bb73d5ad5dcaaf6696e1462e5018e7efc38e7b864"
+    },
+    {
+      "code": "F10",
+      "name": "Progress indicator",
+      "category": "forms",
+      "summary": "Progress shown two ways: a bar that fills to done, or one still working.",
+      "use": "To show something happening: an upload, an export, a setup, a payment going through. Give the label, the percentages it moves through and the message when it's done; or, for work with no known end, the label and a line, and the bar keeps going.",
+      "motion": "Filling: the bar eases to each new value (0.40 s) as the number counts with it; done, the bar turns to the success colour and a tick pops in (0.30 s). Still working: a segment slides across and loops (1.20 s).",
+      "backdrop": "none",
+      "duration": 5,
+      "fields": [
+        {
+          "id": "kind",
+          "label": "The kind",
+          "type": "enum",
+          "default": "fills",
+          "options": [
+            {
+              "value": "fills",
+              "label": "Fills to done"
+            },
+            {
+              "value": "working",
+              "label": "Still working (no end)"
+            }
+          ]
+        },
+        {
+          "id": "label",
+          "label": "The label",
+          "type": "string",
+          "default": "Uploading video"
+        },
+        {
+          "id": "detail",
+          "label": "The line under the bar",
+          "type": "string",
+          "default": "About 2 minutes left"
+        },
+        {
+          "id": "steps",
+          "label": "The percentages it fills to, in turn, separated by |",
+          "type": "string",
+          "default": "35|72|100"
+        },
+        {
+          "id": "percent",
+          "label": "The percentage",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "Shown"
+            },
+            {
+              "value": "off",
+              "label": "Hidden"
+            }
+          ]
+        },
+        {
+          "id": "done",
+          "label": "The label once it’s done",
+          "type": "string",
+          "default": "Upload complete"
+        },
+        {
+          "id": "doneDetail",
+          "label": "The line once it’s done",
+          "type": "string",
+          "default": "brand-video.mp4 · 48 MB"
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f10-16x9.png",
+        "1x1": "f10-1x1.png",
+        "4x5": "f10-4x5.png",
+        "9x16": "f10-9x16.png"
+      },
+      "hash": "7b6153b6418a7b72ba1de8e6034da3f259622cfcdae2371f237c76aa4f139a28"
+    },
+    {
+      "code": "F11",
+      "name": "Toast notification",
+      "category": "forms",
+      "summary": "A short message that slides in from the edge and out: success, warning, error or information.",
+      "use": "Over a screen recording or footage, to show the product telling the user something: an export done, storage nearly full, an upload failed, a new feature. Give the type, a short title and one line of detail, and the corner it comes in at.",
+      "motion": "It slides in from the edge and settles (0.35 s, a slight overshoot); the line along its foot runs down while it's shown. Out: it slides away and fades (0.25 s).",
+      "backdrop": "presenter",
+      "duration": 5,
+      "fields": [
+        {
+          "id": "type",
+          "label": "The type",
+          "type": "enum",
+          "default": "success",
+          "options": [
+            {
+              "value": "success",
+              "label": "Success"
+            },
+            {
+              "value": "warning",
+              "label": "Warning"
+            },
+            {
+              "value": "error",
+              "label": "Error"
+            },
+            {
+              "value": "info",
+              "label": "Information"
+            }
+          ]
+        },
+        {
+          "id": "title",
+          "label": "The title",
+          "type": "string",
+          "default": "Video exported"
+        },
+        {
+          "id": "detail",
+          "label": "One line of detail",
+          "type": "string",
+          "default": "intro.mp4 is ready to download."
+        },
+        {
+          "id": "corner",
+          "label": "Where it comes in",
+          "type": "enum",
+          "default": "top-right",
+          "options": [
+            {
+              "value": "top-right",
+              "label": "Top right"
+            },
+            {
+              "value": "top-left",
+              "label": "Top left"
+            },
+            {
+              "value": "top",
+              "label": "Top, in the middle"
+            },
+            {
+              "value": "bottom-right",
+              "label": "Bottom right"
+            },
+            {
+              "value": "bottom-left",
+              "label": "Bottom left"
+            },
+            {
+              "value": "bottom",
+              "label": "Bottom, in the middle"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "none"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f11-16x9.png",
+        "1x1": "f11-1x1.png",
+        "4x5": "f11-4x5.png",
+        "9x16": "f11-9x16.png"
+      },
+      "hash": "39df89ce16c21844d3adc883c02e03329f4260b2d73c756bb8e8a77c49098cd3"
+    },
+    {
+      "code": "F12",
+      "name": "Tooltip",
+      "category": "forms",
+      "summary": "A tooltip that appears on hover and fades when the pointer moves away.",
+      "use": "To point out what a button does, with a pointer moving onto it: a feature in a product tour, a shortcut, a hidden option. Give the button's words, the line of help (and a shortcut, if it has one).",
+      "motion": "The pointer moves onto the button; after a short hover (0.30 s) the tooltip fades in and rises 4 px (0.15 s). The pointer moves away and it fades (0.15 s).",
+      "backdrop": "none",
+      "duration": 4,
+      "fields": [
+        {
+          "id": "button",
+          "label": "The button",
+          "type": "string",
+          "default": "Export"
+        },
+        {
+          "id": "tip",
+          "label": "The tooltip",
+          "type": "string",
+          "default": "Export as MP4, up to 4K"
+        },
+        {
+          "id": "shortcut",
+          "label": "A keyboard shortcut (leave empty for none)",
+          "type": "string",
+          "default": "⌘E"
+        },
+        {
+          "id": "where",
+          "label": "The tooltip sits",
+          "type": "enum",
+          "default": "above",
+          "options": [
+            {
+              "value": "above",
+              "label": "Above"
+            },
+            {
+              "value": "below",
+              "label": "Below"
+            }
+          ]
+        },
+        {
+          "id": "tone",
+          "label": "The tooltip’s colours",
+          "type": "enum",
+          "default": "dark",
+          "options": [
+            {
+              "value": "dark",
+              "label": "Dark"
+            },
+            {
+              "value": "light",
+              "label": "Light"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f12-16x9.png",
+        "1x1": "f12-1x1.png",
+        "4x5": "f12-4x5.png",
+        "9x16": "f12-9x16.png"
+      },
+      "hash": "e05786ccb4de26bf7d6761ef0348746b0801d5454b4ab3d0b90f01891d61c9ab"
+    },
+    {
+      "code": "F13",
+      "name": "Modal",
+      "category": "forms",
+      "summary": "A dialog over the page: it opens, then is confirmed, or cancelled and dismissed.",
+      "use": "To show a decision in a product: deleting something, leaving without saving, confirming a payment. Give the question, a line of detail, the words on both buttons, and how it ends. Over footage or a screen recording (background none), it dims whatever's behind it.",
+      "motion": "The backdrop dims (0.20 s) and the dialog rises and scales up from 96% (0.30 s). Confirm: its button shows a spinner, then the dialog closes. Cancel: the pointer clicks Cancel and the dialog drops slightly and fades (0.20 s) as the backdrop clears.",
+      "backdrop": "none",
+      "duration": 5,
+      "fields": [
+        {
+          "id": "title",
+          "label": "The question",
+          "type": "string",
+          "default": "Delete this project?"
+        },
+        {
+          "id": "detail",
+          "label": "A line of detail",
+          "type": "string",
+          "default": "This can’t be undone."
+        },
+        {
+          "id": "cancel",
+          "label": "The cancel button",
+          "type": "string",
+          "default": "Cancel"
+        },
+        {
+          "id": "confirm",
+          "label": "The confirm button",
+          "type": "string",
+          "default": "Delete"
+        },
+        {
+          "id": "busy",
+          "label": "The confirm button while it works",
+          "type": "string",
+          "default": "Deleting…"
+        },
+        {
+          "id": "tone",
+          "label": "The style",
+          "type": "enum",
+          "default": "danger",
+          "options": [
+            {
+              "value": "danger",
+              "label": "Confirm something final (red)"
+            },
+            {
+              "value": "warning",
+              "label": "Warning (amber)"
+            },
+            {
+              "value": "info",
+              "label": "Information (the accent)"
+            }
+          ]
+        },
+        {
+          "id": "ending",
+          "label": "How it ends",
+          "type": "enum",
+          "default": "confirm",
+          "options": [
+            {
+              "value": "confirm",
+              "label": "Confirmed"
+            },
+            {
+              "value": "cancel",
+              "label": "Cancelled"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f13-16x9.png",
+        "1x1": "f13-1x1.png",
+        "4x5": "f13-4x5.png",
+        "9x16": "f13-9x16.png"
+      },
+      "hash": "15e45956031c0a3b605fb7252b872a2c85f846e15269726ed8136f67b0eaebe8"
+    },
+    {
+      "code": "F14",
+      "name": "File upload",
+      "category": "forms",
+      "summary": "A file dragged and dropped, uploading with its progress, then done.",
+      "use": "To show getting something into a product: a video, a document, a spreadsheet uploaded. Give the file's name and size, the kinds of file it takes, and the words for each stage.",
+      "motion": "Dragging a file over the zone highlights it (0.15 s). Dropping it turns the zone into a file row, and the bar fills as the megabytes count. Done: the bar gives way to a tick (0.30 s) and the border turns green.",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "prompt",
+          "label": "The drop zone’s words",
+          "type": "string",
+          "default": "Drop your file here"
+        },
+        {
+          "id": "kinds",
+          "label": "The files it takes",
+          "type": "string",
+          "default": "MP4, MOV or PNG, up to 2 GB"
+        },
+        {
+          "id": "file",
+          "label": "The file’s name",
+          "type": "string",
+          "default": "brand-video.mp4"
+        },
+        {
+          "id": "size",
+          "label": "Its size in MB",
+          "type": "number",
+          "default": 48
+        },
+        {
+          "id": "more",
+          "label": "The zone for more files (leave empty for none)",
+          "type": "string",
+          "default": "Drop more files"
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f14-16x9.png",
+        "1x1": "f14-1x1.png",
+        "4x5": "f14-4x5.png",
+        "9x16": "f14-9x16.png"
+      },
+      "hash": "dc973721c70003c2cc6a11fce7b5fae172a78e00631e0cc19f949b6ea6e80fd5"
+    },
+    {
+      "code": "F15",
+      "name": "Rating and review",
+      "category": "forms",
+      "summary": "Stars filling to a rating, a review written, then submitted.",
+      "use": "To show feedback being given: a product review, a satisfaction survey, a rating after a call. Give the question, the rating out of five, the review and the thank-you.",
+      "motion": "The stars fill one by one up to the rating (0.08 s apart), each with a small pop. The review box opens and the review types on. Submit: the card swaps to the thank-you, with a tick that draws on (0.30 s).",
+      "backdrop": "none",
+      "duration": 7,
+      "fields": [
+        {
+          "id": "question",
+          "label": "The question",
+          "type": "string",
+          "default": "How was your experience?"
+        },
+        {
+          "id": "rating",
+          "label": "The rating, out of five",
+          "type": "number",
+          "default": 4
+        },
+        {
+          "id": "hint",
+          "label": "The hint above the stars’ score",
+          "type": "string",
+          "default": "Tap a star to rate"
+        },
+        {
+          "id": "review",
+          "label": "The review typed (leave empty for no review box)",
+          "type": "string",
+          "default": "Clear, quick and friendly. Would use again."
+        },
+        {
+          "id": "boxHint",
+          "label": "The review box before it’s typed in",
+          "type": "string",
+          "default": "Tell us more (optional)"
+        },
+        {
+          "id": "button",
+          "label": "The button",
+          "type": "string",
+          "default": "Submit review"
+        },
+        {
+          "id": "thanks",
+          "label": "The thank-you",
+          "type": "string",
+          "default": "Thanks for your review"
+        },
+        {
+          "id": "thanksLine",
+          "label": "The line under it",
+          "type": "string",
+          "default": "It’ll appear on the page once it’s checked."
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "f15-16x9.png",
+        "1x1": "f15-1x1.png",
+        "4x5": "f15-4x5.png",
+        "9x16": "f15-9x16.png"
+      },
+      "hash": "37e04af3d0e591e0314955065a94a09c192da10ba89a829a289a755f447fe8bf"
+    },
+    {
+      "code": "I01",
+      "name": "Web browser",
+      "category": "interface",
+      "summary": "A browser window that holds a screen recording, a screenshot or a stand-in page, flying in from the side.",
+      "use": "To show a website or web app: a screen recording or screenshot of it in the page, with its address typed in the bar. Choose the page’s shape to match the recording (16:10 for most laptop recordings) and the side it comes in from. With nothing given, it shows a simple stand-in page.",
+      "motion": "In: the window flies in from one side and slows smoothly into place (0.70 s, easing out), then the address types on (0.03 s a letter). Out: it speeds away off the other side (0.60 s, easing in). It never scales, so a recording inside keeps its size and layout.",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "screenVideo",
+          "label": "Screen recording for the page (video file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "screenImage",
+          "label": "Screenshot, if there is no recording (image file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "address",
+          "label": "The address (leave empty for none)",
+          "type": "string",
+          "default": "yourwebsite.com"
+        },
+        {
+          "id": "shape",
+          "label": "The page’s shape (match the recording)",
+          "type": "enum",
+          "default": "16:10",
+          "options": [
+            {
+              "value": "16:10",
+              "label": "16:10 (most laptop recordings)"
+            },
+            {
+              "value": "16:9",
+              "label": "16:9"
+            },
+            {
+              "value": "4:3",
+              "label": "4:3"
+            },
+            {
+              "value": "1:1",
+              "label": "Square"
+            },
+            {
+              "value": "4:5",
+              "label": "4:5"
+            },
+            {
+              "value": "9:16",
+              "label": "9:16 (a phone)"
+            }
+          ]
+        },
+        {
+          "id": "from",
+          "label": "Comes in from",
+          "type": "enum",
+          "default": "left",
+          "options": [
+            {
+              "value": "left",
+              "label": "The left (leaves to the right)"
+            },
+            {
+              "value": "right",
+              "label": "The right (leaves to the left)"
+            }
+          ]
+        },
+        {
+          "id": "buttons",
+          "label": "The window buttons",
+          "type": "enum",
+          "default": "colour",
+          "options": [
+            {
+              "value": "colour",
+              "label": "In colour"
+            },
+            {
+              "value": "grey",
+              "label": "Grey"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i01-16x9.png",
+        "1x1": "i01-1x1.png",
+        "4x5": "i01-4x5.png",
+        "9x16": "i01-9x16.png"
+      },
+      "hash": "28c09215872bb99b2e2ed5adb35bf33285ee3bd21af46411e75643511f15f497"
+    },
+    {
+      "code": "I02",
+      "name": "Code editor",
+      "category": "interface",
+      "summary": "Code typing on in an editor, with lines highlighted and a terminal underneath.",
+      "use": "For developer videos and product demos: a short piece of code (any language; up to about ten lines) typing on, the lines being talked about lit up, and a command run in the terminal. Give the file names, the code, which lines type on and which are highlighted.",
+      "motion": "In: the window rises and fades in (0.40 s). The code types on with the caret (0.03 s a character). The highlights sweep across their lines (0.30 s). The terminal slides up (0.30 s), the command types and its output prints line by line.",
+      "backdrop": "none",
+      "duration": 8,
+      "fields": [
+        {
+          "id": "files",
+          "label": "The file tabs, separated by | (the first is open)",
+          "type": "string",
+          "default": "intro.js | brand.json"
+        },
+        {
+          "id": "code",
+          "label": "The code (lines separated by new lines)",
+          "type": "string",
+          "default": "import { render } from \"./video\";\n\nexport function intro(title) {\n  return render({\n    title,\n    duration: 4,\n    brand: \"studio\",\n  });\n}"
+        },
+        {
+          "id": "typeFrom",
+          "label": "Type on from this line (the lines before it are there already; 1 types them all)",
+          "type": "number",
+          "default": 4
+        },
+        {
+          "id": "highlight",
+          "label": "Lines to highlight, like 4-8 or 2, 5 (leave empty for none)",
+          "type": "string",
+          "default": "4-8"
+        },
+        {
+          "id": "terminal",
+          "label": "The terminal",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "Slides up and runs a command"
+            },
+            {
+              "value": "off",
+              "label": "Off"
+            }
+          ]
+        },
+        {
+          "id": "command",
+          "label": "The terminal command",
+          "type": "string",
+          "default": "npm run render"
+        },
+        {
+          "id": "output",
+          "label": "The terminal’s output: lines separated by |, the last one marked done with a tick",
+          "type": "string",
+          "default": "Rendered intro.mp4 in 1.2s"
+        },
+        {
+          "id": "theme",
+          "label": "The theme",
+          "type": "enum",
+          "default": "dark",
+          "options": [
+            {
+              "value": "dark",
+              "label": "Dark"
+            },
+            {
+              "value": "light",
+              "label": "Light"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i02-16x9.png",
+        "1x1": "i02-1x1.png",
+        "4x5": "i02-4x5.png",
+        "9x16": "i02-9x16.png"
+      },
+      "hash": "a1dd6e9b6ddd6becc258f8568f38fbbccc95624ff45e8fa446b462b70448c98f"
+    },
+    {
+      "code": "I03",
+      "name": "Terminal",
+      "category": "interface",
+      "summary": "A terminal window: a command types on, its output prints, then it succeeds (or fails).",
+      "use": "For developer tools and set-up steps: the command someone runs and what comes back. Give the prompt, the command, its output (line by line), how the progress shows, and the line it finishes on.",
+      "motion": "In: the window fades up (0.30 s). The command types on (0.04 s a character), then the output prints line by line (0.08 s apart). The bar fills and the percentage counts, then the success line lands with a tick (0.25 s) and a new prompt waits with its cursor blinking.",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "title",
+          "label": "The window’s title",
+          "type": "string",
+          "default": "studio — zsh"
+        },
+        {
+          "id": "prompt",
+          "label": "The prompt (the folder)",
+          "type": "string",
+          "default": "~/studio"
+        },
+        {
+          "id": "command",
+          "label": "The command",
+          "type": "string",
+          "default": "npm run build"
+        },
+        {
+          "id": "output",
+          "label": "Its output, lines separated by |",
+          "type": "string",
+          "default": "> studio@2.1.0 build | Bundling 248 modules…"
+        },
+        {
+          "id": "progress",
+          "label": "The progress",
+          "type": "enum",
+          "default": "bar",
+          "options": [
+            {
+              "value": "bar",
+              "label": "A bar and a percentage"
+            },
+            {
+              "value": "percent",
+              "label": "A percentage"
+            },
+            {
+              "value": "spinner",
+              "label": "A spinner"
+            },
+            {
+              "value": "none",
+              "label": "None"
+            }
+          ]
+        },
+        {
+          "id": "progressLabel",
+          "label": "What it says while it works",
+          "type": "string",
+          "default": "Rendering scenes"
+        },
+        {
+          "id": "ending",
+          "label": "How it ends",
+          "type": "enum",
+          "default": "success",
+          "options": [
+            {
+              "value": "success",
+              "label": "Success"
+            },
+            {
+              "value": "error",
+              "label": "An error"
+            }
+          ]
+        },
+        {
+          "id": "done",
+          "label": "The last line (success or the error)",
+          "type": "string",
+          "default": "Built in 4.2s"
+        },
+        {
+          "id": "after",
+          "label": "Lines after it, separated by | (leave empty for none)",
+          "type": "string",
+          "default": "Output: dist/intro.mp4"
+        },
+        {
+          "id": "theme",
+          "label": "The theme",
+          "type": "enum",
+          "default": "dark",
+          "options": [
+            {
+              "value": "dark",
+              "label": "Dark"
+            },
+            {
+              "value": "light",
+              "label": "Light"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i03-16x9.png",
+        "1x1": "i03-1x1.png",
+        "4x5": "i03-4x5.png",
+        "9x16": "i03-9x16.png"
+      },
+      "hash": "a374bbe678fc77fc6725b042bfd4e205286b1a454981d3d110ce11f025386a01"
+    },
+    {
+      "code": "I04",
+      "name": "Video player",
+      "category": "interface",
+      "summary": "A video player with play and pause, a timeline with chapters, and fullscreen.",
+      "use": "To show a video being watched: a course, a webinar, a product video, a video in a help centre. Give the video (or a still of it), its chapters with their start times, and its length; choose whether it goes fullscreen.",
+      "motion": "Play: the big button shrinks away (0.20 s) and the timeline starts to fill. Hovering a chapter shows its name (0.15 s). Fullscreen: the player grows to fill the frame (0.50 s, easing in and out), with black bars wherever the video’s shape doesn’t match the frame.",
+      "backdrop": "none",
+      "duration": 7,
+      "fields": [
+        {
+          "id": "screenVideo",
+          "label": "The video in the player (video file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "screenImage",
+          "label": "A still of it, if there is no video (image file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "chapters",
+          "label": "The chapters: start time and name, separated by | (leave empty for none)",
+          "type": "string",
+          "default": "0:00 Introduction | 1:12 Setting up | 2:08 Results"
+        },
+        {
+          "id": "length",
+          "label": "The video’s length",
+          "type": "string",
+          "default": "3:40"
+        },
+        {
+          "id": "start",
+          "label": "Where it plays from",
+          "type": "string",
+          "default": "1:08"
+        },
+        {
+          "id": "hover",
+          "label": "The chapter whose name shows on hover (0 for none)",
+          "type": "number",
+          "default": 2
+        },
+        {
+          "id": "fullscreen",
+          "label": "Fullscreen",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "Goes fullscreen"
+            },
+            {
+              "value": "off",
+              "label": "Stays in its window"
+            }
+          ]
+        },
+        {
+          "id": "controls",
+          "label": "The controls",
+          "type": "enum",
+          "default": "show",
+          "options": [
+            {
+              "value": "show",
+              "label": "Shown"
+            },
+            {
+              "value": "hide",
+              "label": "Hidden"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i04-16x9.png",
+        "1x1": "i04-1x1.png",
+        "4x5": "i04-4x5.png",
+        "9x16": "i04-9x16.png"
+      },
+      "hash": "028160187968268dc09eb39aeb5d35aaa95361b836d5251ad2927a742e3a6bfd"
+    },
+    {
+      "code": "I05",
+      "name": "App bar",
+      "category": "interface",
+      "summary": "A floating bar of app icons: apps added and removed on screen, a pointer gliding along with labels.",
+      "use": "To show the apps someone uses, a new one joining them, or one being replaced: a product that slots into a workflow. Give the apps in order (built-in icons, or your own square app images at 256 px or more), which are running, and any to add or remove.",
+      "motion": "Adding: the bar widens and the new icon pops up into place (0.35 s, a slight overshoot) as its neighbours slide apart. Removing: the icon lifts out and fades (0.30 s), then the gap closes (0.25 s). Hovering: the icon under the pointer grows and its name shows.",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "apps",
+          "label": "The apps, in order, separated by commas: mail, calendar, chat, music, files, notes, camera, photos, browser, settings, video, shop or phone",
+          "type": "string",
+          "default": "mail, calendar, chat, music, files"
+        },
+        {
+          "id": "running",
+          "label": "The ones running (a dot under each)",
+          "type": "string",
+          "default": "mail, chat"
+        },
+        {
+          "id": "add",
+          "label": "An app added on screen (leave empty for none)",
+          "type": "string",
+          "default": "notes"
+        },
+        {
+          "id": "remove",
+          "label": "An app removed on screen (leave empty for none)",
+          "type": "string",
+          "default": "music"
+        },
+        {
+          "id": "labels",
+          "label": "Names shown on hover, in the same order (leave empty for the built-in names)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "hover",
+          "label": "A pointer gliding along the bar",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "On: icons grow and show their names"
+            },
+            {
+              "value": "off",
+              "label": "Off"
+            }
+          ]
+        },
+        {
+          "id": "bar",
+          "label": "The bar",
+          "type": "enum",
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": "Light"
+            },
+            {
+              "value": "dark",
+              "label": "Dark"
+            }
+          ]
+        },
+        {
+          "id": "size",
+          "label": "The icons",
+          "type": "enum",
+          "default": "medium",
+          "options": [
+            {
+              "value": "small",
+              "label": "Small"
+            },
+            {
+              "value": "medium",
+              "label": "Medium"
+            },
+            {
+              "value": "large",
+              "label": "Large"
+            }
+          ]
+        },
+        {
+          "id": "app1Image",
+          "label": "Your own image for the first app (square image file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "app2Image",
+          "label": "… the second app",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "app3Image",
+          "label": "… the third app",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "app4Image",
+          "label": "… the fourth app",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "app5Image",
+          "label": "… the fifth app",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "app6Image",
+          "label": "… the sixth app",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i05-16x9.png",
+        "1x1": "i05-1x1.png",
+        "4x5": "i05-4x5.png",
+        "9x16": "i05-9x16.png"
+      },
+      "hash": "63a87f899ad26bd244f8951c99aeee636d61f917bae78e8205be75f6574b8dd4"
+    },
+    {
+      "code": "I06",
+      "name": "Phone",
+      "category": "interface",
+      "summary": "An illustrated phone with anything on its screen: an app recording, a still or a stand-in. It can turn to landscape.",
+      "use": "To show an app or a mobile site: a screen recording of it (record at the phone’s own size), a screenshot, or a stand-in app, lock screen or video. Turn it to landscape to switch to a video, give taps for where it’s touched, and turn the status bar off if the recording has its own.",
+      "motion": "In: the phone rises from below (0.50 s, easing out). Turning to landscape rotates it a quarter turn (0.60 s) as the screen swaps. Each tap shows as a dot that pulses once (0.50 s). Out: it drops away (0.40 s).",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "screenVideo",
+          "label": "Screen recording (video file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "screenImage",
+          "label": "Screenshot, if there is no recording (image file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "standin",
+          "label": "With nothing given, the screen shows",
+          "type": "enum",
+          "default": "app",
+          "options": [
+            {
+              "value": "app",
+              "label": "An app"
+            },
+            {
+              "value": "lock",
+              "label": "The lock screen, with a notification"
+            },
+            {
+              "value": "video",
+              "label": "A video playing"
+            }
+          ]
+        },
+        {
+          "id": "orientation",
+          "label": "Held",
+          "type": "enum",
+          "default": "portrait",
+          "options": [
+            {
+              "value": "portrait",
+              "label": "Upright (portrait)"
+            },
+            {
+              "value": "landscape",
+              "label": "On its side (landscape)"
+            }
+          ]
+        },
+        {
+          "id": "turn",
+          "label": "Turning",
+          "type": "enum",
+          "default": "off",
+          "options": [
+            {
+              "value": "off",
+              "label": "Stays as it is"
+            },
+            {
+              "value": "on",
+              "label": "Turns to landscape part way through, to a video"
+            }
+          ]
+        },
+        {
+          "id": "turnVideo",
+          "label": "After turning: a video (video file; else a stand-in video)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "turnImage",
+          "label": "After turning: a still (image file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "taps",
+          "label": "Taps: JSON list of {at, x, y}, x and y as fractions of the screen",
+          "type": "string",
+          "default": "[{\"at\": 2.2, \"x\": 0.5, \"y\": 0.72}]"
+        },
+        {
+          "id": "statusBar",
+          "label": "The status bar",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "On"
+            },
+            {
+              "value": "off",
+              "label": "Off (the recording has its own)"
+            }
+          ]
+        },
+        {
+          "id": "body",
+          "label": "The phone’s frame",
+          "type": "enum",
+          "default": "dark",
+          "options": [
+            {
+              "value": "dark",
+              "label": "Dark"
+            },
+            {
+              "value": "light",
+              "label": "Light"
+            }
+          ]
+        },
+        {
+          "id": "lockDate",
+          "label": "The lock screen’s date",
+          "type": "string",
+          "default": "Friday 6 November"
+        },
+        {
+          "id": "lockTime",
+          "label": "The lock screen’s time",
+          "type": "string",
+          "default": "9:41"
+        },
+        {
+          "id": "noteTitle",
+          "label": "The notification’s title",
+          "type": "string",
+          "default": "New order"
+        },
+        {
+          "id": "noteText",
+          "label": "The notification’s line",
+          "type": "string",
+          "default": "£49.00 from Sam Carter"
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i06-16x9.png",
+        "1x1": "i06-1x1.png",
+        "4x5": "i06-4x5.png",
+        "9x16": "i06-9x16.png"
+      },
+      "hash": "a641c2cea9e0d82f7a95d60fa5cb900b344199a90fb797d57b1e3f85f8bc1939"
+    },
+    {
+      "code": "I07",
+      "name": "Tablet",
+      "category": "interface",
+      "summary": "An illustrated tablet, in landscape or portrait, with anything on its screen. It can turn.",
+      "use": "To show an app, a document or a video on a tablet: a screen recording, a screenshot, or a stand-in dashboard, article or video. Turn it part way through to switch from an article to a dashboard (or your own second recording).",
+      "motion": "In: the tablet slides up and settles (0.50 s, easing out). Turning rotates it a quarter turn (0.60 s) as the screen content swaps. Taps pulse once (0.50 s). Out: it drops away (0.40 s).",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "screenVideo",
+          "label": "Screen recording (video file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "screenImage",
+          "label": "Screenshot, if there is no recording (image file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "standin",
+          "label": "With nothing given, the screen shows",
+          "type": "enum",
+          "default": "dashboard",
+          "options": [
+            {
+              "value": "dashboard",
+              "label": "A dashboard"
+            },
+            {
+              "value": "article",
+              "label": "An article"
+            },
+            {
+              "value": "video",
+              "label": "A video playing"
+            }
+          ]
+        },
+        {
+          "id": "orientation",
+          "label": "Held",
+          "type": "enum",
+          "default": "landscape",
+          "options": [
+            {
+              "value": "landscape",
+              "label": "On its side (landscape)"
+            },
+            {
+              "value": "portrait",
+              "label": "Upright (portrait)"
+            }
+          ]
+        },
+        {
+          "id": "turn",
+          "label": "Turning",
+          "type": "enum",
+          "default": "off",
+          "options": [
+            {
+              "value": "off",
+              "label": "Stays as it is"
+            },
+            {
+              "value": "on",
+              "label": "Starts upright and turns to landscape part way through"
+            }
+          ]
+        },
+        {
+          "id": "turnVideo",
+          "label": "After turning: a recording (video file; else the stand-in dashboard)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "turnImage",
+          "label": "After turning: a still (image file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "taps",
+          "label": "Taps: JSON list of {at, x, y}, x and y as fractions of the screen",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "body",
+          "label": "The tablet’s frame",
+          "type": "enum",
+          "default": "dark",
+          "options": [
+            {
+              "value": "dark",
+              "label": "Dark"
+            },
+            {
+              "value": "light",
+              "label": "Light"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i07-16x9.png",
+        "1x1": "i07-1x1.png",
+        "4x5": "i07-4x5.png",
+        "9x16": "i07-9x16.png"
+      },
+      "hash": "e03629fb4d44d6399ee1cd42398043e75ca29e4dd024bc6cf43e917fe35ce23b"
+    },
+    {
+      "code": "I08",
+      "name": "Laptop",
+      "category": "interface",
+      "summary": "An illustrated laptop with anything on its screen; the view can push in until the screen fills the frame.",
+      "use": "To show software, a website or a dashboard on a laptop: a screen recording (16:10, like 1440 × 900), a screenshot, or a stand-in dashboard or browser. Push in when the detail matters more than the device.",
+      "motion": "In: the laptop rises into place (0.50 s, easing out) and the screen fades up. The view can push in until the screen fills the frame (0.80 s). Out: it drops away (0.40 s).",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "screenVideo",
+          "label": "Screen recording, 16:10 (video file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "screenImage",
+          "label": "Screenshot, if there is no recording (image file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "standin",
+          "label": "With nothing given, the screen shows",
+          "type": "enum",
+          "default": "dashboard",
+          "options": [
+            {
+              "value": "dashboard",
+              "label": "A dashboard"
+            },
+            {
+              "value": "browser",
+              "label": "A browser with a website"
+            },
+            {
+              "value": "video",
+              "label": "A video playing"
+            }
+          ]
+        },
+        {
+          "id": "address",
+          "label": "The stand-in browser’s address",
+          "type": "string",
+          "default": "yourwebsite.com"
+        },
+        {
+          "id": "push",
+          "label": "Push in",
+          "type": "enum",
+          "default": "off",
+          "options": [
+            {
+              "value": "off",
+              "label": "Off"
+            },
+            {
+              "value": "on",
+              "label": "Part way through, until the screen fills the frame"
+            }
+          ]
+        },
+        {
+          "id": "screen",
+          "label": "The screen",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "On"
+            },
+            {
+              "value": "off",
+              "label": "Off (dark)"
+            }
+          ]
+        },
+        {
+          "id": "body",
+          "label": "The laptop’s body",
+          "type": "enum",
+          "default": "dark",
+          "options": [
+            {
+              "value": "dark",
+              "label": "Dark"
+            },
+            {
+              "value": "light",
+              "label": "Light"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i08-16x9.png",
+        "1x1": "i08-1x1.png",
+        "4x5": "i08-4x5.png",
+        "9x16": "i08-9x16.png"
+      },
+      "hash": "d3cb8c22599f3ec014c4d52c618364d2a5f3dd8d2562fdf36a238de5a82142af"
+    },
+    {
+      "code": "I09",
+      "name": "Desktop screen",
+      "category": "interface",
+      "summary": "An illustrated desktop monitor with anything on its screen; it lights up from the centre and can push in.",
+      "use": "To show software, a website or a video call on a big screen: a screen recording (16:9), a screenshot, or a stand-in website, dashboard or video call. Push in when the detail matters more than the screen.",
+      "motion": "In: the screen fades up and lights from the centre (0.40 s). The view can push in until the screen fills the frame (0.80 s). Out: it fades away (0.35 s).",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "screenVideo",
+          "label": "Screen recording, 16:9 (video file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "screenImage",
+          "label": "Screenshot, if there is no recording (image file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "standin",
+          "label": "With nothing given, the screen shows",
+          "type": "enum",
+          "default": "website",
+          "options": [
+            {
+              "value": "website",
+              "label": "A website"
+            },
+            {
+              "value": "dashboard",
+              "label": "A dashboard"
+            },
+            {
+              "value": "call",
+              "label": "A video call"
+            }
+          ]
+        },
+        {
+          "id": "push",
+          "label": "Push in",
+          "type": "enum",
+          "default": "off",
+          "options": [
+            {
+              "value": "off",
+              "label": "Off"
+            },
+            {
+              "value": "on",
+              "label": "Part way through, until the screen fills the frame"
+            }
+          ]
+        },
+        {
+          "id": "stand",
+          "label": "The stand",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "With the stand"
+            },
+            {
+              "value": "off",
+              "label": "Just the screen"
+            }
+          ]
+        },
+        {
+          "id": "body",
+          "label": "The monitor",
+          "type": "enum",
+          "default": "dark",
+          "options": [
+            {
+              "value": "dark",
+              "label": "Dark"
+            },
+            {
+              "value": "light",
+              "label": "Light"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i09-16x9.png",
+        "1x1": "i09-1x1.png",
+        "4x5": "i09-4x5.png",
+        "9x16": "i09-9x16.png"
+      },
+      "hash": "b5f07807feb11376f10cfd4ebf2b29e8477ea61bf6f49908c38596f551341d89"
+    },
+    {
+      "code": "I10",
+      "name": "Smartwatch",
+      "category": "interface",
+      "summary": "A modern smartwatch with no branding: the time, a notification arriving, or activity rings filling.",
+      "use": "To show something reaching someone’s wrist: an order, a reminder, a message, a goal met. Choose the face: the time (with the date and small rings), a notification that slides up over it, or the activity rings with their numbers.",
+      "motion": "In: the watch rises into view (0.40 s). A notification slides up the face (0.30 s) with a tap pulse. The rings draw round to their values (1.00 s, easing out).",
+      "backdrop": "none",
+      "duration": 5,
+      "fields": [
+        {
+          "id": "face",
+          "label": "The face",
+          "type": "enum",
+          "default": "notification",
+          "options": [
+            {
+              "value": "time",
+              "label": "The time"
+            },
+            {
+              "value": "notification",
+              "label": "The time, then a notification"
+            },
+            {
+              "value": "activity",
+              "label": "Activity rings"
+            }
+          ]
+        },
+        {
+          "id": "time",
+          "label": "The time",
+          "type": "string",
+          "default": "10:09"
+        },
+        {
+          "id": "date",
+          "label": "The date",
+          "type": "string",
+          "default": "FRI 6"
+        },
+        {
+          "id": "noteTitle",
+          "label": "The notification’s title",
+          "type": "string",
+          "default": "New order"
+        },
+        {
+          "id": "noteText",
+          "label": "The notification’s line",
+          "type": "string",
+          "default": "£49.00 from Sam Carter"
+        },
+        {
+          "id": "rings",
+          "label": "The three rings: how full each is (0 to 1), separated by |",
+          "type": "string",
+          "default": "0.82 | 0.68 | 0.5"
+        },
+        {
+          "id": "figures",
+          "label": "The rings’ figures, separated by |",
+          "type": "string",
+          "default": "420 | 32 | 9"
+        },
+        {
+          "id": "band",
+          "label": "The band’s colour",
+          "type": "string",
+          "default": "#3A3D44"
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i10-16x9.png",
+        "1x1": "i10-1x1.png",
+        "4x5": "i10-4x5.png",
+        "9x16": "i10-9x16.png"
+      },
+      "hash": "7482dc8a308305d46452f14e73d1dbc984c82ee03373bd974f1c7870da6a1291"
+    },
+    {
+      "code": "I11",
+      "name": "Mouse cursor",
+      "category": "interface",
+      "summary": "A pointer that moves anywhere on screen on a gentle curve, hovers and clicks with a ripple.",
+      "use": "Over a screen recording, a screenshot or another item, to show where to click: give the moves in order (each a place in the frame, a time, and whether it clicks). Set the background to none to lay it over footage; with a background, it shows a stand-in button to click.",
+      "motion": "Each move curves gently, easing in and out (about 0.60 s a move), never in a straight line at constant speed. Over the button it swaps to the hand (0.10 s). A click squeezes it to 90% and sends a ripple out from the tip (0.30 s).",
+      "backdrop": "none",
+      "duration": 4,
+      "fields": [
+        {
+          "id": "moves",
+          "label": "The moves: JSON list of {at, x, y, click}, x and y as fractions of the frame",
+          "type": "string",
+          "default": "[{\"at\": 0.4, \"x\": 0.62, \"y\": 0.62}, {\"at\": 1.2, \"x\": 0.53, \"y\": 0.52, \"click\": true}, {\"at\": 2.6, \"x\": 0.66, \"y\": 0.66}]"
+        },
+        {
+          "id": "button",
+          "label": "A stand-in button at the first click (leave empty for none, over footage)",
+          "type": "string",
+          "default": "Get started"
+        },
+        {
+          "id": "pointer",
+          "label": "The pointer",
+          "type": "enum",
+          "default": "arrow",
+          "options": [
+            {
+              "value": "arrow",
+              "label": "An arrow (a hand over the button)"
+            },
+            {
+              "value": "hand",
+              "label": "A hand throughout"
+            }
+          ]
+        },
+        {
+          "id": "tone",
+          "label": "Its colours",
+          "type": "enum",
+          "default": "dark",
+          "options": [
+            {
+              "value": "dark",
+              "label": "Dark with a white edge"
+            },
+            {
+              "value": "light",
+              "label": "White with a dark edge"
+            }
+          ]
+        },
+        {
+          "id": "size",
+          "label": "Its size",
+          "type": "enum",
+          "default": "medium",
+          "options": [
+            {
+              "value": "small",
+              "label": "Small"
+            },
+            {
+              "value": "medium",
+              "label": "Medium"
+            },
+            {
+              "value": "large",
+              "label": "Large"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i11-16x9.png",
+        "1x1": "i11-1x1.png",
+        "4x5": "i11-4x5.png",
+        "9x16": "i11-9x16.png"
+      },
+      "hash": "cc966e8c4e1b1eba24d024266b40925a686b1102df3664824d427ceefd078e06"
+    },
+    {
+      "code": "I12",
+      "name": "AI chat box",
+      "category": "interface",
+      "summary": "An AI assistant’s chat box: a greeting, a prompt being typed, and files attached.",
+      "use": "To show asking an AI assistant something: the greeting, the prompt typed in, and any image or file attached. No product’s name or logo: add your own logo, and set the model and effort words to suit.",
+      "motion": "The prompt types on (0.04 s a letter); the voice button swaps to send as the first letter lands. Attachments drop into the box (0.25 s) and it grows to fit. Sending: the button presses (0.10 s) and the box clears.",
+      "backdrop": "none",
+      "duration": 7,
+      "fields": [
+        {
+          "id": "greeting",
+          "label": "The greeting (leave empty for none)",
+          "type": "string",
+          "default": "Good morning, Sam"
+        },
+        {
+          "id": "logoImage",
+          "label": "Your logo by the greeting (image file; else a simple spark in the accent)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "placeholder",
+          "label": "The box before anything’s typed",
+          "type": "string",
+          "default": "How can I help?"
+        },
+        {
+          "id": "prompt",
+          "label": "The prompt typed in (leave empty to stay empty)",
+          "type": "string",
+          "default": "Write a script for a 60-second explainer"
+        },
+        {
+          "id": "attach",
+          "label": "Attached",
+          "type": "enum",
+          "default": "none",
+          "options": [
+            {
+              "value": "none",
+              "label": "Nothing"
+            },
+            {
+              "value": "image",
+              "label": "An image"
+            },
+            {
+              "value": "file",
+              "label": "A file"
+            }
+          ]
+        },
+        {
+          "id": "attachImage",
+          "label": "The image attached (image file; else a stand-in)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "fileName",
+          "label": "The file’s name",
+          "type": "string",
+          "default": "video2.mp4"
+        },
+        {
+          "id": "fileType",
+          "label": "The file’s type, as on its label",
+          "type": "string",
+          "default": "MP4"
+        },
+        {
+          "id": "send",
+          "label": "Sending",
+          "type": "enum",
+          "default": "off",
+          "options": [
+            {
+              "value": "off",
+              "label": "Not sent"
+            },
+            {
+              "value": "on",
+              "label": "Sent at the end: the button presses and the box clears"
+            }
+          ]
+        },
+        {
+          "id": "model",
+          "label": "The model’s name",
+          "type": "string",
+          "default": "Pro"
+        },
+        {
+          "id": "effort",
+          "label": "The effort beside it (leave empty for none)",
+          "type": "string",
+          "default": "Medium"
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i12-16x9.png",
+        "1x1": "i12-1x1.png",
+        "4x5": "i12-4x5.png",
+        "9x16": "i12-9x16.png"
+      },
+      "hash": "e890fa1d9724b89ba3ca480a5fae406baed4be868c09c209b4da88fd45f3cd22"
+    },
+    {
+      "code": "I13",
+      "name": "Coding assistant",
+      "category": "interface",
+      "summary": "An AI coding assistant’s input bar: a request typed in, files added, and the mode, model and effort underneath.",
+      "use": "To show asking an AI coding tool for a change: the request typed in, an image or a file (with its path) added, and the status line under the bar. No product’s name or logo: set the mode, model and effort words to suit.",
+      "motion": "The text types on (0.04 s a letter) and the return icon appears with the first letter. Attachments drop in above the text (0.25 s) and the bar grows to fit.",
+      "backdrop": "none",
+      "duration": 7,
+      "fields": [
+        {
+          "id": "placeholder",
+          "label": "The bar before anything’s typed",
+          "type": "string",
+          "default": "Describe a change, or type / for commands"
+        },
+        {
+          "id": "prompt",
+          "label": "The prompt typed in (leave empty to stay empty)",
+          "type": "string",
+          "default": "Add captions to the intro scene"
+        },
+        {
+          "id": "attach",
+          "label": "Attached",
+          "type": "enum",
+          "default": "none",
+          "options": [
+            {
+              "value": "none",
+              "label": "Nothing"
+            },
+            {
+              "value": "image",
+              "label": "An image"
+            },
+            {
+              "value": "file",
+              "label": "A file"
+            }
+          ]
+        },
+        {
+          "id": "attachImage",
+          "label": "The image attached (image file; else a stand-in)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "fileName",
+          "label": "The file’s name",
+          "type": "string",
+          "default": "/Users/you/Downloads/Brand-Guidelines.pdf"
+        },
+        {
+          "id": "fileType",
+          "label": "The file’s type, as on its label",
+          "type": "string",
+          "default": "PDF"
+        },
+        {
+          "id": "send",
+          "label": "Sending",
+          "type": "enum",
+          "default": "off",
+          "options": [
+            {
+              "value": "off",
+              "label": "Not sent"
+            },
+            {
+              "value": "on",
+              "label": "Sent at the end: the button presses and the box clears"
+            }
+          ]
+        },
+        {
+          "id": "mode",
+          "label": "The mode, under the bar on the left",
+          "type": "string",
+          "default": "Auto"
+        },
+        {
+          "id": "model",
+          "label": "The model’s name",
+          "type": "string",
+          "default": "Pro"
+        },
+        {
+          "id": "effort",
+          "label": "The effort beside it (leave empty for none)",
+          "type": "string",
+          "default": "Medium"
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i13-16x9.png",
+        "1x1": "i13-1x1.png",
+        "4x5": "i13-4x5.png",
+        "9x16": "i13-9x16.png"
+      },
+      "hash": "310b2f83343906bd3dcf17d7bcd484bd808bcc4257cca999a0bfc6b28f41ed8f"
+    },
+    {
+      "code": "I14",
+      "name": "AI prompt bar",
+      "category": "interface",
+      "summary": "A clean AI prompt pill under a heading: typed into, and opening into a box for a document or image.",
+      "use": "To show asking an AI tool something, in a plain, rounded style: the heading, the prompt typed in, and a document (with a preview) or an image attached. No product’s name or logo: set the heading, the placeholder and the effort word to suit.",
+      "motion": "The prompt types on (0.04 s a letter) and the voice button turns into the send arrow. An attachment drops in (0.25 s) and the pill opens into a box to fit it.",
+      "backdrop": "none",
+      "duration": 7,
+      "fields": [
+        {
+          "id": "heading",
+          "label": "The heading (leave empty for none)",
+          "type": "string",
+          "default": "What are we working on?"
+        },
+        {
+          "id": "placeholder",
+          "label": "The pill before anything’s typed",
+          "type": "string",
+          "default": "Ask a question"
+        },
+        {
+          "id": "prompt",
+          "label": "The prompt typed in (leave empty to stay empty)",
+          "type": "string",
+          "default": "Summarise this report in three bullet points"
+        },
+        {
+          "id": "attach",
+          "label": "Attached",
+          "type": "enum",
+          "default": "none",
+          "options": [
+            {
+              "value": "none",
+              "label": "Nothing"
+            },
+            {
+              "value": "image",
+              "label": "An image"
+            },
+            {
+              "value": "file",
+              "label": "A document"
+            }
+          ]
+        },
+        {
+          "id": "attachImage",
+          "label": "The image attached (image file; else a stand-in)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "docImage",
+          "label": "The document’s preview (image file; else a plain colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "fileName",
+          "label": "The file’s name",
+          "type": "string",
+          "default": "Document.pdf"
+        },
+        {
+          "id": "send",
+          "label": "Sending",
+          "type": "enum",
+          "default": "off",
+          "options": [
+            {
+              "value": "off",
+              "label": "Not sent"
+            },
+            {
+              "value": "on",
+              "label": "Sent at the end: the button presses and the box clears"
+            }
+          ]
+        },
+        {
+          "id": "effort",
+          "label": "The effort word (leave empty for none)",
+          "type": "string",
+          "default": "Medium"
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i14-16x9.png",
+        "1x1": "i14-1x1.png",
+        "4x5": "i14-4x5.png",
+        "9x16": "i14-9x16.png"
+      },
+      "hash": "a1bb8419f6cff7a5f4e665d89b824a609bfcac4d79d992f533def4ff57e9926c"
+    },
+    {
+      "code": "I15",
+      "name": "Coding agent",
+      "category": "interface",
+      "summary": "An AI coding agent’s start screen: where it will work, the task typed in, and the model.",
+      "use": "To show handing a task to an AI agent that writes code: the project and where it runs, the task typed in, the approval setting and the model. No product’s name or logo: set the heading and the words to suit.",
+      "motion": "The task types on (0.04 s a letter) and the voice button turns into the send arrow. Sending: the button presses (0.10 s) and the box clears.",
+      "backdrop": "none",
+      "duration": 7,
+      "fields": [
+        {
+          "id": "heading",
+          "label": "The heading",
+          "type": "string",
+          "default": "What shall we build today?"
+        },
+        {
+          "id": "project",
+          "label": "The project",
+          "type": "string",
+          "default": "Choose project"
+        },
+        {
+          "id": "place",
+          "label": "Where it works",
+          "type": "string",
+          "default": "This computer"
+        },
+        {
+          "id": "placeholder",
+          "label": "The box before anything’s typed",
+          "type": "string",
+          "default": "Describe a task"
+        },
+        {
+          "id": "prompt",
+          "label": "The prompt typed in (leave empty to stay empty)",
+          "type": "string",
+          "default": "Build a landing page for the new course"
+        },
+        {
+          "id": "send",
+          "label": "Sending",
+          "type": "enum",
+          "default": "off",
+          "options": [
+            {
+              "value": "off",
+              "label": "Not sent"
+            },
+            {
+              "value": "on",
+              "label": "Sent at the end: the button presses and the box clears"
+            }
+          ]
+        },
+        {
+          "id": "approval",
+          "label": "The approval setting",
+          "type": "string",
+          "default": "Approve for me"
+        },
+        {
+          "id": "model",
+          "label": "The model’s name",
+          "type": "string",
+          "default": "Pro"
+        },
+        {
+          "id": "effort",
+          "label": "The effort beside it (leave empty for none)",
+          "type": "string",
+          "default": "High"
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i15-16x9.png",
+        "1x1": "i15-1x1.png",
+        "4x5": "i15-4x5.png",
+        "9x16": "i15-9x16.png"
+      },
+      "hash": "a6c5e32377b7a34d2d6cc1b0df33955c3729d30671eb6ffb9214ce6b7fcab8af"
+    },
+    {
+      "code": "I16",
+      "name": "AI agent",
+      "category": "interface",
+      "summary": "An AI agent at work: thinking, searching its sources, running tasks one by one, and finishing with a result.",
+      "use": "To show an AI agent doing a job for someone: what it’s thinking about, the sources it searches, the tasks it works through and what it hands back. Give the stages to show, the sources, the tasks and the result.",
+      "motion": "Thinking shimmers across the word (1.20 s a pass). Sources drop in one at a time (0.20 s apart). Each task ticks off as the next starts to spin. Done: the tick draws (0.30 s) and the result rises in (0.30 s).",
+      "backdrop": "none",
+      "duration": 9,
+      "fields": [
+        {
+          "id": "stages",
+          "label": "The stages shown, in order: thinking, searching, tasks, done",
+          "type": "string",
+          "default": "thinking, searching, tasks, done"
+        },
+        {
+          "id": "thinking",
+          "label": "While it thinks",
+          "type": "string",
+          "default": "Thinking"
+        },
+        {
+          "id": "searching",
+          "label": "While it searches",
+          "type": "string",
+          "default": "Searching the web"
+        },
+        {
+          "id": "sources",
+          "label": "The sources it finds, separated by |",
+          "type": "string",
+          "default": "industry-report.org | videostats.io | marketing-weekly.com"
+        },
+        {
+          "id": "tasks",
+          "label": "The tasks, separated by |",
+          "type": "string",
+          "default": "Read the brief | Pull the latest figures | Write the script | Check the facts"
+        },
+        {
+          "id": "done",
+          "label": "When it’s done",
+          "type": "string",
+          "default": "Done in 42s"
+        },
+        {
+          "id": "result",
+          "label": "What it hands back",
+          "type": "string",
+          "default": "Explainer script"
+        },
+        {
+          "id": "resultLine",
+          "label": "A line about it",
+          "type": "string",
+          "default": "3 scenes · 160 words"
+        },
+        {
+          "id": "button",
+          "label": "The button beside it (leave empty for none)",
+          "type": "string",
+          "default": "Open"
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i16-16x9.png",
+        "1x1": "i16-1x1.png",
+        "4x5": "i16-4x5.png",
+        "9x16": "i16-9x16.png"
+      },
+      "hash": "24d623822a4819fd8fdd536a6a967c7632e37bae831e0ec98952412e7100fb13"
+    },
+    {
+      "code": "I17",
+      "name": "Voice assistant",
+      "category": "interface",
+      "summary": "A voice assistant listening, transcribing what’s said as it’s spoken, and speaking back.",
+      "use": "To show talking to an assistant: what the person asks and what it answers. Time it to the voiceover with when the person starts speaking and when the reply begins. Choose the orb, the waveform or both.",
+      "motion": "Listening: the orb breathes and its rings pulse out (1.20 s a beat). The words appear as they’re spoken, the newest faint until they settle. Speaking: the waveform follows the voice in the accent and the reply types on with it.",
+      "backdrop": "none",
+      "duration": 8,
+      "fields": [
+        {
+          "id": "heard",
+          "label": "What the person says",
+          "type": "string",
+          "default": "Book a table for two at 7pm on Friday"
+        },
+        {
+          "id": "reply",
+          "label": "What the assistant says back",
+          "type": "string",
+          "default": "Done. A table for two at 7pm on Friday."
+        },
+        {
+          "id": "listening",
+          "label": "Under the orb while it listens",
+          "type": "string",
+          "default": "Listening…"
+        },
+        {
+          "id": "heardAt",
+          "label": "When the person starts speaking (seconds; 0 for about a second in)",
+          "type": "number",
+          "default": 0
+        },
+        {
+          "id": "replyAt",
+          "label": "When the reply starts (seconds; 0 for just after they finish)",
+          "type": "number",
+          "default": 0
+        },
+        {
+          "id": "show",
+          "label": "What shows the voice",
+          "type": "enum",
+          "default": "both",
+          "options": [
+            {
+              "value": "both",
+              "label": "The orb, then the waveform"
+            },
+            {
+              "value": "orb",
+              "label": "The orb only"
+            },
+            {
+              "value": "wave",
+              "label": "The waveform only"
+            }
+          ]
+        },
+        {
+          "id": "transcript",
+          "label": "The words",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "Shown as they’re spoken"
+            },
+            {
+              "value": "off",
+              "label": "Hidden"
+            }
+          ]
+        },
+        {
+          "id": "theme",
+          "label": "The style",
+          "type": "enum",
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": "On the background"
+            },
+            {
+              "value": "dark",
+              "label": "On a dark panel"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i17-16x9.png",
+        "1x1": "i17-1x1.png",
+        "4x5": "i17-4x5.png",
+        "9x16": "i17-9x16.png"
+      },
+      "hash": "06e8a305e6df8759724d43795c3c928c1a682349bae21e6a655719239643fc63"
+    },
+    {
+      "code": "I18",
+      "name": "Chat app",
+      "category": "interface",
+      "summary": "A messaging-app conversation: typing dots, messages arriving with their times, and ticks turning to read.",
+      "use": "To show a conversation in a familiar messaging style, with no app’s name or logo: a customer and a business, two colleagues, a reminder. Give the contact, the messages (who sent each, and when), how many are there at the start, and whether they get read.",
+      "motion": "The typing dots bounce in turn (0.90 s a loop). Each message pops up from its side (0.25 s, a slight overshoot) as the chat scrolls up. The ticks turn to the read colour (0.20 s).",
+      "backdrop": "none",
+      "duration": 7,
+      "fields": [
+        {
+          "id": "contact",
+          "label": "The contact’s name",
+          "type": "string",
+          "default": "Sam Carter"
+        },
+        {
+          "id": "contactImage",
+          "label": "The contact’s photo (image file; else a plain circle)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "messages",
+          "label": "The messages in order, separated by |: each “me: …” or “them: …”, with its time in brackets at the end",
+          "type": "string",
+          "default": "me: Morning! How’s the edit going? (10:38) | them: Nearly there (10:39) | them: Sending the first cut at 3pm (10:41) | me: Perfect, thanks! (10:42)"
+        },
+        {
+          "id": "start",
+          "label": "How many messages are there at the start (the rest arrive on screen)",
+          "type": "number",
+          "default": 2
+        },
+        {
+          "id": "typing",
+          "label": "Typing dots before their messages",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "On"
+            },
+            {
+              "value": "off",
+              "label": "Off"
+            }
+          ]
+        },
+        {
+          "id": "read",
+          "label": "Your messages",
+          "type": "enum",
+          "default": "read",
+          "options": [
+            {
+              "value": "read",
+              "label": "Read (shown as read soon after sending)"
+            },
+            {
+              "value": "sent",
+              "label": "Sent, not read yet"
+            }
+          ]
+        },
+        {
+          "id": "mode",
+          "label": "The colours",
+          "type": "enum",
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": "Light"
+            },
+            {
+              "value": "dark",
+              "label": "Dark"
+            }
+          ]
+        },
+        {
+          "id": "phone",
+          "label": "Around it",
+          "type": "enum",
+          "default": "card",
+          "options": [
+            {
+              "value": "card",
+              "label": "A rounded card"
+            },
+            {
+              "value": "phone",
+              "label": "A phone"
+            }
+          ]
+        },
+        {
+          "id": "day",
+          "label": "The day above the messages (leave empty for none)",
+          "type": "string",
+          "default": "TODAY"
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i18-16x9.png",
+        "1x1": "i18-1x1.png",
+        "4x5": "i18-4x5.png",
+        "9x16": "i18-9x16.png"
+      },
+      "hash": "6cd6112bd6c7a543223cb2343152c2a4699df1b2e499717b0847e94080410d6f"
+    },
+    {
+      "code": "I19",
+      "name": "Text messages",
+      "category": "interface",
+      "summary": "A text-message conversation: a typing bubble, grey and blue bubbles, and a read receipt.",
+      "use": "To show a text conversation in a familiar phone style, with no app’s name or logo: plans, a reminder, a quick reply. Give the contact (initials or a photo), the messages (who sent each) and whether the last is read.",
+      "motion": "The typing bubble pulses (0.90 s a loop). Each message springs up from its side (0.25 s) as the chat scrolls up. The read receipt fades in under the last message (0.20 s).",
+      "backdrop": "none",
+      "duration": 7,
+      "fields": [
+        {
+          "id": "contact",
+          "label": "The contact’s name",
+          "type": "string",
+          "default": "Alex"
+        },
+        {
+          "id": "contactImage",
+          "label": "The contact’s photo (image file; else a plain circle)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "messages",
+          "label": "The messages in order, separated by |: each “me: …” or “them: …” (a time in brackets at the end goes on the read receipt)",
+          "type": "string",
+          "default": "them: Are we still on for 3pm? | me: Yes! See you at the studio | them: Running 5 min late, save me a seat | me: No problem (10:41)"
+        },
+        {
+          "id": "start",
+          "label": "How many messages are there at the start (the rest arrive on screen)",
+          "type": "number",
+          "default": 2
+        },
+        {
+          "id": "typing",
+          "label": "Typing dots before their messages",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "On"
+            },
+            {
+              "value": "off",
+              "label": "Off"
+            }
+          ]
+        },
+        {
+          "id": "read",
+          "label": "Your messages",
+          "type": "enum",
+          "default": "read",
+          "options": [
+            {
+              "value": "read",
+              "label": "Read (shown as read soon after sending)"
+            },
+            {
+              "value": "sent",
+              "label": "Sent, not read yet"
+            }
+          ]
+        },
+        {
+          "id": "mode",
+          "label": "The colours",
+          "type": "enum",
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": "Light"
+            },
+            {
+              "value": "dark",
+              "label": "Dark"
+            }
+          ]
+        },
+        {
+          "id": "phone",
+          "label": "Around it",
+          "type": "enum",
+          "default": "card",
+          "options": [
+            {
+              "value": "card",
+              "label": "A rounded card"
+            },
+            {
+              "value": "phone",
+              "label": "A phone"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i19-16x9.png",
+        "1x1": "i19-1x1.png",
+        "4x5": "i19-4x5.png",
+        "9x16": "i19-9x16.png"
+      },
+      "hash": "1eb147e20465a0c40d0884230bfa7f4ccc76a7fa088e02815a5d5dcdbc9ede7d"
+    },
+    {
+      "code": "I20",
+      "name": "Feed post",
+      "category": "interface",
+      "summary": "A single social post, with no platform’s branding: profile, image or video, caption, a like and a new comment.",
+      "use": "To show content doing well on social media, or a post from a brand or a customer: the profile, the image or video, the caption and the counts, then a like and a comment arriving. Choose square or 4:5.",
+      "motion": "In: the post slides up (0.40 s). A like pops a heart over the image (0.40 s, an overshoot) as the icon fills and the count ticks up. A new comment slides in under the caption (0.25 s).",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "postVideo",
+          "label": "The post’s video (video file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "postImage",
+          "label": "The post’s image, if there is no video (image file; else a stand-in)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "account",
+          "label": "The account",
+          "type": "string",
+          "default": "studio.daily"
+        },
+        {
+          "id": "place",
+          "label": "The place under it (leave empty for none)",
+          "type": "string",
+          "default": "Leeds, UK"
+        },
+        {
+          "id": "avatarImage",
+          "label": "The account’s photo (image file; else a plain circle)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "caption",
+          "label": "The caption",
+          "type": "string",
+          "default": "Behind the scenes on today’s shoot"
+        },
+        {
+          "id": "likes",
+          "label": "The likes before the like",
+          "type": "number",
+          "default": 1248
+        },
+        {
+          "id": "comments",
+          "label": "The comments before the new one",
+          "type": "number",
+          "default": 86
+        },
+        {
+          "id": "comment",
+          "label": "A new comment, “name: words” (leave empty for none)",
+          "type": "string",
+          "default": "sam.c: Love the lighting!"
+        },
+        {
+          "id": "when",
+          "label": "When it was posted",
+          "type": "string",
+          "default": "2 hours ago"
+        },
+        {
+          "id": "shape",
+          "label": "The image",
+          "type": "enum",
+          "default": "4:5",
+          "options": [
+            {
+              "value": "4:5",
+              "label": "4:5"
+            },
+            {
+              "value": "1:1",
+              "label": "Square"
+            }
+          ]
+        },
+        {
+          "id": "mode",
+          "label": "The colours",
+          "type": "enum",
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": "Light"
+            },
+            {
+              "value": "dark",
+              "label": "Dark"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i20-16x9.png",
+        "1x1": "i20-1x1.png",
+        "4x5": "i20-4x5.png",
+        "9x16": "i20-9x16.png"
+      },
+      "hash": "3855d5ddc75075ed1fa0fc6b62e031b65df14f47ecc5b215d21d5ebf75108be7"
+    },
+    {
+      "code": "I21",
+      "name": "Short-form video",
+      "category": "interface",
+      "summary": "A vertical video player with no platform’s branding: reactions, captions and controls, a double-tap like and a pause.",
+      "use": "To show a short vertical video as people see it: your video (or a stand-in), the account, caption and sound, captions on the video, and the counts. A double tap likes it; it can pause at the end.",
+      "motion": "A double tap bursts a heart where it’s tapped (0.50 s) and the like count ticks up. The captions change on the words. Pausing dims the video a little and shows the play icon (0.20 s).",
+      "backdrop": "none",
+      "duration": 6,
+      "fields": [
+        {
+          "id": "screenVideo",
+          "label": "The video, vertical (video file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "screenImage",
+          "label": "A still of it, if there is no video (image file)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "account",
+          "label": "The account",
+          "type": "string",
+          "default": "@studio.daily"
+        },
+        {
+          "id": "caption",
+          "label": "The caption",
+          "type": "string",
+          "default": "3 tips for better hooks"
+        },
+        {
+          "id": "sound",
+          "label": "The sound",
+          "type": "string",
+          "default": "Original sound"
+        },
+        {
+          "id": "avatarImage",
+          "label": "The account’s photo (image file; else a plain circle)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "captions",
+          "label": "Captions on the video, in turn, separated by |; a / splits the small line from the big one (leave empty for none)",
+          "type": "string",
+          "default": "Start with / the problem | Then show / the fix"
+        },
+        {
+          "id": "counts",
+          "label": "The counts: likes, comments, saves and shares, separated by | (leave one empty to hide its button)",
+          "type": "string",
+          "default": "12.4K | 318 | 2.1K | 1.1K"
+        },
+        {
+          "id": "liked",
+          "label": "The likes once it’s liked",
+          "type": "string",
+          "default": "12.5K"
+        },
+        {
+          "id": "pause",
+          "label": "At the end",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "It pauses"
+            },
+            {
+              "value": "off",
+              "label": "It keeps playing"
+            }
+          ]
+        },
+        {
+          "id": "progress",
+          "label": "The progress bar",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "Shown"
+            },
+            {
+              "value": "off",
+              "label": "Hidden"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i21-16x9.png",
+        "1x1": "i21-1x1.png",
+        "4x5": "i21-4x5.png",
+        "9x16": "i21-9x16.png"
+      },
+      "hash": "518f0791371344da9463df3cf0d7277e060cbf3920d7c15cb7a165dea93fdf1e"
+    },
+    {
+      "code": "I22",
+      "name": "Search bar",
+      "category": "interface",
+      "summary": "A simple search box with no branding: a query typed, suggestions updating as it goes, then the results.",
+      "use": "To show someone looking for something: a question people ask, a product, an answer your video gives. Give what’s typed, the suggestions, and the results (site, address, title and a line each); highlight the one that matters.",
+      "motion": "The query types on (0.05 s a letter) and the suggestions update as it goes. Enter: the suggestions fold away (0.15 s) and the results drop in one by one (0.10 s apart).",
+      "backdrop": "none",
+      "duration": 7,
+      "fields": [
+        {
+          "id": "typed",
+          "label": "What’s typed",
+          "type": "string",
+          "default": "how to write a pro"
+        },
+        {
+          "id": "suggestions",
+          "label": "The suggestions, each starting with what’s typed, separated by | (the first is chosen)",
+          "type": "string",
+          "default": "how to write a product description | how to write a proposal | how to write a professional email | how to write a project brief"
+        },
+        {
+          "id": "results",
+          "label": "The results, separated by ||: each “site | address | title | a line”",
+          "type": "string",
+          "default": "Your Website | yourwebsite.com › guides | How to write a product description that sells | Eight steps, with examples from shops of every size. || Another Site | anothersite.com › blog | Product descriptions: a simple template | A fill-in template, and the mistakes to avoid."
+        },
+        {
+          "id": "highlight",
+          "label": "The result to highlight (0 for none)",
+          "type": "number",
+          "default": 1
+        },
+        {
+          "id": "showResults",
+          "label": "Results",
+          "type": "enum",
+          "default": "on",
+          "options": [
+            {
+              "value": "on",
+              "label": "Shown after the search"
+            },
+            {
+              "value": "off",
+              "label": "None: it ends on the suggestions"
+            }
+          ]
+        },
+        {
+          "id": "mode",
+          "label": "The colours",
+          "type": "enum",
+          "default": "light",
+          "options": [
+            {
+              "value": "light",
+              "label": "Light"
+            },
+            {
+              "value": "dark",
+              "label": "Dark"
+            }
+          ]
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i22-16x9.png",
+        "1x1": "i22-1x1.png",
+        "4x5": "i22-4x5.png",
+        "9x16": "i22-9x16.png"
+      },
+      "hash": "fd4b1624cde2b41c195ffeab1bf656762b5aa81383c444eba2d6123f98ac6fe3"
+    },
+    {
+      "code": "I23",
+      "name": "Order tracking",
+      "category": "interface",
+      "summary": "An order moving through its stages, ordered, dispatched, in transit and delivered, the title changing with each.",
+      "use": "To show delivery, fulfilment or any process with steps: an order, an application, a booking. Give the order number, the product, each stage’s name, time and title, and how far it gets.",
+      "motion": "Each stage completes in turn: the line fills down to it (0.40 s), its circle fills with a tick (0.20 s) and the next one starts to pulse. Delivered: the title changes and a final tick pops (0.30 s).",
+      "backdrop": "none",
+      "duration": 7,
+      "fields": [
+        {
+          "id": "order",
+          "label": "The order number",
+          "type": "string",
+          "default": "#48213"
+        },
+        {
+          "id": "product",
+          "label": "The product (leave empty for no product row)",
+          "type": "string",
+          "default": "Studio light kit"
+        },
+        {
+          "id": "productLine",
+          "label": "The line under it",
+          "type": "string",
+          "default": "1 item · £89.00"
+        },
+        {
+          "id": "productImage",
+          "label": "The product’s picture (image file; else a stand-in)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "stages",
+          "label": "The four stages, separated by |",
+          "type": "string",
+          "default": "Ordered | Dispatched | In transit | Delivered"
+        },
+        {
+          "id": "times",
+          "label": "When each happened, separated by |",
+          "type": "string",
+          "default": "Mon 10:14 | Tue 08:30 | Wed 13:02 | Thu 11:47"
+        },
+        {
+          "id": "titles",
+          "label": "The title at each stage, separated by |",
+          "type": "string",
+          "default": "Order placed | On its way soon | Arriving Thursday | Delivered"
+        },
+        {
+          "id": "expected",
+          "label": "Under the last stage until it’s reached",
+          "type": "string",
+          "default": "Expected Thu"
+        },
+        {
+          "id": "from",
+          "label": "Stages done at the start",
+          "type": "number",
+          "default": 1
+        },
+        {
+          "id": "to",
+          "label": "Stages done by the end",
+          "type": "number",
+          "default": 4
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i23-16x9.png",
+        "1x1": "i23-1x1.png",
+        "4x5": "i23-4x5.png",
+        "9x16": "i23-9x16.png"
+      },
+      "hash": "5ecaa1f7db5bb98355bfd2deaa86050b8ff152665610a15ae26ee97ab691757a"
+    },
+    {
+      "code": "I24",
+      "name": "Pricing plans",
+      "category": "interface",
+      "summary": "Plans side by side: a monthly or yearly toggle with the prices rolling over, and a plan being chosen.",
+      "use": "To show a product’s pricing, or the moment someone picks a plan: two to four plans with their monthly and yearly prices, what each includes and which is popular. Choose the plan that gets picked.",
+      "motion": "The toggle’s pill slides across (0.25 s) and the prices roll to their new values (0.40 s). Choosing a plan lifts its card (0.25 s), draws the accent border and fills its button.",
+      "backdrop": "none",
+      "duration": 7,
+      "fields": [
+        {
+          "id": "plans",
+          "label": "The plans: name, monthly price, yearly price (a month), separated by |",
+          "type": "string",
+          "default": "Starter, 19, 15 | Pro, 49, 39 | Business, 99, 79"
+        },
+        {
+          "id": "features",
+          "label": "What each includes: lines separated by ; and plans by |",
+          "type": "string",
+          "default": "5 videos a month; HD exports; Email support | 20 videos a month; 4K exports; Priority support | Unlimited videos; 4K exports; A dedicated manager"
+        },
+        {
+          "id": "currency",
+          "label": "The currency sign",
+          "type": "string",
+          "default": "£"
+        },
+        {
+          "id": "period",
+          "label": "After each price",
+          "type": "string",
+          "default": "/mo"
+        },
+        {
+          "id": "popular",
+          "label": "The plan marked popular (leave empty for none)",
+          "type": "string",
+          "default": "Pro"
+        },
+        {
+          "id": "chosen",
+          "label": "The plan chosen (leave empty for none)",
+          "type": "string",
+          "default": "Pro"
+        },
+        {
+          "id": "toggle",
+          "label": "Monthly and yearly",
+          "type": "enum",
+          "default": "switch",
+          "options": [
+            {
+              "value": "switch",
+              "label": "Starts monthly, switches to yearly"
+            },
+            {
+              "value": "monthly",
+              "label": "Monthly only"
+            },
+            {
+              "value": "yearly",
+              "label": "Yearly only"
+            },
+            {
+              "value": "none",
+              "label": "No toggle"
+            }
+          ]
+        },
+        {
+          "id": "saving",
+          "label": "The yearly saving (leave empty for none)",
+          "type": "string",
+          "default": "SAVE 20%"
+        },
+        {
+          "id": "button",
+          "label": "The buttons",
+          "type": "string",
+          "default": "Choose"
+        },
+        {
+          "id": "selected",
+          "label": "The chosen plan’s button",
+          "type": "string",
+          "default": "Selected"
+        },
+        {
+          "id": "ground",
+          "label": "The background: card, accent or ink (the brand’s own), any colour or CSS gradient, or none (to sit over footage)",
+          "type": "string",
+          "default": "card"
+        },
+        {
+          "id": "groundImage",
+          "label": "A background image instead (image file; leave empty for the colour)",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "id": "side",
+          "label": "Where it sits across (at 16:9)",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
+        },
+        {
+          "id": "level",
+          "label": "How high it sits at 1:1, 4:5 and 9:16",
+          "type": "enum",
+          "default": "middle",
+          "options": [
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "low",
+              "label": "Low, under the presenter’s face"
+            },
+            {
+              "value": "high",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "id": "exit",
+          "label": "At the end",
+          "type": "enum",
+          "default": "animate",
+          "options": [
+            {
+              "value": "animate",
+              "label": "Animate out"
+            },
+            {
+              "value": "hold",
+              "label": "Hold, for a transition"
+            }
+          ]
+        }
+      ],
+      "stills": {
+        "16x9": "i24-16x9.png",
+        "1x1": "i24-1x1.png",
+        "4x5": "i24-4x5.png",
+        "9x16": "i24-9x16.png"
+      },
+      "hash": "5187ce15bde883fa9fbb2f25536377fd0ab0035b4fbeb2b37a46243622288913"
+    },
+    {
       "code": "L02",
       "name": "To camera",
       "category": "layouts",

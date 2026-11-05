@@ -32,4 +32,16 @@ export const CATEGORIES = {
     letter: "D",
     lede: "Full-screen charts, graphs and data visualisations: every common way to show numbers, and some unusual ones that make a video stand out.",
   },
+  interface: {
+    title: "Interface",
+    one: "interface",
+    letter: "I",
+    lede: "Screens people know, to show a product or a process without a screen recording: browser and app windows, phones, laptops and watches, AI chats, messages, social posts, search and shopping.",
+  },
+  forms: {
+    title: "Forms",
+    one: "form",
+    letter: "F",
+    lede: "Forms and controls, filled in and clicked as if by a real person: signing in and paying, menus, switches, sliders and dates, progress and messages, uploads and ratings.",
+  },
 };

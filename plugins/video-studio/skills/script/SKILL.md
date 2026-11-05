@@ -110,8 +110,8 @@ graphs), each with a code and each dressed in the video's brand at the video's s
     - moving on to something new, with energy: X17 Stripe sweep;
     - the next scene grows out of something in this one (a face, a button, a number): X19 Iris from a point;
     - this scene turns out to be part of the next (a screen on a laptop, a photo in a frame): X05 Pull back.
-  - Widgets, transitions and data suit any video. L01 and T01 need a presenter, so they suit only footage of one;
-    L07 works with or without, and L15, T10 and T46 suit any video.
+  - Widgets, transitions, data, interface and forms suit any video. L01 and T01 need a presenter, so they suit only
+    footage of one; L07 works with or without, and L15, T10 and T46 suit any video.
   - Not every cut needs a transition. Use them where the video moves on, and let related beats simply cut.
 - **Write it into the action cell** by its code in square brackets, with what it shows, for example:
   `[W03] **48%** of customers chose the yearly plan`. The page shows each as a link that opens the item in the

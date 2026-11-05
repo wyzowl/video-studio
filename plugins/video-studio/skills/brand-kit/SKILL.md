@@ -131,7 +131,7 @@ if it isn't open, show it again. Videos already delivered keep their own copies 
   shows each with the brand's words and logo on it.
 - `fonts[].file` is optional for fonts installed on the machine. `variation` holds `font-variation-settings` for
   variable fonts. `sample` overrides the specimen sentence.
-- `style` dresses the library items (widgets, layouts, text effects, transitions and data) in the brand: `card` is the colour of widget cards
+- `style` dresses the library items (widgets, layouts, text effects, transitions, data, interface and forms) in the brand: `card` is the colour of widget cards
   (without it, the background colour), `radius` the corner rounding of cards and windows (take it from the website's
   cards or buttons; default 16px), and `labelFont` the family for small capitals labels, such as a mono (include its
   file under `fonts` with the role `Label`). The rest comes from the colours (text, secondary text, accent), the

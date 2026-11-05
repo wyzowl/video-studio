@@ -173,12 +173,14 @@ you're making while you work on it.
 
 ## Library items
 
-The studio's library (`/library/`) holds ready-made HyperFrames blocks in five categories: widgets (cards that show
+The studio's library (`/library/`) holds ready-made HyperFrames blocks in seven categories: widgets (cards that show
 information over footage), layouts (ways to show the presenter beside a screen or other clips), text effects,
-transitions (ways to move from one scene to the next) and data (full-screen charts and graphs). Each item has a code
-whose letter is its category (W03, L01, T01; X for transitions, D for data), takes its colours, fonts and corner
-rounding from a brand kit, and lays itself out for every size. Suggest them yourself: in the script (script skill,
-"Library items") and the storyboard, from what `studio.mjs library` lists, so videos get them without anyone asking.
+transitions (ways to move from one scene to the next), data (full-screen charts and graphs), interface (browser and
+app windows, devices, AI tools, messages, social posts, search and shopping) and forms (forms and controls filled in
+and clicked). Each item has a code whose letter is its category (W03, L01, T01; X for transitions, D for data, I for
+interface, F for forms), takes its colours, fonts and corner rounding from a brand kit, and lays itself out for every
+size. Suggest them yourself: in the script (script skill, "Library items") and the storyboard, from what
+`studio.mjs library` lists, so videos get them without anyone asking.
 To build one in, whether you suggested it or the user named it:
 
 1. Run `node PLUGIN/scripts/studio.mjs library <code> --brand <brand> --size <16x9|1x1|4x5|9x16>`. It gives the block's

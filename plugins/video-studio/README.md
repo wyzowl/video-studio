@@ -18,8 +18,8 @@ feedback counts.
   reused across every video.
 - **Sound.** Sound effects from SFX Kit placed on their moments, music, and the voiceover you bring (your own
   recording, or one made with any voice service), with captions.
-- **A library** of ready-made animated items (widgets, layouts, text effects, transitions and data), dressed in your
-  brand.
+- **A library** of ready-made animated items (widgets, layouts, text effects, transitions, data, interfaces and
+  forms), dressed in your brand.
 - **Delivery.** A 60 fps master, a web copy, a poster and captions, rendered on your Mac. When a video is finished,
   Video Studio offers to tidy it up, to free the space its drafts and history take.
 

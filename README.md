@@ -174,10 +174,11 @@ Nothing is uploaded.
   a thumbnail, captions (SRT and WebVTT) and the contact sheet, each to download or show in Finder, with the words to
   go with it (a title, a description and alt text) and suggestions to ask Claude for next, such as other sizes, a
   shorter cut or tidying up. The version rows on a video's pages link to it (**Video delivery: All assets**).
-- **Library:** ready-made pieces for videos, on one page with a menu of five categories: **Widgets** (on-screen
+- **Library:** ready-made pieces for videos, on one page with a menu of seven categories: **Widgets** (on-screen
   things that show information), **Layouts** (ways to show one or more things on screen), **Text effects** (ways to
-  use text on screen), **Transitions** (ways to move from one scene to the next) and **Data** (full-screen charts,
-  graphs and data visualisations).
+  use text on screen), **Transitions** (ways to move from one scene to the next), **Data** (full-screen charts,
+  graphs and data visualisations), **Interface** (screens people know: browser and app windows, devices, AI tools,
+  messages, social posts, search and shopping) and **Forms** (forms and controls, filled in and clicked).
   - Every item plays live in any of the studio's brands and at any size: 16:9, 1:1, 4:5 or 9:16. **Type** shows
     paid and free items, the free ones only, or your favourites.
   - **Search** filters a category's items as you type (press `/` to start), and says how many match in the others.

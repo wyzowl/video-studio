@@ -1,4 +1,4 @@
-// The library: widgets, layouts, text effects, transitions and data. Each item is a HyperFrames block, one HTML file in
+// The library: widgets, layouts, text effects, transitions, data, interface and forms. Each item is a HyperFrames block, one HTML file in
 // the plugin's library/<category>/ folder. Its <template> is a sub-composition whose words, options and brand settings
 // are HyperFrames variables, and its <head> carries a note for the studio (code, name, category, what it's for). The
 // studio plays each block live in any brand and size, on a plain dark stand-in for footage: a person's silhouette,

@@ -1970,7 +1970,7 @@ export function libraryPage(studio, category, query) {
     <div class="split">
       <div class="stack">
         <h1>Library</h1>
-        <p class="lede">Ready-made pieces for your videos, each dressed in your brand: widgets, layouts, text effects, transitions and data. Claude suggests them in your scripts and storyboards, and you can ask for any one by its code.</p>
+        <p class="lede">Ready-made pieces for your videos, each dressed in your brand: widgets, layouts, text effects, transitions, data, interfaces and forms. Claude suggests them in your scripts and storyboards, and you can ask for any one by its code.</p>
       </div>
       <dl class="titleblock">
         ${cell("Items", String(all.length + allLocked.length))}
