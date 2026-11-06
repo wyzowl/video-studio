@@ -128,7 +128,8 @@ function spokenAt(spoken, phrase) {
 
 // ───────── the video ─────────
 
-const attrs = (tag) => {
+/** A tag's attributes, by lower-case name, with their entities decoded. */
+export const attrs = (tag) => {
   const out = {};
   for (const m of tag.matchAll(/([\w:-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g)) {
     if (m.index === 0) continue;

@@ -48,6 +48,13 @@
 //   node studio.mjs map [<video>]              a map of the built film's code: each file's blocks and the sections the
 //                                              build heads by scene (id and time range), with their line ranges; the
 //                                              clips and library items with their times; and the sound cues
+//   node studio.mjs words [<video>] [--correct [--again]] [--cut] [--duck [<level>]] [--captions]
+//                                              the spoken words in the film's time, a line per phrase with each word's
+//                                              start: the voiceover's verified transcript moved to where it plays, or a
+//                                              footage cut's words. --correct writes the verified transcript (the
+//                                              approved script's words on the times heard, with vo-check's look);
+//                                              --cut writes a footage cut's docs/words.json from its clips; --duck puts
+//                                              the music's duck under the words; --captions writes the captions files
 //   node studio.mjs check <video> --keep <finding> "<why>"
 //                                              keep a should fix of the last check (S2), with why, in
 //                                              docs/checks/kept.json: the review page shows it, later checks fold it
@@ -275,6 +282,7 @@ async function main() {
   if (cmd === "final") return finalCommand();
   if (cmd === "frames") return framesCommand();
   if (cmd === "map") return mapCommand();
+  if (cmd === "words") return wordsCommand();
   if (cmd === "check") return checkCommand();
   if (cmd === "pdf") return pdf();
   if ((cmd === "library" || cmd === "gallery") && arg === "check") return libraryCheck();
@@ -725,6 +733,21 @@ async function mapCommand() {
   const at = theVideo("Which video? node studio.mjs map <video>, or run it from the video's folder.");
   const { filmMap } = await import("./lib/map.mjs");
   console.log(filmMap(at.dir).join("\n"));
+}
+
+/** `words [<video>]`: the spoken words in the film's time (lib/words.mjs), and what's made from them: the verified
+    transcript (`--correct`), a footage cut's words (`--cut`), the music's duck (`--duck`) and the captions
+    (`--captions`). The listing follows anything that changes the words. */
+async function wordsCommand() {
+  const at = theVideo("Which video? node studio.mjs words <video> [--correct] [--cut] [--duck] [--captions], or run it from the video's folder.");
+  const w = await import("./lib/words.mjs");
+  const lines = [];
+  if (argv.includes("--correct")) lines.push(...w.correctWords(at.root, at.slug, { again: argv.includes("--again") }));
+  if (argv.includes("--cut")) lines.push(...w.cutWords(at.root, at.slug));
+  if (argv.includes("--duck")) lines.push(...w.duckMusic(at.root, at.slug, { level: Number(opt("--duck")) || 0.25 }));
+  if (argv.includes("--captions")) lines.push(...w.captionWords(at.root, at.slug));
+  if (!lines.length || argv.includes("--correct") || argv.includes("--cut")) lines.push(...w.describeWords(at.root, at.slug));
+  console.log(lines.join("\n"));
 }
 
 /** `check [<video>] [--render <file>]`: Video Studio's checks on a built video (lib/check.mjs), from its folder or by

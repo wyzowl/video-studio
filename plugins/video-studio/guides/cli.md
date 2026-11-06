@@ -40,6 +40,28 @@ Check changed moments with snapshots and keyframe strips first. In a review's ro
 below) with a before-and-after sheet; a draft for the user is always the whole film. `--resume` (with
 `HF_SEGMENTED_CAPTURE=true`) only recovers a render that crashed.
 
+## The film's words, timings and stills
+
+Video Studio's own commands for what a build would otherwise work out by hand. Each prints what it did in a few lines.
+
+### words
+
+`node PLUGIN/scripts/studio.mjs words <video>` lists the spoken words in the film's time, a line per phrase with the
+time each word starts (`Kettlewick@11.86`): the voiceover's verified transcript moved to where its `<audio>` starts,
+or a footage cut's words (`docs/words.json`). Time things to these, never to a transcript's own times.
+
+- `--correct` (a voiceover, once transcribed): writes `inputs/transcript_verified.json` from `inputs/transcript.json`
+  with the approved script's words on the times heard (its spelling and punctuation; where it heard "£14" for
+  "fourteen pounds", the script's two words share the time), then runs vo-check on the times. It lists the words it
+  corrected, and anything said that isn't in the script or the other way round, to check by ear. It won't write over a
+  verified transcript changed since (`--again` does).
+- `--cut` (a footage video): writes `docs/words.json` from the cut itself: each `<video>` that plays its sound gives
+  its take's words in its range (`footage/transcripts/`), moved to where it sits in the film. Correct a misheard word
+  in the take's transcript, so every cut made from it has it right; `draft` and `final` write it again when the cut
+  has changed since.
+- `--duck [<level>]`: the music's duck under the words (`audio/mixing.md`, "Room for the voice").
+- `--captions`: the captions files, as `final` makes them.
+
 ## init
 
 `HYPERFRAMES_SKIP_SKILLS=1 HF init videos/<project> --non-interactive` makes a blank project at 1920×1080
@@ -269,8 +291,9 @@ Pictures go to `.hyperframes/measure/<what>/` unless `--out` names a folder. A r
   imported the same way.
   - Whisper's `.en` models translate other languages into English: for speech in another language, a model without
     `.en` and `--language <code>`.
-  - Whisper's word times can drift by more than a second. After Parakeet, run
-    `node PLUGIN/scripts/tools/vo-check.mjs <audio> <transcript>` and listen to the cue words.
+  - Whisper's word times can drift by more than a second. After Parakeet, `node PLUGIN/scripts/studio.mjs words <video>
+    --correct` puts the approved script's words on its times and checks them with vo-check
+    (`node PLUGIN/scripts/tools/vo-check.mjs <audio> <transcript>` on any transcript); listen to the cue words.
   - Caption craft and transcript clean-up: `captions/`.
 - **Beats:** `HF beats --json` writes `beats/<the audio's path>.json` (`beats/assets/audio/music.wav.json`) for the
   project's music (an `<audio>` marked `data-timeline-role="music"`, or with `music`, `bgm` or `soundtrack` in its

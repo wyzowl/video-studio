@@ -21,9 +21,10 @@ times are in `../numbers.md`, "Speech".
 
 - **Script and storyboard:** scenes start and end at sentence or phrase gaps (using the verified word times), or on
   bar lines with music.
-- **Build:** every timing comes from measured data: the verified transcript's word times (`../cli.md`, "Sound and
-  speech"; footage cuts move each word to where it sits in the cut), `HF beats --json` for the music, the sound's sync
-  point for effects. Never place by eye or by a guessed tempo.
+- **Build:** every timing comes from measured data: the spoken words in the film's time (`studio.mjs words <video>`:
+  the verified transcript moved to where the voice plays, or a footage cut's words, each moved to where it sits in the
+  cut; `../cli.md`, "The film's words, timings and stills"), the score's own grid or `HF beats --json` for the music,
+  the sound's sync point for effects. Never place by eye or by a guessed tempo.
 - **Review:** watch the strips around key words and cuts with the sound on; listen for sounds a frame late.
 
 ## What lowers it

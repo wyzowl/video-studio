@@ -62,10 +62,12 @@ Write the attributes double-quoted, with the JSON's quotes as `&quot;`.
 Music under a voice makes the voice hard to follow. By default, every bed under a voice is ducked or carved before the
 video is finished; skip it only when there's no voice for the music to sit under (a music video, a title card).
 
-- **The duck, from the word times.** Merge the voiceover's word times into spans (bridging gaps under 0.6 s), then
-  write a volume lane on the music: down to about 25% of its level over 0.15 s at each span's start, back over 0.4 s
-  at its end, every time in the music clip's own seconds (the video's time minus its `data-start`), with a full-level
-  point at `t: 0`. Keep the lane's JSON in `tools/duck-lane.json` too, for the leveller ("Levels and headroom" above).
+- **The duck, from the word times:** `node PLUGIN/scripts/studio.mjs words <video> --duck` writes it. The spoken words
+  in the film's time become spans (bridging gaps under 0.6 s); the music goes down to about 25% of its level over the
+  0.15 s before each span and back over 0.4 s after it, every time in the music clip's own seconds (the video's time
+  minus its `data-start`), from full level at `t: 0` (or down from the start, under speech that starts the clip). It's
+  written into the music's `data-automation` (its other lanes kept) and `tools/duck-lane.json`, for the leveller
+  ("Levels and headroom" above). `--duck 0.35` ducks it less.
 - **The voiceover carve,** the better mix: it takes only the bands the voice needs (roughly 250 Hz to 2.5 kHz) and a
   level that follows the speech, so the music keeps its low end and its top. HyperFrames' app makes it, on the music
   track's effect rack (Voiceover carve, strength 0.8 by default), writing `data-fx-carve`, its chain and its lanes;

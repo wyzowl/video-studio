@@ -15,10 +15,10 @@ import { checkFilm, describeReport, readFilm, speechFile } from "./check.mjs";
 import { readProgress, startStage, updateProgress } from "./progress.mjs";
 import { renderVideo } from "./render.mjs";
 import { drawSheets, ff, grab, pool, sheetRange, sheetTime } from "./sheet.mjs";
+import { refreshCut, writeCaptions } from "./words.mjs";
 import { PLUGIN_ROOT, readJSON, reviewVersions, readReview } from "./studio.mjs";
 
 const SHEETS = join(PLUGIN_ROOT, "scripts", "tools", "sheets.mjs");
-const CAPTIONS = join(PLUGIN_ROOT, "scripts", "tools", "captions.mjs");
 
 const mark = (at, step, change = (q) => q) => {
   try {
@@ -54,6 +54,9 @@ function lastDraft(at) {
 
 /** Video Studio's checks before a render, reusing the last check when nothing has changed since; a must fix stops it. */
 async function gate(at, log) {
+  // a footage cut's words, from the cut as it is now, for the checks and the captions
+  const cut = refreshCut(at.root, at.slug);
+  if (cut) log(cut);
   const { report, path } = await checkFilm(at.root, at.slug, { reuse: true, log });
   if (!report.counts.must) return null;
   return [describeReport(report, { path: relative(at.root, path) }), "A must fix stops the render: fix it, then run this again."];
@@ -186,9 +189,8 @@ export async function makeFinal(at, { log = () => {} } = {}) {
   // the captions, when there's speech
   const speech = speechFile(film.dir, film.brief, film.script?.script, film.media);
   if (speech) {
-    const c = spawnSync(process.execPath, [CAPTIONS, relative(at.dir, speech.file), ...(speech.offset ? ["--offset", String(speech.offset)] : [])], { cwd: at.dir, encoding: "utf8" });
-    lines.push(c.status === 0 ? `Captions: ${c.stdout.trim().split("\n").pop()}` : `The captions weren't made: ${(c.stderr || c.stdout).trim().split("\n").pop()}`);
-  } else if (film.brief.type === "footage" || film.script?.script?.mode === "footage") lines.push("No captions: write the cut's word times to docs/words.json (production skill, \"Deliverables\"), then run captions.mjs.");
+    lines.push(writeCaptions(at.dir, speech));
+  } else if (film.brief.type === "footage" || film.script?.script?.mode === "footage") lines.push("No captions: no <video> in the cut plays a take with a transcript (footage/transcripts/), so there are no words for them.");
   else lines.push("No captions: the film has no speech.");
   log("The checks on the master…");
   const { report, path } = await checkFilm(at.root, at.slug, { render: made.file, reuse: true, log });
