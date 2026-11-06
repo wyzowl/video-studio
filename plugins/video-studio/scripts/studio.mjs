@@ -9,7 +9,7 @@
 //                                              (--card, or a session without the band: how Claude shows it instead,
 //                                              beside the chat with a card, and waiting). It checks a script's,
 //                                              storyboard's or video review's data file first, and says what's wrong
-//                                              (--check: only that, showing nothing, for a stage agent's own check)
+//                                              (--check: only that, showing nothing)
 //   node studio.mjs wait <path>                wait until the user finishes reviewing a script, storyboard or video
 //                                              (Claude runs it in the background: finishing wakes Claude to carry on),
 //                                              then print what they decided and every note, with its pictures
@@ -498,8 +498,6 @@ async function hook() {
     page is already on screen (it refreshes itself) or Claude was told about it in the last few minutes. */
 async function pageReady() {
   const input = JSON.parse(readFileSync(0, "utf8") || "{}");
-  // a stage agent's write: showing the page is the conversation's, once the agent reports
-  if (input.agent_id) return;
   const given = input.tool_input?.file_path;
   if (typeof given !== "string" || !given) return;
   const file = resolve(input.cwd || process.cwd(), given);

@@ -52,26 +52,25 @@ each in full), then other guides as the job needs.
      drifted in that file, and check key cue words by ear.
    - **A voiceover to come** (`voiceover: supplied` in the brief): once the script is approved, ask the user to have the
      approved voiceover read (the copy button at the top of the script page, **Copy the voiceover**, gives them its
-     words) and to put the file in `inputs/` (give the full path). Wait for it. Then it's the recorded voiceover,
-     timed as above, correcting misheard words against the approved script: the storyboard agent does that first.
+     words) and to put the file in `inputs/` (give the full path). Wait for it. Then it's the recorded voiceover:
+     follow the step above, correcting misheard words against the approved script.
    - **No voiceover:** a beat grid is the clock. `TEMPO` and a `PRE` lead-in, with beat *b* at
      `PRE + b × 60 / TEMPO`. Write every cue in beats, so re-timing is one change.
    - **Footage** (`type: footage`): the cut's own speech is the clock. Each kept range plays at its own pace, and
      everything else is timed to the scan's word times, moved to where each range sits in the cut. Once the cut is
      built, `studio.mjs words <project>` lists its words in the film's time (`--cut` writes `docs/words.json`; `draft`
      and `final` keep it up to date).
-4. **Storyboard.** The storyboard agent makes it ("Stage agents", below), following the video-studio:storyboard
-   skill. Build nothing until every scene is approved.
-5. **Build.** The build agent follows the video-studio:build skill: it turns the approved storyboard into the video
-   (the code, the library items, the sound) and changes nothing the user approved without flagging it.
-6. **Review loop.** The review agent takes it through the video-studio:review skill, with fresh eyes: a draft and its
-   sheets (`studio.mjs draft`), eight scores against the guides' standards, and rounds of fixes until every score is
-   8 or more (round 1 can pass by itself). Nothing goes to the user before this.
+4. **Storyboard.** Follow the video-studio:storyboard skill. Build nothing until every scene is approved.
+5. **Build.** Follow the video-studio:build skill: it turns the approved storyboard into the video (the code, the
+   library items, the sound) and changes nothing the user approved without flagging it.
+6. **Review loop.** Follow the video-studio:review skill: a draft and its sheets (`studio.mjs draft`), eight scores
+   against the guides' standards, and rounds of fixes until every score is 8 or more (round 1 can pass by itself).
+   Nothing goes to the user before this.
 7. **Video review.** Share the reviewed render on its review page, where the user pins notes to moments in the video
    and saves: it's Approve video unless they add notes, which switch it to Changes needed (they can change it). The
    pages call it "the video" (Video v1, v2…), so do the same when you talk to the user. The review skill ("The
    user's video review") has the page's file, how to share it and what to do with the notes. `approved` goes to
-   stage 8; `changes` goes back through the build and the review loop as video v<N+1>, made by the review agent.
+   stage 8; `changes` goes back through the build and the review loop as video v<N+1>.
 8. **Master and deliverables**, only after the user approves the video: `studio.mjs final <project>` ("Deliverables").
    Then show its delivery page `/videos/<project>/delivery/` ("Showing a page"): the final video and every file made
    with it, the words to go with it, and what they might ask for next.
@@ -80,48 +79,6 @@ each in full), then other guides as the job needs.
    by default they're never cropped or letterboxed.
 10. **Revisions.** A new version suffix (`_v2`); keep the previous files; motion or feel changes come with a
     side-by-side before/after. If the user has edited in the HyperFrames app, follow `PLUGIN/guides/studio/app.md`.
-
-## Stage agents
-
-The heavy stages run in Video Studio's own agents, each starting fresh from the video's files, so this conversation
-keeps only the brief, the script, the pages, the approvals and the user's questions. Each agent follows its stage's
-skill, marks its own progress on the video's overview and ends with a short report.
-
-| When | Start | It makes |
-|---|---|---|
-| The script is approved (and a voiceover to come has arrived) | `video-studio:storyboard` | storyboard v1 |
-| A storyboard review has notes | `video-studio:storyboard` | storyboard v<N+1> |
-| Every storyboard scene is approved | `video-studio:build` | video v1, built up to its first draft |
-| The build agent's report comes in | `video-studio:review` | video v1's review rounds, to the draft the user sees |
-| A video review has notes | `video-studio:review` | video v<N+1> from the notes, or an approval's last tweaks |
-
-1. **The files first.** Anything the user has said in the chat that the job needs and the files don't hold yet (a
-   preference, an answer, a correction, where a file is) goes into `BRIEF.md`'s Notes before the agent starts: it
-   knows only the files and its brief.
-2. **Start it** with the Agent tool: `subagent_type` the agent above, `description` the job in a few words, and this
-   brief as the prompt:
-   ```
-   Plugin files: <PLUGIN>
-   Studio: <the studio's folder>
-   Video: videos/<project>
-   Job: storyboard v1, from script v2 (approved)
-   From the conversation: <what step 1 added to the brief's Notes, in a line>, or nothing
-   ```
-   Where the host has no such agent type (the Agent tool doesn't list it), start a general agent
-   (`general-purpose`) with the same brief and this line first: `Your instructions are in <PLUGIN>/agents/<name>.md:
-   read that file first and follow it.` It does the same job the same way.
-3. **While it works,** say in a line what's under way, with a link to the video's overview, where the user can watch
-   it (`/videos/<project>/`), and end your turn: the agent's report wakes you (where the host waits for agents
-   instead, it comes straight back). Answer questions in the meantime from the overview and the files. A change the
-   user asks for goes into `BRIEF.md`'s Notes, and to the agent while it runs (SendMessage, to its id).
-4. **When the report comes in,** show the page it names ("Showing a page"), with what the report says the user should
-   know: for a video, the scores, what Claude would improve next and every departure from what they approved; and
-   anything for them to decide. The build agent's report names no page: start the review agent straight away, and
-   say in a line that video v1 is built and Claude's review rounds are next. If an agent stopped on a question, ask
-   the user, then send the answer to the same agent (SendMessage) or start it again with the answer in its brief.
-
-Agents never show a page or wait for a review: that's this conversation's, as are the script, a recorded voiceover's
-timing before it, the final video, and anything else the user asks for.
 
 ## Footage videos
 
@@ -149,7 +106,7 @@ footage sets the size, and its speech is the clock.
 
 Whenever the user's feedback or approval is needed (a brand kit, a script, a storyboard, a video) or something new is ready,
 show them its page. Writing a page's file (`brand.json`, `script.json`, `storyboard.json` or `review.json`) with your
-Write or Edit tool publishes it, and the studio tells you its address. Otherwise (a page an agent made, say) run
+Write or Edit tool publishes it, and the studio tells you its address. Otherwise run
 `node PLUGIN/scripts/studio.mjs show <path>`, which prints it (it starts the page server; only one studio's server
 runs at a time). Either way the studio checks the page's data file first and says what's wrong: fix that and show it
 again (there's no need to check the file yourself). Video Studio's band, above the message box, opens the page beside
@@ -177,8 +134,7 @@ script, storyboard or video offers the newer one. There's no need to reopen a pa
 
 While you make a script, a storyboard, a version of the video or the final video, its overview shows the work as it
 happens: the stage's steps, a count for the slow ones, the newest frames and, in the review loop, Video Studio's own
-scores. Whoever makes a stage (you, or its agent) marks two things by hand; the studio's commands mark the steps in
-between.
+scores. You mark two things by hand; the studio's commands mark the steps in between.
 
 - **Start each stage** as you begin it: `node PLUGIN/scripts/studio.mjs progress <project> <stage> <version> <step>`.
   The stage and its first step:

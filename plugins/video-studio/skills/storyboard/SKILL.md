@@ -26,10 +26,6 @@ the build can look them up (`PLUGIN/guides/motion/README.md`, "Planning with nam
 guides and the numbers on a page, and when to open each in full); `PLUGIN/guides/design/illustration.md` for an
 animated video; and each scene pattern you use (`PLUGIN/guides/motion/patterns/`).
 
-**Who does what.** The storyboard agent (`PLUGIN/agents/storyboard.md`) makes every version, from the video's files,
-and ends with a report; the conversation starts it, shares each version and reads its review (production skill,
-"Stage agents").
-
 ## Files
 
 ```
@@ -104,12 +100,10 @@ voiceover); rendering the frames marks `frames`, then `check`, by itself.
    It makes `frames/contact.png` too, every frame at a phone's width with its id: look them over there (Read tool),
    opening a single frame only for detail, and fix layout, legibility and brand problems before the user sees them.
    For a footage video, see "From footage" below: the frames are real stills, and each scene gets a rough cut.
-5. **Write `storyboard.json` last** (format below). Writing it publishes the review page, so the frames must be
-   rendered and checked first. The storyboard agent writes it with the shell, then reports
-   (`PLUGIN/agents/storyboard.md`).
-6. **Share it** (the conversation, from the agent's report): show the page `/videos/<project>/storyboard/v1/` (see
-   "Showing a page" in the production skill): its link, then wait for the review in the background. Say in one
-   sentence how to review:
+5. **Write `storyboard.json` last** (format below). Writing it publishes the review page, and the studio tells you
+   its address, so the frames must be rendered and checked first.
+6. **Share it:** show the page `/videos/<project>/storyboard/v1/` (see "Showing a page" in the production skill):
+   its link, then wait for the review in the background. Say in one sentence how to review:
    every scene is approved unless it has a note, so press + Note on any that needs changing, then press Send feedback
    (Approve and save, if every scene is right), and you'll take it from there. End your turn.
 
@@ -126,13 +120,10 @@ note and its points, and the general notes (`feedback.json` holds the same). A s
 `points`, or both: each point is a note on one of its frames (`frame`, `text`, a `box` or an `arrow` in fractions of the
 frame, x and y from its top-left, and `picture`, the frame with their mark drawn on it, in the version's `points/`
 folder). Look at every point's picture (Read tool) before changing that frame: it shows exactly what they mean.
-The conversation reads the review and decides which of these it is; the storyboard agent makes the next version.
-- **Every scene approved, and no general notes:** confirm, then start the build agent (production skill, stages 5
-  and "Stage agents").
+- **Every scene approved, and no general notes:** confirm, then build it (build skill; production skill, stage 5).
 - **Feedback on some scenes, or general notes** (the page counts general notes as asking for changes; feedback from
-  someone outside the studio is often pasted there, naming scenes by number): start the storyboard agent for the
-  next version, which takes these steps. If the general notes turn out to ask for nothing (just praise, say), tell
-  the user and go to the build stage instead.
+  someone outside the studio is often pasted there, naming scenes by number): make the next version. If the general
+  notes turn out to ask for nothing (just praise, say), tell the user and go to the build stage instead.
   0. Start it on the overview: `studio.mjs progress <project> storyboard <N+1> plan`.
   1. Copy `v<N>` to `v<N+1>` (leave `v<N>` and its feedback untouched) and delete the copy's `feedback.json`, its
      `points/` folder and any PDF (a download's copy). The copy stays out of sight until its `storyboard.json` says `"version": N+1`.
@@ -143,10 +134,10 @@ The conversation reads the review and decides which of these it is; the storyboa
   4. Last, update the new `storyboard.json`: mark scenes you changed `"changed": true`; mark scenes that were approved
      and are unchanged `"carriedApproval": true` (they start as Approved for the user); clear both flags on the rest.
      Write `"changes"`: a sentence or two on what changed and why. Set `"version"` to N+1 in the same write: that
-     publishes the page, which the conversation shows the same way.
+     publishes the page. Then show it the same way.
 - **Scenes saved "unreviewed"** (only in a save from before the page dropped Not reviewed) **and no feedback:** ask
   the user to finish reviewing, with the link.
-- If a note is unclear, ask before making a new version: the conversation asks before starting the agent.
+- If a note is unclear, ask before making a new version.
 
 ## storyboard.json
 

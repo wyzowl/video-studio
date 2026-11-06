@@ -8,9 +8,7 @@ description: Review a built Wyzowl Video Studio video - Claude's draft rounds sc
 Claude reviews every draft before the user sees it, then the user reviews it on its page. The review judges taste:
 anything that can be measured is Video Studio's checks' (`studio.mjs check`, `PLUGIN/guides/cli.md`, "lint and
 check"), and their findings are fixed, not scored. Always review the rendered file, never the code. `PLUGIN` and `HF`
-are as in the production skill. The review agent (`PLUGIN/agents/review.md`) does Claude's rounds, after the build
-agent's report or the user's notes, and the conversation shares each draft that passes (production skill, "Stage
-agents").
+are as in the production skill.
 
 ## A round
 
@@ -117,12 +115,11 @@ The user's notes get a section per version, each with how it was applied. End wi
 
 ## The user's video review
 
-Once a draft passes the loop, the user reviews it on its review page. The review agent writes its file; the
-conversation shows the page and reads the review.
+Once a draft passes the loop, the user reviews it on its review page.
 
 1. Write `videos/<project>/review/v<N>/review.json` pointing at the whole draft and its poster, which the draft
    command made (paths are relative to the project folder), with the storyboard's scenes as chapters, a short summary
-   and, from v2, what changed. Writing it publishes the page (an agent writes it with the shell, and reports).
+   and, from v2, what changed. Writing it publishes the page.
 
    ```json
    {
@@ -141,9 +138,9 @@ conversation shows the page and reads the review.
 
    `poster` and `changes` are optional. `version` must match the folder (`v2` → `2`): a video shows up once it does.
 2. Show the page `/videos/<project>/review/v<N>/` (production skill, "Showing a page") with the scores and what you'd
-   improve next, from the agent's report. Flag every departure from the brief or the approved storyboard (the build's
-   `docs/decisions.md` lists its changes to the scene plans; the page itself lists the checks' findings kept on
-   purpose, with why). Then wait for the review in the background and end your turn.
+   improve next. Flag every departure from the brief or the approved storyboard (the build's `docs/decisions.md` lists
+   its changes to the scene plans; the page itself lists the checks' findings kept on purpose, with why). Then wait for
+   the review in the background and end your turn.
 3. When the review comes in (the wait finishes, or the user says they've saved), the wait's output is the review: the
    decision, each note by its time in the user's words with its picture (look at every picture first, Read tool), and
    the general comment. `feedback.json` beside `review.json` holds the same (never write it yourself): `decision`
@@ -153,9 +150,8 @@ conversation shows the page and reads the review.
    fractions of the picture from its top-left, and `picture`, the frame at that time with the mark drawn on it, such as
    `points/p1a2b3c.jpg`) and `general`. Look at every note's picture (Read tool) before changing anything: it shows
    exactly what they mean.
-   - `approved` means go to the master and deliverables (production skill), treating any notes as small last tweaks:
-     the review agent makes them first.
-   - `changes` means video v<N+1>, made by the review agent: start it on the overview (`studio.mjs progress <project>
-     video <N+1> build`), apply every note (times are seconds into the video: look at each moment) through the build
-     skill, check, then a fix sheet of the changed scenes (`studio.mjs draft <project> --at <each changed scene's
-     stretch>`, before being video v<N>'s draft), and when the scores hold, the whole draft for its review page.
+   - `approved` means go to the master and deliverables (production skill), treating any notes as small last tweaks.
+   - `changes` means video v<N+1>: start it on the overview (`studio.mjs progress <project> video <N+1> build`), apply
+     every note (times are seconds into the video: look at each moment) through the build skill, check, then a fix
+     sheet of the changed scenes (`studio.mjs draft <project> --at <each changed scene's stretch>`, before being video
+     v<N>'s draft), and when the scores hold, the whole draft for its review page.
