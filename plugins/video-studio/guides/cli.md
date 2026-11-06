@@ -31,7 +31,8 @@ version). Every new project starts on it.
 3. `HF lint` while writing, for fast feedback.
 4. `node PLUGIN/scripts/studio.mjs check <video>` once a pass is done: Video Studio's checks, which run `HF check`
    (lint again first, so don't run both) with the video's settings and add their own (below).
-5. `HF snapshot --at <times> --describe false` for stills of what changed, and of every scene file's middle.
+5. `node PLUGIN/scripts/studio.mjs stills <video> --at <times>` for stills of what changed, and of every scene
+   file's middle, on one sheet (below).
 6. `node PLUGIN/scripts/studio.mjs draft <video>`: the checks, a draft render, its checks and its review sheets in one
    go; the review skill takes it from there.
 
@@ -82,6 +83,13 @@ each change with its file and line.
   point inside the range, in the scene's own headed script sections: look over what it lists). The film's first and
   last moments stay, and so do the approved storyboard's times.
 - When cues moved, `sfx.mjs build` makes the effects again; then `check`.
+
+### stills
+
+`node PLUGIN/scripts/studio.mjs stills <video> --at 3,10.5,18` draws the film at those moments as the render would
+(`HF snapshot`), without a render, on one sheet labelled with each still's scene and time: `docs/review/stills.png`,
+one image to read (past 1568 px, the rest go on `stills-2.png`). Two of a wide frame go across, four of a tall one;
+`--width <px>` sets each still's width. Each run replaces the last sheet.
 
 ## init
 
@@ -212,7 +220,8 @@ first, `staysInFrame` when it leaves the frame once visible, and `keepsMoving` w
 
 ## snapshot
 
-Always pass `--describe false`. Descriptions are off unless asked for (since 0.8.201), and `--describe` with anything
+`studio.mjs stills` takes the film's stills on one sheet (above); `HF snapshot` is for a still on its own, a zoom,
+an angle or a reference. Always pass `--describe false`. Descriptions are off unless asked for (since 0.8.201), and `--describe` with anything
 else sends each frame to an AI service whenever its API key is set; `false` keeps them off whatever runs.
 
 - `HF snapshot --at 3,10.5,18 --describe false` captures those exact instants; add `--no-end` to skip the extra

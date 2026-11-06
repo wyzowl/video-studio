@@ -7,9 +7,12 @@
 //   node studio.mjs open [path]                the same, then open it in the default web browser
 //   node studio.mjs show [path]                the page's address; the band beside the chat opens the page by itself
 //                                              (--card, or a session without the band: how Claude shows it instead,
-//                                              beside the chat with a card, and waiting)
+//                                              beside the chat with a card, and waiting). It checks a script's,
+//                                              storyboard's or video review's data file first, and says what's wrong
+//                                              (--check: only that, showing nothing, for a stage agent's own check)
 //   node studio.mjs wait <path>                wait until the user finishes reviewing a script, storyboard or video
-//                                              (Claude runs it in the background: finishing wakes Claude to carry on)
+//                                              (Claude runs it in the background: finishing wakes Claude to carry on),
+//                                              then print what they decided and every note, with its pictures
 //   node studio.mjs ready [--session <id>]     the page waiting for the user's review, what Claude is making, and the
 //                                              page to open beside the chat, as JSON, for the band above Claude's
 //                                              message box (hooks/index.tsx), which says it's there with --session
@@ -61,6 +64,10 @@
 //                                              length, and its moments when only its start moves), the sound cues for
 //                                              it, a scene's headings, the clips at its cuts and its one-clock table;
 //                                              --code also moves the times written in a scene's own code
+//   node studio.mjs stills [<video>] --at <s>,<s>,… [--width <px>]
+//                                              stills of the built film at those moments, drawn as the render draws
+//                                              them (HyperFrames' snapshot) but without a render, on one sheet labelled
+//                                              with each one's scene and time: docs/review/stills.png
 //   node studio.mjs check <video> --keep <finding> "<why>"
 //                                              keep a should fix of the last check (S2), with why, in
 //                                              docs/checks/kept.json: the review page shows it, later checks fold it
@@ -139,6 +146,7 @@ import {
   setWaiting,
 } from "./lib/studio.mjs";
 import { bandInstructions, bandSeen, hasBand, openForBand, pageToOpen, showInstructions } from "./lib/show.mjs";
+import { dataFileOf, dataProblems, pageData } from "./lib/page-data.mjs";
 import { SCORES, STAGES, endStage, readProgress, startStage, stageTitle, stepsFor, stepsNow, updateProgress, videoAt } from "./lib/progress.mjs";
 import { EXTRAS, newer } from "./lib/extras.mjs";
 import { KIT_DIR, SFX_KIT, installKit, kitInstalled } from "./lib/sfx.mjs";
@@ -290,6 +298,7 @@ async function main() {
   if (cmd === "map") return mapCommand();
   if (cmd === "words") return wordsCommand();
   if (cmd === "move") return moveCommand();
+  if (cmd === "stills") return stillsCommand();
   if (cmd === "check") return checkCommand();
   if (cmd === "pdf") return pdf();
   if ((cmd === "library" || cmd === "gallery") && arg === "check") return libraryCheck();
@@ -494,6 +503,13 @@ async function pageReady() {
   const file = resolve(input.cwd || process.cwd(), given);
   const root = findStudio(dirname(file));
   if (!root) return;
+  // a data file the page can't show as written: say what's wrong, so it's fixed before it's shown
+  const data = dataFileOf(root, file);
+  const problems = data ? dataProblems(root, data.project, data.kind, data.version, { quiet: true }) : [];
+  if (problems.length) {
+    console.log(JSON.stringify({ hookSpecificOutput: { hookEventName: "PostToolUse", additionalContext: `Wyzowl Video Studio: ${problems.join(" ")} Its page can't show it like this: fix it, then show the page.` } }));
+    return;
+  }
   const page = pageForFile(root, file);
   if (!page) return;
 
@@ -528,6 +544,14 @@ async function pageReady() {
     (unless it's open already). With `--card`, or in a session without the band, how Claude shows it instead. */
 async function show() {
   const root = studioRoot({ forPages: true });
+  // the page's data file first: a broken one would show an older version, or no page
+  const data = pageData(root, arg || "");
+  const problems = data ? dataProblems(root, data.project, data.kind, data.version) : [];
+  if (problems.length) throw new Error(`${problems.join(" ")} Fix it, then show the page again.`);
+  if (argv.includes("--check")) {
+    if (!data) throw new Error("--check reads the data file of a script, storyboard or video review: show /videos/<project>/storyboard/v<N>/ --check.");
+    return console.log(`videos/${data.project}/${data.kind}/v${data.version}/${data.kind}.json: its page can show it.`);
+  }
   const page = resolvePage(root, arg || "/");
   if (!page) {
     console.log(`There's no page at ${arg} yet. Pages: / (the dashboard), /brands/<brand>/, /videos/<project>/, /videos/<project>/script/, /videos/<project>/storyboard/, /videos/<project>/review/, and the library /library/ (a category: /library/data/; an item: /library/widgets/w03/).`);
@@ -771,6 +795,14 @@ async function moveCommand() {
   const num = (k) => (opt(k) === null ? null : Number(opt(k)));
   const { moveThing } = await import("./lib/move.mjs");
   console.log(moveThing(at.root, at.slug, what, { to: num("--to"), by: num("--by"), start: num("--start"), end: num("--end"), duration: num("--duration"), code: argv.includes("--code") }).join("\n"));
+}
+
+/** `stills [<video>] --at <s>,…`: the film at those moments on one sheet, without a render (lib/stills.mjs). */
+async function stillsCommand() {
+  const at = theVideo("Which video? node studio.mjs stills <video> --at 3,10.5,18, or run it from the video's folder.");
+  const times = opts("--at").flatMap((x) => x.split(",")).map((x) => Number(x.trim())).filter((x) => x === x);
+  const { filmStills } = await import("./lib/stills.mjs");
+  console.log((await filmStills(at.root, at.slug, { at: times, width: Number(opt("--width")) || 0 })).join("\n"));
 }
 
 /** `check [<video>] [--render <file>]`: Video Studio's checks on a built video (lib/check.mjs), from its folder or by
@@ -1297,34 +1329,46 @@ function startDownloads(root) {
   }
 }
 
-/** What the user decided, and what Claude should do next. */
+/** What the user decided, every note in their words (with where it's pinned and its picture), and what Claude does
+    next: so the wait's own output is the review, and feedback.json needn't be read. */
 function describeReview(page, { dir, feedback, summary: s }) {
   const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+  const said = (t) => `“${String(t || "").trim().replace(/\s+/g, " ")}”`;
   const saved = formatDateTime(Date.parse(feedback.savedAt)) || "just now";
-  const next = `Saving it was their go-ahead, so carry on now without waiting for them to message you: read ${join(dir, "feedback.json")} and follow`;
+  const rel = (p) => (p ? join(dir, p) : "");
+  const pictures = [];
+  const mark = (n) => (n?.box ? "a box" : n?.arrow ? "an arrow" : "");
+  const picture = (n) => {
+    if (!n?.picture) return "";
+    pictures.push(rel(n.picture));
+    return ` (${mark(n) || "a mark"} on it: ${rel(n.picture)})`;
+  };
+  const lines = [];
+  let skill;
   if (page.kind === "script") {
-    const detail = s.approved
-      ? `they approved the script${s.notes ? `, with ${plural(s.notes, "note")} to treat as small last tweaks` : ""}`
-      : `they asked for changes: ${plural(s.notes, "note")}${s.hasGeneral ? " and a general comment" : ""}`;
-    return `The user has finished reviewing script v${page.version} of ${page.project} (saved ${saved}): ${detail}. ${next} the script skill ("When the review comes in").`;
+    skill = 'the script skill ("When the review comes in")';
+    lines.push(`The user has finished reviewing script v${page.version} of ${page.project} (saved ${saved}): ${s.approved ? `they approved it${s.notes ? `, with ${plural(s.notes, "note")} to treat as small last tweaks` : ""}` : `they asked for changes: ${plural(s.notes, "note")}${s.hasGeneral ? " and a general comment" : ""}`}.`);
+    const column = { voiceover: "the voiceover", onScreen: "the words on screen", action: "what happens on screen" };
+    for (const n of (feedback.notes || []).filter((x) => String(x?.text || "").trim())) lines.push(`- Row ${n.row ?? "?"}${n.column ? `, ${column[n.column] || n.column}` : ""}: ${said(n.text)}`);
+  } else if (page.kind === "storyboard") {
+    skill = 'the storyboard skill ("When the review comes in")';
+    lines.push(`The user has finished reviewing storyboard v${page.version} of ${page.project} (saved ${saved}): ${s.allApproved ? "every scene is approved" : `${s.approved} approved, ${s.feedback} with feedback${s.hasGeneral ? ", and general notes asking for changes" : ""}`}.`);
+    for (const [id, x] of Object.entries(feedback.scenes || {})) {
+      const points = Array.isArray(x?.points) ? x.points.filter((p) => String(p?.text || "").trim() || p?.picture) : [];
+      if (x?.status !== "feedback" && !String(x?.note || "").trim() && !points.length) continue;
+      lines.push(`- ${id}${x?.status === "approved" ? " (approved)" : ""}: ${String(x?.note || "").trim() ? said(x.note) : "no note"}`);
+      for (const p of points) lines.push(`  - On ${p.frame || "a frame"}: ${said(p.text)}${picture(p)}`);
+    }
+  } else {
+    skill = 'the review skill ("The user\'s video review")';
+    lines.push(`The user has finished reviewing video v${page.version} of ${page.project} (saved ${saved}): ${s.approved ? `they approved the video${s.notes ? `, with ${plural(s.notes, "note")} to treat as small last tweaks` : ""}` : `they asked for changes: ${plural(s.notes, "note")}${s.hasGeneral ? " and a general comment" : ""}`}.`);
+    const notes = (feedback.notes || []).filter((x) => String(x?.text || "").trim()).sort((a, b) => (Number(a.time) || 0) - (Number(b.time) || 0));
+    for (const n of notes) lines.push(`- ${Number.isFinite(Number(n.time)) ? `${Math.round(Number(n.time) * 100) / 100} s` : "?"}: ${said(n.text)}${picture(n)}`);
   }
-  // notes pointed at something in the picture, each with a picture of it marked
-  const pointed =
-    page.kind === "storyboard"
-      ? Object.values(feedback.scenes || {}).reduce((n, x) => n + (Array.isArray(x?.points) ? x.points.length : 0), 0)
-      : (feedback.notes || []).filter((n) => n?.box || n?.arrow).length;
-  const pictures = pointed
-    ? `; ${plural(pointed, "note")} point${pointed === 1 ? "s" : ""} at something in the picture (${pointed === 1 ? "its picture, with their mark on it, is" : "their pictures, with the marks on them, are"} in ${join(dir, "points")}: look at ${pointed === 1 ? "it" : "them"} first)`
-    : "";
-  if (page.kind === "storyboard") {
-    const detail = (s.allApproved ? "every scene is approved" : `${s.approved} approved, ${s.feedback} with feedback${s.hasGeneral ? ", and general notes asking for changes" : ""}`) + pictures;
-    return `The user has finished reviewing storyboard v${page.version} of ${page.project} (saved ${saved}): ${detail}. ${next} the storyboard skill ("When the review comes in").`;
-  }
-  const detail =
-    (s.approved
-      ? `they approved the video${s.notes ? `, with ${plural(s.notes, "note")} to treat as small last tweaks` : ""}`
-      : `they asked for changes: ${plural(s.notes, "note")}${s.hasGeneral ? " and a general comment" : ""}`) + pictures;
-  return `The user has finished reviewing video v${page.version} of ${page.project} (saved ${saved}): ${detail}. ${next} the review skill ("The user's video review").`;
+  if (String(feedback.general || "").trim()) lines.push(`General: ${said(feedback.general)}`);
+  if (pictures.length) lines.push(`Look at ${pictures.length === 1 ? "the picture" : `the ${pictures.length} pictures`} first (Read tool): ${pictures.length === 1 ? "it shows" : "they show"} exactly what they mean.`);
+  lines.push(`Saving it was their go-ahead, so carry on now without waiting for them to message you: follow ${skill}. (Everything they saved is above; it's also in ${join(dir, "feedback.json")}.)`);
+  return lines.join("\n");
 }
 
 main().catch((err) => {
