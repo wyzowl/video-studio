@@ -19,6 +19,11 @@ nothing; and every pattern and technique the scene plans name (`PLUGIN/guides/mo
 Then, in `PLUGIN/guides/`, as the job needs: `captions/` for captions, `footage/` for a footage video, `runtimes/` for
 anything beyond GSAP (Lottie, three.js, canvas, WebGPU).
 
+**Who does what.** The build agent (`PLUGIN/agents/build.md`) builds video v1, up to its first draft; the review
+agent (`PLUGIN/agents/review.md`) takes it through the review loop until it's ready for the user, and makes each
+change after the user's notes. The conversation starts them and shares what they make (production skill, "Stage
+agents").
+
 ## Start
 
 Start it on the overview: `node PLUGIN/scripts/studio.mjs progress <project> video <version> build` (a later version
@@ -64,7 +69,7 @@ notes, and its frames as they look on its `frames/contact.png`), and the verifie
    (`PLUGIN/guides/cli.md`, "lint and check"), and each should fix is fixed or kept with why (`--keep S2 "<why>"`);
    stills of each scene's key moment and every transition with `HF snapshot --at <times>
    --describe false`, compared with the storyboard's frames, before the first render. Then the review skill takes
-   over.
+   over: the review agent's rounds, after the build agent's report.
 
 ## A long film
 
@@ -171,4 +176,5 @@ touches with `node PLUGIN/scripts/studio.mjs map <project>` (each file's section
 library items with their times, the sound cues), read only those lines (Read with offset and limit), and edit them
 rather than rewriting a file; keep a section's heading true when its times move. Then the review
 loop's next round checks the changes: `studio.mjs draft <project> --at <each changed stretch>` runs the checks, renders
-each stretch and makes its before-and-after sheet (review skill, "The loop").
+each stretch and makes its before-and-after sheet (review skill, "The loop"). The review agent makes both (production
+skill, "Stage agents").

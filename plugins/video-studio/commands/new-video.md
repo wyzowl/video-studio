@@ -144,5 +144,6 @@ By default a voiceover is a file the user brings, and Video Studio doesn't offer
 
 Tell the user in a few lines what's set up and what happens next. Then follow the video-studio:production skill from
 its "Script" stage: the script for their approval, then the voiceover and timing, the storyboard for their approval,
-then the build. A footage video is scanned first, and its script is cut from the takes (production skill, "Footage
-videos").
+then the build. The storyboard, the build and Claude's review of it are made by Video Studio's agents, which report
+back here (production skill, "Stage agents"). A footage video is scanned first, and its script is cut from the takes
+(production skill, "Footage videos").

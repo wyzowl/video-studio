@@ -48,6 +48,9 @@ it runs, downloads and sends, and when.
 - **Its own scripts,** in Node.js, from the plugin's folder: the studio helper (`scripts/studio.mjs`), the page server,
   and the tools for review, footage, captions and sound. They draw storyboard frames and PDFs in HyperFrames' headless
   browser.
+- **Its own agents** (`agents/`): Claude makes each storyboard, builds each video and reviews each version in an
+  agent of its own, a fresh Claude context in the same session that works from the video's files and reports back
+  to your conversation, so the conversation stays short.
 - **HyperFrames 0.9.16,** through `npx --yes hyperframes@0.9.16`, to make, check, render and take stills of videos,
   and transcribe speech, all on your Mac. Videos made on an earlier version keep it, through their own scripts.
 - **ffmpeg and ffprobe,** for audio and video; macOS's `open`, to open a page in your browser or show a render or PDF
