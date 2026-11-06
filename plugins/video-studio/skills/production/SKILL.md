@@ -17,10 +17,15 @@ storyboard, build, review, brand-kit) and the guides they point to. Every film m
 is tested with, which every new project starts on, with its two switches (no anonymous usage data, and no check for a
 newer release: Video Studio chooses the version). A project made on an earlier version keeps it: its `package.json`
 scripts name it, so run `npm run check` there with the same two switches before it, and `studio.mjs render` follows
-its `render` script. Render with
-`node PLUGIN/scripts/studio.mjs render -- …` (the same options as `HF render`), from the video's folder: it shows the
-render's progress on the video's overview ("Work in progress" below). Always run HyperFrames with its version: without
-one, npx fetches the newest release on every run.
+its `render` script. Drafts and the final video are made by `studio.mjs draft` and `final` (review skill;
+"Deliverables" below); any other render runs as `node PLUGIN/scripts/studio.mjs render -- …` (the same options as `HF
+render`), from the video's folder, which shows its progress on the video's overview ("Work in progress" below) and
+prints one line on the file it made. Always run HyperFrames with its version: without one, npx fetches the newest
+release on every run.
+
+**Commands.** Chain commands that need no judgement in between into one shell call with `&&` (copying several library
+blocks into a project; the effects track and the levelling; a storyboard's frames and its items' stills), and read
+their output together.
 
 **Guides.** `PLUGIN/guides/` holds Video Studio's know-how, one subject to a file: the HyperFrames format and
 commands, motion, the animation libraries, design, story and the types of video, captions, sound, footage, the
@@ -54,17 +59,17 @@ the guides it reads first; read those once a session, then others as the job nee
 4. **Storyboard.** Follow the video-studio:storyboard skill. Build nothing until every scene is approved.
 5. **Build.** Follow the video-studio:build skill: it turns the approved storyboard into the video (the code, the
    library items, the sound) and changes nothing the user approved without flagging it.
-6. **Review loop.** Follow the video-studio:review skill: draft renders, review sheets, eight scores against the
-   guides' standards, fixes, and at least two rounds until every score is 8 or more. Nothing goes to the user before
-   this.
+6. **Review loop.** Follow the video-studio:review skill: a draft and its sheets (`studio.mjs draft`), eight scores
+   against the guides' standards, and rounds of fixes until every score is 8 or more (round 1 can pass by itself).
+   Nothing goes to the user before this.
 7. **Video review.** Share the reviewed render on its review page, where the user pins notes to moments in the video
    and saves: it's Approve video unless they add notes, which switch it to Changes needed (they can change it). The
    pages call it "the video" (Video v1, v2…), so do the same when you talk to the user. The review skill ("The
    user's video review") has the page's file, how to share it and what to do with the notes. `approved` goes to
    stage 8; `changes` goes back through the build and the review loop as video v<N+1>.
-8. **Master and deliverables**, only after the user approves the video. See "Deliverables". Then show its delivery
-   page `/videos/<project>/delivery/` ("Showing a page"): the final video and every file made with it, the words to
-   go with it, and what they might ask for next.
+8. **Master and deliverables**, only after the user approves the video: `studio.mjs final <project>` ("Deliverables").
+   Then show its delivery page `/videos/<project>/delivery/` ("Showing a page"): the final video and every file made
+   with it, the words to go with it, and what they might ask for next.
 9. **Other sizes**, only after sign-off and only when asked: separate compositions in the same project that reuse the
    timeline, audio and assets. Re-lay out type and composition for each format (`PLUGIN/guides/design/layout.md`);
    by default they're never cropped or letterboxed.
@@ -120,24 +125,24 @@ script, storyboard or video offers the newer one. There's no need to reopen a pa
 
 While you make a script, a storyboard, a version of the video or the final video, its overview shows the work as it
 happens: the stage's steps, a count for the slow ones, the newest frames and, in the review loop, Video Studio's own
-scores. So the user can always see that something is happening, mark the work as you go:
+scores. You mark two things by hand; the studio's commands mark the steps in between.
 
 - **Start each stage** as you begin it: `node PLUGIN/scripts/studio.mjs progress <project> <stage> <version> <step>`.
-  The stage is `script`, `storyboard`, `video` (a version for review) or `final` (once the video is approved, with
-  the approved version's number).
-- **Mark each next step** as you start it: `studio.mjs progress <project> <step>`. The steps, in order:
-  - script: `brief` (v1) or `notes` (later versions), `scan` (footage), `draft`, `length`;
-  - storyboard: `notes` (later versions), `voice` (making or timing the voiceover), `plan`, `frames`, `clips`
-    (footage), `check`;
-  - video: `notes` (later versions), `build`, `check`, `render`, `sheets`, `scores`, `fixes`;
-  - final: `master`, `extras`.
-- **The tools mark their own steps and counts:** `render-frames.mjs` (the frames as they're made), `footage.mjs` (the
-  scan, stills and rough cuts), `studio.mjs render` (frames rendered and the time left) and `sheets.mjs` (the newest
-  key frames, or the poster).
+  The stage and its first step:
+  - `script`: `draft` as you start writing (a later version too), or `scan` for footage (the scan marks the cut after
+    it);
+  - `storyboard`: `plan` (a later version too), or `voice` first while you make or time the voiceover, then `plan`
+    with `studio.mjs progress <project> plan` when you start planning;
+  - `video`: `build` (a later version too).
+  The final video starts itself (`studio.mjs final`, "Deliverables").
 - **After scoring a round,** give the scores and what you'll fix, in one call: `studio.mjs progress <project> fixes
   --round 1 --scores hook=8,phone=6,motion=7,variety=8,composition=8,brand=9,sync=7,story=8 --fix "12.4–13.0 s: the
   whip pan lands a beat late" --fix "Phone size: the source line is too small to read"`. Up to five fixes, each
   `<where>: <what>`, in plain words: the user reads them.
+- **The commands mark the rest,** with their counts and newest frames: `footage.mjs` (the scan, stills and rough
+  cuts), `render-frames.mjs` (the frames as they're made, then checking them), `studio.mjs check`, `studio.mjs draft`
+  (the render, the sheets, then the scores), `studio.mjs final` (the master and the extras) and `studio.mjs render`
+  (the frames rendered and the time left).
 - Writing the stage's result (`script.json`, `storyboard.json`, `review.json`, or the final video's web copy) ends
   it. If you stop a stage without one, end it: `studio.mjs progress <project> --end`.
 
@@ -221,21 +226,26 @@ is missing, ask the user for one.
 
 ## Deliverables
 
-- `renders/<project>_<size>.mp4`, the 60 fps master: `node PLUGIN/scripts/studio.mjs render -- --quality delivery
-  --fps 60 --output renders/<project>_<size>.mp4`, after `studio.mjs progress <project> final <version> master`.
-  `<size>` is `16x9`, `1x1`, `4x5`, `9x16` or `WxH`.
-- `node PLUGIN/scripts/tools/sheets.mjs renders/<project>_<size>.mp4 --deliver` makes the `_web.mp4` copy (H.264,
-  CRF 19, faststart), `poster.png`, `thumbnail.jpg` (1280 px, for YouTube and link previews) and `contact.png`.
-- Captions, when the video has speech: `node PLUGIN/scripts/tools/captions.mjs inputs/transcript_verified.json` (from
-  the video's folder) makes `renders/<project>.srt` and `.vtt`. Pass `--offset <seconds>` when the voiceover starts
-  later in the video. For a footage video, write the cut's word times (each word moved to where its range sits in the
-  cut) to `docs/words.json` and use that.
-- `renders/delivery.json`, the words to go with it: `{ "title": "…", "description": "…", "altText": "…" }`, written for
+Once the user approves the video, `node PLUGIN/scripts/studio.mjs final <project>` makes everything in one go, marks it
+on the overview and prints the delivery page's address:
+- `renders/<project>_<size>.mp4`, the 60 fps master (`<size>` is `16x9`, `1x1`, `4x5`, `9x16` or `WxH`; a revision
+  after a delivery gets `_v2`, and the files before it are kept);
+- the `_web.mp4` copy (H.264, CRF 19, faststart), `poster.png`, `thumbnail.jpg` (1280 px, for YouTube and link
+  previews) and `contact.png`, from `docs/beats.json`'s poster and contact times;
+- the captions, when the video has speech: `renders/<project>.srt` and `.vtt`, from the verified voiceover, moved to
+  where it starts in the video. For a footage video, write the cut's word times (each word moved to where its range
+  sits in the cut) to `docs/words.json` before `final`;
+- the checks on the master, and the checks' last report in `docs/checks/`.
+
+Then:
+- write `renders/delivery.json`, the words to go with it: `{ "title": "…", "description": "…", "altText": "…" }`, for
   the platform the brief names (`PLUGIN/guides/story/post-words.md`). The delivery page shows them, each with a Copy
-  button.
-- `docs/review_log.md` (review skill), with its motion notes, and the checks' last report in
-  `docs/checks/`.
-- Say what you would improve next.
+  button;
+- finish `docs/review_log.md` (review skill), with its motion notes and what you would improve next;
+- show the delivery page ("Showing a page"), and say what you would improve next.
+
+`sheets.mjs <master> --deliver` and `captions.mjs <words.json> [--offset <seconds>]` (in `PLUGIN/scripts/tools/`)
+make those files by themselves, for a size or a version made outside `final`.
 
 ## Tidying up
 

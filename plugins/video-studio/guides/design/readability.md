@@ -31,7 +31,7 @@ setting type is in `type.md`.
 - **Build:** type sizes come from the frame (`type.md`, "Size by role"), never below the minimums; layouts are built
   from variables (safe areas, a type scale), so another size is a layout change, not a rebuild. Interface text the
   viewer must read is enlarged, or zoomed into.
-- **Review:** read every line on `phone.png` (the keys at 360 px) and time it against the strips.
+- **Review:** read every line on the key sheet (`keys.png`: the key frames at 360 px) and time it against the strips.
 
 ## What lowers it
 

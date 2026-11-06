@@ -348,6 +348,13 @@ async function scan() {
   const sizes = [...new Set(clips.map((c) => `${c.width}×${c.height}`))];
   const result = { scanned: new Date().toISOString(), size: { width: w, height: h, shape }, clips };
   writeFileSync(listFile, `${JSON.stringify(result, null, 2)}\n`);
+  // the scan done, a script under way goes on to its cut
+  report(PROJECT, (q) => {
+    if (q.stage !== "script") return q;
+    q.step = "draft";
+    delete q.count;
+    return q;
+  });
   const speech = clips.filter((c) => c.speech);
   console.log(
     [

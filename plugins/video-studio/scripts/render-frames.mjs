@@ -3,12 +3,16 @@
 //   node render-frames.mjs videos/<p>/storyboard/v1/frames.html videos/<p>/storyboard/v1/frames [--scale 0.5] [--only s01-1,s02-1]
 // Size each [data-frame] element to the video (for example 1920×1080) in the page's own CSS, and keep frames still:
 // no animations or transitions. --scale sets the pixel density of the PNGs (0.5 halves them; the default).
-// While a storyboard is under way on the video's pages, each frame shows there as it's made (lib/progress.mjs).
+// Then it makes <outDir>/contact.png, the frames it rendered at a phone's width (360 px), each with its id, to look over
+// in one go (lib/sheet.mjs: more go on contact-2.png and on), and prints where they are.
+// While a storyboard is under way on the video's pages, each frame shows there as it's made (lib/progress.mjs), and
+// once they're all made, the next step is checking them.
 import { mkdirSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { findChrome } from "./lib/chrome.mjs";
 import { inVideo, report } from "./lib/progress.mjs";
+import { drawSheets } from "./lib/sheet.mjs";
 
 const argv = process.argv.slice(2);
 const opt = (k, d) => {
@@ -62,7 +66,17 @@ try {
       return q;
     });
   }
-  console.log(JSON.stringify(written, null, 2));
+  // the contact sheet of what was rendered, named so it can't be taken for a frame
+  const name = frames.some((f) => f.id === "contact") ? "contact-sheet.png" : "contact.png";
+  const sheets = written.length ? await drawSheets([{ title: "", rows: [{ label: "", tiles: written.map((w) => ({ src: w.file, label: w.id })) }] }], { out: join(OUT, name), width: 360, ratio: written[0].height / written[0].width, browser }) : [];
+  report(OUT, (q) => {
+    if (q.stage !== "storyboard") return q;
+    q.step = "check";
+    delete q.count;
+    return q;
+  });
+  const size = written[0] ? ` at ${written[0].width}×${written[0].height}` : "";
+  console.log(`${written.length} frame${written.length === 1 ? "" : "s"}${size} in ${relative(process.cwd(), OUT) || "."}${sheets.length ? `; look them over on ${sheets.map((f) => relative(process.cwd(), f)).join(" and ")} (a phone's width), and open a frame for detail` : ""}.`);
 } finally {
   await browser.close();
 }

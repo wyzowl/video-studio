@@ -27,6 +27,15 @@
 //                                              overview, printed short (--notes lists the notes; --changes only what's
 //                                              new since the last check); --render adds a rendered file's sound and
 //                                              picture, reusing the film's last check when its files haven't changed
+//   node studio.mjs draft [<video>] [--at <from>-<to>[,…]] [--start <s> --end <s>] [--round <n>]
+//                                              a draft for Claude's review in one go: the checks (a must fix stops it),
+//                                              the whole film at draft quality, the render's checks, the review sheets
+//                                              and the poster frame; with --at (or --start and --end), a round of fixes:
+//                                              each changed stretch rendered by itself, and a fix sheet of each, before
+//                                              and after. It marks its steps on the video's overview
+//   node studio.mjs final [<video>]            once the user has approved the video: the 60 fps master, the web copy,
+//                                              poster, thumbnail and contact sheet, the captions when there's speech and
+//                                              the checks on the master; then the delivery page's address
 //   node studio.mjs check <video> --keep <finding> "<why>"
 //                                              keep a should fix of the last check (S2), with why, in
 //                                              docs/checks/kept.json: the review page shows it, later checks fold it
@@ -42,6 +51,9 @@
 //                                              <file.png> [--set key=value …], a transparent still of it at that moment,
 //                                              to lay over a storyboard frame (`gallery` is the same command, its name
 //                                              before 0.3.0)
+//   node studio.mjs library stills <list.json | ->
+//                                              several of those stills in one go, from a list of { code, at, out, set }
+//                                              (out relative to the list), in the video's brand and size
 //   node studio.mjs library check [--force]    ask the Wyzowl site for new paid items now (the studio also asks once a
 //                                              day, when a session starts); --force downloads the pack again
 //   node studio.mjs licence [<key>]            with a key, unlock the full library on this Mac; without, its state
@@ -79,6 +91,7 @@ import { fileURLToPath } from "node:url";
 import {
   PLUGIN_ROOT,
   claudeWaiting,
+  parseSize,
   findStudio,
   formatDate,
   formatDateTime,
@@ -244,6 +257,8 @@ async function main() {
   if (cmd === "ready") return ready();
   if (cmd === "progress") return progressCommand();
   if (cmd === "render") return renderCommand();
+  if (cmd === "draft") return draftCommand();
+  if (cmd === "final") return finalCommand();
   if (cmd === "check") return checkCommand();
   if (cmd === "pdf") return pdf();
   if ((cmd === "library" || cmd === "gallery") && arg === "check") return libraryCheck();
@@ -256,7 +271,7 @@ async function main() {
   if (cmd === "hook") return hook();
   if (cmd === "page-ready") return pageReady().catch(() => {}); // a hook: never in the way, silent on any problem
   if (cmd === "context") return context();
-  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, check, setup-page, setup-note, pdf, library, install, tidy, skills, serve, stop, page-ready`);
+  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, draft, final, check, setup-page, setup-note, pdf, library, install, tidy, skills, serve, stop, page-ready`);
 }
 
 function init(root) {
@@ -618,6 +633,42 @@ async function renderCommand() {
   process.exitCode = r.code;
 }
 
+/** The video a command acts on: by its name, or the one whose folder this is ({ root, slug, dir }). */
+function theVideo(usage) {
+  const at = videoAt(process.cwd());
+  const root = at && !arg ? at.root : studioRoot();
+  const slug = arg || at?.slug;
+  if (!slug) throw new Error(usage);
+  if (!existsSync(join(root, "videos", slug))) throw new Error(`There's no video "${slug}" in this studio.`);
+  return { root, slug, dir: join(root, "videos", slug) };
+}
+
+/** `draft [<video>]`: a draft for Claude's review in one go (lib/draft.mjs); `--at 12.4-13,35.2-36` (or `--start` and
+    `--end`), a round of fixes. */
+async function draftCommand() {
+  const at = theVideo("Which video? node studio.mjs draft <video> [--at <from>-<to>,…], or run it from the video's folder.");
+  const stretches = opts("--at")
+    .flatMap((x) => x.split(","))
+    .map((x) => x.trim().split(/\s*[-–]\s*/).map(Number))
+    .filter((x) => x.length === 2);
+  if (opt("--start") !== null) stretches.push([Number(opt("--start")), Number(opt("--end") ?? Infinity)]);
+  if (stretches.some(([a, b]) => !Number.isFinite(a) || !(b > a))) throw new Error("Give each stretch as --at <from>-<to>, in seconds of the film (12.4-13), or --start <s> --end <s>.");
+  const { makeDraft } = await import("./lib/draft.mjs");
+  const r = await makeDraft(at, { stretches, round: Number(opt("--round")) || null, log: (s) => process.stderr.write(`${s}\n`) });
+  console.log(r.lines.join("\n"));
+  process.exitCode = r.code;
+}
+
+/** `final [<video>]`: the final video and everything delivered with it (lib/draft.mjs), then the delivery page. */
+async function finalCommand() {
+  const at = theVideo("Which video? node studio.mjs final <video>, or run it from the video's folder.");
+  const { makeFinal } = await import("./lib/draft.mjs");
+  const r = await makeFinal(at, { log: (s) => process.stderr.write(`${s}\n`) });
+  if (r.delivery) r.lines.push(`The delivery page: ${pageUrl(await ensureServer(at.root), r.delivery)}. Write renders/delivery.json, the words to go with it (production skill, "Deliverables"), then show the page.`);
+  console.log(r.lines.join("\n"));
+  process.exitCode = r.code;
+}
+
 /** `check [<video>] [--render <file>]`: Video Studio's checks on a built video (lib/check.mjs), from its folder or by
     its name; `--script` checks the latest script instead (lib/check-script.mjs). Saves the ranked report in the video's
     docs/checks/ and prints it short: each must fix and should fix on a line, the notes as a count (`--notes` lists
@@ -673,6 +724,7 @@ async function pdf() {
     for>"`, the best matches with their notes; with a code, the item's own facts and a clip for index.html with the
     brand's settings and its words filled in (`--steps`: the steps for using it, which are the build skill's). */
 async function library() {
+  if (arg === "stills") return libraryStills();
   const root = here();
   // the items the user starred in the library come first, and Claude suggests them first
   const favourites = new Set(root ? readFavourites(root) : []);
@@ -855,23 +907,7 @@ function describeLicence(r) {
 async function libraryStill(item, { root, slug, size, at, out }) {
   if (!root) throw new Error(NOT_A_STUDIO);
   if (!out || !Number.isFinite(at)) throw new Error("usage: studio.mjs library <code> --still <seconds> --out <file.png> [--brand b] [--size 16x9] [--set key=value …]");
-  const sets = {};
-  argv.forEach((a, i) => {
-    if (a !== "--set" || !argv[i + 1]) return;
-    const [key, ...rest] = argv[i + 1].split("=");
-    const d = item.variables.find((x) => x.id === key);
-    if (!d) throw new Error(`${item.code} has no "${key}". It takes: ${item.variables.map((x) => x.id).join(", ")}`);
-    let value = rest.join("=");
-    // a media variable's file: the page server serves it from the studio's videos/ and brands/ folders
-    if (/(Video|Image)$/.test(key) && value && !/^(https?:|data:|\/(videos|brands)\/)/.test(value)) {
-      const file = resolve(value);
-      const rel = relative(root, file).split(sep).join("/");
-      if (!existsSync(file)) throw new Error(`${key}: there's no file ${value}`);
-      if (!/^(videos|brands)\//.test(rel)) throw new Error(`${key}: the file needs to be in the studio's videos/ or brands/ folder for the still`);
-      value = `/${rel.split("/").map(encodeURIComponent).join("/")}`;
-    }
-    sets[key] = d.type === "number" ? Number(value) : value;
-  });
+  const sets = stillValues(item, root, Object.fromEntries(opts("--set").map((x) => [x.split("=")[0], x.split("=").slice(1).join("=")])));
   const p = new URLSearchParams({ size, at: String(at), bg: "none" });
   if (slug) p.set("brand", slug);
   if (Object.keys(sets).length) p.set("vars", JSON.stringify(sets));
@@ -891,6 +927,74 @@ async function libraryStill(item, { root, slug, size, at, out }) {
     await browser.close();
   }
   console.log(resolve(out));
+}
+
+/** `library stills <list.json | ->`: several items' stills in one go, for a storyboard's frames, with one browser: a list
+    of { code, at, out, set } (`out` relative to the list's folder, or for - the current one), each in the video's brand
+    and size (its brief's) unless --brand and --size say otherwise. */
+async function libraryStills() {
+  const root = here();
+  if (!root) throw new Error(NOT_A_STUDIO);
+  const src = positional[2];
+  const raw = JSON.parse(!src || src === "-" ? readFileSync(0, "utf8") : readFileSync(resolve(src), "utf8"));
+  const list = Array.isArray(raw) ? raw : raw?.stills;
+  if (!Array.isArray(list) || !list.length) throw new Error('usage: studio.mjs library stills <list.json | -> with a list of { "code": "W03", "at": 2.5, "out": "items/s02-w03.png", "set": { "number": "48" } }');
+  const base = src && src !== "-" ? dirname(resolve(src)) : process.cwd();
+  const video = videoAt(base) || videoAt(process.cwd());
+  const brief = video ? readBrief(video.root, video.slug) : {};
+  const slug = opt("--brand") || brief.brand || null;
+  if (slug && !readBrand(root, slug)) throw new Error(`There's no brand "${slug}" in this studio.`);
+  const given = opt("--size") || String(parseSize(brief.size || brief.aspect).label).replace(":", "x");
+  const size = SIZES[given] ? given : "16x9";
+  const shots = list.map((x, i) => {
+    const item = libraryItem(x?.code);
+    if (!item) throw new Error(`Still ${i + 1}: there's no library item "${x?.code}" on this Mac (node studio.mjs library lists them).`);
+    if (!Number.isFinite(+x.at) || !x.out) throw new Error(`Still ${i + 1} (${item.code}) needs "at" (seconds into the item) and "out" (a .png).`);
+    return { item, at: +x.at, out: resolve(base, x.out), sets: stillValues(item, root, x.set || {}) };
+  });
+  const base0 = await ensureServer(root);
+  const { findChrome } = await import("./lib/chrome.mjs");
+  const { puppeteer, executablePath } = findChrome();
+  const S = SIZES[size];
+  const browser = await puppeteer.launch({ executablePath, headless: true, args: ["--force-color-profile=srgb", "--hide-scrollbars"] });
+  const made = [];
+  try {
+    const page = await browser.newPage();
+    await page.setViewport({ width: S.w, height: S.h, deviceScaleFactor: 1 });
+    for (const s of shots) {
+      const p = new URLSearchParams({ size, at: String(s.at), bg: "none" });
+      if (slug) p.set("brand", slug);
+      if (Object.keys(s.sets).length) p.set("vars", JSON.stringify(s.sets));
+      await page.goto(pageUrl(base0, `/library/preview/${s.item.code.toLowerCase()}?${p}`), { waitUntil: "networkidle0", timeout: 60000 });
+      await page.waitForFunction(() => document.documentElement.dataset.ready === "1", { timeout: 20000 });
+      mkdirSync(dirname(s.out), { recursive: true });
+      await page.screenshot({ path: s.out, omitBackground: true });
+      made.push(relative(process.cwd(), s.out) || s.out);
+    }
+  } finally {
+    await browser.close();
+  }
+  console.log(`${made.length} still${made.length === 1 ? "" : "s"} at ${SIZES[size].label}${slug ? ` in ${slug}` : " in the studio's style"}: ${made.join(", ")}`);
+}
+
+/** An item's values for a still, from key=value pairs: a media option (a screenshot, a recording) takes a file in the
+    studio's videos/ or brands/ folders, by its path, which the page server serves. */
+function stillValues(item, root, given) {
+  const sets = {};
+  for (const [key, raw] of Object.entries(given)) {
+    const d = item.variables.find((x) => x.id === key);
+    if (!d) throw new Error(`${item.code} has no "${key}". It takes: ${item.variables.map((x) => x.id).join(", ")}`);
+    let value = String(raw);
+    if (/(Video|Image)$/.test(key) && value && !/^(https?:|data:|\/(videos|brands)\/)/.test(value)) {
+      const file = resolve(value);
+      const rel = relative(root, file).split(sep).join("/");
+      if (!existsSync(file)) throw new Error(`${key}: there's no file ${value}`);
+      if (!/^(videos|brands)\//.test(rel)) throw new Error(`${key}: the file needs to be in the studio's videos/ or brands/ folder for the still`);
+      value = `/${rel.split("/").map(encodeURIComponent).join("/")}`;
+    }
+    sets[key] = d.type === "number" ? Number(value) : value;
+  }
+  return sets;
 }
 
 /** `install cutout`: download HyperFrames' presenter cut-out model now (about 168 MB, once), rather than the first

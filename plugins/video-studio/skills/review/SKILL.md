@@ -12,24 +12,34 @@ are as in the production skill.
 
 ## A round
 
-1. `node PLUGIN/scripts/studio.mjs check <project>` shows no must fix. Fix each should fix, or keep it with why
-   (`studio.mjs check <project> --keep S2 "<why>"`: a quick-fire run meant to be glanced at, a label that's texture).
-2. Render a draft: `node PLUGIN/scripts/studio.mjs render -- --quality draft --fps 30 --output
-   renders/drafts/<project>_v1_draft_r1.mp4` (`HF render`, pinned, with its progress on the video's overview).
-3. Check the render: `node PLUGIN/scripts/studio.mjs check <project> --render renders/drafts/<project>_v1_draft_r1.mp4`
-   adds its loudness, peaks, sounds that stop dead and a stuck picture (and words over a face, on footage).
-4. Make the review sheets from it:
-   `node PLUGIN/scripts/tools/sheets.mjs renders/drafts/<project>_v1_draft_r1.mp4 docs/review/r1`
-5. Look at every sheet (Read tool) and score the round against the standards (below).
-6. Log it, then put the scores and the three worst problems on the video's overview in one call (`studio.mjs progress
-   <project> fixes --round <n> --scores … --fix "<where>: <what>"`, production skill, "Work in progress"). Fix them
-   (build skill, "Changes after a review") and start the next round.
+1. `node PLUGIN/scripts/studio.mjs draft <project>` does a round's routine in one go and prints one summary:
+   - Video Studio's checks first (`PLUGIN/guides/cli.md`, "lint and check"). A must fix stops it: fix it and run it
+     again. Fix each should fix, or keep it with why (`studio.mjs check <project> --keep S2 "<why>"`: a quick-fire run
+     meant to be glanced at, a label that's texture);
+   - the draft render, `renders/drafts/<project>_v<N>_draft_r<n>.mp4` (`HF render`, pinned, its progress on the
+     video's overview), and the render's own checks: its loudness, peaks, sounds that stop dead and a stuck picture
+     (and words over a face, on footage);
+   - the review sheets in `docs/review/r<n>` (below) and the poster frame beside the draft.
+2. Look at the sheets (Read tool): `keys.png` and `strips.png`. Open a single key frame (`k_03.png`) only for detail.
+3. Score the round against the standards (below), log it, then put the scores and the three worst problems on the
+   video's overview in one call (`studio.mjs progress <project> fixes --round <n> --scores … --fix "<where>: <what>"`,
+   production skill, "Work in progress").
 
-Repeat until every score is 8 or more, with at least two rounds. Only then show the user.
+## The loop
+
+- **Round 1 passes** when every score is 8 or more and there's no must fix: the draft goes to the user ("The user's
+  video review").
+- **Otherwise, the next round checks the fixes.** Fix the worst problems (build skill, "Changes after a review"), then
+  `studio.mjs draft <project> --at 12.4-13.0,35.2-36.0` renders each changed stretch by itself and makes the fix sheet,
+  `docs/review/r<n>/fixes.png`: each stretch before (the last whole draft) and after, at the same moments. Score the
+  round from it: what the fixes didn't touch stands as last scored. HyperFrames renders a stretch without the film's
+  motion blur, so the smear is judged on a whole draft. Repeat until every score is 8 or more.
+- **Then one whole draft** for the user: `studio.mjs draft <project>`, its render's checks clear, and a look over its
+  key sheet to see nothing else moved.
 
 ## Sheets
 
-`docs/beats.json` names the moments to grab. `sheets.mjs` only does the grabbing:
+`docs/beats.json` names the moments to grab; the sheets only do the grabbing:
 
 ```json
 {
@@ -40,11 +50,16 @@ Repeat until every score is 8 or more, with at least two rounds. Only then show 
 }
 ```
 
-- `keys`: one time per voiceover sentence (on its key word) or per story beat. These make `keys.png`, and `phone.png`
-  at 360 px wide.
-- `strips`: the start and end of each fast move. Each makes a 12-frame `strip_<name>.png`.
-- `poster`: the poster frame for delivery.
-- `contact`: optional, up to 30 times for the contact sheet (defaults to `keys`).
+- `keys`: one time per voiceover sentence (on its key word) or per story beat. `keys.png` shows each at a phone's
+  width (360 px) with its time, the size the Reads at a glance score judges, and each is there whole too (`k_00.png`
+  on), for a closer look.
+- `strips`: the start and end of each fast move only (a whip, a zoom through, a flight past the lens); a slow push or a
+  fade needs none, as the key frames show it. `strips.png` has six frames across each, with their times.
+- `poster`: the poster frame, for the review page and the delivery.
+- `contact`: optional, up to 30 times for the delivery's contact sheet (defaults to `keys`).
+
+A long film's sheets carry on in `keys-2.png` and `strips-2.png`, so each reads at its own size. Without the draft
+command, `node PLUGIN/scripts/tools/sheets.mjs <draft.mp4> docs/review/r<n>` makes them.
 
 ## Scores (1–10)
 
@@ -57,7 +72,7 @@ weight or tell its story badly.
 | Score | `--scores` key | The question | Standard |
 |---|---|---|---|
 | Hook | `hook` | Do the first seconds earn the rest? | `PLUGIN/guides/story/hooks.md` |
-| Reads at a glance | `phone` | Does it read at a glance on the 360 px sheet: one thing at a time, the eye led to it? | `PLUGIN/guides/design/readability.md` |
+| Reads at a glance | `phone` | Does it read at a glance on the key sheet, at a phone's width: one thing at a time, the eye led to it? | `PLUGIN/guides/design/readability.md` |
 | Motion quality | `motion` | Weight, a job for every move, one personality, invisible seams | `PLUGIN/guides/motion/quality.md` |
 | Variety | `variety` | Something new every few seconds, no device repeated | `PLUGIN/guides/motion/variety.md` |
 | Composition | `composition` | One focal point, balance, margins and safe areas, a system | `PLUGIN/guides/design/layout.md` |
@@ -70,7 +85,8 @@ higher bar.
 
 ## The log: `docs/review_log.md`
 
-Round 0 lists problems fixed on snapshot stills before the first render. Then, for each round:
+Round 0 lists problems fixed on snapshot stills before the first render. Then, for each round (a round of fixes is
+headed with its stretches, "Round 2 — fixes at 12.4–13.0 s", and scores from its fix sheet):
 
 ```markdown
 ## Round 1 — draft r1
@@ -99,9 +115,9 @@ The user's notes get a section per version, each with how it was applied. End wi
 
 Once a draft passes the loop, the user reviews it on its review page.
 
-1. Render the video and its poster, then write `videos/<project>/review/v<N>/review.json` pointing at them (paths are
-   relative to the project folder), with the storyboard's scenes as chapters, a short summary and, from v2, what
-   changed. Writing it publishes the page.
+1. Write `videos/<project>/review/v<N>/review.json` pointing at the whole draft and its poster, which the draft
+   command made (paths are relative to the project folder), with the storyboard's scenes as chapters, a short summary
+   and, from v2, what changed. Writing it publishes the page.
 
    ```json
    {
@@ -120,9 +136,9 @@ Once a draft passes the loop, the user reviews it on its review page.
 
    `poster` and `changes` are optional. `version` must match the folder (`v2` → `2`): a video shows up once it does.
 2. Show the page `/videos/<project>/review/v<N>/` (production skill, "Showing a page") with the scores and what you'd
-   improve next. Flag every departure from the brief or the approved storyboard (the build's `docs/decisions.md` lists its changes to
-   the scene plans). Then wait for the review in the
-   background and end your turn.
+   improve next. Flag every departure from the brief or the approved storyboard (the build's `docs/decisions.md` lists
+   its changes to the scene plans; the page itself lists the checks' findings kept on purpose, with why). Then wait for
+   the review in the background and end your turn.
 3. When the review comes in (the wait finishes, or the user says they've saved), read `feedback.json` beside
    `review.json` (never write it yourself): `decision` (`approved` or `changes`: it's approved unless the user adds
    notes; a save from before the page had only these two can say `undecided`), `notes` (each with `time` in seconds
@@ -131,6 +147,7 @@ Once a draft passes the loop, the user reviews it on its review page.
    `points/p1a2b3c.jpg`) and `general`. Look at every note's picture (Read tool) before changing anything: it shows
    exactly what they mean.
    - `approved` means go to the master and deliverables (production skill), treating any notes as small last tweaks.
-   - `changes` means apply every note (times are seconds into the video: look at each moment) through the build
-     skill, run the review loop again, and share the result as review v<N+1>: start it on the overview with
-     `studio.mjs progress <project> video <N+1> notes`.
+   - `changes` means video v<N+1>: start it on the overview (`studio.mjs progress <project> video <N+1> build`), apply
+     every note (times are seconds into the video: look at each moment) through the build skill, check, then a fix
+     sheet of the changed scenes (`studio.mjs draft <project> --at <each changed scene's stretch>`, before being video
+     v<N>'s draft), and when the scores hold, the whole draft for its review page.

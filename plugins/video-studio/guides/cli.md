@@ -30,11 +30,13 @@ version). Every new project starts on it.
 4. `node PLUGIN/scripts/studio.mjs check <video>` once a pass is done: Video Studio's checks, which run `HF check`
    (lint again first, so don't run both) with the video's settings and add their own (below).
 5. `HF snapshot --at <times> --describe false` for stills of what changed, and of every scene file's middle.
-6. Render a draft and review it (review skill).
+6. `node PLUGIN/scripts/studio.mjs draft <video>`: the checks, a draft render, its checks and its review sheets in one
+   go; the review skill takes it from there.
 
-Check changed moments with snapshots and keyframe strips first. A changed stretch can then be rendered by itself
-(`render --start` and `--end`, below) to watch it moving; a draft for review is always the whole film. `--resume`
-(with `HF_SEGMENTED_CAPTURE=true`) only recovers a render that crashed.
+Check changed moments with snapshots and keyframe strips first. In a review's rounds of fixes,
+`studio.mjs draft <video> --at <from>-<to>,…` renders each changed stretch by itself (`render --start` and `--end`,
+below) with a before-and-after sheet; a draft for the user is always the whole film. `--resume` (with
+`HF_SEGMENTED_CAPTURE=true`) only recovers a render that crashed.
 
 ## init
 
@@ -203,7 +205,7 @@ samples; `--samples N`), with `--layout strip` for motion in place, `--from` and
 | `--quality draft` / `looks` / `delivery` | Review drafts / a first real encode (the default) / the master |
 | `--fps 30` or `60` | Drafts at 30, the master at 60 (twice the time) |
 | `--output <file>` | A stable name; the default is `renders/<project>_<date>_<time>.mp4` |
-| `--start 14 --end 18` | Only that stretch of the film, as its own MP4 with its sound, starting at 0 (MP4, a whole frame rate of 24, 25, 30 or 60, and not HDR) |
+| `--start 14 --end 18` | Only that stretch of the film, as its own MP4 with its sound, starting at 0 (MP4, a whole frame rate of 24, 25, 30 or 60, and not HDR). HyperFrames renders a stretch on its distributed renderer, without the film's motion blur |
 | `-c compositions/<file>.html` | Render one scene file on its own |
 | `--format webm` or `mov` | With transparency, for a piece laid over something else (`mov` is ProRes 4444; `--prores-profile hq`, `422`, `lt` or `proxy` drop the transparency); `png-sequence` for frames, `gif` (no sound, 30 fps at most) |
 | `--crf <n>` or `--video-bitrate 10M` | Encoder quality, one or the other |

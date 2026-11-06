@@ -48,7 +48,8 @@ export function deliveryFiles(root, slug) {
   let names = [];
   try {
     names = readdirSync(dir, { withFileTypes: true })
-      .filter((e) => e.isFile() && !e.name.startsWith(".") && e.name !== "delivery.json")
+      // HyperFrames' log of a render sits beside it (lib/render.mjs), and isn't delivered
+      .filter((e) => e.isFile() && !e.name.startsWith(".") && e.name !== "delivery.json" && !e.name.endsWith(".log"))
       .map((e) => e.name);
   } catch {}
   const files = names.map((name) => {

@@ -40,9 +40,9 @@ videos/<project>/storyboard/v<N>/
 
 ## Make version 1
 
-Mark the work on the video's overview as you go (production skill, "Work in progress"): start with
+Start it on the video's overview (production skill, "Work in progress"):
 `node PLUGIN/scripts/studio.mjs progress <project> storyboard 1 plan` (or `voice` first, while you make or time the
-voiceover), and mark `check` when you look over the frames; rendering them marks `frames` by itself.
+voiceover); rendering the frames marks `frames`, then `check`, by itself.
 
 1. **Plan the scenes** from the approved script (script skill) and the timing: usually 3–12, each roughly 2–8
    seconds. The script's rows are the beats, and their `scene` numbers group them into scenes; carry each scene's
@@ -58,9 +58,10 @@ voiceover), and mark `check` when you look over the frames; rendering them marks
    be clearer or richer with one, from what `node PLUGIN/scripts/studio.mjs library` lists (script skill, "Library
    items"). Items can share a scene (build skill, "Library items"). Show each in its frames as it will
    look. Make a still of it at the video's size and lay it over the frame (several in the order they draw, the base
-   first):
-   `node PLUGIN/scripts/studio.mjs library <code> --still <seconds into the item> --brand <brand> --size <size>
-   --set key=value … --out videos/<project>/storyboard/v1/items/<name>.png`. Name it in the scene's description by its
+   first), every item's in one go: from the version's folder,
+   `node PLUGIN/scripts/studio.mjs library stills -` with the list on stdin (a heredoc) or in a file,
+   `[{ "code": "W03", "at": 2.5, "out": "items/s02-w03.png", "set": { "number": "48" } }]` (`at`: seconds into the
+   item; `set`: its words and options), in the video's brand and size. Name each in the scene's description by its
    code in square brackets; the page shows it as a link to the item.
 3. **Build `frames.html`.** Design these as the real layouts, in the brand kit's fonts, colours, backgrounds and logo
    files, with the real words. The build will reuse them. Each frame is an element with `data-frame="<scene>-<n>"` sized exactly
@@ -81,7 +82,8 @@ voiceover), and mark `check` when you look over the frames; rendering them marks
    ```
 4. **Render the frames:**
    `node PLUGIN/scripts/render-frames.mjs videos/<project>/storyboard/v1/frames.html videos/<project>/storyboard/v1/frames`
-   Look at every PNG yourself (Read tool) and fix layout, legibility and brand problems before the user sees them.
+   It makes `frames/contact.png` too, every frame at a phone's width with its id: look them over there (Read tool),
+   opening a single frame only for detail, and fix layout, legibility and brand problems before the user sees them.
    For a footage video, see "From footage" below: the frames are real stills, and each scene gets a rough cut.
 5. **Write `storyboard.json` last** (format below). Writing it publishes the review page, and the studio tells you
    its address, so the frames must be rendered and checked first.
@@ -119,12 +121,12 @@ folder). Look at every point's picture (Read tool) before changing that frame: i
 - **Feedback on some scenes, or general notes** (the page counts general notes as asking for changes; feedback from
   someone outside the studio is often pasted there, naming scenes by number): make the next version. If the general
   notes turn out to ask for nothing (just praise, say), tell the user and go to the build stage instead.
-  0. Start it on the overview: `studio.mjs progress <project> storyboard <N+1> notes`, then `plan`, and `check` as
-     you look over the re-rendered frames.
+  0. Start it on the overview: `studio.mjs progress <project> storyboard <N+1> plan`.
   1. Copy `v<N>` to `v<N+1>` (leave `v<N>` and its feedback untouched) and delete the copy's `feedback.json`, its
      `points/` folder and any PDF (a download's copy). The copy stays out of sight until its `storyboard.json` says `"version": N+1`.
   2. Apply every note in the copy's `frames.html`. A general note can touch several scenes.
-  3. Re-render only the frames that changed (`--only s02-1,s02-2`) and check them.
+  3. Re-render only the frames that changed (`--only s02-1,s02-2`) and check them on the contact sheet, which then
+     holds those alone.
   4. Last, update the new `storyboard.json`: mark scenes you changed `"changed": true`; mark scenes that were approved
      and are unchanged `"carriedApproval": true` (they start as Approved for the user); clear both flags on the rest.
      Write `"changes"`: a sentence or two on what changed and why. Set `"version"` to N+1 in the same write: that

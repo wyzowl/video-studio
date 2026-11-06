@@ -22,8 +22,8 @@ Then as the job needs: `captions/` for captions, `footage/` for a footage video,
 
 ## Start
 
-Mark it on the overview: `node PLUGIN/scripts/studio.mjs progress <project> video <version> build` (and `notes`
-first for a later version), then `check` and each round's steps as you go (production skill, "Work in progress").
+Start it on the overview: `node PLUGIN/scripts/studio.mjs progress <project> video <version> build` (a later version
+too); the commands mark the steps after it (production skill, "Work in progress").
 Read `BRIEF.md`, the brand kit (`brand.json`), the approved script and storyboard (its frames, descriptions and
 notes), and the verified word times.
 
@@ -204,5 +204,6 @@ registry is a second source, used with care (`PLUGIN/guides/library.md`).
 ## Changes after a review
 
 The review's fixes and the user's notes come back here. Change what each one asks for and nothing more; a change to
-something the user approved (a scene's look, a word of the script) is said on the next review page. Re-run
-`studio.mjs check <project>` and stills of what changed, then the review loop again.
+something the user approved (a scene's look, a word of the script) is said on the next review page. Then the review
+loop's next round checks the changes: `studio.mjs draft <project> --at <each changed stretch>` runs the checks, renders
+each stretch and makes its before-and-after sheet (review skill, "The loop").

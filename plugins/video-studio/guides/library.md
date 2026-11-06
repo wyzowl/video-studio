@@ -13,7 +13,8 @@ care.
   takes) and its clip, with the brand's settings filled in; `--steps` adds the steps for using it, which are the build
   skill's "Library items".
 - `studio.mjs library <code> --still <seconds> --brand <brand> --size <size> --set key=value … --out <file>.png`
-  makes a still of it at the video's size, for the storyboard.
+  makes a still of it at the video's size, for the storyboard; `studio.mjs library stills <list.json | ->` makes
+  several in one go, from a list of `{ code, at, out, set }` (the storyboard skill, step 2).
 - The brand kit dresses every item (`brand.json` `style`, colours, fonts, the "Travel" ease): fix the kit rather than
   restyling an item by hand.
 - How items are used in a video (placing, timing, combining, items over footage, full-frame items, transitions) is the

@@ -163,21 +163,26 @@ export function readFilm(root, slug) {
   return { root, slug, dir, html, width, height, duration, version, brief, brand, storyboard, script, media, words: spokenWords(dir, brief, script?.script, media) };
 }
 
-/** The spoken words in the film's time: a footage video's cut (docs/words.json), or the voiceover's verified
-    transcript moved to where its <audio> plays. [] with no speech. */
-function spokenWords(dir, brief, script, media) {
-  const list = (j) => (Array.isArray(j) ? j : Array.isArray(j?.words) ? j.words : []).filter((w) => w && Number.isFinite(+w.start) && w.text);
+/** Where a film's spoken words are: a footage video's cut (docs/words.json, in the film's time), or the voiceover's
+    verified transcript, with `offset`, how far to move it to where its <audio> plays. { file, offset } or null. */
+export function speechFile(dir, brief, script, media) {
   if (brief.type === "footage" || script?.mode === "footage") {
-    const cut = list(readJSON(join(dir, "docs", "words.json")));
-    if (cut.length) return cut.map((w) => ({ text: w.text, start: +w.start, end: +w.end || +w.start }));
+    const cut = join(dir, "docs", "words.json");
+    if (existsSync(cut)) return { file: cut, offset: 0 };
   }
   const voice = media.find((m) => m.tag === "audio" && (m.attrs["data-timeline-role"] === "voiceover" || /\b(vo|voice|voiceover|narration)\b/i.test(`${m.attrs.id || ""} ${m.attrs.src || ""}`)));
-  if (!voice) return [];
+  if (!voice) return null;
   const own = voice.attrs.src ? join(dir, voice.attrs.src.replace(/\.[a-z0-9]+$/i, ".transcript.json")) : "";
   const file = [join(dir, "inputs", "transcript_verified.json"), join(dir, "inputs", "transcript.json"), own].find((f) => f && existsSync(f));
-  if (!file) return [];
-  const shift = (Number(voice.attrs["data-start"]) || 0) - (Number(voice.attrs["data-media-start"]) || 0);
-  return list(readJSON(file)).map((w) => ({ text: w.text, start: +w.start + shift, end: (+w.end || +w.start) + shift }));
+  return file ? { file, offset: (Number(voice.attrs["data-start"]) || 0) - (Number(voice.attrs["data-media-start"]) || 0) } : null;
+}
+
+/** The spoken words in the film's time (speechFile's, moved by its offset). [] with no speech. */
+function spokenWords(dir, brief, script, media) {
+  const list = (j) => (Array.isArray(j) ? j : Array.isArray(j?.words) ? j.words : []).filter((w) => w && Number.isFinite(+w.start) && w.text);
+  const speech = speechFile(dir, brief, script, media);
+  if (!speech) return [];
+  return list(readJSON(speech.file)).map((w) => ({ text: w.text, start: +w.start + speech.offset, end: (+w.end || +w.start) + speech.offset }));
 }
 
 /** The words the user approved for the screen, by scene: the storyboard's on-screen words (each scene's `onScreen`,
@@ -944,6 +949,13 @@ export function readKept(root, slug) {
 /** Each finding's id for this report (M1, S1, N1; K1 for a kept one), and the counts, the kept ones folded out. A must
     fix is never folded: it stops the render. */
 export function settle(report, kept = []) {
+  // each level's findings of one kind together, the kinds in the order their first finding comes, as they're printed
+  const ranked = [];
+  for (const level of Object.keys(ORDER)) {
+    const here = report.findings.filter((f) => f.level === level);
+    for (const kind of new Set(here.map((f) => f.code || f.what))) ranked.push(...here.filter((f) => (f.code || f.what) === kind));
+  }
+  report.findings = ranked;
   const why = new Map(kept.map((k) => [k.key, k]));
   const n = { must: 0, should: 0, note: 0, kept: 0 };
   for (const f of report.findings) {

@@ -33,7 +33,7 @@ user can set its own in the video's `docs/rules.json`, holding only the numbers 
 
 ## Type sizes
 
-Every word that matters must read on the review's phone sheet (360 px wide). In the video's own pixels:
+Every word that matters must read on the review's key sheet, at a phone's width (360 px). In the video's own pixels:
 
 | Frame | Smallest text (a source, a label) | Body | Headlines |
 |---|---|---|---|
