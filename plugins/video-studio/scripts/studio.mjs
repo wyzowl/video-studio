@@ -36,6 +36,9 @@
 //   node studio.mjs final [<video>]            once the user has approved the video: the 60 fps master, the web copy,
 //                                              poster, thumbnail and contact sheet, the captions when there's speech and
 //                                              the checks on the master; then the delivery page's address
+//   node studio.mjs map [<video>]              a map of the built film's code: each file's blocks and the sections the
+//                                              build heads by scene (id and time range), with their line ranges; the
+//                                              clips and library items with their times; and the sound cues
 //   node studio.mjs check <video> --keep <finding> "<why>"
 //                                              keep a should fix of the last check (S2), with why, in
 //                                              docs/checks/kept.json: the review page shows it, later checks fold it
@@ -259,6 +262,7 @@ async function main() {
   if (cmd === "render") return renderCommand();
   if (cmd === "draft") return draftCommand();
   if (cmd === "final") return finalCommand();
+  if (cmd === "map") return mapCommand();
   if (cmd === "check") return checkCommand();
   if (cmd === "pdf") return pdf();
   if ((cmd === "library" || cmd === "gallery") && arg === "check") return libraryCheck();
@@ -271,7 +275,7 @@ async function main() {
   if (cmd === "hook") return hook();
   if (cmd === "page-ready") return pageReady().catch(() => {}); // a hook: never in the way, silent on any problem
   if (cmd === "context") return context();
-  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, draft, final, check, setup-page, setup-note, pdf, library, install, tidy, skills, serve, stop, page-ready`);
+  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, draft, final, map, check, setup-page, setup-note, pdf, library, install, tidy, skills, serve, stop, page-ready`);
 }
 
 function init(root) {
@@ -667,6 +671,13 @@ async function finalCommand() {
   if (r.delivery) r.lines.push(`The delivery page: ${pageUrl(await ensureServer(at.root), r.delivery)}. Write renders/delivery.json, the words to go with it (production skill, "Deliverables"), then show the page.`);
   console.log(r.lines.join("\n"));
   process.exitCode = r.code;
+}
+
+/** `map [<video>]`: the built film's code as a map (lib/map.mjs), so a change reads only the lines it touches. */
+async function mapCommand() {
+  const at = theVideo("Which video? node studio.mjs map <video>, or run it from the video's folder.");
+  const { filmMap } = await import("./lib/map.mjs");
+  console.log(filmMap(at.dir).join("\n"));
 }
 
 /** `check [<video>] [--render <file>]`: Video Studio's checks on a built video (lib/check.mjs), from its folder or by

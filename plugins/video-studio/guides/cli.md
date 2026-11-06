@@ -24,7 +24,9 @@ version). Every new project starts on it.
 
 ## The loop
 
-1. `HF timeline --json` to see what an existing project plays, and when, instead of opening every file.
+1. `node PLUGIN/scripts/studio.mjs map <video>` to see what an existing project holds: each file's sections by scene,
+   with their lines, the clips and library items with their times, and the sound cues, instead of opening every file
+   (`HF timeline --json` gives the clips as HyperFrames reads them).
 2. Write or change the files (`format.md`).
 3. `HF lint` while writing, for fast feedback.
 4. `node PLUGIN/scripts/studio.mjs check <video>` once a pass is done: Video Studio's checks, which run `HF check`

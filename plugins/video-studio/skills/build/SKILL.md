@@ -32,7 +32,10 @@ notes), and the verified word times.
 1. **One clock.** One `index.html` with a pure `render(t)` on one paused GSAP clock (`PLUGIN/guides/format.md`, "A
    project"); library items and blocks are their own files. A long film (about two minutes or fifteen scenes and up)
    is built a file per scene instead, its scenes at the same time ("A long film", below). The root has motion blur
-   on, as that example does.
+   on, as that example does. Head each scene's section, in the markup, the styles and the script (and in each scene
+   file), with its id and time range, as a comment on a line of its own: `<!-- ── s03 11.86–21.25 s: the logo -->`,
+   `// ── s03 11.86–21.25 s: the logo`; anything else you'll want to find again (the camera, the world) by name, the
+   same way. `studio.mjs map <video>` lists them with their lines, and a change reads only those.
 2. **The approved frames are the layouts, and the scene plans are the brief.** Reuse the storyboard's `frames.html`
    layouts, words and assets, and build each scene to its plan (`storyboard.json` `plan`): its world and drawing
    style, its depth and atmosphere, its moves on their times, its sound and its hand-over. Where a plan leaves
@@ -204,6 +207,9 @@ registry is a second source, used with care (`PLUGIN/guides/library.md`).
 ## Changes after a review
 
 The review's fixes and the user's notes come back here. Change what each one asks for and nothing more; a change to
-something the user approved (a scene's look, a word of the script) is said on the next review page. Then the review
+something the user approved (a scene's look, a word of the script) is said on the next review page. Find what a change
+touches with `node PLUGIN/scripts/studio.mjs map <project>` (each file's sections with their lines, the clips and
+library items with their times, the sound cues), read only those lines (Read with offset and limit), and edit them
+rather than rewriting a file; keep a section's heading true when its times move. Then the review
 loop's next round checks the changes: `studio.mjs draft <project> --at <each changed stretch>` runs the checks, renders
 each stretch and makes its before-and-after sheet (review skill, "The loop").
