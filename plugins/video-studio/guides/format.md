@@ -18,7 +18,9 @@ Two ways to build the picture, both on the same contract:
 
 - **One clock** (Video Studio's usual way for a short animated film). `index.html` holds one full-length stage, and
   one function `render(t)` draws the whole film for any time `t`. A single tween moves a clock from 0 to the video's
-  length, and a setter on the clock calls `render`, so every seek, in any order, draws exactly that frame.
+  length, and a setter on the clock calls `render`, so every seek, in any order, draws exactly that frame. A film
+  started from its storyboard (`studio.mjs frames`) has a stage per scene instead, each a clip timed to its scene
+  with the storyboard's layout in it, and `render(t)` calls a function per scene.
 - **Scenes as files** (sub-compositions). Each scene, and each library block, is its own file mounted at its time in
   `index.html`, with its own paused timeline. HyperFrames seeks each one by itself. A long animated film is built this
   way, its scenes at the same time (`long-film.md`), each scene drawing itself with a clock of its

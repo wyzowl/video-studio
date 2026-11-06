@@ -39,6 +39,12 @@
 //   node studio.mjs final [<video>]            once the user has approved the video: the 60 fps master, the web copy,
 //                                              poster, thumbnail and contact sheet, the captions when there's speech and
 //                                              the checks on the master; then the delivery page's address
+//   node studio.mjs frames [<video>] [--force] the film started from its approved storyboard: each scene's frames as its
+//                                              layout in index.html (the frames' styles, drawings and words, what they
+//                                              name one element with its state in each frame), each library item's
+//                                              still as the live item with the storyboard's settings, and a clock with a
+//                                              section per scene for its motion (--force: replace a built index.html,
+//                                              kept in docs/; --version <n>: another storyboard version)
 //   node studio.mjs map [<video>]              a map of the built film's code: each file's blocks and the sections the
 //                                              build heads by scene (id and time range), with their line ranges; the
 //                                              clips and library items with their times; and the sound cues
@@ -267,6 +273,7 @@ async function main() {
   if (cmd === "render") return renderCommand();
   if (cmd === "draft") return draftCommand();
   if (cmd === "final") return finalCommand();
+  if (cmd === "frames") return framesCommand();
   if (cmd === "map") return mapCommand();
   if (cmd === "check") return checkCommand();
   if (cmd === "pdf") return pdf();
@@ -280,7 +287,7 @@ async function main() {
   if (cmd === "hook") return hook();
   if (cmd === "page-ready") return pageReady().catch(() => {}); // a hook: never in the way, silent on any problem
   if (cmd === "context") return context();
-  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, draft, final, map, check, setup-page, setup-note, pdf, library, install, tidy, skills, serve, stop, page-ready`);
+  throw new Error(`Unknown command "${cmd}". Try: init, context, hook, url, open, show, wait, ready, progress, render, draft, final, frames, map, check, setup-page, setup-note, pdf, library, install, tidy, skills, serve, stop, page-ready`);
 }
 
 function init(root) {
@@ -699,6 +706,16 @@ async function finalCommand() {
       r.lines.push(`The delivery page opens beside the chat by itself: ${url}. Write renders/delivery.json, the words to go with it (production skill, "Deliverables"): the page shows them as they're written.`);
     } else r.lines.push(`The delivery page: ${url}. Write renders/delivery.json, the words to go with it (production skill, "Deliverables"), then show the page.`);
   }
+  console.log(r.lines.join("\n"));
+  process.exitCode = r.code;
+}
+
+/** `frames [<video>]`: index.html started from the approved storyboard's frames (lib/frames.mjs), for the build to add
+    the motion to. */
+async function framesCommand() {
+  const at = theVideo("Which video? node studio.mjs frames <video>, or run it from the video's folder.");
+  const { framesIntoFilm } = await import("./lib/frames.mjs");
+  const r = await framesIntoFilm(at, { version: Number(opt("--version")) || null, force: argv.includes("--force"), prefix: opt("--prefix") });
   console.log(r.lines.join("\n"));
   process.exitCode = r.code;
 }

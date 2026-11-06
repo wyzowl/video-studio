@@ -56,16 +56,30 @@ voiceover); rendering the frames marks `frames`, then `check`, by itself.
    **Library items:** carry over every one the script names (`[W03]` and so on), and suggest more where a scene would
    be clearer or richer with one, from what `node PLUGIN/scripts/studio.mjs library` lists (script skill, "Library
    items"). Items can share a scene (build skill, "Library items"). Show each in its frames as it will
-   look. Make a still of it at the video's size and lay it over the frame (several in the order they draw, the base
-   first), every item's in one go: from the version's folder,
-   `node PLUGIN/scripts/studio.mjs library stills -` with the list on stdin (a heredoc) or in a file,
-   `[{ "code": "W03", "at": 2.5, "out": "items/s02-w03.png", "set": { "number": "48" } }]` (`at`: seconds into the
-   item; `set`: its words and options), in the video's brand and size. Name each in the scene's description by its
-   code in square brackets; the page shows it as a link to the item.
+   look. Make a still of it at the video's size and lay it over the frame (`<img src="items/s02-w03.png">`, several in
+   the order they draw, the base first), every item's in one go: write the list to `items.json` in the version's
+   folder, `[{ "code": "W03", "at": 2.5, "out": "items/s02-w03.png", "set": { "number": "48" } }]` (`at`: seconds
+   into the item, at the moment its frame shows; `set`: its words and options), then from that folder
+   `node PLUGIN/scripts/studio.mjs library stills items.json`, in the video's brand and size. The build brings each
+   item into the film from that list, with the same words and options, at the time its frames show it. Name each in
+   the scene's description by its code in square brackets; the page shows it as a link to the item.
 3. **Build `frames.html`.** Design these as the real layouts, in the brand kit's fonts, colours, backgrounds and logo
-   files, with the real words. The build will reuse them. Each frame is an element with `data-frame="<scene>-<n>"` sized exactly
-   to the video, and frames are still: no animation or transitions. Show motion with position, blur trails or
-   arrows where it helps.
+   files, with the real words. Each frame is an element with `data-frame="<scene>-<n>"` sized exactly to the video,
+   and frames are still: no animation or transitions. Show motion with position, blur trails or arrows where it
+   helps. **The build reuses these frames as the film's layouts,** so draw them for that:
+   - a scene's frames are moments of one layout: each thing on screen is one element, with the same name in every
+     frame it's in (`<div class="bill" data-el="bill">`), so it becomes one element in the film that moves between
+     them. Something that moves is an element of its own, not part of a bigger drawing;
+   - mark the scene's key frame, where everything it shows is in place, `data-layout`: the film is laid out as it;
+   - what only shows motion on a still (a blur trail, an arrow, speed lines, a ghost of where it was) carries
+     `data-motion`, and the film leaves it out;
+   - anything drawn with code is drawn by functions of its state (a room lit or dark, a camera's place) in a
+     `frames.js` beside `frames.html` (`<script src="frames.js">`): functions only, called by the page's own script.
+     The film loads the same file and calls them in time.
+
+   That's all the build needs from the frames. In the film, an element that's only in some of a scene's frames waits,
+   unseen, until the motion brings it in; an unnamed element drawn alike in several frames is one element; and each
+   item comes in from `items.json`, its `set` as its settings and its start from `at` and its frame's time.
    ```html
    <!doctype html>
    <html><head><meta charset="utf-8"><style>
@@ -75,8 +89,10 @@ voiceover); rendering the frames marks `frames`, then `check`, by itself.
      [data-frame] { position: relative; overflow: hidden; width: 1920px; height: 1080px; margin: 0 0 40px;
                     background: var(--bg); color: var(--fg); font-family: "Display", sans-serif; }
    </style></head><body>
-     <section data-frame="s01-1"><!-- scene 1, opening moment --></section>
-     <section data-frame="s01-2"><!-- scene 1, key moment --></section>
+     <section data-frame="s01-1"><!-- scene 1, opening moment -->
+       <div class="headline" data-el="headline" style="top: -160px">Roasted fast</div></section>
+     <section data-frame="s01-2" data-layout><!-- scene 1, key moment: the film's layout -->
+       <div class="headline" data-el="headline">Roasted fast</div></section>
    </body></html>
    ```
 4. **Render the frames:**
@@ -110,7 +126,8 @@ folder). Look at every point's picture (Read tool) before changing that frame: i
   0. Start it on the overview: `studio.mjs progress <project> storyboard <N+1> plan`.
   1. Copy `v<N>` to `v<N+1>` (leave `v<N>` and its feedback untouched) and delete the copy's `feedback.json`, its
      `points/` folder and any PDF (a download's copy). The copy stays out of sight until its `storyboard.json` says `"version": N+1`.
-  2. Apply every note in the copy's `frames.html`. A general note can touch several scenes.
+  2. Apply every note in the copy's `frames.html`, and in its `items.json` for an item's words or options (then that
+     item's stills again). A general note can touch several scenes.
   3. Re-render only the frames that changed (`--only s02-1,s02-2`) and check them on the contact sheet, which then
      holds those alone.
   4. Last, update the new `storyboard.json`: mark scenes you changed `"changed": true`; mark scenes that were approved

@@ -41,6 +41,10 @@ inside one scene, hand-overs that match exactly at the cut, and a named rhythm (
   not web (borders 2–4 px, padding 60–140 px at 1080, decoration at 12–25%).
 - **A system:** the same margins, grid, type roles and accent rule in every scene; the grounds varied (the kit's dark,
   light and accent; about 15 s on one feels like a slide); one signature device.
+- **Drawn for the film:** the build reuses the frames as its layouts, so each thing that moves is one element named
+  alike in each frame (`data-el`), the key frame is marked (`data-layout`), motion drawn on a still is marked
+  (`data-motion`), items are their stills (`items.json`) and code drawings are functions in `frames.js` (storyboard
+  skill, step 3).
 - **Tall and square frames** are designed for their shape: stacked rather than side by side, a centred hero at about
   0.42 of the height, bigger type and fewer words a line.
 - Open `../design/layout.md` for its moods, diagrams, a product as the hero and footage in the frame; `../design/type.md`

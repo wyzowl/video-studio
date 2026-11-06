@@ -23,8 +23,8 @@ anything beyond GSAP (Lottie, three.js, canvas, WebGPU).
 
 Start it on the overview: `node PLUGIN/scripts/studio.mjs progress <project> video <version> build` (a later version
 too); the commands mark the steps after it (production skill, "Work in progress").
-Read `BRIEF.md`, the brand kit (`brand.json`), the approved script and storyboard (its frames, descriptions and
-notes), and the verified word times.
+Read `BRIEF.md`, the brand kit (`brand.json`), the approved script and storyboard (its scenes' descriptions, plans and
+notes, and its frames as they look on its `frames/contact.png`), and the verified word times.
 
 ## An animated video
 
@@ -35,9 +35,16 @@ notes), and the verified word times.
    file), with its id and time range, as a comment on a line of its own: `<!-- ── s03 11.86–21.25 s: the logo -->`,
    `// ── s03 11.86–21.25 s: the logo`; anything else you'll want to find again (the camera, the world) by name, the
    same way. `studio.mjs map <video>` lists them with their lines, and a change reads only those.
-2. **The approved frames are the layouts, and the scene plans are the brief.** Reuse the storyboard's `frames.html`
-   layouts, words and assets, and build each scene to its plan (`storyboard.json` `plan`): its world and drawing
-   style, its depth and atmosphere, its moves on their times, its sound and its hand-over. Where a plan leaves
+   `studio.mjs frames` starts the film this way (step 2).
+2. **The approved frames are the layouts, and the scene plans are the brief.** Start the film from the storyboard:
+   `node PLUGIN/scripts/studio.mjs frames <project>` brings each scene's approved frames into `index.html` as its
+   layout (their styles, drawings and words; what the frames name, one element, with its state in each frame noted
+   in the scene's section of the script), swaps each library item's still for the live item with the storyboard's
+   settings, from the time its frames show it, loads the storyboard's drawing code (`frames.js`) as the film's, and
+   heads a section of the clock for each scene. Then add the motion: build each scene to its plan
+   (`storyboard.json` `plan`): its world and drawing style, its depth and atmosphere, its moves on their times, its
+   sound and its hand-over, moving each element between the states its frames give. Never draw a scene again or
+   type a frame's markup into the film: change the layout in place where the motion needs it. Where a plan leaves
    something open, choose from the guides' defaults; where it can't work as written, change as little as possible.
    Keep `docs/decisions.md`: a line for each choice a plan left open and each change to one, with why. The changes
    go on the review page (review skill, "The user's video review").
@@ -63,7 +70,9 @@ notes), and the verified word times.
 
 An animated film of about two minutes or fifteen scenes and up is built a file per scene, each by its own helper at
 the same time, then joined and reviewed as one film: follow `PLUGIN/guides/long-film.md`. A shorter film stays with
-one agent and one clock.
+one agent and one clock. The scenes' layouts still come from `studio.mjs frames`: move each scene's section from the
+`index.html` it writes into its starter with the shell (`studio.mjs map` gives the lines), rather than typing it
+again.
 
 ## A footage video
 

@@ -39,7 +39,8 @@ touches.
 
 ## The commands (`../cli.md`)
 
-`HF lint` while writing; `studio.mjs check <video>` once a pass is done (it runs `HF check` with the video's settings;
+`studio.mjs frames <video>` to start a film from its approved storyboard; `HF lint` while writing;
+`studio.mjs check <video>` once a pass is done (it runs `HF check` with the video's settings;
 a must fix stops the render; a should fix is fixed or kept, `--keep S2 "<why>"`); `HF snapshot --at <times> --describe
 false` for stills of what changed; `studio.mjs draft <video>` for the review's draft and sheets. HyperFrames always
 runs with its version and its two switches, and never its cloud, publishing or sign-in. Open `../cli.md` for any other
@@ -47,9 +48,10 @@ command (capture, measure, keyframes, beats, audio, transcribe, the app's histor
 
 ## The look (`../design/README.md`, `../design/readability.md`)
 
-- **The approved frames are the layouts and the plans are the brief:** reuse the frames' layouts, words and assets;
-  the kit's colours and fonts as variables, its backgrounds as grounds, its `motion` as the timeline's defaults, the
-  variable font on the brand's weight.
+- **The approved frames are the layouts and the plans are the brief:** `studio.mjs frames` brings the frames in as
+  each scene's layout, with their states and the live items; the motion moves between them, and nothing is drawn
+  again. The kit's colours and fonts as variables, its backgrounds as grounds, its `motion` as the timeline's
+  defaults, the variable font on the brand's weight.
 - **Every word reads** on a phone, in time (the sizes and holds below): strong contrast against what's really behind
   it, still while it's read, clear of the platforms' bands, one thing to read at a time.
 - **Every scene has depth and a living world:** atmosphere behind, detail in front, and slow ambient motion on
