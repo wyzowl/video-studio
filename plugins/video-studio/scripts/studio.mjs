@@ -55,6 +55,12 @@
 //                                              approved script's words on the times heard, with vo-check's look);
 //                                              --cut writes a footage cut's docs/words.json from its clips; --duck puts
 //                                              the music's duck under the words; --captions writes the captions files
+//   node studio.mjs move [<video>] <what> --to <s> | --by <±s> | --start <s> | --end <s> | --duration <s> [--code]
+//                                              move a clip (its id), a library item (its code, W49) or a scene (s07),
+//                                              with what moves with it: its start and length, an item's settings (its
+//                                              length, and its moments when only its start moves), the sound cues for
+//                                              it, a scene's headings, the clips at its cuts and its one-clock table;
+//                                              --code also moves the times written in a scene's own code
 //   node studio.mjs check <video> --keep <finding> "<why>"
 //                                              keep a should fix of the last check (S2), with why, in
 //                                              docs/checks/kept.json: the review page shows it, later checks fold it
@@ -283,6 +289,7 @@ async function main() {
   if (cmd === "frames") return framesCommand();
   if (cmd === "map") return mapCommand();
   if (cmd === "words") return wordsCommand();
+  if (cmd === "move") return moveCommand();
   if (cmd === "check") return checkCommand();
   if (cmd === "pdf") return pdf();
   if ((cmd === "library" || cmd === "gallery") && arg === "check") return libraryCheck();
@@ -748,6 +755,22 @@ async function wordsCommand() {
   if (argv.includes("--captions")) lines.push(...w.captionWords(at.root, at.slug));
   if (!lines.length || argv.includes("--correct") || argv.includes("--cut")) lines.push(...w.describeWords(at.root, at.slug));
   console.log(lines.join("\n"));
+}
+
+/** `move [<video>] <what> --to|--by|--start|--end|--duration <s>`: a clip, item or scene moved with everything that
+    moves with it (lib/move.mjs), each change printed with its file and line. */
+async function moveCommand() {
+  const named = positional[2] !== undefined;
+  const at = named ? theVideo("") : (() => {
+    const here = videoAt(process.cwd());
+    if (!here) throw new Error("Which video? node studio.mjs move <video> <what> --to <s>, or run it from the video's folder.");
+    return { root: here.root, slug: here.slug };
+  })();
+  const what = named ? positional[2] : arg;
+  if (!what) throw new Error("What moves? A clip's id (vo), a library item's code (W49) or a scene (s07): node studio.mjs move <video> <what> --to <s>.");
+  const num = (k) => (opt(k) === null ? null : Number(opt(k)));
+  const { moveThing } = await import("./lib/move.mjs");
+  console.log(moveThing(at.root, at.slug, what, { to: num("--to"), by: num("--by"), start: num("--start"), end: num("--end"), duration: num("--duration"), code: argv.includes("--code") }).join("\n"));
 }
 
 /** `check [<video>] [--render <file>]`: Video Studio's checks on a built video (lib/check.mjs), from its folder or by

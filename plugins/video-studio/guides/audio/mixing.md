@@ -67,7 +67,7 @@ video is finished; skip it only when there's no voice for the music to sit under
   0.15 s before each span and back over 0.4 s after it, every time in the music clip's own seconds (the video's time
   minus its `data-start`), from full level at `t: 0` (or down from the start, under speech that starts the clip). It's
   written into the music's `data-automation` (its other lanes kept) and `tools/duck-lane.json`, for the leveller
-  ("Levels and headroom" above). `--duck 0.35` ducks it less.
+  ("Levels and headroom" above). `--duck 0.35` ducks it less. Moving the voice with `studio.mjs move` writes it again.
 - **The voiceover carve,** the better mix: it takes only the bands the voice needs (roughly 250 Hz to 2.5 kHz) and a
   level that follows the speech, so the music keeps its low end and its top. HyperFrames' app makes it, on the music
   track's effect rack (Voiceover carve, strength 0.8 by default), writing `data-fx-carve`, its chain and its lanes;

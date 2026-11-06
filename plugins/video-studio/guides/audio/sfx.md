@@ -65,7 +65,9 @@ The studio's sound effects come from SFX Kit, which setup downloads to `~/.wyzow
   fastest point, a build's arrival (the sound's `sync.meets`). The build starts it at `at` − `sync.at` (divided by its
   rate), and trims anything that would start before 0.
 - Optional for each cue: `rate`, `trim_start` (seconds of the file), `cut_at` (the video's seconds, faded), `gain_db`
-  (this sound only), `duck: false` (no drop under speech), `fade_in_ms` and `fade_out_ms`.
+  (this sound only), `duck: false` (no drop under speech), `fade_in_ms` and `fade_out_ms`, and `for`: what it belongs
+  to (a clip's id, a library item's code such as `W49`, or a scene such as `s07`), so `studio.mjs move` moves it with
+  that (`../cli.md`). A scene that slides takes the cues inside it either way.
 - `voiceover`: its audio sets the effects' level (the kit's levels suit a voiceover at about −16 LUFS integrated, so the
   build moves the effects with the real one), its word times say where speech is, and `at` is where it starts in the
   video. Without a voiceover, `music` sets the level.

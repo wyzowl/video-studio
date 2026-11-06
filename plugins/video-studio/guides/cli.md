@@ -27,7 +27,7 @@ version). Every new project starts on it.
 1. `node PLUGIN/scripts/studio.mjs map <video>` to see what an existing project holds: each file's sections by scene,
    with their lines, the clips and library items with their times, and the sound cues, instead of opening every file
    (`HF timeline --json` gives the clips as HyperFrames reads them).
-2. Write or change the files (`format.md`).
+2. Write or change the files (`format.md`); a timing change is `studio.mjs move` (below).
 3. `HF lint` while writing, for fast feedback.
 4. `node PLUGIN/scripts/studio.mjs check <video>` once a pass is done: Video Studio's checks, which run `HF check`
    (lint again first, so don't run both) with the video's settings and add their own (below).
@@ -61,6 +61,27 @@ or a footage cut's words (`docs/words.json`). Time things to these, never to a t
   has changed since.
 - `--duck [<level>]`: the music's duck under the words (`audio/mixing.md`, "Room for the voice").
 - `--captions`: the captions files, as `final` makes them.
+
+### move
+
+`node PLUGIN/scripts/studio.mjs move <video> <what> …` changes a timing and everything that moves with it, and prints
+each change with its file and line.
+
+- `<what>` is a clip's id (`vo`, `w49-notification-slot`; a `#` before it is quoted in the shell), a library item's
+  code (`W49`) or a scene (`s07`).
+- `--to <s>` or `--by <±s>` moves it whole; `--start <s>` moves its start and keeps its end; `--end <s>` or
+  `--duration <s>` moves its end.
+- A clip: its `data-start` and `data-duration`; a library item's `duration`, and when only its start moves, its
+  moments ("seconds in", such as `lands`) keep their place in the film; the sound cues `for` it when it moves whole.
+  Moving the voiceover moves where the effects' build says it starts, and the music's duck with it.
+- A scene: `--start` or `--end` moves a cut, `--to` or `--by` slides the scene between its neighbours. It moves the
+  headings that give the time range, the clips that start or end at a cut that moves (keeping their other end, an
+  item its moments), a transition across one, a one-clock film's scene table (`["k-s07", 25.62, 31.31, drawS07]`),
+  and on a slide the clips, sound cues and review frames (`docs/beats.json`) inside it. The times written in the
+  scene's own code (`P(t, 26.1, 0.45)`) are listed by line; `--code` moves them too (each time written with a decimal
+  point inside the range, in the scene's own headed script sections: look over what it lists). The film's first and
+  last moments stay, and so do the approved storyboard's times.
+- When cues moved, `sfx.mjs build` makes the effects again; then `check`.
 
 ## init
 
