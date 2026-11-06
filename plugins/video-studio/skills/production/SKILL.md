@@ -29,8 +29,9 @@ their output together.
 
 **Guides.** `PLUGIN/guides/` holds Video Studio's know-how, one subject to a file: the HyperFrames format and
 commands, motion, the animation libraries, design, story and the types of video, captions, sound, footage, the
-library and imports. `PLUGIN/guides/README.md` is the index, with the review's standards. Each stage skill lists
-the guides it reads first; read those once a session, then others as the job needs.
+library and imports. `PLUGIN/guides/README.md` is the index, with the review's standards. Each stage skill reads its
+card first, once a session (`PLUGIN/guides/cards/<stage>.md`: the essentials of its guides on a page, and when to open
+each in full), then other guides as the job needs.
 
 ## Stages
 
@@ -74,7 +75,7 @@ the guides it reads first; read those once a session, then others as the job nee
    timeline, audio and assets. Re-lay out type and composition for each format (`PLUGIN/guides/design/layout.md`);
    by default they're never cropped or letterboxed.
 10. **Revisions.** A new version suffix (`_v2`); keep the previous files; motion or feel changes come with a
-    side-by-side before/after. If the user has edited in the HyperFrames app, follow "The HyperFrames app" below.
+    side-by-side before/after. If the user has edited in the HyperFrames app, follow `PLUGIN/guides/studio/app.md`.
 
 ## Footage videos
 
@@ -163,37 +164,6 @@ When the user gives you a key, run `node PLUGIN/scripts/studio.mjs licence <key>
 `studio.mjs licence` alone gives the state. A locked item can't be built in: `studio.mjs library <code>` says so, and
 you suggest a listed one instead.
 
-## Sharing outside the studio
-
-The pages only run on the user's Mac, so someone outside the studio (a client, say) reviews a download instead:
-the download button at the top of a script or storyboard page (**Download PDF**), or of a video's review page
-(**Download video**). Each PDF asks for replies by row or scene number. The user puts the feedback that comes back on
-the same page, usually pasted into **Anything else?**, which asks for changes just as a note does, and saves it, so it
-reaches you the usual way.
-
-- If the user asks you for a PDF, run `node PLUGIN/scripts/studio.mjs pdf /videos/<project>/script/v<N>/` (or
-  `…/storyboard/v<N>/`). It saves the PDF in that version's folder and prints its path: give it as a link. For a
-  video under review, give its file (`video` in its `review.json`).
-- If they paste or attach outside feedback in the chat instead, go straight on: treat it as that version's review
-  (changes, unless they say it's approved) and say where each point applies (row, scene or moment). The page won't
-  show a saved review, so say in the next version's `changes` that the feedback came from outside the studio.
-
-## The HyperFrames app
-
-The user can open any video in HyperFrames' own app (`HF preview`) to look at it and edit it on its timeline.
-- **Their edits are kept.** Opening the app re-saves `index.html` (it adds `data-hf-id` attributes). Re-read the file
-  before editing, run `HF catch-up` after they've edited, check `HF history`, and bracket each round of your edits with
-  `HF history begin --who claude --label "…"` and `HF history end`, so the user's own edits are never overwritten.
-  In build-script projects a rebuild overwrites app edits: carry them into `src/`.
-- **Talk before changing.** A message that names a change gets the change. A note on the built film ("the intro
-  feels jolty") gets its cause found, the measurable thing changed, and a line on what moved. A question that names no
-  change gets an answer and no edit; "don't change anything" or "just thinking" gets no edit at all, with any fix
-  offered in words; an idea with no concrete change gets two or three options, one recommended, before anything is
-  touched.
-- **A timeline that reads** is the build skill's (one kind of thing per track, one caption track).
-- The app draws two safe boxes, action-safe (90% of the frame) and title-safe (80%); Video Studio's own margins are in
-  `PLUGIN/guides/numbers.md`, "Safe areas".
-
 ## Where things come from
 
 By default, everything is made on this Mac from the user's own material: their voiceover, footage, logos and music,
@@ -249,26 +219,11 @@ Then:
 `sheets.mjs <master> --deliver` and `captions.mjs <words.json> [--offset <seconds>]` (in `PLUGIN/scripts/tools/`)
 make those files by themselves, for a size or a version made outside `final`.
 
-## Tidying up
+## When the user asks for something else
 
-A finished video still keeps what it needed while it was being made: draft renders, review stills, the storyboard
-versions the approved one replaced, footage previews and its edit history in HyperFrames (up to 2 GB). The delivery
-page and Studio health offer to tidy it up; tidy only when the user asks.
-1. Run `node PLUGIN/scripts/studio.mjs tidy <project>` and show the user what it lists: what goes, what stays and the
-   space it frees. For every finished video at once, `tidy --all`; for the edit history of deleted videos alone,
-   `tidy --deleted`.
-2. Ask before going on (AskUserQuestion, header "Tidy up": "Tidy it up" or "Keep everything"): deleting can't be
-   undone.
-3. On a yes, run it again with `--yes` and say what was freed.
+- **Someone outside the studio** reviews a download (a PDF, the video), or the user pastes feedback that came back:
+  `PLUGIN/guides/studio/sharing.md`.
+- **The user edits in the HyperFrames app,** or asks you to open a video there: `PLUGIN/guides/studio/app.md`.
+- **Tidying up** a finished video, or removing the outside skills an older setup left: `PLUGIN/guides/studio/tidying.md`.
+  Both delete files, so they're done only when the user asks, after showing what goes.
 
-It refuses while you're still working on the video. A video with no final render isn't tidied unless the user asks
-for that video by name, knowing what it removes (`--unfinished`).
-
-## Old outside skills
-
-Studios set up before Video Studio had its own guides also hold HyperFrames' skills and LottieFiles' motion-design
-skill (in `.claude/skills`, `.agents/skills` and `skills-lock.json`). Video Studio's own skills and guides replace
-them, so follow those. Studio health lists them; remove them only when the user asks:
-1. Run `node PLUGIN/scripts/studio.mjs skills` and show the user what it lists.
-2. Ask before going on (AskUserQuestion, header "Old skills": "Remove them" or "Keep them"): removing can't be undone.
-3. On a yes, run it again with `--remove --yes` and say what was removed. Nothing else in the studio is touched.

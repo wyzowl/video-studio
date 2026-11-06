@@ -64,7 +64,9 @@ command, `node PLUGIN/scripts/tools/sheets.mjs <draft.mp4> docs/review/r<n>` mak
 ## Scores (1–10)
 
 Each score is judged against its standard in the guides: what good looks like, what lowers it, and what each score
-means. Read the standard before scoring it; the table only points to it. Judge the film as agency-grade work
+means. The review's card (`PLUGIN/guides/cards/review.md`, read once a session) has each standard's checklist and
+scale: score from it, and open the full standard when a score sits on the line (a 7 or an 8), or to find a fault's
+fix. Judge the film as agency-grade work
 (`PLUGIN/guides/README.md`, "Agency-grade"): one that only avoids faults, with plain frames and a still world, isn't
 an 8. A score judges what the checks can't: a film whose checks are clear can still read slowly, move without
 weight or tell its story badly.

@@ -21,7 +21,7 @@ Two ways to build the picture, both on the same contract:
   length, and a setter on the clock calls `render`, so every seek, in any order, draws exactly that frame.
 - **Scenes as files** (sub-compositions). Each scene, and each library block, is its own file mounted at its time in
   `index.html`, with its own paused timeline. HyperFrames seeks each one by itself. A long animated film is built this
-  way, its scenes at the same time (the build skill's "A long film"), each scene drawing itself with a clock of its
+  way, its scenes at the same time (`long-film.md`), each scene drawing itself with a clock of its
   own and anything that carries across scenes coming from the film's shared code ("Scene files", below).
 
 ```html

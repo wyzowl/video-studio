@@ -38,8 +38,8 @@ jargon.
    ("Where should your studio live?"), offering `~/Wyzowl Video Studio` (recommended) and, if the current folder is
    empty, "This folder". "Other" lets them type a path. If the folder is already a studio (it has `studio.json`),
    say so and offer to check and update it instead of starting again. If the check lists old outside skills in it
-   (from an older setup), say that Video Studio's own guides replace them and offer to remove them (production skill,
-   "Old outside skills"); remove them only on a yes.
+   (from an older setup), say that Video Studio's own guides replace them and offer to remove them
+   (`${CLAUDE_PLUGIN_ROOT}/guides/studio/tidying.md`, "Old outside skills"); remove them only on a yes.
 4. **Missing tools**, in this order, only for what the check marked "no":
    - **Homebrew:** you can't install it for them, because its installer asks for their password. Give them the one
      install command from https://brew.sh to paste into the Terminal app, wait until they say it's done, then re-run

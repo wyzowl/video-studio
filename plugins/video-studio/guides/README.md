@@ -2,10 +2,12 @@
 
 How Video Studio makes a film: one subject to a guide, written once. The skills (production, script, storyboard,
 build, review, brand-kit) say what to do and when; these guides say how, and the review scores against the standards
-here. Each stage skill lists the guides it reads first; beyond those, read what the job in hand needs.
+here. Each stage reads its card first (`cards/`: the essentials of its guides on a page, and when to open each in
+full); beyond that, read what the job in hand needs.
 
 | Subject | Start at |
 |---|---|
+| Each stage's card: the script, storyboard, build and review guides' essentials | `cards/` |
 | How a video's files are built for HyperFrames 0.9.16 | `format.md` |
 | The HyperFrames commands Video Studio uses | `cli.md` |
 | Video Studio's numbers: pace, reading time, sizes, safe areas, loudness (the checks read them from `rules.json`) | `numbers.md` |
@@ -15,7 +17,9 @@ here. Each stage skill lists the guides it reads first; beyond those, read what 
 | Story: the message, hooks, words, beats, post words, types of video | `story/` |
 | Captions | `captions/` |
 | Sound: mixing, sound effects, music, sync | `audio/` |
-| Footage: editing, cut-outs, grading, cards over footage | `footage/` |
+| A long film, built a scene per file by helpers at the same time | `long-film.md` |
+| Footage: editing, its storyboard and build, cut-outs, grading, cards over footage | `footage/` |
+| The studio: sharing outside it, the user in the HyperFrames app, tidying up | `studio/` |
 | The library, and HyperFrames' registry | `library.md` |
 | Bringing work in from Figma or Remotion | `imports/` |
 

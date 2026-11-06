@@ -3,8 +3,10 @@ Wyzowl Video Studio: notices for the guides
 The guides in this folder are Video Studio's own, written in its own words. Parts of them were written from the
 sources below: their know-how was read, rewritten, trimmed to what works with HyperFrames 0.9.16 and merged with
 Video Studio's own guidance. No source file is copied as it is. Each guide ends with a "Sources" line naming what it
-came from and saying that it was changed. The parts that came from these sources keep their sources' licences, which
-are reproduced below; the rest of Video Studio is under its own licence (LICENSE, one folder up).
+came from and saying that it was changed. The stages' cards (cards/script.md, cards/storyboard.md, cards/build.md and
+cards/review.md) sum up the guides each names, so each carries the sources of those guides. The parts that came from
+these sources keep their sources' licences, which are reproduced below; the rest of Video Studio is under its own
+licence (LICENSE, one folder up).
 
 Sources
 =======

@@ -449,7 +449,7 @@ async function hook() {
     `Sound effects: SFX Kit ${SFX_KIT.version}${kitInstalled() ? ` in ${KIT_DIR} (scripts/tools/sfx.mjs)` : ", downloading (below)"}.`,
     `HyperFrames for new videos: ${HYPERFRAMES_VERSION}. Brands: ${brands.map((b) => b.slug).join(", ") || "none"}. Videos: ${videos.length} (${open.length} in progress${open[0] ? `; latest: ${open[0].slug}, ${open[0].status.label.toLowerCase()}` : ""}).`,
     "For any video work here, follow the video-studio production skill (it brings in the script, storyboard, build, review and brand-kit skills, and the guides in the plugin's guides/ folder). New videos: /video-studio:new-video. New brands: /video-studio:new-brand. Pages: /video-studio:dashboard.",
-    `To tidy up a finished video, use \`node "${SELF}" tidy <video>\` (production skill, "Tidying up"): show the user what it lists and ask before \`--yes\`. Never delete a video's files any other way.`,
+    `To tidy up a finished video, use \`node "${SELF}" tidy <video>\` (the plugin's guides/studio/tidying.md): show the user what it lists and ask before \`--yes\`. Never delete a video's files any other way.`,
     warn.length ? `Setup problems: ${warn.join("; ")}. Suggest /video-studio:setup before making videos; the Studio health page (/health) shows what's missing.` : "",
     outside.length
       ? `This studio still has ${outside.length} outside skills from an older setup (${outside.slice(0, 3).join(", ")}…): Video Studio's own skills and guides replace them, so follow those. Studio health offers to remove them; only with the user's OK (\`node "${SELF}" skills\`).`
