@@ -121,7 +121,8 @@ the footage, and each scene has a rough cut the page plays. Follow `PLUGIN/guide
 ## When the review comes in
 
 The wait finishes when the user saves a finished review (or they tell you they've saved). That save is their
-go-ahead: carry on without asking them to confirm. Read `feedback.json`. A scene's feedback is its `note`, its
+go-ahead: carry on without asking them to confirm. The wait's output is the review: each scene with feedback, its
+note and its points, and the general notes (`feedback.json` holds the same). A scene's feedback is its `note`, its
 `points`, or both: each point is a note on one of its frames (`frame`, `text`, a `box` or an `arrow` in fractions of the
 frame, x and y from its top-left, and `picture`, the frame with their mark drawn on it, in the version's `points/`
 folder). Look at every point's picture (Read tool) before changing that frame: it shows exactly what they mean.

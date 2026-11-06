@@ -41,8 +41,11 @@ touches.
 
 `studio.mjs frames <video>` to start a film from its approved storyboard; `HF lint` while writing;
 `studio.mjs check <video>` once a pass is done (it runs `HF check` with the video's settings;
-a must fix stops the render; a should fix is fixed or kept, `--keep S2 "<why>"`); `HF snapshot --at <times> --describe
-false` for stills of what changed; `studio.mjs draft <video>` for the review's draft and sheets. HyperFrames always
+a must fix stops the render; a should fix is fixed or kept, `--keep S2 "<why>"`); `studio.mjs stills <video> --at
+<times>` for stills of what changed, on one sheet; `studio.mjs words <video>` for the spoken words in the film's time;
+`studio.mjs move <video> <what> --to|--by|--start|--end|--duration` for a timing change (an item, a clip, the voice
+or a scene's cut, with its settings, cues and headings; `--code` for a scene's own code times);
+`studio.mjs draft <video>` for the review's draft and sheets. HyperFrames always
 runs with its version and its two switches, and never its cloud, publishing or sign-in. Open `../cli.md` for any other
 command (capture, measure, keyframes, beats, audio, transcribe, the app's history).
 
@@ -76,12 +79,15 @@ command (capture, measure, keyframes, beats, audio, transcribe, the app's histor
 ## The sound (`../audio/sfx.md`, `../audio/mixing.md`, `../audio/music.md`)
 
 - **Effects from SFX Kit,** made with the video, as much as the brief calls for, each with a reason: found with
-  `sfx.mjs find`, placed by the data from the cue list (`assets/audio/sfx-cues.json`), built with `sfx.mjs build`.
-  Open `../audio/sfx.md` before writing the cue list: its rules on the voice, levels, layering and variety.
-- **The mix:** about −14 LUFS, the voice clearly on top, music at least 10 dB under it while it speaks, the effects
-  about 2.5 dB under the music; the stems levelled with `level.mjs` to −1.8 dBTP or lower before rendering, the render
-  −1 dBTP at most. Open `../audio/mixing.md` to level, duck or carve.
-- **Music:** the user's track, or a bed from the score kit, proposed and never added silently (`../audio/music.md`).
+  `sfx.mjs find`, placed by the data from the cue list (`assets/audio/sfx-cues.json`, each cue `for` the item, clip
+  or scene it belongs to), built with `sfx.mjs build`. Open `../audio/sfx.md` before writing the cue list: its rules on
+  the voice, levels, layering and variety.
+- **The mix:** about −14 LUFS, the voice clearly on top, music at least 10 dB under it while it speaks (the duck:
+  `studio.mjs words <video> --duck`), the effects about 2.5 dB under the music; the stems levelled with `level.mjs` to
+  −1.8 dBTP or lower before rendering, the render −1 dBTP at most. Open `../audio/mixing.md` to level, duck or carve.
+- **Music:** the user's track, or a bed from the score kit, proposed and never added silently (`../audio/music.md`). A
+  score-kit bed is settings: `tools/score.json`, played by `node tools/score-kit/play.mjs`; code only for an
+  instrument the kit lacks.
 
 ## The numbers (`../numbers.md`)
 

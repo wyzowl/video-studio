@@ -24,6 +24,15 @@ version). Every new project starts on it.
 
 ## The loop
 
+A film built from its storyboard starts with `node PLUGIN/scripts/studio.mjs frames <video>`: each scene's approved
+frames as its layout in `index.html` (their styles, drawings and words, with the film's prefix on their classes and
+ids; what the frames name with `data-el`, one element), each library item's still swapped for the live item with the
+storyboard's settings from `items.json`, from the time its frames show it, the storyboard's `frames.js` loaded as the
+film's code, and a clock with a section per scene, each noting the frames' times and what each frame changes. The
+build then adds the motion, and never draws a scene again (build skill, "An animated video"). It starts a film only:
+a built `index.html` stays as it is (`--force` replaces it, keeping the old one in `docs/`; `--version <n>` takes
+another storyboard version).
+
 1. `node PLUGIN/scripts/studio.mjs map <video>` to see what an existing project holds: each file's sections by scene,
    with their lines, the clips and library items with their times, and the sound cues, instead of opening every file
    (`HF timeline --json` gives the clips as HyperFrames reads them).
@@ -97,7 +106,7 @@ one image to read (past 1568 px, the rest go on `stills-2.png`). Two of a wide f
 (`HYPERFRAMES_SKIP_SKILLS=1` stops init installing HyperFrames' own skills). `--resolution portrait` (1080×1920) or
 `square` (1080×1080); for 4:5 and other sizes, set the root's `data-width` and `data-height` afterwards. `--tailwind`
 sets up Tailwind (`format.md`). Video Studio doesn't start from HyperFrames' examples: the brand kit and the library
-give a video its look.
+give a video its look. A film built from a storyboard then starts from its frames (`studio.mjs frames`, "The loop").
 
 ## capture
 

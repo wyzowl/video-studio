@@ -46,9 +46,10 @@ each in full), then other guides as the job needs.
    it first ("Footage videos" below) and write the script from its takes.
 3. **Voiceover and timing.** One master clock per video:
    - **Recorded voiceover** (`inputs/vo.wav`): it's the clock. Never re-time or edit it. Get word times with
-     `HF transcribe inputs/vo.wav --engine parakeet`; correct misheard words against the script; run
-     `node PLUGIN/scripts/tools/vo-check.mjs inputs/vo.wav <transcript>` and fix drifted words; check key cue words by
-     ear; save `inputs/transcript_verified.json`.
+     `HF transcribe inputs/vo.wav --engine parakeet --json`. Once the script is approved,
+     `node PLUGIN/scripts/studio.mjs words <project> --correct` writes `inputs/transcript_verified.json`, the approved
+     script's words on the times heard, and lists what it corrected and what to check. Fix any word it flags as
+     drifted in that file, and check key cue words by ear.
    - **A voiceover to come** (`voiceover: supplied` in the brief): once the script is approved, ask the user to have the
      approved voiceover read (the copy button at the top of the script page, **Copy the voiceover**, gives them its
      words) and to put the file in `inputs/` (give the full path). Wait for it. Then it's the recorded voiceover,
@@ -56,7 +57,9 @@ each in full), then other guides as the job needs.
    - **No voiceover:** a beat grid is the clock. `TEMPO` and a `PRE` lead-in, with beat *b* at
      `PRE + b × 60 / TEMPO`. Write every cue in beats, so re-timing is one change.
    - **Footage** (`type: footage`): the cut's own speech is the clock. Each kept range plays at its own pace, and
-     everything else is timed to the scan's word times, moved to where each range sits in the cut.
+     everything else is timed to the scan's word times, moved to where each range sits in the cut. Once the cut is
+     built, `studio.mjs words <project>` lists its words in the film's time (`--cut` writes `docs/words.json`; `draft`
+     and `final` keep it up to date).
 4. **Storyboard.** The storyboard agent makes it ("Stage agents", below), following the video-studio:storyboard
    skill. Build nothing until every scene is approved.
 5. **Build.** The build agent follows the video-studio:build skill: it turns the approved storyboard into the video
@@ -148,7 +151,9 @@ Whenever the user's feedback or approval is needed (a brand kit, a script, a sto
 show them its page. Writing a page's file (`brand.json`, `script.json`, `storyboard.json` or `review.json`) with your
 Write or Edit tool publishes it, and the studio tells you its address. Otherwise (a page an agent made, say) run
 `node PLUGIN/scripts/studio.mjs show <path>`, which prints it (it starts the page server; only one studio's server
-runs at a time). Video Studio's band, above the message box, opens the page beside the chat by itself, once, so:
+runs at a time). Either way the studio checks the page's data file first and says what's wrong: fix that and show it
+again (there's no need to check the file yourself). Video Studio's band, above the message box, opens the page beside
+the chat by itself, once, so:
 1. Say in a line what's ready, with a labelled link to it, such as `[Open storyboard v2 ↗](address)`, never a bare
    address: the link opens the page in their browser too.
 2. For a script, storyboard or video, wait for the review in the background: `studio.mjs wait <path>` with
@@ -159,9 +164,10 @@ Where the band isn't running, the studio gives you steps instead of an address (
 time): open the page in your Browser pane, show its card and the link, as they say, and never navigate away from a
 page with feedback the user hasn't saved.
 
-When the wait finishes, you're woken with the review. Saving a review is the user's go-ahead (each page saves a
-decision: a script or video is approved unless there are notes, and so is each storyboard scene unless it has a
-note), so carry on straight away without asking them to confirm. If they tell you they've saved ("I've saved my
+When the wait finishes, you're woken with the review: its output is the decision and every note in the user's words,
+with the pictures to look at. Go on from it (`feedback.json` holds the same). Saving a review is the user's go-ahead
+(each page saves a decision: a script or video is approved unless there are notes, and so is each storyboard scene
+unless it has a note), so carry on straight away without asking them to confirm. If they tell you they've saved ("I've saved my
 notes on the video", "Video approved") before the wait finishes, carry on the same way; act on each review once.
 
 Open pages refresh themselves when their files change, keeping anything the user hasn't saved, and an older
@@ -249,8 +255,8 @@ on the overview and prints the delivery page's address:
 - the `_web.mp4` copy (H.264, CRF 19, faststart), `poster.png`, `thumbnail.jpg` (1280 px, for YouTube and link
   previews) and `contact.png`, from `docs/beats.json`'s poster and contact times;
 - the captions, when the video has speech: `renders/<project>.srt` and `.vtt`, from the verified voiceover, moved to
-  where it starts in the video. For a footage video, write the cut's word times (each word moved to where its range
-  sits in the cut) to `docs/words.json` before `final`;
+  where it starts in the video. For a footage video, `final` writes the cut's words to `docs/words.json` from the cut
+  itself;
 - the checks on the master, and the checks' last report in `docs/checks/`.
 
 Then:
@@ -260,8 +266,8 @@ Then:
 - finish `docs/review_log.md` (review skill), with its motion notes and what you would improve next;
 - show the delivery page ("Showing a page"), and say what you would improve next.
 
-`sheets.mjs <master> --deliver` and `captions.mjs <words.json> [--offset <seconds>]` (in `PLUGIN/scripts/tools/`)
-make those files by themselves, for a size or a version made outside `final`.
+`sheets.mjs <master> --deliver` (in `PLUGIN/scripts/tools/`) and `studio.mjs words <project> --captions` make those
+files by themselves, for a size or a version made outside `final`.
 
 ## When the user asks for something else
 

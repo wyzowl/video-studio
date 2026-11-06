@@ -67,8 +67,9 @@ notes, and its frames as they look on its `frames/contact.png`), and the verifie
    references").
 7. **Look before rendering:** `node PLUGIN/scripts/studio.mjs check <project>` shows no must fix
    (`PLUGIN/guides/cli.md`, "lint and check"), and each should fix is fixed or kept with why (`--keep S2 "<why>"`);
-   stills of each scene's key moment and every transition with `HF snapshot --at <times>
-   --describe false`, compared with the storyboard's frames, before the first render. Then the review skill takes
+   stills of each scene's key moment and every transition on one sheet
+   (`node PLUGIN/scripts/studio.mjs stills <project> --at <times>`), compared with the storyboard's frames, before the
+   first render. Then the review skill takes
    over: the review agent's rounds, after the build agent's report.
 
 ## A long film
@@ -106,7 +107,8 @@ asking. To build one in, whether it was suggested or the user named it:
    file, a clip for `index.html` with the brand's settings filled in, the fonts it needs and the words it takes.
 2. Copy the block into the project's `compositions/`, add the clip where it plays, and set its words and options in
    `data-variable-values`; its `duration` matches the clip's `data-duration`. Time cues (ticks, current points,
-   highlights) to the voiceover's words.
+   highlights) to the voiceover's words: `node PLUGIN/scripts/studio.mjs words <project>` lists them in the film's
+   time.
 3. Media: whenever an item takes a file (a recording, a screenshot, footage: L01, L07, L15, T01, the devices I01 and
    I04–I09, and any item `studio.mjs library` lists with a file), write each file as the `src` of its element in the
    copy, and remove the `<video>` and `<audio>` elements you don't use (keep its `<img>` elements: its script may read
@@ -160,11 +162,14 @@ registry is a second source, used with care (`PLUGIN/guides/library.md`).
 
 ## Sound
 
-- **Music:** the user's track if there is one; otherwise propose a music bed (a score made with the score kit), and
-  don't add one silently (`PLUGIN/guides/audio/music.md`).
+- **Music:** the user's track if there is one; otherwise propose a music bed, and don't add one silently
+  (`PLUGIN/guides/audio/music.md`). A bed from the score kit is settings: `tools/score.json`, played by
+  `node tools/score-kit/play.mjs`, with code only for an instrument the kit lacks.
 - **Sound effects** come from SFX Kit and are made with the video, as much as the brief calls for: the user first
-  hears them in the video and asks for changes there (`PLUGIN/guides/audio/sfx.md`).
-- **The mix:** level the stems, make room for the voice, and measure the render (`PLUGIN/guides/audio/mixing.md`).
+  hears them in the video and asks for changes there (`PLUGIN/guides/audio/sfx.md`). Give each cue `for` (the item's
+  code, a clip's id or the scene it belongs to), so `studio.mjs move` takes it along.
+- **The mix:** level the stems, make room for the voice (the music's duck: `studio.mjs words <project> --duck`), and
+  measure the render (`PLUGIN/guides/audio/mixing.md`).
 - **Captions** burnt in when the brief asks, or for a feed that plays muted (`PLUGIN/guides/captions/`); the `.srt`
   and `.vtt` files come with the deliverables either way.
 
@@ -174,7 +179,10 @@ The review's fixes and the user's notes come back here. Change what each one ask
 something the user approved (a scene's look, a word of the script) is said on the next review page. Find what a change
 touches with `node PLUGIN/scripts/studio.mjs map <project>` (each file's sections with their lines, the clips and
 library items with their times, the sound cues), read only those lines (Read with offset and limit), and edit them
-rather than rewriting a file; keep a section's heading true when its times move. Then the review
+rather than rewriting a file; keep a section's heading true when its times move. A timing change (an item's start or
+length, a scene's cut, the voice's start) is `studio.mjs move <project> <what> --to|--by|--start|--end|--duration`:
+it takes the item's settings, its cues and the headings with it, and `--code` moves a scene's own code times too.
+In a one-clock film, keep each scene's range in its heading and in the clock's scene table. Then the review
 loop's next round checks the changes: `studio.mjs draft <project> --at <each changed stretch>` runs the checks, renders
 each stretch and makes its before-and-after sheet (review skill, "The loop"). The review agent makes both (production
 skill, "Stage agents").

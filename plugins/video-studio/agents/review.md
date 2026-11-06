@@ -63,12 +63,13 @@ find out costs a lot, and is rarely needed.
    `docs/review_log.md`, each note with how it was applied.
 
 **The last tweaks, after an approval:** apply each note the same way, as a small last tweak; check the film
-(`studio.mjs check <project>`) and look at each changed moment in stills (`HF snapshot --at <times> --describe
-false`). No new version and no draft: the final video comes next, from the conversation. Add the tweaks to
-`docs/review_log.md`.
+(`studio.mjs check <project>`) and look at each changed moment in stills on one sheet
+(`studio.mjs stills <project> --at <times>`). No new version and no draft: the final video comes next, from the
+conversation. Add the tweaks to `docs/review_log.md`.
 
-**The review page's file:** write `review/v<N>/review.json` with the shell (a heredoc), and check it parses with
-`node`. Writing a page's file with your own Write or Edit tools makes the studio announce the page to you, and
+**The review page's file:** write `review/v<N>/review.json` with the shell (a heredoc), and check it with
+`node PLUGIN/scripts/studio.mjs show /videos/<project>/review/v<N>/ --check` (it checks the file and shows nothing).
+Writing a page's file with your own Write or Edit tools makes the studio announce the page to you, and
 showing it is the conversation's: don't show a page, open one or wait for a review (no `studio.mjs show` or `wait`,
 no browser). Keep anything you make only to look at (a test still, a side-by-side) in `docs/review/`, never at the
 studio's top level.

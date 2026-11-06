@@ -138,8 +138,9 @@ graphs), each with a code and each dressed in the video's brand at the video's s
 ## When the review comes in
 
 The wait finishes when the user saves a decision (or they tell you they've saved). That save is their go-ahead: carry
-on without asking them to confirm. Read `feedback.json`: `decision` (`approved` or `changes`), `notes` (each with
-`row`, the number the page showed, `column` and `text`) and `general`.
+on without asking them to confirm. The wait's output is the review, in the user's words: the decision (`approved` or
+`changes`), each note with its row (the number the page showed) and column, and the general comment. `feedback.json`
+holds the same (`decision`, `notes` with `row`, `column` and `text`, and `general`); never write it.
 
 - **Approved:** carry any notes into the next stages as small last tweaks, and say how you applied them. Then go on:
   for a voiceover to come, ask the user for the file and wait for it (production skill, stage 3); then the

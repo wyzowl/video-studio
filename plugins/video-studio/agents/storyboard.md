@@ -44,8 +44,9 @@ Read these by their paths (they're this plugin's own), with the Read tool.
    `inputs/transcript_verified.json`), time it first, on the `voice` step (production skill, stage 3). Then "Make
    version 1", steps 1–5. **A later version:** "When the review comes in", steps 0–4. Either way, the last step
    writes `storyboard.json`, as step 3 here says.
-3. **Write `storyboard.json` with the shell** (a heredoc, `cat > storyboard.json <<'EOF'`), and check it parses
-   (`node -e 'JSON.parse(require("fs").readFileSync("storyboard.json", "utf8"))'`). Writing a page's file with your
+3. **Write `storyboard.json` with the shell** (a heredoc, `cat > storyboard.json <<'EOF'`), and check it with
+   `node PLUGIN/scripts/studio.mjs show /videos/<project>/storyboard/v<N>/ --check` (it checks the file, its frames
+   and rough cuts, and shows nothing). Writing a page's file with your
    own Write or Edit tools makes the studio announce the page to you, and showing it is the conversation's.
 4. **Leave the page to the conversation:** don't show it, open it or wait for its review (no `studio.mjs show` or
    `wait`, no browser).

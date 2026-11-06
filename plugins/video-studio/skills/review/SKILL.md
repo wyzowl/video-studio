@@ -144,8 +144,10 @@ conversation shows the page and reads the review.
    improve next, from the agent's report. Flag every departure from the brief or the approved storyboard (the build's
    `docs/decisions.md` lists its changes to the scene plans; the page itself lists the checks' findings kept on
    purpose, with why). Then wait for the review in the background and end your turn.
-3. When the review comes in (the wait finishes, or the user says they've saved), read `feedback.json` beside
-   `review.json` (never write it yourself): `decision` (`approved` or `changes`: it's approved unless the user adds
+3. When the review comes in (the wait finishes, or the user says they've saved), the wait's output is the review: the
+   decision, each note by its time in the user's words with its picture (look at every picture first, Read tool), and
+   the general comment. `feedback.json` beside `review.json` holds the same (never write it yourself): `decision`
+   (`approved` or `changes`: it's approved unless the user adds
    notes; a save from before the page had only these two can say `undecided`), `notes` (each with `time` in seconds
    and `text`; a note pointed at the picture also has `box` `{ x, y, w, h }` or `arrow` `{ from: [x, y], to: [x, y] }`,
    fractions of the picture from its top-left, and `picture`, the frame at that time with the mark drawn on it, such as

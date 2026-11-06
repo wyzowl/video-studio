@@ -498,6 +498,8 @@ async function hook() {
     page is already on screen (it refreshes itself) or Claude was told about it in the last few minutes. */
 async function pageReady() {
   const input = JSON.parse(readFileSync(0, "utf8") || "{}");
+  // a stage agent's write: showing the page is the conversation's, once the agent reports
+  if (input.agent_id) return;
   const given = input.tool_input?.file_path;
   if (typeof given !== "string" || !given) return;
   const file = resolve(input.cwd || process.cwd(), given);
