@@ -1,28 +1,24 @@
-// <Film> — the music bed, made in code. The sound effects come from SFX Kit (`sfx.mjs build`), never from here.
+// <Film> — the music bed: its settings (tools/score.json) played with the kit's instruments and this film's own. Only
+// for a film that needs a sound the kit can't make; otherwise `node tools/score-kit/play.mjs` plays the settings alone.
 //   node tools/score.mjs   (from the project root)  →  assets/audio/music_raw.wav
 //   node tools/score-kit/level.mjs --stem music=assets/audio/music_raw.wav:limit --stem sfx=assets/audio/sfx_raw.wav
-// Brief: <genre, key (C major or A minor, to sit with SFX Kit's tuned sounds), tempo/feel, instrumentation, what the
-// music does at each chapter>. Cue times mirror index.html.
-// Everything below the plumbing import is this film's own: harmony, instruments, cue list and master chain.
-import { createScore, TAU, mtof, clamp, att, sawBL, panLR } from "./score-kit/engine.mjs";
+// The sound effects come from SFX Kit (`sfx.mjs build`), never from here.
+import { readFileSync } from "node:fs";
+import { TAU, mtof, att } from "./score-kit/engine.mjs";
+import { playScore } from "./score-kit/play.mjs";
 
-const S = createScore({ dur: 30, seed: 1 });
-const { SR } = S;
-const BPM = 120, BEAT = 60 / BPM, b = (beats) => beats * BEAT;
-const MUSIC = S.bus();
+// ═══════════════ this film's own instruments, named in tools/score.json as the kit's are ═══════════════
+// role: keys, pad, bass, melody or beat (what it plays by default); part: its usual part; gain: one note's level;
+// rev and dly: its reverb and echo sends. note() places one note: o has gain, pan, rev, dly, bright (-1..1) and
+// decay (a multiplier), from the section's feel.
+const instruments = {
+  "glass-keys": {
+    role: "keys", part: "arp", gain: 0.05, rev: 0.6, dly: 0.15,
+    note(S, bus, t0, len, midi, o) {
+      const f = mtof(midi), decay = 1.4 * o.decay;
+      S.voice(bus, t0, Math.max(len, decay * 3), (tt) => att(tt, 0.02) * Math.exp(-tt / decay) * (Math.sin(TAU * f * tt) + 0.2 * Math.sin(TAU * 3 * f * tt)), o);
+    },
+  },
+};
 
-// ═══════════════ instruments (design these for this film) ═══════════════
-function pad(t0, len, midi, { gain = 0.05, pan = 0 } = {}) {
-  const fr = mtof(midi), flt = S.svf(), ph = [S.rnd(), S.rnd()];
-  S.voice(MUSIC, t0, len, (tt) => {
-    let x = 0;
-    for (let j = 0; j < 2; j++) { const f = fr * (j ? 1.003 : 0.997); ph[j] = (ph[j] + f / SR) % 1; x += sawBL(ph[j], f / SR); }
-    return flt.lp(x, 1200, 0.6) * att(tt, 1.2) * (tt > len - 1 ? (len - tt) : 1);
-  }, { gain, pan, rev: 0.6 });
-}
-
-// ═══════════════ arrangement / cue list (mirrors index.html) ═══════════════
-pad(0, 8, 50); pad(0, 8, 57, { pan: 0.4 });
-
-// ═══════════════ master ═══════════════
-S.finish(MUSIC, "assets/audio/music_raw.wav", { rev: 2.2, hpHz: 40, fadeOut: 1.6 });
+playScore(JSON.parse(readFileSync("tools/score.json", "utf8")), { instruments });

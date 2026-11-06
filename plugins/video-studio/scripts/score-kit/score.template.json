@@ -1,0 +1,21 @@
+{
+  "length": 30,
+  "tempo": 96,
+  "key": "C major",
+  "downbeat": 0,
+  "seed": 1,
+  "chords": "C Am F G",
+  "instruments": {
+    "keys": { "sound": "soft-keys" },
+    "pad": { "sound": "felt-pad" },
+    "bass": { "sound": "round-bass" }
+  },
+  "sections": [
+    { "at": 0, "name": "the hook", "feel": "sparse" },
+    { "at": 5, "name": "the idea", "feel": "steady" },
+    { "at": 20, "name": "the payoff", "feel": "lift" },
+    { "at": 25, "name": "the ask", "feel": "resolve", "chords": "C" }
+  ],
+  "hits": [{ "at": 25, "play": "roll" }],
+  "mix": { "reverb": 1.8, "echo": 0.22, "delay": "3/16", "fadeOut": 1.6 }
+}

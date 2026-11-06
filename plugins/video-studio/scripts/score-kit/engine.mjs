@@ -160,6 +160,7 @@ export function createScore({ dur, sr = 48000, seed = 1 }) {
       fadeIn = 0, fadeOut = 0, // seconds; cos² fade-out
       limitDb = null, // look-ahead limiter ceiling, null = off
       shape = null, // optional (t, i) => gain, for film-specific automation (gates, distance, swells)
+      quiet = false, // no line printed (the caller says what it made)
     } = {}) {
       if (dly && delay) {
         const [dl, dr] = S.pingpong(B.DL, B.DR, delay);
@@ -180,7 +181,7 @@ export function createScore({ dur, sr = 48000, seed = 1 }) {
       }
       if (limitDb !== null) S.limit(B.L, B.R, { ceilDb: limitDb });
       const peak = S.writeWav(path, B.L, B.R);
-      console.log(`${path} · ${DUR}s · peak ${peak.toFixed(3)} (${(20 * Math.log10(peak || 1e-9)).toFixed(1)} dBFS)`);
+      if (!quiet) console.log(`${path} · ${DUR}s · peak ${peak.toFixed(3)} (${(20 * Math.log10(peak || 1e-9)).toFixed(1)} dBFS)`);
       return peak;
     },
 
