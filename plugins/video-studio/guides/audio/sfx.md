@@ -40,8 +40,9 @@ The studio's sound effects come from SFX Kit, which setup downloads to `~/.wyzow
 1. Find the sounds: `node PLUGIN/scripts/tools/sfx.mjs find <words> [--seconds <the moment's length>]`, or read the
    kit's `catalogue.md`. `sfx.mjs show <id>` gives one sound's full record.
 2. Write the cue list, `assets/audio/sfx-cues.json` (below).
-3. From the video's folder, `node PLUGIN/scripts/tools/sfx.mjs build` writes `assets/audio/sfx_raw.wav` and lists each
-   sound's start and gain. Read its notes and "Worth a look", and change what needs changing.
+3. From the video's folder, `node PLUGIN/scripts/tools/sfx.mjs build` writes `assets/audio/sfx_raw.wav` and prints
+   the track, its level, and its notes and "Worth a look" (`--verbose` lists each sound's start and gain too). Change
+   what needs changing.
 4. Level it with the other stems (`mixing.md`): `--stem sfx=assets/audio/sfx_raw.wav:limit` when its transients carry
    the peaks. It plays as one `<audio>` element, like the music.
 

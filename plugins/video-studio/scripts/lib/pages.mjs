@@ -300,10 +300,11 @@ const headDecision = (chosen, approve) => `<fieldset class="decide" data-decisio
 
 /** The notes beside a review's content: an earlier version's warning, what changed in this version (closed), the
     notes pinned to the content, the general notes and what saving will do, then how to review (closed). */
-function notesPanel({ earlier = "", changed = null, add = "", empty, general, hint = true, howTo = "", count = 0 }) {
+function notesPanel({ earlier = "", changed = null, kept = "", add = "", empty, general, hint = true, howTo = "", count = 0 }) {
   return `<aside class="notespanel" aria-label="Notes">
   ${earlier}
   ${changed ? `<details class="notespanel_fold"><summary>${esc(changed.title)}</summary><p>${esc(changed.text)}</p></details>` : ""}
+  ${kept}
   <div class="notespanel_head">
     <h2 class="notespanel_title">Notes <span class="notespanel_count" data-count="notes">${count}</span></h2>
   </div>
@@ -1060,21 +1061,23 @@ export function progressState(studio, slug) {
 
 const CHECK_LEVELS = { must: "Must fix", should: "Should fix", note: "Notes" };
 
+const checkWhen = (f) => (f.time == null ? "The film" : `${timecode(f.time, true)}${f.until != null && f.until > f.time ? `–${timecode(f.until, true)}` : ""}`);
+
 /** The newest report of Video Studio's checks (`studio.mjs check`, lib/check.mjs) on a video's overview: what to fix,
-    ranked, each with its time, the element and what to do; the notes folded away. */
+    ranked, each with its time, the element and what to do; the notes, and what Claude kept with why, folded away. */
 function checksSection(root, slug, index) {
   const report = readJSON(join(root, "videos", slug, "docs", "checks", "film.json"));
   if (!Array.isArray(report?.findings)) return "";
   const c = { must: 0, should: 0, note: 0, ...(report.counts || {}) };
-  const when = (f) => (f.time == null ? "The film" : `${timecode(f.time, true)}${f.until != null && f.until > f.time ? `–${timecode(f.until, true)}` : ""}`);
-  const item = (f) => `<li class="checks_item checks_item--${esc(f.level)}">
-  <span class="checks_time">${esc(when(f))}</span>
-  <div class="checks_body"><p>${esc(f.what)}</p>${f.fix ? `<p class="checks_fix">${esc(f.fix)}</p>` : ""}<p class="checks_where">${esc([f.element, f.file, f.source].filter(Boolean).join(" · "))}</p></div>
+  const item = (f) => `<li class="checks_item checks_item--${esc(f.kept ? "note" : f.level)}">
+  <span class="checks_time">${esc(checkWhen(f))}</span>
+  <div class="checks_body"><p>${esc(f.what)}</p>${f.kept ? `<p class="checks_fix">Kept: ${esc(f.kept.why)}</p>` : f.fix ? `<p class="checks_fix">${esc(f.fix)}</p>` : ""}<p class="checks_where">${esc([f.element, f.file, f.source].filter(Boolean).join(" · "))}</p></div>
 </li>`;
   const level = (key) => {
-    const list = report.findings.filter((f) => f.level === key);
+    const list = report.findings.filter((f) => (key === "kept" ? f.kept : f.level === key && !f.kept));
     if (!list.length) return "";
     const ol = `<ol class="checks_list">${list.map(item).join("")}</ol>`;
+    if (key === "kept") return `<details class="checks_more"><summary>${esc(`${list.length} kept on purpose`)}</summary>${ol}</details>`;
     return key === "note" ? `<details class="checks_more"><summary>${esc(plural(list.length, "note"))}</summary>${ol}</details>` : `<div class="checks_level"><h3 class="field-label">${CHECK_LEVELS[key]} · ${list.length}</h3>${ol}</div>`;
   };
   const chip = (key, cls) => `<span class="chip chip--${cls}">${esc(`${c[key]} ${CHECK_LEVELS[key].toLowerCase().replace(/s$/, c[key] === 1 ? "" : "s")}`)}</span>`;
@@ -1087,11 +1090,21 @@ function checksSection(root, slug, index) {
     <div class="checks">
       <div class="checks_head">${chip("must", c.must ? "must" : "plain")}${chip("should", c.should ? "should" : "plain")}${chip("note", "plain")}<span class="checks_when">${esc(what)}</span></div>
       ${clear ? `<p class="muted">Nothing to fix: what the checks measure is in order, so Claude's review judges the rest.</p>` : ""}
-      ${level("must")}${level("should")}${level("note")}
+      ${level("must")}${level("should")}${level("kept")}${level("note")}
       <details class="checks_more"><summary>What ran</summary><ul class="checks_ran">${(report.ran || []).map((r) => `<li><b>${esc(r.name)}</b> ${esc(r.detail)}</li>`).join("")}</ul></details>
     </div>
   </div>
 </section>`;
+}
+
+/** For a video's review page: what Video Studio's checks flagged and Claude kept on purpose, each with why (`studio.mjs
+    check --keep`), from the newest check. */
+function keptFindings(root, slug) {
+  const report = readJSON(join(root, "videos", slug, "docs", "checks", "film.json"));
+  const list = Array.isArray(report?.findings) ? report.findings.filter((f) => f.kept?.why) : [];
+  if (!list.length) return "";
+  const items = list.map((f) => `<li><span class="mono">${esc(checkWhen(f))}</span> ${esc(f.what)} <b>Kept:</b> ${esc(f.kept.why)}</li>`).join("");
+  return `<details class="notespanel_fold"><summary>${esc(`Kept on purpose · ${list.length}`)}</summary><p>Video Studio's checks flagged ${list.length === 1 ? "this" : "these"}, and Claude kept ${list.length === 1 ? "it" : "them"} as ${list.length === 1 ? "it is" : "they are"}, for the reason given.</p><ul>${items}</ul></details>`;
 }
 
 /** A line for a script's stage card: what Video Studio's checks found in it, if they ran on this version. */
@@ -1821,6 +1834,7 @@ ${reviewRoom(
   notesPanel({
     earlier: latest ? "" : earlierNote("video", `/videos/${enc(slug)}/review/v${versions.at(-1)}/`, versions.at(-1)),
     changed: rv.changes ? { title: `What changed in video v${v}`, text: rv.changes } : null,
+    kept: latest ? keptFindings(studio.root, slug) : "",
     add: latest ? `<div class="notespanel_add"><button class="button button--secondary button--medium" type="button" data-add-note${there ? "" : " disabled"}>Add a note at <span class="mono" data-now>00:00.0</span></button></div>` : "",
     empty: latest ? "No notes yet. Pause on a moment, then press “Add a note”, or Box or Arrow on the picture to point at something." : "No notes on this version.",
     general: `<textarea id="n-general" data-general rows="4" placeholder="Music, pace, overall feel"></textarea>`,

@@ -3,7 +3,7 @@
 // against the same numbers the film's checks use (guides/rules.json). The story itself is judged by reading it.
 // Saved as docs/checks/script.json, beside the film's report.
 import { readBrief, readScript, scriptFromFootage, scriptHasVoiceover, scriptRows, scriptVersions } from "./studio.mjs";
-import { frameRow, readRules, saveReport } from "./check.mjs";
+import { frameRow, readRules, saveReport, settle } from "./check.mjs";
 import { join } from "node:path";
 
 const round = (x, n = 1) => Math.round(x * 10 ** n) / 10 ** n;
@@ -111,9 +111,7 @@ export function checkScript(root, slug) {
 
   const order = { must: 0, should: 1, note: 2 };
   findings.sort((a, b) => order[a.level] - order[b.level]);
-  const counts = { must: 0, should: 0, note: 0 };
-  for (const f of findings) counts[f.level]++;
-  const report = {
+  const report = settle({
     version: 1,
     title: `${script.title || slug}, script v${version}`,
     video: slug,
@@ -126,8 +124,7 @@ export function checkScript(root, slug) {
         detail: `${rows.length} rows${length ? `, about ${round(length, 0)} s${footage ? " of takes" : ` at ${S.wordsPerMinute} words a minute`}` : ""}: the hook, words on screen, ${voiced ? "the pace against the brief's length and the longest beat" : "the text on screen"}`,
       },
     ],
-    counts,
     findings,
-  };
+  });
   return { report, path: saveReport(root, slug, "script", report) };
 }

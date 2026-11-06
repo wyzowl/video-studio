@@ -12,7 +12,9 @@ version). Every new project starts on it.
 - A project made on an earlier version keeps it: its `package.json` scripts name it. Run `npm run check` there with
   the same two switches in front, and `studio.mjs render` follows its `render` script.
 - Render through `node PLUGIN/scripts/studio.mjs render -- <HF render's options>`, from the video's folder: it shows
-  the render's progress on the video's overview, and uses the graphics chip on Apple silicon by itself.
+  the render's progress on the video's overview, and uses the graphics chip on Apple silicon by itself. It prints one
+  line, the file as ffprobe reads it and how the render went (below), and keeps HyperFrames' own output in a log beside
+  the file (`<render>.log`; `--verbose` streams it as well).
 - Everything below runs on this Mac. HyperFrames also has commands and options that send a project, its frames or
   its sound to outside services: cloud renders, publishing, sign-in and billing, frame descriptions by an AI service
   (`snapshot --describe`), HeyGen's speech engine (`transcribe --engine heygen`), HeyGen's audio services
@@ -73,12 +75,18 @@ that lands after it's said), the music against the voice and each sound's ending
 face. HyperFrames' findings come as they are, never measured twice: its errors are must fix, its warnings should fix,
 and what it saw at one sample only (an entrance or exit in flight) or lint's advice are notes.
 
-- One ranked report: must fix, should fix and notes, each with its time, the element, its file and what to do,
-  printed and saved as `docs/checks/film.json`; the video's overview shows it. A must fix stops the render (the
-  command exits 1). A should fix is fixed, or kept with its reason in `docs/decisions.md`.
+- One ranked report: must fix, should fix and notes, each with its time, the element, its file and what to do, saved
+  as `docs/checks/film.json`; the video's overview shows it. It prints short: a line of counts, then each must fix
+  and should fix on a line with its id (`M1`, `S1`), each kind's fix once, and the notes as a count (`--notes` lists
+  them). `--changes` prints only what's new since the last check, and what it cleared.
+- A must fix stops the render (the command exits 1). A should fix is fixed, or kept: `studio.mjs check <video> --keep
+  S2 "<why>"` (repeatable, with no new check) writes it and its reason to `docs/checks/kept.json`. The video's review
+  page shows what's kept and why, and later checks fold it away. A must fix that's deliberate is marked in the film
+  instead (`format.md`, "What check flags on purpose").
 - `--render <file.mp4>` adds the rendered file: its loudness and true peak, sounds that stop dead, and a picture
   stuck in the render; on footage, words over the face (`HF measure face`, which downloads its face model once). These
-  read the file alone, so they work on any MP4.
+  read the file alone, so they work on any MP4. When none of the film's files has changed since its last check, a
+  render's check reuses that check's findings and measures only the render, in seconds.
 - `--script` checks the latest script instead (`docs/checks/script.json`): how long the opening takes to land, the
   words each row puts on screen, the pace against the brief's length and the longest beat.
 - The attributes in `format.md` ("What check flags on purpose") quiet Video Studio's checks as they quiet
@@ -207,12 +215,13 @@ samples; `--samples N`), with `--layout strip` for motion in place, `--from` and
 
 One render runs at a time on the Mac: a second waits for the first to finish (`--no-wait` stops it instead).
 
-Read the line under the output path: the capture path, the GPU mode and each stage's time. Where HyperFrames' fast
-capture can't draw something (a CSS `filter` such as a blur, a 3D context), it falls back to screenshot capture,
-spread over several Chrome workers that encode as they go; since 0.8.183 the fallback keeps all its workers, so a
-blur costs little render time. The sound's ceiling is in `audio/mixing.md`. The last lines may suggest editing on in
-HyperFrames' desktop app: that's for the user to choose, not a step. Check the file afterwards: it exists, isn't
-empty, and `ffprobe -v error -show_format -show_streams` gives the root's duration (and fps).
+`studio.mjs render` sums the render up in one line: the file as ffprobe reads it (its length, frame rate, size and
+sound), how long it took, and HyperFrames' line under the output path (the capture path, the GPU mode and each stage's
+time). Check that the length and frame rate are the root's. When a render stops, it prints the lines of the log that
+say why. Where HyperFrames' fast capture can't draw something (a CSS `filter` such as a blur, a 3D context), it falls
+back to screenshot capture, spread over several Chrome workers that encode as they go; since 0.8.183 the fallback
+keeps all its workers, so a blur costs little render time. The sound's ceiling is in `audio/mixing.md`. HyperFrames'
+last lines may suggest editing on in its desktop app: that's for the user to choose, not a step.
 
 ## Comparing
 

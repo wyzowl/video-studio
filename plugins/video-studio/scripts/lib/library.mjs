@@ -148,6 +148,67 @@ export function readItem(file) {
 /** The item's own variables (words and options), without the brand ones. */
 export const contentVariables = (item) => item.variables.filter((v) => !BRAND_VARS.includes(v.id));
 
+// ───────── search ─────────
+
+const STOP = new Set("a an and the of to for in on at by with or is it its this that as into from be are what who how when where one some show shows showing".split(" "));
+// words that mean the same thing in a request ("a figure" finds a stat)
+const ALIKE = [
+  ["figure", "number", "stat", "statistic", "percentage", "percent", "value", "count"],
+  ["chart", "graph", "plot"],
+  ["quote", "testimonial", "review", "said"],
+  ["phone", "mobile", "smartphone"],
+  ["app", "interface", "screen", "ui", "software", "product"],
+  ["compare", "comparison", "versus", "vs", "against"],
+  ["step", "process", "stage", "sequence"],
+  ["list", "checklist", "points", "bullets"],
+  ["person", "presenter", "speaker", "people"],
+  ["word", "words", "text", "headline", "title", "type"],
+  ["money", "price", "cost", "pricing"],
+  ["time", "timeline", "history", "change", "trend", "growth"],
+  ["logo", "brand"],
+  ["call", "cta", "ask", "action", "download", "sign"],
+  ["website", "browser", "web", "site", "page"],
+  ["chat", "message", "messages", "ai"],
+];
+const stem = (w) => w.replace(/(ies)$/, "y").replace(/(ing|ed|es|s)$/, "") || w;
+const wordsOf = (s) =>
+  String(s || "")
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w && !STOP.has(w));
+
+/** The items that best fit what a moment needs ("a figure the presenter quotes"), best first: each scored on its name,
+    summary, use, motion and category, with alike words counted at half. [{ item, score }] */
+export function searchItems(query, { limit = 8, favourites = new Set() } = {}) {
+  const asked = [...new Set(wordsOf(query).map(stem))];
+  if (!asked.length) return [];
+  const alike = new Map();
+  for (const w of asked) for (const group of ALIKE) if (group.map(stem).includes(w)) for (const x of group) if (stem(x) !== w) alike.set(stem(x), w);
+  const fields = (item) => [
+    [wordsOf(`${item.code} ${item.name}`), 3],
+    [wordsOf(item.summary), 2],
+    [wordsOf(item.use), 1.5],
+    [wordsOf(CATEGORIES[item.category]?.title), 1],
+    [wordsOf(item.motion), 0.4],
+  ];
+  const scored = [];
+  for (const item of libraryItems()) {
+    let score = 0;
+    const hit = new Set();
+    for (const [words, weight] of fields(item)) {
+      const stems = new Set(words.map(stem));
+      for (const w of asked) if (stems.has(w)) (score += weight), hit.add(w);
+      for (const [w, of] of alike) if (stems.has(w) && !hit.has(of)) score += weight / 2;
+    }
+    // every word of the request found somewhere counts for more than one found many times
+    score *= 1 + hit.size / asked.length;
+    if (favourites.has(item.code)) score *= 1.15;
+    if (score > 0) scored.push({ item, score });
+  }
+  return scored.sort((a, b) => b.score - a.score || byCode(a.item, b.item)).slice(0, limit);
+}
+
 /** How an item sits in the frame, so items can be layered: "over footage" (transparent, it goes over whatever is
     behind it: widgets, captions and other words over the picture), "full frame" (it fills the frame itself: layouts,
     data and full-screen words, a scene's base) or "between scenes" (transitions). */

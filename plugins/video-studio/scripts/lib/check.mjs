@@ -13,7 +13,7 @@
 //   its loudness, true peak, sounds that stop dead and a stuck picture, and on footage words over the face.
 // (Studio health's checks of the Mac itself are lib/checks.mjs.)
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { openFilm } from "./check-film.mjs";
 import { renderFindings, stemFindings } from "./check-sound.mjs";
@@ -291,7 +291,7 @@ function fromHyperFrames(hf, film, { ours }) {
           key === "motion"
             ? theirs
               ? words(f.fixHint)
-              : `The approved plan has it by then (storyboard, The plan): make it land on time, or keep the change and log it in docs/decisions.md so the review page says so. ${words(f.fixHint)}`.trim()
+              : `The approved plan has it by then (storyboard, The plan): make it land on time, or keep the change (--keep, with why), so the review page says so. ${words(f.fixHint)}`.trim()
             : words(f.fixHint) || (f.suggestedColor ? `Try ${f.suggestedColor}, in the brand's colours.` : ""),
         owner: "build",
         source: `HyperFrames: ${label}`,
@@ -915,6 +915,7 @@ const ORDER = { must: 0, should: 1, note: 2 };
 const rank = (list) => list.sort((a, b) => ORDER[a.level] - ORDER[b.level] || (a.time ?? -1) - (b.time ?? -1));
 
 const reportFile = (root, slug, kind = "film") => join(root, "videos", slug, "docs", "checks", `${kind}.json`);
+const keptFile = (root, slug) => join(root, "videos", slug, "docs", "checks", "kept.json");
 
 export function saveReport(root, slug, kind, report) {
   const file = reportFile(root, slug, kind);
@@ -925,27 +926,145 @@ export function saveReport(root, slug, kind, report) {
   return file;
 }
 
-/** The report as Claude reads it: what ran, then must fix, should fix and notes, each with its time, element and fix. */
-export function describeReport(report, { path, page = true }) {
-  const lines = [`Video Studio's checks: ${report.title}`, ...report.ran.map((r) => `- ${r.name}: ${r.detail}`), ""];
-  const time = (f) => (f.time == null ? "" : f.until != null ? `${round(f.time, 2)}–${round(f.until, 2)} s · ` : `${round(f.time, 2)} s · `);
-  for (const [level, label] of Object.entries(LEVELS)) {
-    const list = report.findings.filter((f) => f.level === level);
-    lines.push(`${label} (${list.length})${list.length ? ":" : ""}`);
-    list.forEach((f, i) =>
-      lines.push(`${i + 1}. ${time(f)}${f.what}${f.element || f.file ? ` [${[f.element, f.file].filter(Boolean).join(" in ")}]` : ""}${f.fix ? `\n   → ${f.fix}` : ""} (${f.source}${f.owner && f.owner !== "build" ? `; for the ${f.owner}` : ""})`),
-    );
-    lines.push("");
+// ───────── kept findings ─────────
+// A should fix the build means (a quick-fire run meant to be glanced at, a label that's texture) is kept with why:
+// `studio.mjs check <video> --keep S2 "<why>"` writes it to docs/checks/kept.json, the video's review page shows it,
+// and each later check folds it away. A finding is the same one in a later check when its kind, element, file and
+// words are: its times may move as the film changes.
+
+/** What makes a finding the same one from check to check. */
+export const findingKey = (f) => [f.code || "", f.element || "", f.file || "", f.text || ""].join("|");
+
+/** The video's kept findings ([{ key, code, element, file, text, what, time, until, why, at }]). */
+export function readKept(root, slug) {
+  const list = readJSON(keptFile(root, slug))?.kept;
+  return Array.isArray(list) ? list.filter((k) => k?.key && k.why) : [];
+}
+
+/** Each finding's id for this report (M1, S1, N1; K1 for a kept one), and the counts, the kept ones folded out. A must
+    fix is never folded: it stops the render. */
+export function settle(report, kept = []) {
+  const why = new Map(kept.map((k) => [k.key, k]));
+  const n = { must: 0, should: 0, note: 0, kept: 0 };
+  for (const f of report.findings) {
+    const k = f.level !== "must" && why.get(findingKey(f));
+    if (k) f.kept = { why: k.why, at: k.at };
+    else delete f.kept;
+    f.id = f.kept ? `K${++n.kept}` : `${{ must: "M", should: "S", note: "N" }[f.level]}${++n[f.level]}`;
   }
-  lines.push(`Saved in ${path}${page ? "; the video's overview shows it" : ""}.${report.counts.must ? " Fix every must fix before rendering a draft." : ""}`);
+  report.counts = n;
+  return report;
+}
+
+/** `check <video> --keep <id> "<why>"` (repeatable): keep should fixes of the last report, with why. Answers what it
+    kept, as lines. */
+export function keepFindings(root, slug, pairs) {
+  const path = reportFile(root, slug);
+  const report = readJSON(path);
+  if (!Array.isArray(report?.findings)) throw new Error(`videos/${slug} hasn't been checked yet: run the check first, then keep what it finds.`);
+  const picked = pairs.map(([id, why]) => {
+    const f = report.findings.find((x) => x.id?.toLowerCase() === String(id).toLowerCase());
+    const should = report.findings.filter((x) => x.level === "should" && !x.kept).map((x) => x.id);
+    if (!f) throw new Error(`The last check has no ${id}${should.length ? `: its should fix are ${should.join(", ")}` : ""}.`);
+    if (f.level === "must") throw new Error(`${f.id} is a must fix: it stops the render, so it's fixed, not kept. A deliberate one is marked in the film instead (format.md, "What check flags on purpose").`);
+    if (!String(why || "").trim()) throw new Error(`Say why ${f.id} stays: --keep ${f.id} "<why>".`);
+    return { f, why: String(why).trim() };
+  });
+  const kept = readKept(root, slug);
+  const at = new Date().toISOString();
+  for (const { f, why } of picked) {
+    const key = findingKey(f);
+    const entry = { key, code: f.code || "", element: f.element || "", file: f.file || "", text: f.text || "", what: f.what, time: f.time ?? null, until: f.until ?? null, why, at };
+    const i = kept.findIndex((k) => k.key === key);
+    if (i >= 0) kept[i] = entry;
+    else kept.push(entry);
+  }
+  mkdirSync(join(path, ".."), { recursive: true });
+  writeFileSync(keptFile(root, slug), `${JSON.stringify({ kept }, null, 2)}\n`);
+  // the report folds them away now, so the overview shows them kept; the ids stay as Claude read them until the next check
+  const ids = new Map(report.findings.map((f) => [f, f.id]));
+  settle(report, kept);
+  for (const [f, id] of ids) f.id = id;
+  saveReport(root, slug, "film", report);
+  return picked.map(({ f, why }) => `Kept ${ids.get(f)} (${when(f)}${quote(f.what, 70)}): ${why}`);
+}
+
+const when = (f) => (f.time == null ? "" : f.until != null ? `${round(f.time, 2)}–${round(f.until, 2)} s · ` : `${round(f.time, 2)} s · `);
+const place = (f) => (f.element || f.file ? ` [${[f.element, f.file].filter(Boolean).join(" in ")}]` : "");
+
+/** The report as Claude reads it: a line of counts and the render's measures, then each must fix and should fix on a
+    line of its own (each kind's fix once, after its findings), the notes as a count and the kept findings folded
+    away. With `previous` (the report before this one), only what's new since then. `notes` lists the notes too. */
+export function describeReport(report, { path, page = true, previous = null, notes = false }) {
+  const c = report.counts;
+  const counts = `${c.must} must fix, ${c.should} should fix, ${plural(c.note, "note")}${c.kept ? `, ${c.kept} kept` : ""}`;
+  const before = previous && Array.isArray(previous.findings) ? new Set(previous.findings.filter((f) => !f.kept).map(findingKey)) : null;
+  const open = report.findings.filter((f) => !f.kept && f.level !== "note");
+  const shown = before ? open.filter((f) => !before.has(findingKey(f))) : open;
+  const lines = [];
+  if (before) {
+    const now = new Set(report.findings.filter((f) => !f.kept).map(findingKey));
+    const cleared = previous.findings.filter((f) => !f.kept && f.level !== "note" && !now.has(findingKey(f)));
+    const since = previous.checked ? ` (${new Date(previous.checked).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })})` : "";
+    lines.push(`Video Studio's checks, ${report.title}: ${counts}. Since the last check${since}: ${shown.length} new, ${cleared.length} cleared${cleared.length ? ` (${cleared.map((f) => f.id || "?").join(", ")} then)` : ""}, ${open.length - shown.length} as before.`);
+  } else lines.push(`Video Studio's checks, ${report.title}: ${counts}.`);
+  // what didn't run, and the render's measures (its loudness and peaks, for the review's log)
+  for (const r of report.ran || []) if (/^Video Studio's render|^Video Studio's face/.test(r.name) || /didn't run/.test(r.detail)) lines.push(`${r.name.replace(/^Video Studio's /, "The ")}: ${r.detail}`);
+  for (const [level, label] of [["must", "Must fix"], ["should", "Should fix"]]) {
+    const list = shown.filter((f) => f.level === level);
+    if (!list.length) continue;
+    lines.push(`${label}:`);
+    // findings of one kind together, in the order the first of each comes; a fix said once for those that share it
+    const kinds = [...new Set(list.map((f) => f.code || f.what))];
+    for (const kind of kinds) {
+      const group = list.filter((f) => (f.code || f.what) === kind);
+      group.forEach((f, i) => {
+        lines.push(`${f.id} ${when(f)}${f.what}${place(f)}${f.owner && f.owner !== "build" ? ` (for the ${f.owner})` : ""}`);
+        if (f.fix && (i === group.length - 1 || group[i + 1].fix !== f.fix)) lines.push(`   → ${f.fix}`);
+      });
+    }
+  }
+  if (notes) {
+    const list = report.findings.filter((f) => f.level === "note" && !f.kept);
+    if (list.length) lines.push("Notes:", ...list.map((f) => `${f.id} ${when(f)}${f.what}${place(f)}${f.fix ? `\n   → ${f.fix}` : ""}`));
+  } else if (c.note) lines.push(`Notes: ${c.note}, for reading when they matter (--notes lists them).`);
+  if (c.kept) lines.push(`Kept: ${c.kept} (docs/checks/kept.json; the review page shows them).`);
+  lines.push(
+    `Saved in ${path}${page ? "; the video's overview shows it" : ""}.${c.must ? " Fix every must fix before rendering a draft." : ""}${page && open.some((f) => f.level === "should") ? ` Fix each should fix, or keep it: --keep <id> "<why>".` : ""}`,
+  );
   return lines.join("\n");
 }
 
-/** `studio.mjs check <video>`: everything above, in one report. `render` adds a rendered file's sound and picture. */
-export async function checkFilm(root, slug, { render = null, log = () => {} } = {}) {
-  const film = readFilm(root, slug);
-  const rules = readRules(film.dir);
-  const row = frameRow(rules, film.width, film.height);
+/** The film's files as they stand (each one's size and time, hashed): the same print means nothing the checks read has
+    changed since. index.motion.json is the checks' own, so it's left out. */
+function filmPrint(film) {
+  const parts = [film.version, PLUGIN_ROOT];
+  const add = (path) => {
+    let st;
+    try {
+      st = statSync(path);
+    } catch {
+      return;
+    }
+    if (st.isDirectory()) {
+      for (const name of readdirSync(path).sort()) if (!name.startsWith(".")) add(join(path, name));
+    } else parts.push(`${relative(film.root, path)}:${st.size}:${Math.round(st.mtimeMs)}`);
+  };
+  for (const name of ["index.html", "compositions", "assets", "src", "inputs", "package.json", "hyperframes.json", "BRIEF.md", "docs/rules.json", "docs/words.json"]) add(join(film.dir, name));
+  if (film.brief.brand) add(join(film.root, "brands", film.brief.brand, "brand.json"));
+  if (film.storyboard) add(join(film.storyboard.dir, "storyboard.json"));
+  if (film.script) add(join(film.script.dir, "script.json"));
+  add(RULES_FILE);
+  let h = 0x811c9dc5;
+  const text = parts.join("|");
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193) >>> 0;
+  return h.toString(36);
+}
+
+/** The film's own checks (everything but a render's): { ran, findings, motion, carry }, `carry` holding what a later
+    render's check needs from this one (the stretches HyperFrames' craft pass found still on purpose, and on footage the
+    words' places on screen, for the face). */
+async function filmFindings(film, rules, row, log) {
   const step = rules.check.step;
   const ran = [];
   const findings = [];
@@ -1017,24 +1136,52 @@ export async function checkFilm(root, slug, { render = null, log = () => {} } = 
 
   findings.push(...stems.findings);
   ran.push({ name: "Video Studio's sound", detail: stems.ran });
+  const carry = {
+    still: (hf.craft?.findings || []).filter((f) => f.code === "dead_stretch").map((f) => [f.time, f.until ?? f.time + (f.seconds || 0)]),
+    words: film.media.some((m) => m.tag === "video")
+      ? runs.filter((r) => !r.meta.ignore).map((r) => ({ first: r.first, last: r.last, box: r.box, text: r.text, meta: { own: r.meta.own || "", selector: r.meta.selector || "", file: r.meta.file || "" } }))
+      : [],
+  };
+  return { ran, findings, motion: motion.written ? { file: "index.motion.json", tested: plan.tested } : null, carry };
+}
+
+/** `studio.mjs check <video>`: everything above, in one report. `render` adds a rendered file's sound and picture;
+    with `reuse`, the film's own findings come from its last report when none of its files has changed since, so only
+    the render is checked. */
+export async function checkFilm(root, slug, { render = null, log = () => {}, reuse = false } = {}) {
+  const film = readFilm(root, slug);
+  const rules = readRules(film.dir);
+  const row = frameRow(rules, film.width, film.height);
+  // what the last report found, to reuse or to say what's new since (--changes)
+  const previous = readJSON(reportFile(root, slug));
+  const print = filmPrint(film);
+  const same = reuse && previous?.print === print && previous.carry && Array.isArray(previous.findings);
+  const own = same
+    ? {
+        ran: previous.ran.filter((r) => !r.render).map((r) => (r.name.startsWith("HyperFrames") ? { ...r, detail: `${r.detail} (from the check at ${new Date(previous.checked).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}: the film hasn't changed since)` } : r)),
+        findings: previous.findings.filter((f) => !f.render).map(({ id, kept, ...f }) => f),
+        motion: previous.motion,
+        carry: previous.carry,
+      }
+    : await filmFindings(film, rules, row, log);
+  const ran = [...own.ran];
+  const findings = [...own.findings];
   if (render) {
     log("The render…");
     const file = resolve(film.dir, render);
     if (!existsSync(file)) throw new Error(`There's no render at ${render}.`);
-    const still = (hf.craft?.findings || []).filter((f) => f.code === "dead_stretch").map((f) => [f.time, f.until ?? f.time + (f.seconds || 0)]);
+    const still = own.carry.still;
     const r = renderFindings(file, rules, { name: relative(film.dir, file), skipFrozen: (a, b) => still.some(([x, y]) => a < y && b > x), stops: false });
-    findings.push(...r.findings);
-    ran.push({ name: "Video Studio's render", detail: `${relative(film.dir, file)}: ${r.ran}` });
+    findings.push(...r.findings.map((f) => ({ ...f, render: true })));
+    ran.push({ name: "Video Studio's render", detail: `${relative(film.dir, file)}: ${r.ran}`, render: true });
     if (film.media.some((m) => m.tag === "video")) {
       log("Words over the face…");
-      const f = faceFindings(film, file, runs, rules);
-      findings.push(...f.findings);
-      ran.push({ name: "Video Studio's face check", detail: f.ran });
+      const f = faceFindings(film, file, own.carry.words, rules);
+      findings.push(...f.findings.map((x) => ({ ...x, render: true })));
+      ran.push({ name: "Video Studio's face check", detail: f.ran, render: true });
     }
   }
 
-  const counts = { must: 0, should: 0, note: 0 };
-  for (const f of findings) counts[f.level]++;
   const report = {
     version: 1,
     title: `${film.brief.title || slug}`,
@@ -1046,18 +1193,18 @@ export async function checkFilm(root, slug, { render = null, log = () => {} } = 
     script: film.script?.version ?? null,
     render: render ? relative(film.dir, resolve(film.dir, render)) : null,
     rules: { file: "guides/rules.json", own: rules.own.length ? "docs/rules.json" : null, changed: rules.own },
-    motion: motion.written ? { file: "index.motion.json", tested: plan.tested } : null,
+    motion: own.motion,
     ran,
-    counts,
     findings: rank(findings),
+    // for a later render's check of the same film: its print, and what that check needs from this one
+    print,
+    carry: own.carry,
   };
-  const path = saveReport(root, slug, "film", report);
+  const path = saveReport(root, slug, "film", settle(report, readKept(root, slug)));
   // the overview's step under way: a check before a render
   if (!render)
     try {
       if (readProgress(root, slug)?.stage === "video") updateProgress(root, slug, (q) => ((q.step = "check"), q));
     } catch {}
-  return { report, path };
+  return { report, path, previous, reused: Boolean(same) };
 }
-
-

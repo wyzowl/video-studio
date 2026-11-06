@@ -17,22 +17,31 @@
 //                                              (up to five) give a review round's scores and what's being fixed;
 //                                              --end ends the stage without its result
 //   node studio.mjs render [HF render options]  `HF render …` with the project's HyperFrames, run from the video's
-//                                              folder, that also shows the render's progress on the video's pages
-//   node studio.mjs check [<video>] [--render <file.mp4>]
+//                                              folder, that also shows the render's progress on the video's pages; it
+//                                              prints one line on the file it made, HyperFrames' log beside it
+//                                              (--verbose streams the log)
+//   node studio.mjs check [<video>] [--render <file.mp4>] [--changes] [--notes]
 //                                              Video Studio's checks: HyperFrames' check with the video's settings and
 //                                              the scene plans' timings, and what it lacks (guides/rules.json), in one
 //                                              ranked report saved in docs/checks/film.json and shown on the video's
-//                                              overview; --render adds a rendered file's sound and picture
+//                                              overview, printed short (--notes lists the notes; --changes only what's
+//                                              new since the last check); --render adds a rendered file's sound and
+//                                              picture, reusing the film's last check when its files haven't changed
+//   node studio.mjs check <video> --keep <finding> "<why>"
+//                                              keep a should fix of the last check (S2), with why, in
+//                                              docs/checks/kept.json: the review page shows it, later checks fold it
 //   node studio.mjs check <video> --script     the latest script's measurable rules (the hook, words on screen, the
 //                                              pace against the length, the longest beat), saved in
 //                                              docs/checks/script.json
 //   node studio.mjs pdf <path>                 make the PDF of a script or storyboard version, to share outside the
 //                                              studio (as its page's Download PDF does), and print where it's saved
-//   node studio.mjs library [code] [--brand b] the library's items; with a code, how to use that item in a video,
-//                                              with its settings for a brand and the size (--size 9x16) filled in;
-//                                              with --still <seconds> --out <file.png> [--set key=value …], a
-//                                              transparent still of it at that moment, to lay over a storyboard frame
-//                                              (`gallery` is the same command, its name before 0.3.0)
+//   node studio.mjs library [code] [--brand b] the library's items, a line each; --search "<what it's for>", the
+//                                              best matches with their notes; with a code, the item's facts and its
+//                                              clip, with its settings for a brand and the size (--size 9x16) filled in
+//                                              (--steps: the steps for using it); with --still <seconds> --out
+//                                              <file.png> [--set key=value …], a transparent still of it at that moment,
+//                                              to lay over a storyboard frame (`gallery` is the same command, its name
+//                                              before 0.3.0)
 //   node studio.mjs library check [--force]    ask the Wyzowl site for new paid items now (the studio also asks once a
 //                                              day, when a session starts); --force downloads the pack again
 //   node studio.mjs licence [<key>]            with a key, unlock the full library on this Mac; without, its state
@@ -96,7 +105,7 @@ import { SCORES, STAGES, endStage, readProgress, startStage, stageTitle, stepsFo
 import { EXTRAS, newer } from "./lib/extras.mjs";
 import { KIT_DIR, SFX_KIT, installKit, kitInstalled } from "./lib/sfx.mjs";
 import { HYPERFRAMES, HYPERFRAMES_ENV, HYPERFRAMES_VERSION } from "./lib/versions.mjs";
-import { CATEGORIES, SIZES, BRAND_VARS, BUNDLED_FONTS, libraryItems, libraryItem, lockedItems, findItem, contentVariables, brandStyle, itemLayer } from "./lib/library.mjs";
+import { CATEGORIES, SIZES, BRAND_VARS, BUNDLED_FONTS, libraryItems, libraryItem, lockedItems, findItem, contentVariables, brandStyle, itemLayer, searchItems } from "./lib/library.mjs";
 import { catalogue, checkDue, checkLibrary, installedPack, licence } from "./lib/paid.mjs";
 import { goneHistories, sizeLabel, studioTidy, tidyGone, tidyPlan, tidyVideo, tidyWhat } from "./lib/tidy.mjs";
 import { outsideSkills, removeOutsideSkills } from "./lib/outside-skills.mjs";
@@ -111,7 +120,8 @@ const opt = (k, d = null) => {
   const i = argv.indexOf(k);
   return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[i + 1] : d;
 };
-const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1].startsWith("--")));
+// `--keep <finding> "<why>"` takes two values; every other option one
+const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1].startsWith("--")) && !(i > 1 && argv[i - 2] === "--keep"));
 const [cmd = "context", arg] = positional;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // commands whose output is shown inside slash commands: they always exit 0 and explain any problem in words
@@ -594,95 +604,37 @@ function progressCommand() {
   console.log(`${slug}: ${stageTitle(p).replace(/^Claude is /, "")}, ${steps[at].label.toLowerCase()}${p.round ? ` (round ${p.round})` : ""}. Its overview shows it: /videos/${slug}/`);
 }
 
-/** The HyperFrames version a video's folder renders with: its package.json's render script, or the studio's. */
-/** How to run HyperFrames' render for a video: its own `render` script, which names the exact version the video was
-    made on, or, without one, Video Studio's pinned HyperFrames. */
-function renderRunner(dir) {
-  const script = readJSON(join(dir, "package.json"))?.scripts?.render || "";
-  return /hyperframes@[0-9][\w.-]*\s+render\b/.test(script) ? ["npm", ["run", "render", "--"]] : ["npx", ["--yes", HYPERFRAMES, "render"]];
-}
-
-/** `render`: `HF render …` for the video whose folder this is (its pinned HyperFrames), with HyperFrames' own output as
-    it comes, that also puts the render's progress on the video's pages while a stage is under way: the frames rendered
-    and the time left. A draft's round comes from its name (`…_draft_r2.mp4`); in the final stage it's the final
-    render. */
+/** `render`: `HF render …` for the video whose folder this is (its pinned HyperFrames), with the render's progress on
+    the video's pages while a stage is under way (lib/render.mjs). It prints one summary of the file it made, keeping
+    HyperFrames' own output in a log beside it; `--verbose` streams that output as it comes. */
 async function renderCommand() {
   const at = videoAt(process.cwd());
   if (!at) throw new Error("Run `studio.mjs render` from the video's folder (videos/<video>/ in a studio).");
   const from = argv.indexOf("render") + 1;
-  const args = argv.slice(from).filter((a, i, all) => a !== "--" && a !== "--studio" && all[i - 1] !== "--studio");
-  const outIdx = args.findIndex((a) => a === "--output" || a === "-o");
-  const output = outIdx >= 0 ? args[outIdx + 1] || "" : (args.find((a) => /^(--output|-o)=/.test(a)) || "").replace(/^[^=]*=/, "");
-  const round = Number(/_r(\d+)\.[a-z0-9]+$/i.exec(output)?.[1]) || null;
-  const size = /_(\d+x\d+)(?:_v\d+)?\.[a-z0-9]+$/i.exec(output)?.[1] || null;
-  const since = new Date().toISOString();
-  let last = 0;
-  let phase = "";
-  // the pace is measured from the first frame, as setting up counts for part of HyperFrames' percentage
-  let first = null;
-  const note = (count, force = false) => {
-    if (!force && count.phase === phase && Date.now() - last < 500) return;
-    last = Date.now();
-    phase = count.phase;
-    try {
-      updateProgress(at.root, at.slug, (q) => {
-        q.step = q.stage === "final" ? "master" : "render";
-        if (round && q.stage === "video") q.round = round;
-        q.count = { unit: "frames", since, ...(q.stage === "final" && size ? { size } : {}), ...count };
-        return q;
-      });
-    } catch {}
-  };
-  note({ done: 0, total: 0, pct: 0, phase: "setup" }, true);
-  // faster renders: on Apple silicon, HyperFrames' browser draws on the graphics chip (unless the user set otherwise)
-  const gpu = process.platform === "darwin" && process.arch === "arm64" && !process.env.PRODUCER_BROWSER_GPU_MODE ? { PRODUCER_BROWSER_GPU_MODE: "hardware" } : {};
-  const [command, base] = renderRunner(at.dir);
-  const child = spawn(command, [...base, ...args], { cwd: process.cwd(), stdio: ["inherit", "pipe", "pipe"], env: { ...process.env, ...gpu } });
-  const watch = (stream, out) => {
-    let rest = "";
-    stream.on("data", (chunk) => {
-      out.write(chunk);
-      const lines = (rest + chunk.toString("utf8")).split("\n");
-      rest = lines.pop();
-      for (const line of lines) {
-        const m = /@hf-progress (\{.*\})\s*$/.exec(line);
-        if (!m) continue;
-        try {
-          const e = JSON.parse(m[1]);
-          if (e.code === "capture") {
-            first ||= { pct0: e.pct, t0: new Date().toISOString() };
-            note({ done: e.done, total: e.total, pct: e.pct, phase: "capture", ...first });
-          }
-          else if (Number.isFinite(e.pct)) note({ pct: e.pct, phase: e.code, ...(first || {}), ...(e.code === "encode" ? { done: e.done, total: e.total } : {}) });
-        } catch {}
-      }
-    });
-  };
-  watch(child.stdout, process.stdout);
-  watch(child.stderr, process.stderr);
-  const code = await new Promise((done) => child.on("close", (c) => done(c ?? 1)));
-  if (code === 0) note({ pct: 100, phase: "done" }, true);
-  else {
-    // a render that stopped leaves no count behind: Claude renders again once it has fixed what stopped it
-    try {
-      updateProgress(at.root, at.slug, (q) => {
-        delete q.count;
-        return q;
-      });
-    } catch {}
-  }
-  process.exitCode = code;
+  const args = argv.slice(from).filter((a, i, all) => a !== "--" && a !== "--verbose" && a !== "--studio" && all[i - 1] !== "--studio");
+  const { renderVideo } = await import("./lib/render.mjs");
+  const r = await renderVideo(at, args, { cwd: process.cwd(), verbose: argv.includes("--verbose") });
+  console.log(r.summary);
+  process.exitCode = r.code;
 }
 
 /** `check [<video>] [--render <file>]`: Video Studio's checks on a built video (lib/check.mjs), from its folder or by
-    its name; `--script` checks the latest script instead (lib/check-script.mjs). Prints the ranked report and saves it
-    in the video's docs/checks/. Exits 1 when there's something to fix before a render (a must fix). */
+    its name; `--script` checks the latest script instead (lib/check-script.mjs). Saves the ranked report in the video's
+    docs/checks/ and prints it short: each must fix and should fix on a line, the notes as a count (`--notes` lists
+    them), what's kept folded away, and with `--changes` only what's new since the last check. A render's check reuses
+    the film's last one when none of its files has changed. `--keep <finding> "<why>"` (repeatable) keeps a should fix
+    of the last check, with why, without checking again. Exits 1 when there's something to fix before a render. */
 async function checkCommand() {
   const at = videoAt(process.cwd());
   const root = at && !arg ? at.root : studioRoot();
   const slug = arg || at?.slug;
   if (!slug) throw new Error("Which video? node studio.mjs check <video> [--render <file.mp4>] (or --script), or run it from the video's folder.");
   if (!existsSync(join(root, "videos", slug))) throw new Error(`There's no video "${slug}" in this studio.`);
+  const keep = argv.flatMap((a, i) => (a === "--keep" ? [[argv[i + 1], argv[i + 2]]] : []));
+  if (keep.length) {
+    const { keepFindings } = await import("./lib/check.mjs");
+    return console.log(keepFindings(root, slug, keep).join("\n"));
+  }
   if (argv.includes("--script")) {
     const { checkScript } = await import("./lib/check-script.mjs");
     const { describeReport } = await import("./lib/check.mjs");
@@ -691,13 +643,13 @@ async function checkCommand() {
     try {
       if (readProgress(root, slug)?.stage === "script") updateProgress(root, slug, (q) => ((q.step = "length"), q));
     } catch {}
-    console.log(describeReport(report, { path: relative(root, path), page: false }));
+    console.log(describeReport(report, { path: relative(root, path), page: false, notes: true }));
     return;
   }
   const { checkFilm, describeReport } = await import("./lib/check.mjs");
   const render = opt("--render");
-  const { report, path } = await checkFilm(root, slug, { render: render ? resolve(process.cwd(), render) : null, log: (s) => process.stderr.write(`${s}\n`) });
-  console.log(describeReport(report, { path: relative(root, path) }));
+  const { report, path, previous } = await checkFilm(root, slug, { render: render ? resolve(process.cwd(), render) : null, reuse: Boolean(render), log: (s) => process.stderr.write(`${s}\n`) });
+  console.log(describeReport(report, { path: relative(root, path), previous: argv.includes("--changes") ? previous : null, notes: argv.includes("--notes") }));
   if (report.counts.must) process.exitCode = 1;
 }
 
@@ -717,14 +669,16 @@ async function pdf() {
   console.log(join(root, file));
 }
 
-/** `library`: every library item; or, with a code, how to use that item in a video: the block to copy, a host clip
-    for index.html with the brand's settings and the item's own words filled in, and what it needs. */
+/** `library`: every library item, a line each, by category (the user's favourites first); `--search "<what it's
+    for>"`, the best matches with their notes; with a code, the item's own facts and a clip for index.html with the
+    brand's settings and its words filled in (`--steps`: the steps for using it, which are the build skill's). */
 async function library() {
+  const root = here();
+  // the items the user starred in the library come first, and Claude suggests them first
+  const favourites = new Set(root ? readFavourites(root) : []);
+  if (!arg && opt("--search") !== null) return librarySearch(opt("--search"), favourites);
   if (!arg) {
     const lines = [];
-    // the items the user starred in the library come first, and Claude suggests them first
-    const root = here();
-    const favourites = new Set(root ? readFavourites(root) : []);
     const starred = [...favourites].map((c) => libraryItem(c)).filter(Boolean);
     if (starred.length) {
       lines.push("## The user's favourites (★)", "They starred these in the library: suggest them first wherever one fits.");
@@ -733,17 +687,18 @@ async function library() {
     }
     for (const [category, c] of Object.entries(CATEGORIES)) {
       const items = libraryItems(category);
-      lines.push(`## ${c.title}`);
+      // the category's usual layer in its heading, and an item's own where it differs
+      const layers = items.map(itemLayer);
+      const usual = layers.sort((a, b) => layers.filter((x) => x === b).length - layers.filter((x) => x === a).length)[0];
+      lines.push(`## ${c.title}${items.length && category !== "transitions" ? ` (${usual})` : ""}`);
       if (!items.length) lines.push(`None yet: design ${c.one}s for the video from scratch.`);
-      for (const item of items) {
-        const layer = item.category === "transitions" ? "" : `, ${itemLayer(item)}`;
-        lines.push(`- ${favourites.has(item.code) ? "★ " : ""}${item.code} ${item.name} (${item.free ? "free" : "full library"}${layer}): ${item.summary}`);
-      }
+      for (const item of items) lines.push(`- ${favourites.has(item.code) ? "★ " : ""}${item.code} ${item.name}${category !== "transitions" && itemLayer(item) !== usual ? ` (${itemLayer(item)})` : ""}`);
     }
     lines.push(
       "",
       "Items combine: layer them (a full frame item as the base, items over footage on top) or run them one after another.",
-      "For one item: node studio.mjs library <code> --brand <brand> --size <16x9|1x1|4x5|9x16>",
+      `The best matches for a moment, with what each is for: node studio.mjs library --search "<what it's for>"`,
+      "One item's facts and its clip: node studio.mjs library <code> --brand <brand> --size <16x9|1x1|4x5|9x16>",
     );
     const locked = lockedItems();
     if (locked.length) {
@@ -765,7 +720,6 @@ async function library() {
     }
     throw new Error(`There's no library item "${arg}". Run: node studio.mjs library`);
   }
-  const root = here();
   const slug = opt("--brand");
   const brand = root && slug ? readBrand(root, slug) : null;
   if (slug && !brand) throw new Error(`There's no brand "${slug}" in this studio.`);
@@ -789,31 +743,59 @@ async function library() {
   };
   const json = JSON.stringify(values).replace(/'/g, "&#39;");
   const styled = brand ? `${brand.name}'s` : "the studio's own; pass --brand for a brand's";
+  const recipe = item.category === "transitions" && item.recipe;
+  const keep = item.id === "x05-pull-back" ? ` + keep (how long A stays on B's screen, ${content.keep ?? 3} s by default)` : "";
+  const call = `StudioTransitions["${item.id}"](tl, { at: T, a: "#scene-a", b: "#scene-b", vars: ${JSON.stringify(values)} });`;
+  const clip = (start, length, track) => [
+    `<div id="${item.id}-slot" data-composition-id="${item.id}" data-composition-src="compositions/${item.id}.html" data-start="${start}" data-duration="${length}" data-track-index="${track}" data-width="${S.w}" data-height="${S.h}"`,
+    `  data-variable-values='${json}'></div>`,
+  ];
+  const fontsLine = fonts.length ? `Fonts: index.html needs an @font-face for each, as for the rest of the video: ${fonts.map(fontSource).join("; ")}.` : "";
+  const mediaLine = media.length
+    ? `Media: in the copy, write each file as the src of its element (${media.map((d) => d.id).join(", ")}: the elements with data-var-src="…"), and delete the <video> and <audio> elements you don't use: one with no file makes the render wait 45 s, then show a frozen frame. Keep the <img> elements: the block's script may read them.${item.id.startsWith("t01") ? " The cut-out is the same footage with the background removed: HF remove-background <footage.mp4> -o <footage>_cutout.webm. Cut both to the moment it plays; their sound stays on the main track." : " Their sound stays on the main track."}`
+    : "";
+  const facts = [
+    `${item.code} ${item.name} (${CATEGORIES[item.category].title}${item.free ? ", free" : ""}, ${itemLayer(item)}): ${item.summary}`,
+    `When: ${item.use}`,
+    `Motion: ${item.motion}`,
+    "",
+  ];
+  const takes = ["What the item takes (id: label, default):", ...contentVariables(item).map((d) => `- ${d.id}: ${d.label} (${d.type === "enum" ? (d.options || []).map((o) => o.value).join(" | ") : JSON.stringify(d.default)})`)];
+  if (!argv.includes("--steps")) {
+    // the item's own facts: where its file is, its clip or call with the brand's settings, its timing, fonts and media
+    const own = recipe
+      ? [
+          `It moves both scenes, so it's a recipe for the main timeline: copy everything inside the <template> of ${item.file} (its layer and script) into index.html once, after both scenes. Scene B starts at T, the transition's start, and A ends at T + ${item.length} s${keep}; the cut is at T + ${item.cut} s. On the main timeline, before it's registered (its brand settings are ${styled}):`,
+          call,
+        ]
+      : item.category === "transitions"
+        ? [`It covers the cut: cp "${item.file}" compositions/${item.id}.html, then a clip after both scenes, from T (the transition's start), ${item.length} s long, with the cut behind it at T + ${item.cut} s (its brand settings are ${styled}):`, ...clip("T", item.length, 9)]
+        : [`cp "${item.file}" compositions/${item.id}.html, then its clip in index.html, at the time it plays (its brand settings are ${styled}; its duration matches data-duration):`, ...clip(0, content.duration ?? 6, 2)];
+    const tail = `Using it (copying, layering, timing, a second copy): the build skill's "Library items", or this command with --steps.`;
+    return console.log([...facts, ...own, fontsLine, mediaLine, "", ...takes, "", tail].filter((l, i, a) => l !== "" || a[i - 1] !== "").join("\n"));
+  }
   let steps;
-  if (item.category === "transitions" && item.recipe) {
+  if (recipe) {
     // a transition that moves both scenes works on the main timeline, as HyperFrames transitions do
-    const keep = item.id === "x05-pull-back" ? ` + keep (how long A stays on B's screen, ${content.keep ?? 3} s by default)` : "";
     steps = [
       `1. Copy everything inside the <template> of ${item.file} (its layer and script) into index.html, after both scenes and before the main timeline's script. Once is enough for any number of uses.`,
       `2. Scene A and scene B are full-frame elements in index.html, B after A in the page (so B draws on top). Give the transition plain wrappers, not timed media: wrap a video clip in a full-frame div. The scenes overlap: B starts at T, the transition's start, and A ends at T + ${item.length} s${keep}. The cut is at T + ${item.cut} s.`,
       `3. On the main timeline, before it's registered:`,
-      `StudioTransitions["${item.id}"](tl, { at: T, a: "#scene-a", b: "#scene-b", vars: ${JSON.stringify(values)} });`,
+      call,
       `4. Set its options in vars (the brand settings are ${styled}).`,
     ];
   } else if (item.category === "transitions") {
     steps = [
       `1. Copy the block into the project: cp "${item.file}" compositions/${item.id}.html`,
       `2. Add a clip for it to index.html after both scenes (so it's on top), starting at T, the transition's start, and ${item.length} s long:`,
-      `<div id="${item.id}-slot" data-composition-id="${item.id}" data-composition-src="compositions/${item.id}.html" data-start="T" data-duration="${item.length}" data-track-index="9" data-width="${S.w}" data-height="${S.h}"`,
-      `  data-variable-values='${json}'></div>`,
+      ...clip("T", item.length, 9),
       `3. The cut happens behind it at T + ${item.cut} s: end scene A's clip and start scene B's there. The brand settings are ${styled}. For another use, add another clip with its own id.`,
     ];
   } else {
     steps = [
       `1. Copy the block into the project: cp "${item.file}" compositions/${item.id}.html`,
       `2. Add a clip for it to index.html, at the time it plays. Its duration variable must match data-duration:`,
-      `<div id="${item.id}-slot" data-composition-id="${item.id}" data-composition-src="compositions/${item.id}.html" data-start="0" data-duration="${content.duration ?? 6}" data-track-index="2" data-width="${S.w}" data-height="${S.h}"`,
-      `  data-variable-values='${json}'></div>`,
+      ...clip(0, content.duration ?? 6, 2),
       `3. Change the words and options in data-variable-values (the brand settings are ${styled}). To use it twice in one video, copy it under a new id and change "${item.id}" everywhere in the copy.${"exit" in content ? ' If a transition follows, set exit to "hold", so it stays whole until the transition takes it away.' : ""}`,
       itemLayer(item) === "over footage"
         ? `4. It sits over footage (it's transparent), so it combines: put its clip after whatever it goes over in index.html (later clips draw on top; data-track-index is only Studio's row, so give each item playing at once its own).`
@@ -822,22 +804,20 @@ async function library() {
   }
   // the next step's number (the clip's own lines aren't steps)
   const next = () => steps.filter((line) => /^\d+\. /.test(line)).length + 1;
-  if (fonts.length) steps.push(`${next()}. Fonts: index.html needs an @font-face for each, as for the rest of the video: ${fonts.map(fontSource).join("; ")}.`);
-  if (media.length)
-    steps.push(
-      `${next()}. Media: in the copy, write each file as the src of its element (${media.map((d) => d.id).join(", ")}: the elements with data-var-src="…"), and delete the <video> and <audio> elements you don't use: one with no file makes the render wait 45 s, then show a frozen frame. Keep the <img> elements: the block's script may read them.${item.id.startsWith("t01") ? " The cut-out is the same footage with the background removed: HF remove-background <footage.mp4> -o <footage>_cutout.webm. Cut both to the moment it plays; their sound stays on the main track." : " Their sound stays on the main track."}`,
-    );
-  const out = [
-    `${item.code} ${item.name} (${CATEGORIES[item.category].title}${item.free ? ", free" : ""}): ${item.summary}`,
-    `When: ${item.use}`,
-    `Motion: ${item.motion}`,
-    "",
-    ...steps,
-    "",
-    "What the item takes (id: label, default):",
-    ...contentVariables(item).map((d) => `- ${d.id}: ${d.label} (${d.type === "enum" ? (d.options || []).map((o) => o.value).join(" | ") : JSON.stringify(d.default)})`),
-  ];
-  console.log(out.join("\n"));
+  if (fontsLine) steps.push(`${next()}. ${fontsLine}`);
+  if (mediaLine) steps.push(`${next()}. ${mediaLine}`);
+  console.log([...facts, ...steps, "", ...takes].join("\n"));
+}
+
+/** `library --search "<what it's for>"`: the items that best fit a moment, with what each is for. */
+function librarySearch(query, favourites) {
+  const found = searchItems(query, { limit: Number(opt("--limit")) || 8, favourites });
+  if (!found.length) return console.log(`Nothing in the library matches “${query}”. Try other words, or see every item: node studio.mjs library`);
+  const lines = [`The best matches for “${query}”, best first:`];
+  for (const { item } of found)
+    lines.push(`- ${favourites.has(item.code) ? "★ " : ""}${item.code} ${item.name} (${CATEGORIES[item.category].one}, ${itemLayer(item)}): ${item.summary} When: ${item.use}`);
+  lines.push("", "One item's facts and its clip: node studio.mjs library <code> --brand <brand> --size <16x9|1x1|4x5|9x16>");
+  console.log(lines.join("\n"));
 }
 
 /** `library check`: ask the Wyzowl site for the current pack now (the session-start hook runs it once a day, quietly). */

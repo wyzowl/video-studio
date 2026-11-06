@@ -96,10 +96,12 @@ The studio's library holds widgets (cards that show information), layouts (ways 
 or other clips), text effects, transitions (ways to move from one scene to the next) and data (full-screen charts and
 graphs), each with a code and each dressed in the video's brand at the video's size.
 
-- **Only what's available:** run `node PLUGIN/scripts/studio.mjs library` and pick from what it lists. A category with
-  nothing in it yet says so; design those moments yourself, as usual. Items from the full library appear there once a
-  licence key has unlocked them on this Mac; until then the list ends with a count of the locked ones. Suggest only
-  listed items, and if the user wants something only a locked item does, say it's in the full library.
+- **Only what's available:** run `node PLUGIN/scripts/studio.mjs library` (a line per item, by category) and pick
+  from what it lists; `studio.mjs library --search "<what the beat needs>"` gives the best matches with what each is
+  for. A category with nothing in it yet says so; design those moments yourself, as usual. Items from the full
+  library appear there once a licence key has unlocked them on this Mac; until then the list ends with a count of the
+  locked ones. Suggest only listed items, and if the user wants something only a locked item does, say it's in the
+  full library.
 - **Their favourites first:** the items the user has starred in the library are listed first (★). Suggest those
   wherever one fits before reaching for others.
 - **Where they fit:**

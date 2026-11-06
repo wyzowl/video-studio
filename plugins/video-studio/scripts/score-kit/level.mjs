@@ -20,12 +20,15 @@
 // lane the render applies to it (its data-automation, such as a duck under the voice, in the stem's own seconds), so
 // the stems are summed and measured as they'll be heard; each stem's own file is written without it. A carve isn't
 // simulated, so always confirm on the rendered MP4 (expect ~−0.15 dB from the AAC encode).
+// It prints its result: the sum's loudness and peak, and each stem's file; --verbose also prints each pass.
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
 const LUFS = Number(opt("--lufs", -14)), TP_MAX = Number(opt("--tp", -1.8));
+const verbose = args.includes("--verbose");
+const pass = (line) => verbose && console.log(line);
 const stems = [];
 args.forEach((a, i) => {
   if (a !== "--stem") return;
@@ -82,11 +85,11 @@ if (PREMIX) {
   const g = stems.map((s) => g0[s.name] + gMix);
   const pre = `${stems.map((s, k) => `[${k}:a]${s.up}volume=${g[k]}dB[s${k}]`).join(";")};${stems.map((s, k) => `[s${k}]`).join("")}amix=inputs=${stems.length}:weights=${stems.map((s) => s.weight).join(" ")}:normalize=0`;
   let c = TP_MAX - 0.7, lift = 0, f;
-  for (let pass = 0; pass < 12; pass++) {
+  for (let n = 0; n < 12; n++) {
     run(["-y", ...stems.flatMap((s) => ["-i", s.path]), "-filter_complex", `${pre},volume=${lift}dB,alimiter=limit=${Math.pow(10, c / 20).toFixed(4)}:attack=1:release=80:level=false`, ...w24, PREMIX]);
     f = stats(run(["-i", PREMIX, "-af", `loudnorm=I=${LUFS}:TP=-1:print_format=json`, "-f", "null", "-"]));
     const di = LUFS - Number(f.input_i), tp = Number(f.input_tp);
-    console.log(`  pass ${pass}: sum ceiling ${c.toFixed(1)} dBFS · lift ${lift.toFixed(2)} dB → ${f.input_i} LUFS, TP ${f.input_tp} dBTP`);
+    pass(`  pass ${n}: sum ceiling ${c.toFixed(1)} dBFS · lift ${lift.toFixed(2)} dB → ${f.input_i} LUFS, TP ${f.input_tp} dBTP`);
     if (Math.abs(di) <= 0.05 && tp <= TP_MAX) break;
     if (tp > TP_MAX) c -= 0.3; // inter-sample overs above the sample-peak ceiling
     lift += di;
@@ -99,7 +102,7 @@ if (PREMIX) {
 const maxVol = (s) => Number(/max_volume: (-?[\d.]+) dB/.exec(run(["-i", s.path, "-af", `${s.up}volume=${g0[s.name] + gMix}dB,volumedetect`, "-f", "null", "-"]))[1]);
 const limited = stems.filter((s) => s.limit);
 let f, c = limited.length ? Math.max(...limited.map(maxVol)) - 0.5 : 0, lift = 0;
-for (let pass = 0; pass < 16; pass++) {
+for (let n = 0; n < 16; n++) {
   for (const s of stems) {
     const g = g0[s.name] + gMix;
     const lim = s.limit ? `,alimiter=limit=${Math.pow(10, c / 20).toFixed(4)}:attack=1:release=60:level=false` : "";
@@ -108,7 +111,7 @@ for (let pass = 0; pass < 16; pass++) {
   run(["-y", ...stems.flatMap((s) => ["-i", s.out]), "-filter_complex", sumGraph(stems), ...w24, "assets/audio/mix_preview.wav"]);
   f = stats(run(["-i", "assets/audio/mix_preview.wav", "-af", `loudnorm=I=${LUFS}:TP=-1:print_format=json`, "-f", "null", "-"]));
   const di = LUFS - Number(f.input_i), tp = Number(f.input_tp);
-  console.log(`  pass ${pass}: ceiling ${c.toFixed(1)} dBFS · lift ${lift.toFixed(2)} dB → ${f.input_i} LUFS, TP ${f.input_tp} dBTP`);
+  pass(`  pass ${n}: ceiling ${c.toFixed(1)} dBFS · lift ${lift.toFixed(2)} dB → ${f.input_i} LUFS, TP ${f.input_tp} dBTP`);
   if (Math.abs(di) <= 0.05 && tp <= TP_MAX) break;
   if (tp + di > TP_MAX) {
     if (!limited.length || c <= -12) {
@@ -120,5 +123,4 @@ for (let pass = 0; pass < 16; pass++) {
   }
   lift += di;
 }
-console.log(`sum: ${f.input_i} LUFS · TP ${f.input_tp} dBTP · LRA ${f.input_lra}`);
-for (const s of stems) console.log(`  ${s.name}: ${s.out} (data-volume ${s.weight})`);
+console.log(`sum: ${f.input_i} LUFS · TP ${f.input_tp} dBTP · LRA ${f.input_lra} · ${stems.map((s) => `${s.name}: ${s.out} (data-volume ${s.weight})`).join(" · ")}`);

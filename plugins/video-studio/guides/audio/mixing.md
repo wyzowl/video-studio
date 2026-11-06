@@ -16,6 +16,7 @@ Levels, room for the voice, effects, and checking the result. The targets are in
   node tools/score-kit/level.mjs --stem music=assets/audio/music_raw.wav:limit --stem sfx=assets/audio/sfx_raw.wav
   ```
 
+  - It prints the sum's loudness and true peak and each stem's file (`--verbose`: each pass as well).
   - Mark the stem that carries the peaks with `:limit`, and add `:0.5` for a track whose `data-volume` is 0.5.
   - For dynamic music, or when peaks in different stems coincide, add `--premix assets/audio/mix.wav`: it limits the
     summed mix once and gives one music-and-effects track.

@@ -6,8 +6,12 @@ care.
 
 ## Video Studio's library
 
-- `node PLUGIN/scripts/studio.mjs library` lists every item by code (`W03`, `T01`, `X17`, …) with what it's for;
-  `studio.mjs library <code>` gives one item's settings and the steps for using it.
+- `node PLUGIN/scripts/studio.mjs library` lists every item, a line each by code and name (`W03 Stat`, `X17 Stripe
+  sweep`), by category, the user's favourites first. `studio.mjs library --search "<what it's for>"` gives the items
+  that best fit a moment, with what each is for.
+- `studio.mjs library <code> --brand <brand> --size <size>` gives one item's facts (what it's for, its motion, what it
+  takes) and its clip, with the brand's settings filled in; `--steps` adds the steps for using it, which are the build
+  skill's "Library items".
 - `studio.mjs library <code> --still <seconds> --brand <brand> --size <size> --set key=value … --out <file>.png`
   makes a still of it at the video's size, for the storyboard.
 - The brand kit dresses every item (`brand.json` `style`, colours, fonts, the "Travel" ease): fix the kit rather than

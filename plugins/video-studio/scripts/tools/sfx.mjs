@@ -4,7 +4,8 @@
 //                                         sounds for a moment, best first, with what places and fits each one
 //   node <plugin>/scripts/tools/sfx.mjs show <id>         everything the kit says about one sound
 //   node <plugin>/scripts/tools/sfx.mjs build [<cues>]    from the video's folder: assets/audio/sfx_raw.wav from
-//                                         assets/audio/sfx-cues.json (the format is in guides/audio/sfx.md)
+//                                         assets/audio/sfx-cues.json (the format is in guides/audio/sfx.md); it
+//                                         prints the track, its level and anything worth a look (--verbose: each cue)
 //   node <plugin>/scripts/tools/sfx.mjs copy <id> <file>  a kit sound into a file (a brand's logo ident)
 //   node <plugin>/scripts/tools/sfx.mjs gaps              the sounds the kit didn't have, as the studio met them
 // The build places each sound by the kit's one rule (start = the moment − sync.at, divided by its rate), trims what
@@ -241,13 +242,13 @@ function build() {
   const level = refLufs === null ? "the files' own level (no voiceover or music to set it against)" : `set against ${ref} (${refLufs.toFixed(1)} LUFS): ${signed(base)} dB`;
   console.log(`${out}: ${placed.length} sound${placed.length === 1 ? "" : "s"}, ${length.toFixed(2)} s, peak ${signed(20 * Math.log10(peak || 1e-9))} dBFS`);
   console.log(`Level: ${level}; the effects' own gain ${signed(group)} dB${speech.length ? `; ${speech.length} stretch${speech.length === 1 ? "" : "es"} of speech` : ""}`);
-  for (const p of [...placed].sort((a, b) => a.start - b.start)) {
-    const how = [p.rate !== 1 && `rate ${p.rate}`, p.trim > 0 && `trimmed ${p.trim.toFixed(3)} s`, p.fadeOut && `cut at ${(p.start + p.frames / SR).toFixed(2)} s`, p.duck && `${signed(p.duck)} dB under speech`].filter(Boolean).join(", ");
-    console.log(`  ${p.start.toFixed(3).padStart(7)}  ${(p.c.sound || basename(p.c.file)).padEnd(32)} ${signed(p.gain).padStart(6)} dB${how ? `  (${how})` : ""}${p.c.note ? `  ${p.c.note}` : ""}`);
-  }
+  if (argv.includes("--verbose"))
+    for (const p of [...placed].sort((a, b) => a.start - b.start)) {
+      const how = [p.rate !== 1 && `rate ${p.rate}`, p.trim > 0 && `trimmed ${p.trim.toFixed(3)} s`, p.fadeOut && `cut at ${(p.start + p.frames / SR).toFixed(2)} s`, p.duck && `${signed(p.duck)} dB under speech`].filter(Boolean).join(", ");
+      console.log(`  ${p.start.toFixed(3).padStart(7)}  ${(p.c.sound || basename(p.c.file)).padEnd(32)} ${signed(p.gain).padStart(6)} dB${how ? `  (${how})` : ""}${p.c.note ? `  ${p.c.note}` : ""}`);
+    }
   if (notes.length) console.log(`Notes:\n- ${notes.join("\n- ")}`);
   if (checks.length) console.log(`Worth a look:\n- ${checks.join("\n- ")}`);
-  console.log(`Next: level it with the other stems (guides/audio/mixing.md), marking it :limit if its transients carry the peaks.`);
 }
 
 const commands = { find, show, copy, gaps, build };

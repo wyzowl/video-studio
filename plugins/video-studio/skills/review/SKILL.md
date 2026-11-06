@@ -12,8 +12,8 @@ are as in the production skill.
 
 ## A round
 
-1. `node PLUGIN/scripts/studio.mjs check <project>` shows no must fix. Fix each should fix, or keep it with its reason
-   in `docs/decisions.md` (a quick-fire run meant to be glanced at, a label that's texture).
+1. `node PLUGIN/scripts/studio.mjs check <project>` shows no must fix. Fix each should fix, or keep it with why
+   (`studio.mjs check <project> --keep S2 "<why>"`: a quick-fire run meant to be glanced at, a label that's texture).
 2. Render a draft: `node PLUGIN/scripts/studio.mjs render -- --quality draft --fps 30 --output
    renders/drafts/<project>_v1_draft_r1.mp4` (`HF render`, pinned, with its progress on the video's overview).
 3. Check the render: `node PLUGIN/scripts/studio.mjs check <project> --render renders/drafts/<project>_v1_draft_r1.mp4`

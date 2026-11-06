@@ -52,8 +52,8 @@ notes), and the verified word times.
    them with `HF measure` and write one from the measurements (`PLUGIN/guides/design/README.md`, "Working from
    references").
 7. **Look before rendering:** `node PLUGIN/scripts/studio.mjs check <project>` shows no must fix
-   (`PLUGIN/guides/cli.md`, "lint and check"), and each should fix is fixed or kept with its reason in
-   `docs/decisions.md`; stills of each scene's key moment and every transition with `HF snapshot --at <times>
+   (`PLUGIN/guides/cli.md`, "lint and check"), and each should fix is fixed or kept with why (`--keep S2 "<why>"`);
+   stills of each scene's key moment and every transition with `HF snapshot --at <times>
    --describe false`, compared with the storyboard's frames, before the first render. Then the review skill takes
    over.
 
@@ -166,7 +166,7 @@ asking. To build one in, whether it was suggested or the user named it:
    fill the screen in the brand's colours. Give figures their real values and source; if a transition follows, set
    `exit` to `"hold"` so the scene stays whole until the transition takes it, and let its clip run until that
    transition has finished: a clip shows only for its `data-duration`, whatever the film's own moves do with it.
-7. Transitions come in two kinds, and `studio.mjs library <code>` gives the steps for each:
+7. Transitions come in two kinds, and `studio.mjs library <code>` gives each one's clip or call, and its timing:
    - **Covers the cut** (X01, X17): a block on top of both scenes, placed after them in `index.html`. Scene A's clip
      ends and scene B's starts at the transition's cut, behind it.
    - **Both scenes** (X05, X19): a recipe for the main timeline, since a block can't move the scenes around it. Paste
