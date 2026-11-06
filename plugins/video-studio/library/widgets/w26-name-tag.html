@@ -5,7 +5,7 @@
     {"id":"name","type":"string","label":"Name","default":"Presenter name"},
     {"id":"role","type":"string","label":"Role and company","default":"Job title, Company"},
     {"id":"side","type":"enum","label":"Side (the one the presenter is not facing)","default":"left","options":[{"value":"left","label":"Left"},{"value":"right","label":"Right"}]},
-    {"id":"size","type":"number","label":"Size: 1 reads on a phone, up to 2 for more (it grows from its own side)","default":1,"min":1,"max":2,"step":0.05},
+    {"id":"size","type":"number","label":"Size: 1 reads on a phone, up to 2 for more (it grows from its own side, as far as the frame allows)","default":1,"min":1,"max":2,"step":0.05},
     {"id":"level","type":"enum","label":"How high it sits at 1:1, 4:5 and 9:16","default":"low","options":[{"value":"low","label":"Low, under the presenter’s face"},{"value":"middle","label":"In the middle"},{"value":"high","label":"High, near the top"}]},
     {"id":"exit","type":"enum","label":"At the end","default":"animate","options":[{"value":"animate","label":"Animate out"},{"value":"hold","label":"Hold, for a transition"}]},
     {"id":"duration","type":"number","label":"Length","default":6,"min":2.5,"step":0.1,"unit":"s"},

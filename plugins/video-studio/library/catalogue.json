@@ -17896,7 +17896,7 @@
         "4x5": "w04-4x5.png",
         "9x16": "w04-9x16.png"
       },
-      "hash": "832bba2d20caae5edd63ed277ff63500d2f2ce5688a1f85e9ec50b83ab9c9f78"
+      "hash": "dedf8d56cae2e9030604cb0d561f01c38b8b4d1ebba67f83ca543a6da82b0583"
     },
     {
       "code": "W06",
@@ -17998,7 +17998,7 @@
         "4x5": "w06-4x5.png",
         "9x16": "w06-9x16.png"
       },
-      "hash": "43f480de1f96f7a8d53c2c1ed4206080662ca5b8bba9fe6f26a2eb3dd0274f6e"
+      "hash": "747128f42e77841baef0f8b1093570f166c9258707f42d53059f9055b02e02ad"
     },
     {
       "code": "W07",
@@ -18093,7 +18093,7 @@
         "4x5": "w07-4x5.png",
         "9x16": "w07-9x16.png"
       },
-      "hash": "3b4025a44b3a6de3bd9b225b464ec4f045f59f9b52f51048ac1db2957fd58db4"
+      "hash": "d43faefccb643bb769a0462b7068006f932c47a15a23c4be8958dce60bd2b97c"
     },
     {
       "code": "W08",
@@ -18135,7 +18135,7 @@
         },
         {
           "id": "size",
-          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side)",
+          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side, as far as the frame allows)",
           "type": "number",
           "default": 1
         },
@@ -18182,7 +18182,7 @@
         "4x5": "w08-4x5.png",
         "9x16": "w08-9x16.png"
       },
-      "hash": "fa024ac22862f5b657d93192f4b9d112182ee72f3ad08f0df476274e76d52de3"
+      "hash": "be4bf4288852f054ade2d6da28401f16a26b1ec57a6179271d8c185d4006bb56"
     },
     {
       "code": "W09",
@@ -18271,7 +18271,7 @@
         "4x5": "w09-4x5.png",
         "9x16": "w09-9x16.png"
       },
-      "hash": "914275471512c62c7b1c6a834cddec86815b2deca6da6b80e92ffb2004b0302f"
+      "hash": "9d2103f747c20fd563ead80fc924dada8bea2dc316a39a08b7abc346ef89296c"
     },
     {
       "code": "W10",
@@ -18366,7 +18366,7 @@
         "4x5": "w10-4x5.png",
         "9x16": "w10-9x16.png"
       },
-      "hash": "b7f00bdaf246de4a0dac33e5ca28bc9bd6ebd79bb6023da29706cfd4713af338"
+      "hash": "e231fb803bf168c8b7749be04c8bcdc281ab1be36c32e348d74e1841ba98320b"
     },
     {
       "code": "W11",
@@ -18455,7 +18455,7 @@
         "4x5": "w11-4x5.png",
         "9x16": "w11-9x16.png"
       },
-      "hash": "c6881323022a7e515feb7ff7982bd252af7eea749990e5063b2cfd945a29ffe0"
+      "hash": "43ceb68cc0f54a4e91881ed01209536244e888dbb31be46018ec6b8528f8f7a1"
     },
     {
       "code": "W12",
@@ -18637,7 +18637,7 @@
         "4x5": "w13-4x5.png",
         "9x16": "w13-9x16.png"
       },
-      "hash": "28ec61c6032da74ca0e85026082f85de49074e4c7d5d489166bcf5d5b29b5922"
+      "hash": "120c7d49d142ae22954dc52f1abd0faadd82bb62a9b85cf861593582b2a6d8d6"
     },
     {
       "code": "W14",
@@ -18750,7 +18750,7 @@
         "4x5": "w14-4x5.png",
         "9x16": "w14-9x16.png"
       },
-      "hash": "7b14ff24d191e8baabb17d453db695e3b1eee0279d817ba08761bbadfbaa3b8d"
+      "hash": "e144185418b769a49c19566d7ee56a383c570462660a2f9168f240eba25ca8d7"
     },
     {
       "code": "W15",
@@ -18851,7 +18851,7 @@
         "4x5": "w15-4x5.png",
         "9x16": "w15-9x16.png"
       },
-      "hash": "232aaf1ac8dd9bc50a8ff08d42ac691d40de99e4962864f3692fc53f2c194f03"
+      "hash": "a7463b0660a4cf68e9d52e7a66f510bb63d622617b3127161fe4a47bed2414c4"
     },
     {
       "code": "W16",
@@ -18952,7 +18952,7 @@
         "4x5": "w16-4x5.png",
         "9x16": "w16-9x16.png"
       },
-      "hash": "d23512d94b757db960189bd317e14c3fb8f710442572dab15dcbb6e53218db33"
+      "hash": "147d124767dab58ee824bcac052e623585faf5031f9b60d42e9b8c25fb4f9443"
     },
     {
       "code": "W17",
@@ -19069,7 +19069,7 @@
         "4x5": "w17-4x5.png",
         "9x16": "w17-9x16.png"
       },
-      "hash": "3926b484bfa16a0b36b1ea912ecd40ba285755e0eb4f58fa69ce707ca16612a6"
+      "hash": "b8c209833c6ec7bab8d72c6de868b7107688861cbe56725d60032cf3f59d52cc"
     },
     {
       "code": "W18",
@@ -19174,7 +19174,7 @@
         "4x5": "w18-4x5.png",
         "9x16": "w18-9x16.png"
       },
-      "hash": "3d241c21dc3adaf34d25e094cd1bc2dccf5f6db12279e78c8d6606fff11bc01a"
+      "hash": "35aba6c7e11c23c968fc6ef81d38ce38c4ddc1bdf8c8b9072802d9013a0beff3"
     },
     {
       "code": "W19",
@@ -19269,7 +19269,7 @@
         "4x5": "w19-4x5.png",
         "9x16": "w19-9x16.png"
       },
-      "hash": "da5fed9f463242f1b644d61b826119a5e7a08ba75185f1442a842a0581e78ef5"
+      "hash": "94c66ddf1d32464204c9b78bf22a0dcd210366cae553b173d6df844c2c116857"
     },
     {
       "code": "W20",
@@ -19370,7 +19370,7 @@
         "4x5": "w20-4x5.png",
         "9x16": "w20-9x16.png"
       },
-      "hash": "0c7e48777d19610e270825edd1c8ac3cd5e094ffa91535f6a79c20c76a322cee"
+      "hash": "9c16bc82ec4e4c14c176ed28d64f598367237fe36a44d2b83c7a105cb98daf72"
     },
     {
       "code": "W21",
@@ -19481,7 +19481,7 @@
         "4x5": "w21-4x5.png",
         "9x16": "w21-9x16.png"
       },
-      "hash": "4613758c59534b46c2264128b228fab3f54ad21844cc3f70855985df05f6f675"
+      "hash": "bd2fcf798cc6617b4fd05be49dfc4f14e9c1e331a3474871588b1c57cfd78719"
     },
     {
       "code": "W22",
@@ -19576,7 +19576,7 @@
         "4x5": "w22-4x5.png",
         "9x16": "w22-9x16.png"
       },
-      "hash": "95f8f1da554d915c382d75b1260acae9517fa8bfabbf5ced4e8dd426490b3ee1"
+      "hash": "73ebc05597f2b8c862f33546169fc7bcab3502ea1804c00d50a9c0ca824e4551"
     },
     {
       "code": "W23",
@@ -19683,7 +19683,7 @@
         "4x5": "w23-4x5.png",
         "9x16": "w23-9x16.png"
       },
-      "hash": "0ebe4dbdb6cd52427378ca6b6874087c104c38930894c8a4b7e3654448189a7e"
+      "hash": "ffe7b4bc00351ebc71d81a68564d2e16efa7ee0af49b91640c5b888012c1e3d2"
     },
     {
       "code": "W24",
@@ -19820,7 +19820,7 @@
         "4x5": "w24-4x5.png",
         "9x16": "w24-9x16.png"
       },
-      "hash": "2eb5c96a78d82d2406db84b423dfe466d919ce9175a19fbfed09d8ff16b8a5b2"
+      "hash": "ea41bd25c204f3917841f688a8c48b823fca0d8df21ee8432b93b5d41ebcf134"
     },
     {
       "code": "W25",
@@ -19915,7 +19915,7 @@
         "4x5": "w25-4x5.png",
         "9x16": "w25-9x16.png"
       },
-      "hash": "870f2a5ba5ccd5881fd5b677546d5b9327cbfbda700932ad756e1d821d700d05"
+      "hash": "300484eac366290abd46d6033000ff21d8ed9348b76cc85c50adb8809931f2c3"
     },
     {
       "code": "W27",
@@ -20010,7 +20010,7 @@
         "4x5": "w27-4x5.png",
         "9x16": "w27-9x16.png"
       },
-      "hash": "f0faa883e2db4e5359a085df4217eeeaebe2eee9cabf70e7b50c4187a6d0cdae"
+      "hash": "e2dfd8ed42f494bb50de1294050cd02d45435875155cd24f83280ef9a71af554"
     },
     {
       "code": "W28",
@@ -20111,7 +20111,7 @@
         "4x5": "w28-4x5.png",
         "9x16": "w28-9x16.png"
       },
-      "hash": "b683ff9c75755c2faae80e1947f57c4933cd14b33b3d986eec55446e6e8a9934"
+      "hash": "df8dec03a1b93443079b7190a3bee08998fe31ea0005629cb07904ecfb8a0715"
     },
     {
       "code": "W29",
@@ -20224,7 +20224,7 @@
         "4x5": "w29-4x5.png",
         "9x16": "w29-9x16.png"
       },
-      "hash": "f959f47b824e6f9352d243017c246c0e914674f853b892a567f571b5dce73a48"
+      "hash": "c8c82a30865cc5a0b7a2b1613afb394908743692111ce398d5420080fa9bcd5a"
     },
     {
       "code": "W30",
@@ -20307,7 +20307,7 @@
         "4x5": "w30-4x5.png",
         "9x16": "w30-9x16.png"
       },
-      "hash": "335526f87ec4e4198fba1ab94a13c8cfc566dfc392c7b6155a7449486f968635"
+      "hash": "98c9de6da971173640e83705bce173017c443b0d80fb21da0b732322e690f667"
     },
     {
       "code": "W31",
@@ -20402,7 +20402,7 @@
         "4x5": "w31-4x5.png",
         "9x16": "w31-9x16.png"
       },
-      "hash": "1d79c1b2493504537b647194c9564f6c81f7ba3f8ebbefd575e5cbce7b4e30e8"
+      "hash": "32718ba1436f965f567e553308111b2396d87698b3a30ea495952e2171dca219"
     },
     {
       "code": "W32",
@@ -20515,7 +20515,7 @@
         "4x5": "w32-4x5.png",
         "9x16": "w32-9x16.png"
       },
-      "hash": "03eab10e22f04aaa6d9e1eb8b3c6222e1f37cdd96e6f7fc4514cd64972f3a077"
+      "hash": "1b77c8e440050ed3e1e6a30867d647e794a0c4d1ed44e2b6807831980a571883"
     },
     {
       "code": "W33",
@@ -20610,7 +20610,7 @@
         "4x5": "w33-4x5.png",
         "9x16": "w33-9x16.png"
       },
-      "hash": "e27b5765cf1992bbd2bf43d29093ed52e5a4705de4d01d0de2e16005581c1841"
+      "hash": "d92dc37f5cdf20e82c294d5980b5ff334cb284f4cef4034b5a7dcc3d1c0ed332"
     },
     {
       "code": "W34",
@@ -20711,7 +20711,7 @@
         "4x5": "w34-4x5.png",
         "9x16": "w34-9x16.png"
       },
-      "hash": "4a9ba8aa206c35dbc5971c125169a570438388c1cefeeb6cd58b152d5e9b46db"
+      "hash": "444172c3474c1ac0bd67de5ecb7c7847f1775b66c6e290dc316fa0b05c1be3cb"
     },
     {
       "code": "W35",
@@ -20812,7 +20812,7 @@
         "4x5": "w35-4x5.png",
         "9x16": "w35-9x16.png"
       },
-      "hash": "3d0c922b98353a7f6fa31de5a1e9e37c2a60a3e65738fb123ecba7f8e3dbf555"
+      "hash": "5323aa4c3ba27d4c643e5f37ddc97b41f0a8ec08195d787edeff1b04f0d6082c"
     },
     {
       "code": "W36",
@@ -20860,7 +20860,7 @@
         },
         {
           "id": "size",
-          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side)",
+          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side, as far as the frame allows)",
           "type": "number",
           "default": 1
         },
@@ -20907,7 +20907,7 @@
         "4x5": "w36-4x5.png",
         "9x16": "w36-9x16.png"
       },
-      "hash": "a20450e1e4b8881456d4bef879356b20eec2ea925944860e2df2f9e09d3a1535"
+      "hash": "a1a67b2c0b0c30aeb9670d50915bc28ca96e3ed490288cbd8429d95122926290"
     },
     {
       "code": "W37",
@@ -21002,7 +21002,7 @@
         "4x5": "w37-4x5.png",
         "9x16": "w37-9x16.png"
       },
-      "hash": "1f005dbc4a6efee8129cba3c27d6258539e28089ae983911e69af7396202e1fd"
+      "hash": "149c728f109b6a984859d9bfe438624a7e7a5ac59ad19b8b824dff3a78052443"
     },
     {
       "code": "W38",
@@ -21091,7 +21091,7 @@
         "4x5": "w38-4x5.png",
         "9x16": "w38-9x16.png"
       },
-      "hash": "1f9ae4cdcf1f3384b241624a24e2ab2afd39d82549c8d64cb0861c6c233641cf"
+      "hash": "0a2855c66b4e239ccee2a7ea18d0f88cbb49a12a618d740f60752a2dff218bfa"
     },
     {
       "code": "W39",
@@ -21180,7 +21180,7 @@
         "4x5": "w39-4x5.png",
         "9x16": "w39-9x16.png"
       },
-      "hash": "c6a9a2e99864bfcd7b10fcc4a0c61c8600f4026cbc1c60747b09e62b23281be9"
+      "hash": "40c4879e4b22cbe0a9c9292c1c20a2c565d0a7b749eec75deed7015b83e531fc"
     },
     {
       "code": "W40",
@@ -21288,7 +21288,7 @@
         "4x5": "w40-4x5.png",
         "9x16": "w40-9x16.png"
       },
-      "hash": "b73b498619f92202cf55005810215cec6db9f7fa7a91d25404713973ebcaaeb6"
+      "hash": "24564cdd7044040eae33272d9c0f5b12490e843f0ec4f249a87804221fd284b1"
     },
     {
       "code": "W41",
@@ -21342,7 +21342,7 @@
         },
         {
           "id": "size",
-          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side)",
+          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side, as far as the frame allows)",
           "type": "number",
           "default": 1
         },
@@ -21389,7 +21389,7 @@
         "4x5": "w41-4x5.png",
         "9x16": "w41-9x16.png"
       },
-      "hash": "7df505a7f96c46ef00f4934db01a81a6562ea3041cc871dce83a22083f237b88"
+      "hash": "2c63ffdb7eb9a9ead0c2deb29f33ac960f902c1b846085d2ebdcab32126787f6"
     },
     {
       "code": "W42",
@@ -21484,7 +21484,7 @@
         "4x5": "w42-4x5.png",
         "9x16": "w42-9x16.png"
       },
-      "hash": "65e84a406783fd52713abc466e1688c921e7ca9953f080380206c4e3f55f7910"
+      "hash": "bf9742b034d37a404325a35cca26e4ef735851e41369b6b0ab0d338f96315783"
     },
     {
       "code": "W43",
@@ -21585,7 +21585,7 @@
         "4x5": "w43-4x5.png",
         "9x16": "w43-9x16.png"
       },
-      "hash": "5beae96812a258cd14c2c9c8135cdeeae2c5cad772c319792d49aef914b3b206"
+      "hash": "840be90823441e781079f0249e7cf2c3b456609bd6d389b0ea1237f37eb8e3b3"
     },
     {
       "code": "W44",
@@ -21698,7 +21698,7 @@
         "4x5": "w44-4x5.png",
         "9x16": "w44-9x16.png"
       },
-      "hash": "8280d062b0e26d884f46b7fbe643c39c1e1b2311cd399b00fecef8cdf5476dec"
+      "hash": "974afde230f0b216d5075bb00abe6c39b2f22d56a204111262e6c72c98c0435c"
     },
     {
       "code": "W45",
@@ -21793,7 +21793,7 @@
         "4x5": "w45-4x5.png",
         "9x16": "w45-9x16.png"
       },
-      "hash": "cae708320d72a001e1e3c26202bbe3f4bf0af8d8cab78ec38d3a5c68970542b1"
+      "hash": "20b242958f361c207942460ca96aa014f5453cad12d4934ab5b0f91d3dc83e35"
     },
     {
       "code": "W46",
@@ -21888,7 +21888,7 @@
         "4x5": "w46-4x5.png",
         "9x16": "w46-9x16.png"
       },
-      "hash": "e9e254c664747da392844af3079e58f9eb32cef1b4a4a6f38f1e9239aad74d08"
+      "hash": "bf34906ac7e70770993afbb980604c23ba9aaf09aa1b64d2d084bae93fa36e59"
     },
     {
       "code": "W47",
@@ -21977,7 +21977,7 @@
         "4x5": "w47-4x5.png",
         "9x16": "w47-9x16.png"
       },
-      "hash": "b5ad3d24eb1329b0f5167dff26185caad7287616ca13c40f3099a60133291f09"
+      "hash": "11282c3fd77eae9a6d0055613d1916230e94daea183a9dd29bcca730277031da"
     },
     {
       "code": "W48",
@@ -22090,7 +22090,7 @@
         "4x5": "w48-4x5.png",
         "9x16": "w48-9x16.png"
       },
-      "hash": "07483ffb5dbe0c668a12616d8b8795f3c7ba7824af1c8b746a24077408e3b655"
+      "hash": "b569e665ccf99b03f1f428c7adc278651111e0505410582ad1c87eac8f73df76"
     },
     {
       "code": "W49",
@@ -22150,7 +22150,7 @@
         },
         {
           "id": "size",
-          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side)",
+          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side, as far as the frame allows)",
           "type": "number",
           "default": 1
         },
@@ -22177,7 +22177,7 @@
         "4x5": "w49-4x5.png",
         "9x16": "w49-9x16.png"
       },
-      "hash": "44ed66603af425f28a246dc586ae9894c44baed879c186059fefa45423ca76a7"
+      "hash": "462fe3dda1ca2ab4d8b78f4a829d8a89e1c7bc09fd1db801fa6d22622a1c0633"
     },
     {
       "code": "W50",
@@ -22260,7 +22260,7 @@
         "4x5": "w50-4x5.png",
         "9x16": "w50-9x16.png"
       },
-      "hash": "36efb28ec5974b76214295b0c634ed7a6ff25c4768af483c0fc71a0ffbdbe147"
+      "hash": "e3365026392b951555beca4e64f753011dd478d8ad88f0b6d6737c93abcbc979"
     },
     {
       "code": "W51",
@@ -22355,7 +22355,7 @@
         "4x5": "w51-4x5.png",
         "9x16": "w51-9x16.png"
       },
-      "hash": "7b09953f219ef45037856baaa64cdbe601524c18214fedc56959a5cd7ec01939"
+      "hash": "30daf69feb5e7e5de270f0abe8e7ebbb799605aadf6f1ec2e53163f82994c78b"
     },
     {
       "code": "W52",
@@ -22415,7 +22415,7 @@
         },
         {
           "id": "size",
-          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side)",
+          "label": "Size: 1 reads on a phone, up to 2 for more (it grows from its own side, as far as the frame allows)",
           "type": "number",
           "default": 1
         },
@@ -22462,7 +22462,7 @@
         "4x5": "w52-4x5.png",
         "9x16": "w52-9x16.png"
       },
-      "hash": "2739b5854a6ed2b2dca79aeeac76e063ba1bdf31c86df7a6aedbded0c489b367"
+      "hash": "12ac074d0f06c2935116aaf145a38cfcf9d551e1e739b20b4bced180aefd766f"
     },
     {
       "code": "W53",
@@ -22563,7 +22563,7 @@
         "4x5": "w53-4x5.png",
         "9x16": "w53-9x16.png"
       },
-      "hash": "174e9f2956527e5f3ae7049001669883d7ac8f42319c46056251e5243ae73fb8"
+      "hash": "6bb3da00ac7b4bef4a338e911d257c6e6c19f1879b9fff51ed208fec09574edb"
     },
     {
       "code": "W54",
@@ -22670,7 +22670,7 @@
         "4x5": "w54-4x5.png",
         "9x16": "w54-9x16.png"
       },
-      "hash": "de95b53c4fc2e49b06bddcb61dd5cbd86b007bd0d49c9da6f34bcd77cea1c8de"
+      "hash": "22811ede84ef2005b30ab09b98c1183f828ebc1d114e11ae26965e95cefb30ff"
     },
     {
       "code": "W55",
@@ -22783,7 +22783,7 @@
         "4x5": "w55-4x5.png",
         "9x16": "w55-9x16.png"
       },
-      "hash": "178e2145aab31cd010e1f8aac03ad1c2d3657ad604827fee9d9ef9107983f1a1"
+      "hash": "c28918f703263ae6ac517976e892b0d606a7c1c565230b2f7e657ea9228988cb"
     },
     {
       "code": "W56",
@@ -22879,7 +22879,7 @@
         "4x5": "w56-4x5.png",
         "9x16": "w56-9x16.png"
       },
-      "hash": "2b30ef6db5e21c0c7f21592c474b7e05d9dd15d84e6fdb2b0d638a3e0aa85553"
+      "hash": "9d2b6a3a9f9d57412be1cd2c18c68e0c890b7c4815fb7c4a68bde895f82c9480"
     },
     {
       "code": "W57",
@@ -22974,7 +22974,7 @@
         "4x5": "w57-4x5.png",
         "9x16": "w57-9x16.png"
       },
-      "hash": "c7ed1940fe5a6e195b7828394e6de10834018187a30c1415926a59152a6ecd83"
+      "hash": "892aeeb77209df7f138bf3401532982b9e263fd6145426992676e0ab393d15a6"
     },
     {
       "code": "W58",
@@ -23069,7 +23069,7 @@
         "4x5": "w58-4x5.png",
         "9x16": "w58-9x16.png"
       },
-      "hash": "4c5ffb3efd54e9f68f856c19ef2e2c65659837df616af84a8a4a950977f54ffc"
+      "hash": "39250b0adf5d26fb086bf8f4215007615c25c0f518be5810115d1888a2331443"
     },
     {
       "code": "W59",
@@ -23165,7 +23165,7 @@
         "4x5": "w59-4x5.png",
         "9x16": "w59-9x16.png"
       },
-      "hash": "ea9e224b9d08186b3322fe9b609c601f722de6df5bd05e704d8e4cb44fd42ce8"
+      "hash": "be2684cf63df5b1fffb0d864913d7e3918470d9da9565f8150f605b6b130f348"
     },
     {
       "code": "W60",
@@ -23266,7 +23266,7 @@
         "4x5": "w60-4x5.png",
         "9x16": "w60-9x16.png"
       },
-      "hash": "282385d8d5b1e9e6ae8d1dfdd2ded76358d4b97dab00e74f4ad9501d4961369c"
+      "hash": "08507dfa32b73ec2b9397b4647b6980e290e2c12c396a572d6a42c1c3c0f8f17"
     },
     {
       "code": "W61",
@@ -23361,7 +23361,7 @@
         "4x5": "w61-4x5.png",
         "9x16": "w61-9x16.png"
       },
-      "hash": "cd82ed4f060e22619faa1980e3fbacb7a844572d3958b33e6a25595e5174eecb"
+      "hash": "e14050a0c1c5d4f29302d193421efcd20d137462770d1cb5c2c822734c107b00"
     },
     {
       "code": "W62",
@@ -23462,7 +23462,7 @@
         "4x5": "w62-4x5.png",
         "9x16": "w62-9x16.png"
       },
-      "hash": "44efa8d30a14603a60f8eb2852224dc6affef7024dd7f2ac63bf70a4b4e03780"
+      "hash": "ea61ffc4d3987b48fc697bf98cdf0b1194a39a08d40ea2fd7c6b9c01c77c3ae1"
     },
     {
       "code": "W63",
@@ -23563,7 +23563,7 @@
         "4x5": "w63-4x5.png",
         "9x16": "w63-9x16.png"
       },
-      "hash": "78c2ca238083a15fa22f8f0cf969686045364977fb993b9675288d1d1dddea01"
+      "hash": "ea776f68ec4c6e1b9f46a8f137a616f4176fb04790fd39c07814ced52ee2b286"
     },
     {
       "code": "W64",
@@ -23670,7 +23670,7 @@
         "4x5": "w64-4x5.png",
         "9x16": "w64-9x16.png"
       },
-      "hash": "8b446f0cc5c5f5161646c45f0a69458f75a2e1bb6cc842cb51683ed3d5c132b7"
+      "hash": "7e3ab2d16f235652852c43376fe4adaf344016bbdc0b871e75a2a00b5653e85d"
     },
     {
       "code": "W65",
@@ -23771,7 +23771,7 @@
         "4x5": "w65-4x5.png",
         "9x16": "w65-9x16.png"
       },
-      "hash": "10de2f08c73622c2e428fbb2bb25f331df56ef4e5d2323145a3934614016622d"
+      "hash": "29619f3c43d0012848bf71f6e41d3ecf124bf56d9a1d2ab2fb64df7f57ecd21f"
     },
     {
       "code": "W66",
@@ -23872,7 +23872,7 @@
         "4x5": "w66-4x5.png",
         "9x16": "w66-9x16.png"
       },
-      "hash": "213d02d8e0e4eb7b08afa991dc0e38e0ac0ca54d496d726df945470abd6e5d92"
+      "hash": "9230ddf4e78f5f6ab0742dffcfa5c40a06d73eda30f0e47b33e633d49a8ebca7"
     },
     {
       "code": "W67",
@@ -23973,7 +23973,7 @@
         "4x5": "w67-4x5.png",
         "9x16": "w67-9x16.png"
       },
-      "hash": "de2e7acdc27381e531981316ed033abcf466ce25b016d78a8a1bf3be5dd3e5e0"
+      "hash": "be7f36729b634e709f9012f3070e95734dfd280518f628055f10785cda0d2de1"
     },
     {
       "code": "W68",
@@ -24093,7 +24093,7 @@
         "4x5": "w68-4x5.png",
         "9x16": "w68-9x16.png"
       },
-      "hash": "83193dc19125d9546f72e228466f6bff019e7ca45a4170d3f206a252e06c11e4"
+      "hash": "29198248c06a798318b969f556c99c182df00c98caea7f570a4857e8becd325b"
     },
     {
       "code": "X02",
