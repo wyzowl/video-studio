@@ -1,9 +1,9 @@
 // Video Studio's own look at a built film, for `studio.mjs check`: what's on screen and when, measured the way
 // HyperFrames draws it. The project is served from its folder with HyperFrames' own runtime (the project's pinned
 // version) injected, as HyperFrames' own check and render do, and seeked with the runtime's `__player.renderSeek`;
-// every sample lists the words on screen (each block of text: its words, size, colours, fonts and box) and the large
-// grounds. HyperFrames' check does the layout, contrast and craft passes; this pass gives Video Studio's own checks
-// (check.mjs) what they measure against `guides/rules.json`.
+// every sample lists the words on screen (each block of text: its words, size, colours, fonts and box, and the elements
+// inside it that hold them) and the large grounds. HyperFrames' check does the layout, contrast and craft passes; this
+// pass gives Video Studio's own checks (check.mjs) what they measure against `guides/rules.json`.
 import { spawnSync } from "node:child_process";
 import { createServer } from "node:http";
 import { closeSync, existsSync, openSync, readdirSync, readFileSync, readSync, statSync } from "node:fs";
@@ -229,6 +229,13 @@ function measure({ w, h, captions, grounds }) {
     }
     return k;
   };
+  // a part on a new line, or set apart from the last, is a new word
+  const append = (acc, words, r, el) => {
+    const prev = acc.last;
+    if (prev && !/\s$/.test(prev.text) && !/^\s/.test(words) && (r.top >= prev.bottom - 0.3 * (prev.bottom - prev.top) || r.left - prev.right > 0.25 * parseFloat(cs(el).fontSize))) acc.parts.push(" ");
+    acc.last = { text: words, top: r.top, bottom: r.bottom, right: r.right };
+    acc.parts.push(words);
+  };
   const blocks = new Map();
   const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   for (let n = walk.nextNode(); n; n = walk.nextNode()) {
@@ -248,13 +255,18 @@ function measure({ w, h, captions, grounds }) {
     const px = parseFloat(s.fontSize) * scaleOf(el);
     const block = blockOf(el);
     const id = idOf(block);
-    const b = blocks.get(id) || { id, parts: [], box: [Infinity, Infinity, -Infinity, -Infinity], chars: 0, sizes: [] };
+    const b = blocks.get(id) || { id, parts: [], box: [Infinity, Infinity, -Infinity, -Infinity], chars: 0, sizes: [], inner: new Map() };
     const words = text.replace(/\s+/g, " ");
-    // a part on a new line, or set apart from the last, is a new word
-    const prev = b.last;
-    if (prev && !/\s$/.test(prev.text) && !/^\s/.test(words) && (r.top >= prev.bottom - 0.3 * (prev.bottom - prev.top) || r.left - prev.right > 0.25 * parseFloat(cs(el).fontSize))) b.parts.push(" ");
-    b.last = { text: words, top: r.top, bottom: r.bottom, right: r.right };
-    b.parts.push(words);
+    append(b, words, r, el);
+    // the elements inside the block that hold these words, each with its depth below the block: a planned word is
+    // tested on the smallest one that holds it (a count's figure, not its row); one with no box of its own can't be
+    const chain = [];
+    for (let e = el; e && e !== block && e !== document.body; e = e.parentElement) if (cs(e).display !== "contents") chain.push(e);
+    chain.forEach((e, i) => {
+      const eid = idOf(e);
+      if (!b.inner.has(eid)) b.inner.set(eid, { parts: [], depth: chain.length - i });
+      append(b.inner.get(eid), words, r, el);
+    });
     b.box = [Math.min(b.box[0], r.left), Math.min(b.box[1], r.top), Math.max(b.box[2], r.right), Math.max(b.box[3], r.bottom)];
     const chars = words.trim().length;
     b.chars += chars;
@@ -278,7 +290,8 @@ function measure({ w, h, captions, grounds }) {
       px = size;
       if ((half -= n) <= 0) break;
     }
-    out.push({ id: b.id, text, px: Math.round(px * 10) / 10, colours: b.colours, families: b.families, box: b.box.map((v) => Math.round(v)) });
+    const els = [...b.inner].map(([eid, acc]) => [eid, acc.parts.join("").replace(/\s+/g, " ").trim(), acc.depth]).filter((e) => e[1]);
+    out.push({ id: b.id, text, px: Math.round(px * 10) / 10, colours: b.colours, families: b.families, box: b.box.map((v) => Math.round(v)), ...(els.length ? { els } : {}) });
   }
   // large grounds: solid fills and gradients covering a quarter of the frame or more
   const fills = [];
@@ -301,7 +314,7 @@ function measure({ w, h, captions, grounds }) {
     }
   }
   const meta = {};
-  for (const b of [...out, ...fills]) if (!S.sent?.has(b.id)) meta[b.id] = S.meta[b.id];
+  for (const id of [...out, ...fills].flatMap((b) => [b.id, ...(b.els || []).map((e) => e[0])])) if (!S.sent?.has(id)) meta[id] = S.meta[id];
   (S.sent ||= new Set());
   for (const id of Object.keys(meta)) S.sent.add(Number(id));
   return { blocks: out, fills, meta };

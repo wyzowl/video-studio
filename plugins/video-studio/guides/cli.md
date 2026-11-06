@@ -83,7 +83,7 @@ and what it saw at one sample only (an entrance or exit in flight) or lint's adv
   words each row puts on screen, the pace against the brief's length and the longest beat.
 - The attributes in `format.md` ("What check flags on purpose") quiet Video Studio's checks as they quiet
   HyperFrames': `data-layout-ignore` for texture, `data-layout-allow-overflow` and `data-layout-bleed` for a
-  deliberate crop.
+  deliberate crop. Texture's words still count as on screen, against the approved words and the scene plans' times.
 
 `HF check` (or `npm run check`) alone still gives HyperFrames' passes without Video Studio's settings. It runs lint,
 then in one browser pass checks:
@@ -135,8 +135,9 @@ for five minutes so the next check starts at once, then end by themselves: leave
 A `<name>.motion.json` beside a composition (the same base name) makes check test what the motion is meant to do, on
 the seeked timeline the render uses. Failures are errors. Video Studio's checks write `index.motion.json` from the
 scene plans (marked `"generatedBy"`, and rewritten each time): each word on screen that a plan's moves name with a
-time appears by then (plus half a second for its entrance), in the planned order. A motion file the build writes
-itself is left alone.
+time appears by then (plus half a second for its entrance), in the planned order, tested on the smallest element that
+holds it (a phrase split across a row's cells or a headline's lines, on the one it starts in). A motion file the build
+writes itself is left alone.
 
 ```json
 {

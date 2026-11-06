@@ -70,20 +70,34 @@ const NUMBERS = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, s
 const DROP = new Set(["pounds", "pound", "dollars", "dollar", "euros", "euro", "pence", "cents", "per", "cent"]);
 const STOP = new Set(["a", "an", "the", "and", "or", "of", "to", "in", "on", "at", "for", "by", "with", "is", "it", "its", "it's", "your", "you", "we", "our", "this", "that", "be", "are", "so"]);
 
-/** Words as the checks compare them: lower case, no punctuation, numbers as figures ("fourteen pounds" and "£14" are
-    both "14"), currency words dropped. */
-function tokens(text) {
-  const raw = String(text || "")
+/** Typed words in one form: lower case, curly and straight quotes and apostrophes alike, one kind of dash and of
+    space. */
+const plain = (s) =>
+  String(s || "")
+    .toLowerCase()
+    .replace(/[‘’ʼ′´`]/g, "'")
+    .replace(/[“”„″]/g, '"')
+    .replace(/[‐‑‒–—−]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+
+/** Words as written: lower case, no punctuation, figures without their thousands' commas. */
+function written(text) {
+  return plain(text)
     .normalize("NFKD")
     .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[’‘`]/g, "'")
     .replace(/(\d),(\d{3})/g, "$1$2")
     .replace(/(\d)([a-z%])/g, "$1 $2")
     .replace(/%/g, " percent ")
     .split(/[^a-z0-9.']+/)
     .map((w) => w.replace(/^'+|'+$/g, "").replace(/\.$/, "").replace(/^\.+/, ""))
     .filter(Boolean);
+}
+
+/** Words as the checks compare them with the voice: as written, with numbers as figures ("fourteen pounds" and "£14"
+    are both "14") and currency words dropped. */
+function tokens(text) {
+  const raw = written(text);
   const out = [];
   for (let i = 0; i < raw.length; i++) {
     const w = raw[i];
@@ -307,41 +321,104 @@ function fromHyperFrames(hf, film, { ours }) {
 
 // ───────── the plan, as HyperFrames' motion assertions ─────────
 
+/** Where `want` (words) starts in `have`, or -1; and whether `have` starts with it. */
+const indexOf = (have, want) => {
+  for (let i = 0; i + want.length <= have.length; i++) if (want.every((w, j) => have[i + j] === w)) return i;
+  return -1;
+};
+const begins = (have, want) => want.every((w, i) => have[i] === w);
+
+/** Whether a block's words are read straight after another's: beside it on the same line, or on the next line just
+    below it in the same column. */
+function follows(a, b) {
+  const [ax0, ay0, ax1, ay1] = a.box;
+  const [bx0, by0, bx1, by1] = b.box;
+  if (Math.min(ay1, by1) - Math.max(ay0, by0) >= 0.5 * Math.min(ay1 - ay0, by1 - by0)) return bx0 >= ax1 - 0.25 * a.px;
+  return by0 > (ay0 + ay1) / 2 && by0 - ay1 <= 0.75 * Math.max(a.px, b.px) && Math.min(ax1, bx1) > Math.max(ax0, bx0);
+}
+
+/** Where a phrase (words) is on screen among a scene's blocks, with four more words around it at most: in one block, or
+    split across blocks read in order that show together (a row's cells, a headline's lines). Each place is the
+    smallest element HyperFrames can pick out that holds the phrase, or its first words when it's split: a count's
+    figure rather than its row, which can show before it. [{ run, id, texture }] */
+function placesOf(runs, want, meta) {
+  const holder = (r, part) =>
+    [...r.els, { id: r.id, text: r.text, depth: 0 }]
+      .map((e) => ({ ...e, words: written(e.text) }))
+      .filter((e) => meta[e.id]?.unique && indexOf(e.words, part) >= 0)
+      .sort((a, b) => a.words.length - b.words.length || b.depth - a.depth)[0];
+  const places = [];
+  for (const r of runs) {
+    const have = written(r.text);
+    const texture = r.meta.ignore ? 1 : 0;
+    if (indexOf(have, want) >= 0) {
+      const el = holder(r, want);
+      if (el && el.words.length <= want.length + 4) places.push({ run: r, id: el.id, texture });
+      continue;
+    }
+    // the block ends with the phrase's first words, and the blocks read after it, on screen with it, go on with the
+    // rest: each one wholly inside the phrase, the last perhaps with more words after it
+    for (let n = Math.min(have.length, want.length - 1); n >= 1; n--) {
+      if (!begins(have.slice(-n), want.slice(0, n))) continue;
+      let rest = want.slice(n);
+      let extra = have.length - n;
+      const used = new Set([r]);
+      for (let cur = r; rest.length; ) {
+        const next = runs.find((b) => {
+          if (used.has(b) || b.first > cur.last || b.last < cur.first || !follows(cur, b)) return false;
+          const w = written(b.text);
+          return w.length > 0 && (begins(rest, w) || begins(w, rest));
+        });
+        if (!next) break;
+        const w = written(next.text);
+        extra += Math.max(0, w.length - rest.length);
+        rest = rest.slice(w.length);
+        used.add(next);
+        cur = next;
+      }
+      if (rest.length) continue;
+      const el = extra <= 4 && holder(r, want.slice(0, n));
+      if (el) places.push({ run: r, id: el.id, texture });
+      break;
+    }
+  }
+  return places;
+}
+
 /** index.motion.json from the scene plans: each planned word on screen appears by its planned time (with
-    `plannedLandWithin` for its entrance), and in each scene in the planned order. Written only when the file is
-    Video Studio's own (or there's none); `tested` and `untested` say what the plan's words came to. */
+    `plannedLandWithin` for its entrance), and in each scene in the planned order. A move names a word as it's typed,
+    whichever quotes and apostrophes it has. Written only when the file is Video Studio's own (or there's none);
+    `tested` and `untested` say what the plan's words came to. */
 function planAssertions(film, runs, meta, rules) {
   const scenes = film.storyboard?.storyboard?.scenes || [];
-  const brandName = tokens(film.brand?.name || "").join(" ");
+  const brandName = written(film.brand?.name || "").join(" ");
   const assertions = [];
   const tested = [];
   const untested = [];
+  const names = (text, phrase) => new RegExp(`(?<![\\p{L}\\p{N}])${phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\p{L}\\p{N}])`, "u").test(text);
   for (const s of scenes) {
     const moves = planMoves(s);
     const start = +s.start || 0;
     const end = +s.end || film.duration;
+    const here = runs.filter((r) => r.first <= end + 0.5 && r.last >= start - 0.5);
     const mapped = [];
     for (const phrase of approvedWords({ ...film, storyboard: { storyboard: { scenes: [s] } } })[0]?.phrases || []) {
-      const want = tokens(phrase);
+      const want = written(phrase);
       if (!want.length || want.join(" ") === brandName) continue;
-      const low = phrase.toLowerCase().replace(/[.!?,]+$/, "");
-      const move = moves.find((m) => m.text.toLowerCase().replace(/[“”]/g, '"').includes(low));
-      const candidates = runs.filter((r) => {
-        const m = meta[r.id];
-        if (!m?.unique || m.ignore || r.first > end + 0.5 || r.last < start - 0.5) return false;
-        const have = tokens(r.text).join(" ");
-        return have === want.join(" ") || (have.includes(want.join(" ")) && r.tokens.length <= want.length + 4);
-      });
+      const typed = plain(phrase).replace(/[.!?,]+$/, "");
+      const move = moves.find((m) => names(plain(m.text), typed));
       const target = move ? move.at : start;
-      const run = candidates.sort((a, b) => Math.abs(a.first - target) - Math.abs(b.first - target))[0];
-      if (!move || !run) {
-        untested.push({ scene: s.id, phrase, why: !run ? "no element on screen shows it" : "the plan gives it no time" });
+      // texture (an interface or a document shown whole) only when the words are nowhere else
+      const found = placesOf(here, want, meta).sort((a, b) => a.texture - b.texture || Math.abs(a.run.first - target) - Math.abs(b.run.first - target))[0];
+      if (!move || !found) {
+        untested.push({ scene: s.id, phrase, why: !found ? "no element on screen shows it" : "the plan gives it no time" });
         continue;
       }
+      const selector = meta[found.id].selector;
       const by = round(Math.min(move.at + rules.check.plannedLandWithin, film.duration - 0.05));
-      assertions.push({ kind: "appearsBy", selector: meta[run.id].selector, bySec: by });
-      tested.push({ scene: s.id, phrase, at: move.at, selector: meta[run.id].selector });
-      mapped.push({ at: move.at, selector: meta[run.id].selector });
+      assertions.push({ kind: "appearsBy", selector, bySec: by });
+      tested.push({ scene: s.id, phrase, at: move.at, selector });
+      mapped.push({ at: move.at, selector });
     }
     mapped.sort((a, b) => a.at - b.at);
     for (let i = 1; i < mapped.length; i++)
@@ -387,7 +464,10 @@ function runsOf(samples, meta, step) {
       const mid = settled[Math.floor(settled.length / 2)] || cur.seen.at(-1);
       const sizes = settled.map((x) => x.b.px).sort((a, b) => a - b);
       const all = [...new Set(cur.seen.flatMap((x) => tokens(x.b.text)))];
-      runs.push({ id, first: cur.first, last: cur.last, complete, text: final, tokens: tokens(final), every: all, words: wordCount(final), px: sizes[Math.floor(sizes.length / 2)], box: mid.b.box, colours: mid.b.colours, families: mid.b.families, seen: cur.seen.length, meta: meta[id] || {} });
+      // the elements inside it that hold its words, each with its words as they end up
+      const els = new Map();
+      for (const x of cur.seen) for (const [el, text, depth] of x.b.els || []) els.set(el, { id: el, text, depth });
+      runs.push({ id, first: cur.first, last: cur.last, complete, text: final, tokens: tokens(final), every: all, words: wordCount(final), px: sizes[Math.floor(sizes.length / 2)], box: mid.b.box, colours: mid.b.colours, families: mid.b.families, els: [...els.values()], seen: cur.seen.length, meta: meta[id] || {} });
       cur = null;
     };
     for (const x of seen) {
@@ -707,10 +787,10 @@ function ourFindings({ film, rules, runs, samples, step, hf, refined }) {
       });
   }
 
-  // the words on screen against the approved words and the voice
+  // the words on screen against the approved words and the voice; texture's words are on screen too, only not read
   const approved = approvedWords(film);
   const brandName = tokens(film.brand?.name || "").join(" ");
-  const within = (a, b) => runs.filter((r) => !r.meta.ignore && r.last >= a && r.first <= b);
+  const within = (a, b) => runs.filter((r) => r.last >= a && r.first <= b);
   for (const s of approved) {
     const there = within(s.start - 0.5, s.end + 0.5);
     const have = new Set(there.flatMap((r) => r.every));
