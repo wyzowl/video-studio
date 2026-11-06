@@ -101,17 +101,19 @@ footage sets the size, and its speech is the clock.
 ## Showing a page
 
 Whenever the user's feedback or approval is needed (a brand kit, a script, a storyboard, a video) or something new is ready,
-show them its page. When you write a page's file (`brand.json`, `storyboard.json` or `review.json`) with your Write
-or Edit tool, the studio tells you how. Otherwise run `node PLUGIN/scripts/studio.mjs show <path>` (it starts the
-page server; only one studio's server runs at a time). Follow what it says:
-1. Open the page in your Browser pane, beside the chat. Never navigate away from a page with feedback the user hasn't
-   saved (the studio warns you about one): open a new tab instead.
-2. Show the card it gives you, with your show_widget tool (Claude desktop app), and directly under it a labelled
-   link, such as `[Open storyboard v2 ↗](address)`, never a bare address. The link opens the page in their browser;
-   the card can't hold a working link, since the app opens nothing from a card. Without show_widget, the link alone.
-3. For a script, storyboard or video, wait for the review in the background: `studio.mjs wait <path>` with
+show them its page. Writing a page's file (`brand.json`, `script.json`, `storyboard.json` or `review.json`) with your
+Write or Edit tool publishes it, and the studio tells you its address. Otherwise run
+`node PLUGIN/scripts/studio.mjs show <path>`, which prints it (it starts the page server; only one studio's server
+runs at a time). Video Studio's band, above the message box, opens the page beside the chat by itself, once, so:
+1. Say in a line what's ready, with a labelled link to it, such as `[Open storyboard v2 ↗](address)`, never a bare
+   address: the link opens the page in their browser too.
+2. For a script, storyboard or video, wait for the review in the background: `studio.mjs wait <path>` with
    run_in_background. Tell the user to save their review when they're done (the button at the foot of the page) and
    you'll take it from there, then end your turn.
+
+Where the band isn't running, the studio gives you steps instead of an address (`show <path> --card` gives them any
+time): open the page in your Browser pane, show its card and the link, as they say, and never navigate away from a
+page with feedback the user hasn't saved.
 
 When the wait finishes, you're woken with the review. Saving a review is the user's go-ahead (each page saves a
 decision: a script or video is approved unless there are notes, and so is each storyboard scene unless it has a

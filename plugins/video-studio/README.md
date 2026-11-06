@@ -66,15 +66,17 @@ All of this happens only in a session inside a studio folder. Anywhere else, Vid
   background and logs the download in `~/.wyzowl-video-studio/install.log`. Once a day, if you've entered a licence
   key, it checks the full library (below).
 - **After Claude writes a file** (`scripts/page-ready.sh`), Video Studio checks whether it's the file behind a studio
-  page (a brand, script, storyboard or video review). If it is, it starts the page server if needed and tells Claude
-  to show the page.
+  page (a brand, script, storyboard or video review). If it is, it starts the page server if needed, asks the band to
+  open the page, and tells Claude the page is ready.
 - **The band above the message box, and the answer box** (`hooks/index.tsx`):
-  - The band runs Video Studio's helper (`node <plugin>/scripts/studio.mjs ready`, and `url` to open a page, each with
-    your studio's folder) to see what's waiting for your review. It does this when the session starts, after each of
-    Claude's turns, and after each Video Studio tool Claude runs. It looks at Claude's Bash commands only to notice
-    those tools.
-  - When you press the band's button, it opens the studio page (a `127.0.0.1` address) in the desktop app's browser
-    pane, through the browser pane's own tool, or else in your web browser, with `open`.
+  - The band runs Video Studio's helper (`node <plugin>/scripts/studio.mjs ready`, with this session's id, and `url` to
+    open a page, each with your studio's folder) to see what's waiting for your review, and which page Claude has just
+    shown. It does this when the session starts, after each of Claude's turns, and after each Video Studio tool Claude
+    runs. It looks at Claude's Bash commands only to notice those tools. The helper keeps the session's id, and the
+    page Claude showed in it, in the studio's `.studio/` folder for a day.
+  - When Claude shows a studio page, or you press the band's button, the band opens the page (a `127.0.0.1` address)
+    in the desktop app's browser pane, through the browser pane's own tool, or else in your web browser, with `open`.
+    It opens each page Claude shows once.
   - The answer box reads the text of Claude's final answer, and keeps a short fingerprint of it for the session, to
     draw that answer in a yellow box.
   - Nothing the band or the answer box reads leaves your Mac.

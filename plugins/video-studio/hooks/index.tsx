@@ -4,8 +4,10 @@
 // The band: when a script, storyboard or video is waiting for the person's review it says so, with a button that opens
 // that page; while Claude makes something it says what, and the step it's on, with "Watch", which opens the video's
 // overview (where it shows as it happens); otherwise "Working on a video?" with "Open dashboard". The button opens the
-// page beside the chat (the desktop app's browser pane, opened if it's closed) or in the web browser. What's waiting is
-// checked when the session starts, after each of Claude's turns and after each studio tool Claude runs (they mark the
+// page beside the chat (the desktop app's browser pane, opened if it's closed) or in the web browser. Each page Claude
+// shows (studio.mjs show, or writing a page's file) the band opens there by itself, once, so Claude needs no browser
+// calls or card for it: the band tells the studio it's there, with this session's id, each time it asks what's waiting.
+// That's when the session starts, after each of Claude's turns and after each studio tool Claude runs (they mark the
 // steps), never on a timer. Dismissed, the band stays away until something new is waiting.
 //
 // The answer box: Claude's final message of a turn that did some work (used a tool) is drawn in a rounded box with a
@@ -23,6 +25,8 @@ import type { ReadyPage } from '../types'
 const studioAt = atom({ plugin: 'video-studio', key: 'studio' } as const, '')
 const readyAt = atom({ plugin: 'video-studio', key: 'ready' } as const, null as ReadyPage | null)
 const dismissedAt = atom({ plugin: 'video-studio', key: 'dismissed' } as const, '')
+// the last page the band opened by itself, by when Claude showed it
+const openedAt = atom({ plugin: 'video-studio', key: 'opened' } as const, '')
 // one member per boxed answer, by its fingerprint
 const BOXED = { plugin: 'video-studio', key: 'boxed' } as const
 
@@ -52,14 +56,23 @@ async function helper($: EngineInterface, studio: string, args: string[]): Promi
   return run?.exitCode === 0 ? run.stdout.trim() : ''
 }
 
-/** What's waiting for the person's review now, or else what Claude is making (studio.mjs ready), into the band's state. */
+/** What's waiting for the person's review now, or else what Claude is making (studio.mjs ready), into the band's state;
+    and a page Claude has just shown, opened beside the chat once. */
 async function checkReady($: EngineInterface, studio: string): Promise<void> {
   let page: ReadyPage | null = null
+  let open: { path: string; at: string } | null = null
   try {
-    const now = JSON.parse(await helper($, studio, ['ready']))
+    const session = await $.session.id().catch(() => '')
+    const now = JSON.parse(await helper($, studio, ['ready', ...(session ? ['--session', session] : [])]))
     page = now.page ?? now.making ?? null
+    open = now.open ?? null
   } catch {}
   await update($, readyAt, () => page)
+  const { path = '', at = '' } = open ?? {}
+  if (path && at && at !== (await read($, openedAt))) {
+    await update($, openedAt, () => at)
+    await openPage($, studio, path)
+  }
 }
 
 /** Starts the studio's page server if needed and opens a page: beside the chat, or in the web browser. */

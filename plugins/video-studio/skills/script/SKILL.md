@@ -84,8 +84,7 @@ marks the cut after it.
    why it stays (a script that runs long or short, say).
 9. **Write `script.json` last** (format below), then check it (step 8). Writing it publishes the review page, and the
    studio tells you how to show it.
-10. **Share it** (production skill, "Showing a page"): beside the chat, with its card and link, then wait for the
-    review in the background. Say in one sentence how to review: read it, click any cell to leave a note (that
+10. **Share it** (production skill, "Showing a page"): its link, then wait for the review in the background. Say in one sentence how to review: read it, click any cell to leave a note (that
     switches the decision to Changes needed), then press Send changes (Approve and save, with no notes). Mention any
     library items you've suggested: hovering one on the page shows it playing in the video's brand, and a click opens
     it. End your turn.

@@ -1,8 +1,11 @@
-// How Claude shows a studio page: open it beside the chat, put a card for it in the chat with the page's link under
-// it (the link alone without the desktop app's widgets) and, for a script, storyboard or video, wait in the background for
-// the user's review.
-// Used by `studio.mjs show` and the page-ready hook, so both say the same thing.
-import { readdirSync } from "node:fs";
+// How Claude shows a studio page. In a session with Video Studio's band (hooks/index.tsx), the band opens the page
+// beside the chat by itself, once, so Claude only says in a line what's ready, with its link, and for a script,
+// storyboard or video waits in the background for the user's review. Without the band (a host that doesn't run it),
+// Claude opens the page itself, puts a card for it in the chat with the page's link under it (the link alone without
+// the desktop app's widgets), and waits the same way.
+// Used by `studio.mjs show` and the page-ready hook, so both say the same thing. The band says it's there through
+// `studio.mjs ready --session <id>` (.studio/band.json), and a page to open is kept for it in .studio/open.json.
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   PLUGIN_ROOT,
@@ -96,6 +99,78 @@ export function pageCard(root, page) {
     `<div style="flex:1;min-width:200px"><p style="margin:0;font-weight:500;font-size:15px">${esc(title)}</p><p style="margin:0;font-size:13px;color:var(--text-secondary)">${esc(c.facts.join(" · "))}</p>${swatches}</div>`,
     `</div>`,
   ].join("");
+}
+
+// ───────── the band ─────────
+
+const DAY = 86400e3;
+// a page the band hasn't opened after this long is left to the user (a session picked up again later, say)
+const FRESH = 10 * 60e3;
+const readKeyed = (file) => {
+  try {
+    return JSON.parse(readFileSync(file, "utf8")) || {};
+  } catch {
+    return {};
+  }
+};
+const writeKeyed = (root, file, all) => {
+  mkdirSync(join(root, ".studio"), { recursive: true });
+  writeFileSync(file, `${JSON.stringify(all, null, 2)}\n`);
+};
+const bandFile = (root) => join(root, ".studio", "band.json");
+const openFile = (root) => join(root, ".studio", "open.json");
+
+/** The band says it's there for a session (each time it asks what's waiting); a day's silence forgets it. */
+export function bandSeen(root, session, now = Date.now()) {
+  if (!session) return;
+  const all = Object.fromEntries(Object.entries(readKeyed(bandFile(root))).filter(([, t]) => now - Date.parse(t) < DAY));
+  // written at most every few minutes, as the band asks after every turn
+  if (all[session] && now - Date.parse(all[session]) < 5 * 60e3) return;
+  all[session] = new Date(now).toISOString();
+  writeKeyed(root, bandFile(root), all);
+}
+
+/** Whether this session has the band, so a page opens beside the chat by itself. */
+export function hasBand(root, session) {
+  const t = session && readKeyed(bandFile(root))[session];
+  return Boolean(t && Date.now() - Date.parse(t) < DAY);
+}
+
+/** Ask the band to open a page beside the chat (it opens each request once). */
+export function openForBand(root, session, page) {
+  if (!session) return;
+  const now = Date.now();
+  const all = Object.fromEntries(Object.entries(readKeyed(openFile(root))).filter(([, o]) => now - Date.parse(o?.at) < DAY));
+  all[session] = { path: page.path, at: new Date(now).toISOString() };
+  writeKeyed(root, openFile(root), all);
+}
+
+/** The page waiting for this session's band to open, if it was asked for in the last few minutes: { path, at }. */
+export function pageToOpen(root, session) {
+  const o = session && readKeyed(openFile(root))[session];
+  return o?.path && Date.now() - Date.parse(o.at) < FRESH ? { path: o.path, at: o.at } : null;
+}
+
+const LINKS = { dashboard: "Open the dashboard", brand: "Open the brand page", project: "Open the video overview", delivery: "Open the delivery page", library: "Open the library" };
+/** The labelled link to a page, as Claude writes it in the chat. */
+export function pageLink(base, page) {
+  const label = LINKS[page.kind] || { script: `Open script v${page.version}`, storyboard: `Open storyboard v${page.version}`, review: `Open video v${page.version}`, item: `Open ${page.code}` }[page.kind] || "Open the page";
+  return `[${label} ↗](${pageUrl(base, page.path)})`;
+}
+
+/** What Claude does when the band opens the page: a line on what's ready with its link, and for a script, storyboard or
+    video, the background wait. */
+export function bandInstructions(root, base, page) {
+  const helper = `node "${join(PLUGIN_ROOT, "scripts", "studio.mjs")}"`;
+  const waits = ["script", "storyboard", "review"].includes(page.kind) && page.latest;
+  return [
+    `Wyzowl Video Studio: ${page.label} is ready, and opens beside the chat by itself: ${pageUrl(base, page.path)}`,
+    `Say in a line what's ready, with this link: ${pageLink(base, page)}.`,
+    waits &&
+      `Then wait for the review in the background: run ${helper} wait ${page.path} --studio "${root}" with run_in_background. Tell the user to press Approve and save when they're done (it says ${page.kind === "storyboard" ? "Send feedback" : "Send changes"} once there are notes) and you'll take it from there, then end your turn.`,
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 /** What Claude should do to show a page now. `unsaved` lists addresses of open pages with feedback not yet saved. */

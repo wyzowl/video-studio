@@ -55,8 +55,8 @@ files" in the session-start note).
    Mac yet, `node PLUGIN/scripts/studio.mjs install all --wait` gets it first.
 9. **Copy the files** into `logos/`, `backgrounds/`, `fonts/` and `refs/`, then **write `brand.json` last**: writing it
    publishes the brand page, and the studio tells you its address.
-10. **Show the brand page** `/brands/<slug>/` (see "Showing a page" in the production skill): beside the chat, with
-    its card. Ask the user to check it and tell you anything to change.
+10. **Show the brand page** `/brands/<slug>/` (see "Showing a page" in the production skill), with its link. Ask the
+    user to check it and tell you anything to change.
 
 ## Update a kit
 

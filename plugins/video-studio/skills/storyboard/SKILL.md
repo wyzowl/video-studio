@@ -88,7 +88,7 @@ voiceover); rendering the frames marks `frames`, then `check`, by itself.
 5. **Write `storyboard.json` last** (format below). Writing it publishes the review page, and the studio tells you
    its address, so the frames must be rendered and checked first.
 6. **Share it:** show the page `/videos/<project>/storyboard/v1/` (see "Showing a page" in the production skill):
-   beside the chat, with its card, then wait for the review in the background. Say in one sentence how to review:
+   its link, then wait for the review in the background. Say in one sentence how to review:
    every scene is approved unless it has a note, so press + Note on any that needs changing, then press Send feedback
    (Approve and save, if every scene is right), and you'll take it from there. End your turn.
 
