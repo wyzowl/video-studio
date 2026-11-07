@@ -50,9 +50,10 @@ export async function filmStills(root, slug, { at, width = 0 }) {
   const pkg = readJSON(join(dir, "package.json"));
   const version = /hyperframes@([0-9][\w.-]*)/.exec(pkg?.scripts?.check || pkg?.scripts?.render || "")?.[1] || HYPERFRAMES_VERSION;
   const frames = await snapshot(dir, version, times, join(".hyperframes", "artifacts", "snapshots", "stills"));
-  // each still's scene, from the headings the build gives each scene's section
+  // each still's scene, from the headings the build gives each scene's section; where two overlap for a transition,
+  // the later, which draws on top
   const scenes = fileSections(html).sections.filter((s) => s.scene && s.start !== null);
-  const sceneAt = (t) => scenes.find((s) => s.start <= t && t < s.end)?.scene;
+  const sceneAt = (t) => scenes.filter((s) => s.start <= t && t < s.end).sort((a, b) => b.start - a.start)[0]?.scene;
   // across: two of a wide frame, four of a tall one (fewer when there are fewer), so each is big enough to judge
   const ratio = (Number(r["data-height"]) || 1080) / (Number(r["data-width"]) || 1920);
   const across = Math.min(frames.length, ratio > 1 ? 4 : ratio === 1 ? 3 : frames.length > 6 ? 3 : 2);

@@ -44,7 +44,8 @@ touches.
 a must fix stops the render; a should fix is fixed or kept, `--keep S2 "<why>"`); `studio.mjs stills <video> --at
 <times>` for stills of what changed, on one sheet; `studio.mjs words <video>` for the spoken words in the film's time;
 `studio.mjs move <video> <what> --to|--by|--start|--end|--duration` for a timing change (an item, a clip, the voice
-or a scene's cut, with its settings, cues and headings; `--code` for a scene's own code times);
+or a scene's cut, with its settings, cues and headings; `--code` for a scene's own code times, `--overlap` for a scene
+under a transition that moves both);
 `studio.mjs draft <video>` for the review's draft and sheets. HyperFrames always
 runs with its version and its two switches, and never its cloud, publishing or sign-in. Open `../cli.md` for any other
 command (capture, measure, keyframes, beats, audio, transcribe, the app's history).

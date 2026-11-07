@@ -135,7 +135,9 @@ asking. To build one in, whether it was suggested or the user named it:
    - **Both scenes** (X05, X19): a recipe for the main timeline, since a block can't move the scenes around it. Paste
      its layer and script into `index.html` once, wrap each scene in a plain full-frame element (B after A in the
      page), overlap the two for the transition's length, and call it on the main timeline with the two scenes and its
-     options, such as where the iris opens or where scene A lands in scene B.
+     options, such as where the iris opens or where scene A lands in scene B. `studio.mjs frames` does this from its
+     still in the storyboard; by hand, `studio.mjs move <project> <scene B> --start <its start> --overlap` starts B
+     under it and leaves A's end where it is.
 8. **Combine them.** Items work together, at once or one after another:
    - a full-frame item as a scene's base, with items that sit over footage on top (a wall of work with captions over
      it, a chart with a name tag);

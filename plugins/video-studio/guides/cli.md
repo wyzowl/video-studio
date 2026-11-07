@@ -28,8 +28,10 @@ A film built from its storyboard starts with `node PLUGIN/scripts/studio.mjs fra
 frames as its layout in `index.html` (their styles, drawings and words, with the film's prefix on their classes and
 ids; what the frames name with `data-el`, one element), each library item's still swapped for the live item with the
 storyboard's settings from `items.json`, from the time its frames show it, the storyboard's `frames.js` loaded as the
-film's code, and a clock with a section per scene, each noting the frames' times and what each frame changes. The
-build then adds the motion, and never draws a scene again (build skill, "An animated video"). It starts a film only:
+film's code, and a clock with a section per scene, each noting the frames' times and what each frame changes. A
+transition's still puts it on the cut nearest where its frame says; one that moves both scenes (X05, X19) puts the
+scenes either side in plain wrappers, overlapping for it, and is called on the clock's timeline with the storyboard's
+settings. The build then adds the motion, and never draws a scene again (build skill, "An animated video"). It starts a film only:
 a built `index.html` stays as it is (`--force` replaces it, keeping the old one in `docs/`; `--version <n>` takes
 another storyboard version).
 
@@ -58,7 +60,8 @@ Video Studio's own commands for what a build would otherwise work out by hand. E
 
 `node PLUGIN/scripts/studio.mjs words <video>` lists the spoken words in the film's time, a line per phrase with the
 time each word starts (`Kettlewick@11.86`): the voiceover's verified transcript moved to where its `<audio>` starts,
-or a footage cut's words (`docs/words.json`). Time things to these, never to a transcript's own times.
+or a footage cut's words (`docs/words.json`). Time things to these, never to a transcript's own times. Until the
+film has its voiceover clip, they're in the voiceover's own time.
 
 - `--correct` (a voiceover, once transcribed): writes `inputs/transcript_verified.json` from `inputs/transcript.json`
   with the approved script's words on the times heard (its spelling and punctuation; where it heard "£14" for
@@ -91,6 +94,10 @@ each change with its file and line.
   scene's own code (`P(t, 26.1, 0.45)`) are listed by line; `--code` moves them too (each time written with a decimal
   point inside the range, in the scene's own headed script sections: look over what it lists). The film's first and
   last moments stay, and so do the approved storyboard's times.
+- `--overlap`, with a scene's `--start` (or `--end`): the scene starts earlier (ends later) under its neighbour, which
+  keeps its end (start), for a transition that moves both scenes (X05, X19; `frames` lays them out so). Only the
+  scene's own headings, clips and scene-table row move. A cut moved without it beside one of those transitions says
+  where its call is: its `at` stays.
 - When cues moved, `sfx.mjs build` makes the effects again; then `check`.
 
 ### stills

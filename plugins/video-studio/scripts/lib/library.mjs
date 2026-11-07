@@ -148,6 +148,15 @@ export function readItem(file) {
 /** The item's own variables (words and options), without the brand ones. */
 export const contentVariables = (item) => item.variables.filter((v) => !BRAND_VARS.includes(v.id));
 
+/** How long after a transition that moves both scenes starts, scene A has to run: to the cut, where B covers it
+    (X19), or where A lands inside B and stays there for `keep` s (X05), until B closes over it. */
+export const sceneARuns = (item, keep = 0) => (item.variables.some((d) => d.id === "keep") ? (Number(item.length) || 1) + keep : Number(item.cut) || 0);
+
+/** Whether one of an item's settings takes a picture or a recording (a file, or several separated by |) rather than
+    words, by its name as the items name them: `screenImage`, `screenVideoA`, `image2`, `clip1`, `media3`, `images`,
+    `logos`, `photo`, `avatar`, `logo` or `icon`. */
+export const mediaSetting = (d) => d?.type === "string" && /(Video|Image)[A-Z]?$|^(image|video|media|clip)\d+$|^(images|logos|photo|avatar|logo|icon)$/.test(String(d.id));
+
 // ───────── search ─────────
 
 const STOP = new Set("a an and the of to for in on at by with or is it its this that as into from be are what who how when where one some show shows showing".split(" "));
@@ -397,7 +406,8 @@ export function previewDocument(item, { brand = null, size = "16x9", at = null, 
     item.backdrop === "presenter" && !clear
       ? `<div class="backdrop"><svg viewBox="0 0 1000 1100" style="left:${p.left}px;top:${p.top}px;width:${p.width}px;height:${p.height}px" aria-hidden="true"><path d="${PERSON_PATH}" fill="${STAND_IN.figure}"/></svg></div>`
       : "";
-  const scenes = transition && !clear ? standInScenes(item, fmt) : "";
+  // on a clear ground (a still for a storyboard frame), a recipe moves two empty scenes, so only its own layer shows
+  const scenes = !transition ? "" : !clear ? standInScenes(item, fmt) : item.recipe ? `<div class="scene clear" id="scene-a"></div><div class="scene clear" id="scene-b" style="visibility:hidden"></div>` : "";
   // a transition's preview: scene A, the transition at 0.9 s, then scene B (longer when A lands on B's screen)
   const play = transition ? { at: 0.9, cut: Number(item.cut) || 0, length: Number(item.length) || 1, after: item.preview?.sceneB === "device" ? 1.8 : 1.2, recipe: Boolean(item.recipe) } : null;
   return `<!doctype html>
@@ -421,6 +431,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: ${ground}; }
 #stage #scene-a { background: ${STAND_IN.ground}; }
 #stage #scene-a svg { position: absolute; }
 #stage #scene-b { background: var(--card); }
+#stage #scene-a.clear, #stage #scene-b.clear { background: none; }
 #stage #scene-b i { position: absolute; display: block; }
 #stage #scene-b .body { background: var(--ink); }
 #stage #scene-b .lid { background: #1e1e1e; }
@@ -491,7 +502,8 @@ ${template}
     const hold = (t) => { tl.pause(); tl.seek(t, false); };
     // for the paid library's publish script, which takes each locked item's stills at the moment that shows it best
     window.__studioPreview = { duration: () => tl.duration(), seek: hold, cut: PLAY ? PLAY.at + PLAY.cut : null };
-    if (AT != null) hold(Math.min(AT, tl.duration()));
+    // a still at a time into the item: for a transition, that far into the transition
+    if (AT != null) hold(Math.min((PLAY ? PLAY.at : 0) + AT, tl.duration()));
     else if (still) hold(PLAY ? PLAY.at + PLAY.cut : tl.duration() * 0.45);
     else loop();
     document.documentElement.dataset.ready = "1";

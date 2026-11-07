@@ -151,7 +151,7 @@ import { SCORES, STAGES, endStage, readProgress, startStage, stageTitle, stepsFo
 import { EXTRAS, newer } from "./lib/extras.mjs";
 import { KIT_DIR, SFX_KIT, installKit, kitInstalled } from "./lib/sfx.mjs";
 import { HYPERFRAMES, HYPERFRAMES_ENV, HYPERFRAMES_VERSION } from "./lib/versions.mjs";
-import { CATEGORIES, SIZES, BRAND_VARS, BUNDLED_FONTS, libraryItems, libraryItem, lockedItems, findItem, contentVariables, brandStyle, itemLayer, searchItems } from "./lib/library.mjs";
+import { CATEGORIES, SIZES, BRAND_VARS, BUNDLED_FONTS, libraryItems, libraryItem, lockedItems, findItem, contentVariables, mediaSetting, sceneARuns, brandStyle, itemLayer, searchItems } from "./lib/library.mjs";
 import { catalogue, checkDue, checkLibrary, installedPack, licence } from "./lib/paid.mjs";
 import { goneHistories, sizeLabel, studioTidy, tidyGone, tidyPlan, tidyVideo, tidyWhat } from "./lib/tidy.mjs";
 import { outsideSkills, removeOutsideSkills } from "./lib/outside-skills.mjs";
@@ -544,17 +544,20 @@ async function pageReady() {
     (unless it's open already). With `--card`, or in a session without the band, how Claude shows it instead. */
 async function show() {
   const root = studioRoot({ forPages: true });
+  // a page's data file given for its page (videos/<project>/script/v1/script.json): the page that shows it
+  const file = /\.json$/i.test(arg || "") ? [resolve(arg), join(root, arg.replace(/^\/+/, ""))].map((f) => dataFileOf(root, f)).find(Boolean) : null;
+  const path = file ? `/videos/${file.project}/${file.kind}/v${file.version}/` : arg || "/";
   // the page's data file first: a broken one would show an older version, or no page
-  const data = pageData(root, arg || "");
+  const data = pageData(root, path);
   const problems = data ? dataProblems(root, data.project, data.kind, data.version) : [];
   if (problems.length) throw new Error(`${problems.join(" ")} Fix it, then show the page again.`);
   if (argv.includes("--check")) {
     if (!data) throw new Error("--check reads the data file of a script, storyboard or video review: show /videos/<project>/storyboard/v<N>/ --check.");
     return console.log(`videos/${data.project}/${data.kind}/v${data.version}/${data.kind}.json: its page can show it.`);
   }
-  const page = resolvePage(root, arg || "/");
+  const page = resolvePage(root, path);
   if (!page) {
-    console.log(`There's no page at ${arg} yet. Pages: / (the dashboard), /brands/<brand>/, /videos/<project>/, /videos/<project>/script/, /videos/<project>/storyboard/, /videos/<project>/review/, and the library /library/ (a category: /library/data/; an item: /library/widgets/w03/).`);
+    console.log(`There's no page at ${path} yet. Pages: / (the dashboard), /brands/<brand>/, /videos/<project>/, /videos/<project>/script/, /videos/<project>/storyboard/, /videos/<project>/review/, and the library /library/ (a category: /library/data/; an item: /library/widgets/w03/).`);
     return;
   }
   const base = await ensureServer(root);
@@ -782,7 +785,8 @@ async function wordsCommand() {
 }
 
 /** `move [<video>] <what> --to|--by|--start|--end|--duration <s>`: a clip, item or scene moved with everything that
-    moves with it (lib/move.mjs), each change printed with its file and line. */
+    moves with it (lib/move.mjs), each change printed with its file and line. `--overlap` starts a scene earlier (or
+    ends it later) under its neighbour, which keeps its cut. */
 async function moveCommand() {
   const named = positional[2] !== undefined;
   const at = named ? theVideo("") : (() => {
@@ -794,7 +798,7 @@ async function moveCommand() {
   if (!what) throw new Error("What moves? A clip's id (vo), a library item's code (W49) or a scene (s07): node studio.mjs move <video> <what> --to <s>.");
   const num = (k) => (opt(k) === null ? null : Number(opt(k)));
   const { moveThing } = await import("./lib/move.mjs");
-  console.log(moveThing(at.root, at.slug, what, { to: num("--to"), by: num("--by"), start: num("--start"), end: num("--end"), duration: num("--duration"), code: argv.includes("--code") }).join("\n"));
+  console.log(moveThing(at.root, at.slug, what, { to: num("--to"), by: num("--by"), start: num("--start"), end: num("--end"), duration: num("--duration"), code: argv.includes("--code"), overlap: argv.includes("--overlap") }).join("\n"));
 }
 
 /** `stills [<video>] --at <s>,…`: the film at those moments on one sheet, without a render (lib/stills.mjs). */
@@ -921,7 +925,10 @@ async function library() {
   const values = { ...content, ...Object.fromEntries(BRAND_VARS.filter(uses).map((k) => [k, style.vars[k]])) };
   // every font the block names: the brand's three, and any of its own (D72's handwriting)
   const fonts = [...new Set(Object.keys(values).filter((k) => /^font[A-Z]/.test(k) && values[k]).map((k) => String(values[k]).replace(/^"|"$/g, "")))];
-  const media = contentVariables(item).filter((d) => /(Video|Image)$/.test(d.id));
+  const media = contentVariables(item).filter(mediaSetting);
+  // most are an element's src (data-var-src); a few the block's script reads from its settings
+  const bound = media.filter((d) => item.template.includes(`data-var-src="${d.id}"`));
+  const read = media.filter((d) => !bound.includes(d));
   // where each font's file is: the brand kit's own, else the plugin's bundled copy
   const fontSource = (family) => {
     const own = (brand?.fonts || []).find((x) => x?.family === family && x.file);
@@ -940,7 +947,7 @@ async function library() {
   ];
   const fontsLine = fonts.length ? `Fonts: index.html needs an @font-face for each, as for the rest of the video: ${fonts.map(fontSource).join("; ")}.` : "";
   const mediaLine = media.length
-    ? `Media: in the copy, write each file as the src of its element (${media.map((d) => d.id).join(", ")}: the elements with data-var-src="…"), and delete the <video> and <audio> elements you don't use: one with no file makes the render wait 45 s, then show a frozen frame. Keep the <img> elements: the block's script may read them.${item.id.startsWith("t01") ? " The cut-out is the same footage with the background removed: HF remove-background <footage.mp4> -o <footage>_cutout.webm. Cut both to the moment it plays; their sound stays on the main track." : " Their sound stays on the main track."}`
+    ? `Media: ${read.length ? `give ${read.map((d) => d.id).join(", ")} in its settings, each a file's path in the project${read.some((d) => /s$/.test(d.id)) ? " (a list's files separated by |)" : ""}${bound.length ? "; " : "."}` : ""}${bound.length ? `in the copy, write each file as the src of its element (${bound.map((d) => d.id).join(", ")}: the elements with data-var-src="…"), and delete the <video> and <audio> elements you don't use: one with no file makes the render wait 45 s, then show a frozen frame. Keep the <img> elements: the block's script may read them.${item.id.startsWith("t01") ? " The cut-out is the same footage with the background removed: HF remove-background <footage.mp4> -o <footage>_cutout.webm. Cut both to the moment it plays; their sound stays on the main track." : " Their sound stays on the main track."}` : ""}`
     : "";
   const facts = [
     `${item.code} ${item.name} (${CATEGORIES[item.category].title}${item.free ? ", free" : ""}, ${itemLayer(item)}): ${item.summary}`,
@@ -967,7 +974,7 @@ async function library() {
     // a transition that moves both scenes works on the main timeline, as HyperFrames transitions do
     steps = [
       `1. Copy everything inside the <template> of ${item.file} (its layer and script) into index.html, after both scenes and before the main timeline's script. Once is enough for any number of uses.`,
-      `2. Scene A and scene B are full-frame elements in index.html, B after A in the page (so B draws on top). Give the transition plain wrappers, not timed media: wrap a video clip in a full-frame div. The scenes overlap: B starts at T, the transition's start, and A ends at T + ${item.length} s${keep}. The cut is at T + ${item.cut} s.`,
+      `2. Scene A and scene B are full-frame elements in index.html, B after A in the page (so B draws on top). Give the transition plain wrappers, not timed media: wrap a video clip in a full-frame div. The scenes overlap: B starts at T, the transition's start, and A ends at T + ${keep ? `${item.length} s${keep}. The cut is at T + ${item.cut} s.` : `${sceneARuns(item)} s, the cut, where B covers it.`}`,
       `3. On the main timeline, before it's registered:`,
       call,
       `4. Set its options in vars (the brand settings are ${styled}).`,
@@ -1111,6 +1118,8 @@ async function libraryStills() {
     await browser.close();
   }
   console.log(`${made.length} still${made.length === 1 ? "" : "s"} at ${SIZES[size].label}${slug ? ` in ${slug}` : " in the studio's style"}: ${made.join(", ")}`);
+  const both = [...new Set(shots.filter((s) => s.item.category === "transitions" && s.item.recipe).map((s) => s.item.code))];
+  if (both.length) console.log(`${both.join(" and ")} move${both.length === 1 ? "s" : ""} both scenes, so ${both.length === 1 ? "its still shows" : "their stills show"} only the transition's own layer, where it has one (X19's ring): the frame draws the two scenes as they are at that moment.`);
 }
 
 /** An item's values for a still, from key=value pairs: a media option (a screenshot, a recording) takes a file in the
@@ -1120,14 +1129,15 @@ function stillValues(item, root, given) {
   for (const [key, raw] of Object.entries(given)) {
     const d = item.variables.find((x) => x.id === key);
     if (!d) throw new Error(`${item.code} has no "${key}". It takes: ${item.variables.map((x) => x.id).join(", ")}`);
-    let value = String(raw);
-    if (/(Video|Image)$/.test(key) && value && !/^(https?:|data:|\/(videos|brands)\/)/.test(value)) {
+    const served = (value) => {
+      if (!value || /^(https?:|data:|\/(videos|brands)\/)/.test(value)) return value;
       const file = resolve(value);
       const rel = relative(root, file).split(sep).join("/");
       if (!existsSync(file)) throw new Error(`${key}: there's no file ${value}`);
       if (!/^(videos|brands)\//.test(rel)) throw new Error(`${key}: the file needs to be in the studio's videos/ or brands/ folder for the still`);
-      value = `/${rel.split("/").map(encodeURIComponent).join("/")}`;
-    }
+      return `/${rel.split("/").map(encodeURIComponent).join("/")}`;
+    };
+    const value = mediaSetting(d) ? String(raw).split("|").map((x) => served(x.trim())).join("|") : String(raw);
     sets[key] = d.type === "number" ? Number(value) : value;
   }
   return sets;

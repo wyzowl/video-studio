@@ -35,7 +35,7 @@ import {
   readJSON,
   contrast,
 } from "./studio.mjs";
-import { CATEGORIES, SIZES, BRAND_VARS, libraryItems, libraryItem, lockedItems, findItem, brokenItems, contentVariables, brandStyle } from "./library.mjs";
+import { CATEGORIES, SIZES, BRAND_VARS, libraryItems, libraryItem, lockedItems, findItem, brokenItems, contentVariables, mediaSetting, brandStyle } from "./library.mjs";
 import { catalogue, installedPack, licence } from "./paid.mjs";
 import { SCORES, stageTitle, stepsNow } from "./progress.mjs";
 import { deliveryFiles, deliveryWords, hasDelivery } from "./delivery.mjs";
@@ -2176,9 +2176,7 @@ export function itemPage(studio, category, code, query) {
   const ask = `Use ${item.code} (${item.name}) in my video: `;
   // "Try it with your words": the words and options, without the media files the preview stands in for, or the pixel
   // positions that place it over real footage
-  const tryFields = contentVariables(item).filter(
-    (d) => !(d.type === "string" && (/(Video|Image|Path)$|^(image|video|media|clip)\d+$|^(photo|avatar|logo|file|cover)$/.test(d.id) || /\bfile\b/i.test(d.label || ""))) && !(d.type === "number" && d.unit === "px"),
-  );
+  const tryFields = contentVariables(item).filter((d) => !mediaSetting(d) && !(d.type === "number" && d.unit === "px"));
   const example = Object.fromEntries(tryFields.map((d) => [d.id, item.preview?.[d.id] ?? d.default]));
   const now = { ...example, ...Object.fromEntries(Object.entries(view.vars).filter(([k]) => Object.hasOwn(example, k))) };
   const field = (d) => {

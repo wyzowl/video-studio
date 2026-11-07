@@ -8,6 +8,8 @@
 //   give its time range, the clips that start or end at its cuts, the scene table of a one-clock film (`["k-s07",
 //   25.62, 31.31, drawS07]`), and on a slide the clips, cues and review beats inside it. Times written in its own code
 //   (`P(t, 26.1, 0.45)`) are listed with their lines, or moved with `--code`.
+// - with `--overlap`, a scene starts earlier (or ends later) under its neighbour, which keeps its own end (or start),
+//   for a transition that moves both scenes (X05, X19): only the scene's own heading, clips and scene-table row move.
 // The approved storyboard keeps its times.
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -202,8 +204,78 @@ function codeTimes(files, scene, lo, hi) {
   return out;
 }
 
+/** The calls of the transitions that move both scenes (X05, X19) on the film's timeline, with the scenes they name
+    (their wrappers' or layers' ids, `#k-s04-wrap`): [{ code, at, a, b, where }]. */
+function joinCalls(files) {
+  const out = [];
+  for (const f of files)
+    for (const m of f.text.matchAll(/StudioTransitions\[\s*["'`]([a-z]\d{2})-[\w-]*["'`]\s*\]\s*\(\s*\w+\s*,\s*\{([^}]*)/gi)) {
+      const named = (k) => new RegExp(`\\b${k}\\s*:\\s*(["'\`])([^"'\`]*)\\1`).exec(m[2])?.[2] || "";
+      const scene = (k) => /(?:^|[^a-z0-9])(s\d{2,}[a-z]?)(?:[^0-9a-z]|$)/i.exec(named(k))?.[1]?.toLowerCase() || null;
+      out.push({ code: m[1].toUpperCase(), at: Number(/\bat\s*:\s*(-?\d+(?:\.\d+)?)/.exec(m[2])?.[1]), a: scene("a"), b: scene("b"), where: `${f.rel}:${lineAt(f.text, m.index)}` });
+    }
+  return out;
+}
+
+/** A heading's first time range, given new ends. */
+const retime = (line, a, b) => line.replace(/(\d+(?:\.\d+)?)(\s*(?:s\s*)?[–-]\s*)(\d+(?:\.\d+)?)/, (m, x, sep) => `${fmt(a)}${sep}${fmt(b)}`);
+
+/** `move <scene> --start <s> --overlap` (or `--end`): the scene starts earlier (ends later) under its neighbour, which
+    keeps its cut. What moves is the scene's own: its headings, the clips that start (end) where it does, and its row in
+    a one-clock film's scene table. The lines that say what moved. */
+function overlapScene(dir, files, clips, target, { start, end, filmLength, where }) {
+  const { id } = target;
+  const [c1, c2] = [target.start, target.end];
+  const early = start !== null;
+  const [was, now] = early ? [c1, start] : [c2, end];
+  if (early ? !(now < c1) : !(now > c2)) throw new Error(`With --overlap, ${id} ${early ? "starts earlier" : "ends later"} than ${fmt(was)} s, under the scene ${early ? "before" : "after"} it: give a time ${early ? "before" : "after"} that, or leave out --overlap to move the cut.`);
+  if (early ? now < 0 : now > filmLength + NEAR) throw new Error(`That's outside the film (0–${fmt(filmLength)} s).`);
+  const at = (t) => near(t, was);
+  const said = new Map();
+  const say = (key, text) => said.set(key, [...(said.get(key) || []), text]);
+  const notes = [];
+  // its own headings, in every file
+  for (const f of files) {
+    const fileLines = f.text.split("\n");
+    const starts = [0];
+    for (const l of fileLines) starts.push(starts.at(-1) + l.length + 1);
+    for (const s of fileSections(f.text).sections) {
+      if (s.scene !== id || s.start === null || !at(early ? s.start : s.end)) continue;
+      const [a, b] = early ? [now, s.end] : [s.start, now];
+      f.edits.push({ from: starts[s.from - 1], to: starts[s.from - 1] + fileLines[s.from - 1].length, text: retime(fileLines[s.from - 1], a, b) });
+      say(`${f.rel}:${s.from}`, `heading ${id} ${fmt(s.start)}–${fmt(s.end)} → ${fmt(a)}–${fmt(b)}`);
+    }
+  }
+  // its clips: those that start (end) where it does; its neighbour's, which end (start) there, stay
+  for (const c of clips.filter((x) => x.file === files[0])) {
+    if (early ? !at(c.start) : c.end === null || !at(c.end)) continue;
+    const s = early ? now : c.start;
+    const d = early ? (c.duration === null ? null : c.end - now) : now - c.start;
+    const { said: words, late } = editClip(c, { start: s, duration: d, keepMoments: early }, dir);
+    if (words.length) say(where(c), `#${c.id || "?"} ${words.join(", ")}`);
+    for (const l of late) notes.push(`#${c.id}'s ${l}: set it again.`);
+    if (early && c.a["data-composition-src"] && !c.a["data-composition-id"]?.match(/^[a-z]\d{2}-/)) notes.push(`#${c.id} (${c.a["data-composition-src"]}) plays from its new start: its own times count from there.`);
+  }
+  // its row in a one-clock film's scene table: ["k-s05", 21.14, 28.18, drawS05]
+  for (const f of files) {
+    for (const m of f.text.matchAll(/\[\s*(["'`])([^"'`\n]*)\1\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/g)) {
+      if (!new RegExp(`(^|[^a-z0-9])${id}([^0-9a-z]|$)`, "i").test(m[2])) continue;
+      const [a, b] = [Number(m[3]), Number(m[4])];
+      if (!at(early ? a : b)) continue;
+      const [na, nb] = early ? [now, b] : [a, now];
+      f.edits.push({ from: m.index, to: m.index + m[0].length, text: m[0].replace(/(,\s*)(-?\d+(?:\.\d+)?)(\s*,\s*)(-?\d+(?:\.\d+)?)$/, (x, p, y, q) => `${p}${fmt(na)}${q}${fmt(nb)}`) });
+      say(`${f.rel}:${lineAt(f.text, m.index)}`, `scene table "${m[2]}" ${fmt(a)}, ${fmt(b)} → ${fmt(na)}, ${fmt(nb)}`);
+    }
+  }
+  if (!said.size) return [`Nothing of ${id}'s ${early ? "starts" : "ends"} at ${fmt(was)} s in the film's code: nothing moved (\`studio.mjs map\` shows its times).`];
+  writeAll(files);
+  const lines = [`${id} now ${early ? "starts" : "ends"} at ${fmt(now)} s, ${fmt(Math.abs(was - now))} s ${early ? "earlier, under the scene before it (which keeps its end)" : "later, into the scene after it (which keeps its start)"}:`];
+  for (const [k, v] of said) lines.push(`  ${k}  ${v.join("; ")}`);
+  return [...lines, ...notes];
+}
+
 /** `move`: the plan, made and written; the lines that say what moved. */
-export function moveThing(root, slug, what, { to = null, by = null, start = null, end = null, duration = null, code = false } = {}) {
+export function moveThing(root, slug, what, { to = null, by = null, start = null, end = null, duration = null, code = false, overlap = false } = {}) {
   const dir = join(root, "videos", slug);
   if (!existsSync(join(dir, "index.html"))) throw new Error(`${slug} isn't built yet: move works on the film's code.`);
   const given = [to, by, start, end, duration].filter((x) => x !== null).length;
@@ -217,6 +289,10 @@ export function moveThing(root, slug, what, { to = null, by = null, start = null
   const lines = [];
   const notes = [];
   const where = (c) => `${c.file.rel}:${lineAt(c.file.text, c.index)}`;
+  if (overlap) {
+    if (target.kind !== "scene" || [to, by, duration].some((x) => x !== null) || (start !== null) === (end !== null)) throw new Error("--overlap starts a scene earlier (--start <s>) or ends it later (--end <s>) under its neighbour: give one of them, with a scene (s05).");
+    return overlapScene(dir, files, clips, target, { start, end, filmLength, where });
+  }
 
   if (target.kind === "clip") {
     const c = target.clip;
@@ -303,7 +379,7 @@ export function moveThing(root, slug, what, { to = null, by = null, start = null
       const b = atCut(s.end)?.[1] ?? (inside(s.end) ? s.end + slide : s.end);
       if (a === s.start && b === s.end) continue;
       const line = fileLines[s.from - 1];
-      const next = line.replace(/(\d+(?:\.\d+)?)(\s*(?:s\s*)?[–-]\s*)(\d+(?:\.\d+)?)/, (m, x, sep) => `${fmt(a)}${sep}${fmt(b)}`);
+      const next = retime(line, a, b);
       f.edits.push({ from: starts[s.from - 1], to: starts[s.from - 1] + line.length, text: next });
       say(`${f.rel}:${s.from}`, `heading ${s.scene || s.name.slice(0, 24)} ${fmt(s.start)}–${fmt(s.end)} → ${fmt(a)}–${fmt(b)}`);
     }
@@ -384,6 +460,11 @@ export function moveThing(root, slug, what, { to = null, by = null, start = null
   writeAll(files);
   for (const [k, v] of said) lines.push(`  ${k}  ${v.join("; ")}`);
   if (said.size === 0) lines.push("  Nothing timed in the film's code starts or ends there.");
+  // a transition that moves both scenes stays where it's called: it's timed to the cut by hand
+  for (const j of joinCalls(files)) {
+    const side = j.b === id && n1 !== c1 ? ["comes in under", "start", "earlier"] : j.a === id && n2 !== c2 ? ["goes out under", "end", "later"] : null;
+    if (side) notes.push(`${id} ${side[0]} ${j.code} (${j.where}, at ${fmt(j.at)} s), which stays: set its at again if the transition moves with the cut, or keep the cut and ${side[1]} ${id} ${side[2]} under it with --overlap.`);
+  }
   if (!heads.length) notes.push(`${id} has no heading in the film's code: its time range came from the storyboard.`);
   // a cut that nothing timed starts or ends at: its heading may be out of date
   for (const [a] of cuts) if (!clips.some((c) => c.file === files[0] && (near(c.start, a) || (c.end !== null && near(c.end, a)))) && !table.some((t) => near(t, a))) notes.push(`Nothing timed in the film starts or ends at ${fmt(a)} s, ${id}'s ${a === c1 ? "start" : "end"} in its heading: check the heading against the film (\`studio.mjs map\`).`);

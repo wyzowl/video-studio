@@ -24,7 +24,7 @@ const PAUSE = 0.3;
 
 const round = (x, n = 2) => Math.round(x * 10 ** n) / 10 ** n;
 const num = (x) => String(round(x, 3));
-const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+const plural = (n, word, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;
 const list = (j) => (Array.isArray(j) ? j : Array.isArray(j?.words) ? j.words : []).filter((w) => w && Number.isFinite(+w.start) && String(w.text ?? "").trim());
 const mtime = (p) => {
   try {
@@ -48,19 +48,20 @@ function readVideoSound(root, slug) {
   return { dir, index, html, media, brief, script, footage, built: Boolean(html) };
 }
 
-/** Where the spoken words come from and how far they move: speechFile's (check.mjs), or before the build, the
-    voiceover's transcript in its own time. { file, offset, clip } or null. */
+/** Where the spoken words come from and how far they move: speechFile's (check.mjs), or before the film has its
+    voiceover clip (not built yet, or started from the storyboard's frames), the voiceover's transcript in its own
+    time (`own`). { file, offset, clip, own } or null. */
 function speechSource(v) {
   if (v.built) {
     const s = speechFile(v.dir, v.brief, v.script, v.media);
     if (s) {
       const clip = v.footage && s.file.endsWith(join("docs", "words.json")) ? null : v.media.find((m) => m.tag === "audio" && voiceClip(m));
-      return { ...s, clip };
+      return { ...s, clip, own: false };
     }
-    return null;
+    if (v.footage) return null;
   }
   const file = v.footage ? join(v.dir, "docs", "words.json") : [join(v.dir, "inputs", "transcript_verified.json"), join(v.dir, "inputs", "transcript.json")].find(existsSync);
-  return file && existsSync(file) ? { file, offset: 0, clip: null } : null;
+  return file && existsSync(file) ? { file, offset: 0, clip: null, own: true } : null;
 }
 
 /** Whether a media clip is the voiceover (as speechFile finds it). */
@@ -75,7 +76,7 @@ export function spokenWords(root, slug) {
   const words = list(readJSON(source.file))
     .map((w) => ({ text: String(w.text).trim(), start: +w.start + source.offset, end: (+w.end || +w.start) + source.offset }))
     .sort((a, b) => a.start - b.start);
-  return { words, source: source.file, offset: source.offset, clip: source.clip, v };
+  return { words, source: source.file, offset: source.offset, clip: source.clip, own: source.own, v };
 }
 
 /** Words into lines: a new line at a pause of PAUSE s or more, or after a sentence's end. */
@@ -105,9 +106,11 @@ export function describeWords(root, slug) {
   const from = relative(s.v.dir, s.source);
   const where = s.offset
     ? `moved ${s.offset > 0 ? "+" : ""}${num(s.offset)} s to where ${s.clip?.attrs.id ? `#${s.clip.attrs.id}` : "the voiceover"} starts`
-    : s.v.built
+    : !s.own
       ? "in the film's time"
-      : "in the voiceover's own time (the film isn't built yet)";
+      : s.v.built
+        ? "in the voiceover's own time (the film has no voiceover clip yet)"
+        : "in the voiceover's own time (the film isn't built yet)";
   const lines = [`${slug}: ${plural(s.words.length, "word")} spoken, ${num(s.words[0].start)}–${num(s.words.at(-1).end)} s, from ${from}, ${where}.`];
   if (!s.v.footage && from === join("inputs", "transcript.json")) lines.push("Not verified yet: `--correct` puts the approved script's words on these times (inputs/transcript_verified.json).");
   for (const p of phrases(s.words)) lines.push(`  ${`${num(p[0].start)}–${num(p.at(-1).end)}`.padEnd(13)} ${p.map((w) => `${w.text}@${num(w.start)}`).join(" ")}`);
@@ -317,6 +320,7 @@ export function duckLane(words, clip, level = 0.25) {
 export function duckMusic(root, slug, { level = 0.25 } = {}) {
   const s = spokenWords(root, slug);
   if (!s.v.built) return [`${slug} isn't built yet: the duck goes on the film's music.`];
+  if (s.own) return ["The film has no voiceover clip yet: the duck follows the voice where it plays in the film."];
   if (!s.words.length) return ["There are no spoken words to duck the music under."];
   const music = s.v.media.filter(musicClip);
   if (!music.length) return ["The film has no music clip (an <audio> with data-timeline-role=\"music\", or music in its id or file)."];
@@ -339,7 +343,7 @@ export function duckMusic(root, slug, { level = 0.25 } = {}) {
       mkdirSync(dirname(file), { recursive: true });
       writeFileSync(file, `${JSON.stringify(lane)}\n`);
     }
-    lines.unshift(`#${m.attrs.id || "?"}: down to ${Math.round(level * 100)}% under ${plural(spans, "stretch")} of speech (${plural(lane.lanes[0].points.length, "point")}${current.lanes?.some((l) => l.target === "volume") ? ", in place of its volume lane" : ""}).`);
+    lines.unshift(`#${m.attrs.id || "?"}: down to ${Math.round(level * 100)}% under ${plural(spans, "stretch", "stretches")} of speech (${plural(lane.lanes[0].points.length, "point")}${current.lanes?.some((l) => l.target === "volume") ? ", in place of its volume lane" : ""}).`);
   }
   writeFileSync(s.v.index, html);
   lines.unshift(`The music's duck, from the spoken words (${relative(s.v.dir, s.source)}), in index.html and tools/duck-lane.json:`);
@@ -361,5 +365,6 @@ export function captionWords(root, slug) {
   const v = readVideoSound(root, slug);
   const s = speechSource(v);
   if (!s) return [v.footage ? "No captions: the cut has no words yet (`--cut` writes docs/words.json)." : "No captions: the film has no speech."];
+  if (s.own && v.built) return ["No captions yet: the film has no voiceover clip, and the captions follow it."];
   return [writeCaptions(v.dir, s)];
 }

@@ -10,6 +10,10 @@
 // - Each library item's still (an <img> from the version's items/) becomes the live item, with the settings the
 //   storyboard drew it with (items.json, the list `library stills` made the stills from), from the time its frames show
 //   it. The scene's layer is split around it, so what was drawn over the still draws over the item.
+// - A transition's still puts it on the cut nearest where its frame says. One that moves both scenes (X05, X19) joins
+//   the scenes either side: each goes in a plain wrapper, the two overlap for it (the later from its start, the earlier
+//   for as long as it shows), and the clock's timeline calls it with the storyboard's settings. What's drawn after a
+//   transition's still stays in the scene's own layer.
 // The frames' styles, drawings (their SVG defs) and words come over as they are: their classes and ids take the film's
 // prefix, their files' paths are the project's, their pictures become background-image divs (the HyperFrames app
 // lists every <img> as a row of its own), and the version's frames.js (the storyboard's drawing functions) is the
@@ -18,7 +22,7 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFil
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { findChrome } from "./chrome.mjs";
-import { BRAND_VARS, BUNDLED_FONTS, brandStyle, contentVariables, itemLayer, libraryItem } from "./library.mjs";
+import { BRAND_VARS, BUNDLED_FONTS, brandStyle, contentVariables, itemLayer, libraryItem, mediaSetting, sceneARuns } from "./library.mjs";
 import { parseSize, readBrand, readBrief, readJSON, storyboardVersions, summariseFeedback } from "./studio.mjs";
 
 // HTML elements with no end tag, and those whose text is kept as it is
@@ -368,7 +372,7 @@ function itemValues(item, brand, set, duration, ctx) {
   for (const [k, v] of Object.entries(set || {})) {
     const d = item.variables.find((x) => x.id === k);
     if (!d) continue;
-    values[k] = d.type === "number" ? Number(v) : /(Video|Image)$/.test(k) || k === "icon" ? mediaValue(v, ctx) : v;
+    values[k] = d.type === "number" ? Number(v) : mediaSetting(d) ? String(v ?? "").split("|").map((x) => mediaValue(x.trim(), ctx)).join("|") : v;
   }
   if (item.variables.some((d) => d.id === "duration")) values.duration = duration;
   return values;
@@ -464,6 +468,48 @@ export async function framesIntoFilm(at, { version = null, force = false, prefix
     return id;
   };
 
+  // a transition's cut is a cut between two scenes: where its still says (its frame's time, less how far into it the
+  // still is, plus its own cut), put on the nearest scene's start (frames are drawn for their scene, not the cut)
+  const cutOf = (it, t, scene) => (Number.isFinite(t) && it.at !== null ? t - it.at + (Number(it.item.cut) || 0) : +scene.start || 0);
+  const cutNear = (t) => scenes.slice(1).reduce((x, y) => (!x || Math.abs(+y.start - t) < Math.abs(+x.start - t) ? y : x), null) || scenes[0];
+  // the transitions that move both scenes, from their stills: each joins the scenes either side of its cut, and the
+  // two overlap for it, the later from the transition's start and the earlier for as long as it shows (library X05,
+  // X19)
+  const joins = [];
+  const stillsIn = (nodes, out = []) => {
+    for (const n of nodes) {
+      if (!isEl(n)) continue;
+      if (n.item) out.push(n.item);
+      if (n.c) stillsIn(n.c, out);
+    }
+    return out;
+  };
+  for (const scene of scenes)
+    for (const f of drawn.frames.filter((x) => sceneOf(x.id) === scene))
+      for (const it of stillsIn(f.c).filter((x) => x.item.category === "transitions" && x.item.recipe)) {
+        const { item } = it;
+        const k = scenes.findIndex((x) => x.id === cutNear(cutOf(it, frameTime.get(f.id), scene)).id);
+        if (k < 1) {
+          problems.add(`${item.code} is in ${scene.id}'s frames, but there's no cut between two scenes for it to join: it's left out`);
+          continue;
+        }
+        const [a, b] = [scenes[k - 1], scenes[k]];
+        if (joins.some((j) => j.b === b.id)) {
+          if (!joins.some((j) => j.b === b.id && j.item.id === item.id)) problems.add(`two transitions that move both scenes are on the cut into ${b.id}: only ${joins.find((j) => j.b === b.id).item.code} joins it`);
+          continue;
+        }
+        const cut = round(+b.start || 0);
+        const said = cutOf(it, frameTime.get(f.id), scene);
+        if (Math.abs(said - cut) > 0.25) problems.add(`${item.code}'s still in ${f.id} puts its cut at ${secs(said)} s: it's on the cut into ${b.id}, at ${secs(cut)} s`);
+        const from = round(Math.max(0, cut - (Number(item.cut) || 0)));
+        const values = itemValues(item, brand, it.set, Number(item.length) || 1, { slug, versionDir, projectDir: dir });
+        const keep = item.variables.some((d) => d.id === "keep") ? Math.max(0, Number(values.keep) || 0) : 0;
+        joins.push({ item, values, from, cut, until: round(Math.min(D, Math.max(cut, from + sceneARuns(item, keep)))), a: a.id, b: b.id });
+      }
+  const joinIn = (id) => joins.find((j) => j.b === id);
+  const joinOut = (id) => joins.find((j) => j.a === id);
+  const isTransition = (it) => it.item.category === "transitions";
+
   const markupParts = [];
   const scriptParts = [];
   const families = new Set();
@@ -474,9 +520,12 @@ export async function framesIntoFilm(at, { version = null, force = false, prefix
 
   for (const scene of scenes) {
     const frames = drawn.frames.filter((f) => sceneOf(f.id) === scene);
-    const start = round(+scene.start || 0);
-    const end = round(Math.min(D, +scene.end || D));
+    const into = joinIn(scene.id);
+    const outOf = joinOut(scene.id);
+    const start = round(Math.min(+scene.start || 0, into ? into.from : Infinity));
+    const end = round(Math.min(D, Math.max(+scene.end || D, outOf ? outOf.until : 0)));
     const head = `${scene.id} ${secs(start)}–${secs(end)} s: ${String(scene.title || "").replace(/-->/g, "")}`;
+    const joined = [into && `${into.item.code} brings it in from ${secs(into.from)} s, the cut at ${secs(into.cut)} s`, outOf && `it runs on under ${outOf.item.code} to ${secs(outOf.until)} s`].filter(Boolean);
     if (!frames.length) {
       problems.add(`${scene.id} has no frames in frames.html, so its layer is empty`);
       markupParts.push(`  <!-- ── ${head} -->`, `  <section id="${p}-${scene.id}" class="clip ${p}-scene" data-start="${start}" data-duration="${round(end - start)}" data-track-index="0" data-track-kind="graphics"></section>`);
@@ -502,18 +551,22 @@ export async function framesIntoFilm(at, { version = null, force = false, prefix
       else if (g.node.merged) g.node = { ...g.node, c: g.node.c.map((c, i) => (g.node.merged[i].frames.includes(key) ? c : hide(c))) };
     }
 
-    // the layers: the scene's own, then each item, with what was drawn over its still in a layer of its own above it
+    // the layers: the scene's own, then each item, with what was drawn over its still in a layer of its own above it;
+    // a transition's still is no layer: it plays over the scene (a block) or moves the scene's own (a recipe), so what's
+    // drawn after it stays where it is
     const layers = [{ nodes: [] }];
     const nested = [];
+    let current = layers[0];
     for (const g of merged) {
       if (g.node.item) {
-        layers.push({ item: g }, { over: g.node.item.code, nodes: [] });
+        layers.push({ item: g });
+        if (!isTransition(g.node.item)) layers.push((current = { over: g.node.item.code, nodes: [] }));
         continue;
       }
       const found = [];
       const node = liftItems(g.node, found);
       for (const x of found) nested.push({ item: { ...g, node: x, nodes: Object.fromEntries(Object.keys(g.nodes).map((id) => [id, x])), inside: g.node } });
-      layers.at(-1).nodes.push({ ...g, node });
+      current.nodes.push({ ...g, node });
     }
     layers.splice(1, 0, ...nested);
 
@@ -531,7 +584,7 @@ export async function framesIntoFilm(at, { version = null, force = false, prefix
       }
 
     const named = new Map();
-    const parts = [`  <!-- ── ${head} (storyboard frames ${order.join(", ")}; laid out as ${key}) -->`];
+    const parts = [`  <!-- ── ${head} (storyboard frames ${order.join(", ")}; laid out as ${key}${joined.map((x) => `; ${x}`).join("")}) -->`];
     const notes = [];
     const placed = [];
     const label = (n) => (n.a["data-el"] ? `#${named.get(n.a["data-el"])}` : describe(n));
@@ -548,11 +601,19 @@ export async function framesIntoFilm(at, { version = null, force = false, prefix
             return Number.isFinite(t) && still.at !== null ? t - still.at : null;
           })
           .filter((x) => x !== null);
-        // with no moment for its still, an item starts with its scene (a transition, its cut on the scene's start)
-        const from = round(Math.max(0, known.length ? Math.min(...known) : cover ? start - (Number(item.cut) || 0) : start));
+        // with no moment for its still, an item starts with its scene; a transition's cut is the nearest cut to where
+        // its still says (or to its scene's start)
+        const said = known.length ? Math.min(...known) + (Number(item.cut) || 0) : +scene.start || 0;
+        const from = cover ? round(Math.max(0, +cutNear(said).start - (Number(item.cut) || 0))) : round(Math.max(0, known.length ? Math.min(...known) : start));
+        if (cover && !item.recipe && Math.abs(said - (from + (Number(item.cut) || 0))) > 0.25) problems.add(`${item.code}'s still puts its cut at ${secs(said)} s: it's on the cut at ${secs(from + (Number(item.cut) || 0))} s`);
         if (cover && item.recipe) {
           recipes.set(item.id, item);
-          notes.push(`${item.code} ${item.name} moves both scenes: its layer and script are in index.html once; call it on the clock's timeline at about ${secs(from)} s, with this scene and the one before it (library ${item.code})`);
+          const j = joins.find((x) => x.item.id === item.id && (x.a === scene.id || x.b === scene.id));
+          notes.push(
+            j
+              ? `${item.code} ${item.name} takes ${j.a} into ${j.b} from ${secs(j.from)} s: called on the clock's timeline (below), with both scenes in their wrappers (library ${item.code})`
+              : `${item.code} ${item.name} moves both scenes: ${joins.some((x) => x.item.id === item.id) ? "called on the clock's timeline (below), on the cut nearest its still" : "left out, with no cut between two scenes for it"} (library ${item.code})`,
+          );
           return;
         }
         const id = useItem(item);
@@ -587,6 +648,8 @@ export async function framesIntoFilm(at, { version = null, force = false, prefix
     });
     const grounds = [...new Set(frames.map((f) => f.a.class || ""))];
     if (grounds.length > 1) notes.push(`the frames' grounds: ${frames.map((f) => `${f.id} ${f.a.class ? `.${classes(f).join(".")}` : "none"}`).join(", ")} (the layer has ${key}'s)`);
+    // a scene a join moves is in a plain wrapper, its layers and items inside, which the transition moves whole
+    if (into || outOf) parts.splice(1, parts.length - 1, `  <div id="${p}-${scene.id}-wrap" class="${p}-wrap">`, ...parts.slice(1), "  </div>");
     markupParts.push(...parts);
 
     const when = order.map((id) => `${id}${Number.isFinite(frameTime.get(id)) ? ` at ${secs(frameTime.get(id))} s` : ""}${id === key ? " (the layout)" : ""}`).join(", ");
@@ -641,6 +704,7 @@ export async function framesIntoFilm(at, { version = null, force = false, prefix
     "  #root { position: relative; width: 100%; height: 100%; overflow: hidden; }",
     "  .clip { position: absolute; inset: 0; }",
     `  .${p}-scene, .${p}-over { position: absolute; inset: 0; overflow: hidden; }`,
+    ...(joins.length ? [`  .${p}-wrap { position: absolute; inset: 0; }`] : []),
     ...fonts.faces,
     `  /* ── the storyboard's styles (storyboard v${v}, frames.html) */`,
     css,
@@ -674,6 +738,10 @@ export async function framesIntoFilm(at, { version = null, force = false, prefix
     "    const clock = { _t: 0 };",
     '    Object.defineProperty(clock, "t", { get() { return this._t; }, set(v) { this._t = v; render(v); } });',
     "    tl.fromTo(clock, { t: 0 }, { t: D, duration: D, ease: \"none\" }, 0);",
+    ...joins.flatMap((j) => [
+      `    // ── ${j.item.code} ${j.item.name}: ${j.a} into ${j.b} from ${secs(j.from)} s, the cut at ${secs(j.cut)} s, ${j.a} on to ${secs(j.until)} s (library ${j.item.code})`,
+      `    window.StudioTransitions[${JSON.stringify(j.item.id)}](tl, { at: ${secs(j.from)}, a: "#${p}-${j.a}-wrap", b: "#${p}-${j.b}-wrap", vars: ${JSON.stringify(j.values)} });`,
+    ]),
     "    render(0);",
     '    window.__timelines["main"] = tl;',
     "    if (window.__hfForceTimelineRebind) window.__hfForceTimelineRebind();",
@@ -698,6 +766,7 @@ export async function framesIntoFilm(at, { version = null, force = false, prefix
   const count = drawn.frames.length - unshown.length;
   lines.unshift(`index.html: storyboard v${v}'s ${plural(scenes.length, "scene")} from ${plural(count, "frame")}, ${secs(D)} s at ${size.w}×${size.h}, the film's classes and ids prefixed ${p}-.`);
   lines.push(...summary);
+  for (const j of joins) lines.push(`${j.item.code} ${j.item.name} joins ${j.a} and ${j.b}: each in a plain wrapper (#${p}-${j.a}-wrap, #${p}-${j.b}-wrap), overlapping for it (${j.b} from ${secs(j.from)} s, ${j.a} to ${secs(j.until)} s, the cut at ${secs(j.cut)} s), and called on the clock's timeline at ${secs(j.from)} s with the storyboard's settings.`);
   if (blocks.length) lines.push(`Library blocks copied: ${blocks.join(", ")}.`);
   if (copied.size) lines.push(`The storyboard's own files, copied into assets/frames/: ${[...copied].map((f) => f.replace(/^assets\/frames\//, "")).join(", ")}.`);
   if (shared.length) lines.push(`The storyboard's drawing code, loaded as the film's: ${shared.join(", ")} (functions only: anything it draws as it loads, it draws into the film too).`);
