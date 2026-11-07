@@ -3,7 +3,8 @@
 // it), in one ranked report: must fix, should fix and notes, each with the time, the element and what to do. Saved as
 // docs/checks/film.json in the video's folder and shown on its overview.
 // - HyperFrames' check (`HF check --json`), its findings taken as they come: lint, runtime, layout, motion, contrast,
-//   craft and audio, sampled at every storyboard frame's time and scene change, with the platforms' band on a 9:16 frame.
+//   craft and audio, sampled at every storyboard frame's time and scene change, with the platforms' band on a 9:16 frame;
+//   but contrast on words while a cover transition paints over them is a note, as the pass reads the cover as their ground.
 // - The scene plan as HyperFrames' motion assertions (index.motion.json): each word the plan times lands by then, in
 //   the planned order, so HyperFrames' check tests that the motion does what was approved.
 // - Video Studio's own pass on the words (check-film.mjs): type sizes for the frame, the reading hold, words at once,
@@ -323,6 +324,111 @@ function fromHyperFrames(hf, film, { ours }) {
   if (hf.browserSkipped || (hf.lint?.errorCount && !hf.layout?.samples?.length))
     out.push({ level: "must", time: null, element: "", what: "HyperFrames' browser passes didn't run (a lint error stops them), so layout, contrast and craft weren't checked.", fix: "Clear the lint errors, then check again.", owner: "build", source: "HyperFrames: lint", code: "browser_skipped" });
   return out;
+}
+
+// ───────── the covers ─────────
+
+/** The film's cover transitions: the library items it mounts (data-composition-src) whose note says
+    `"kind": "cover"`, each with its clip's window in the film's time and a selector for its slot. */
+function coverClips(film) {
+  const covers = [];
+  for (const m of film.html.matchAll(/<[a-z]+\b[^>]*\bdata-composition-src\s*=[^>]*>/gi)) {
+    const a = attrs(m[0]);
+    const src = a["data-composition-src"];
+    const file = join(film.dir, src);
+    const note = existsSync(file) && /<script\b[^>]*\bid\s*=\s*["']studio-item["'][^>]*>([\s\S]*?)<\/script>/i.exec(readFileSync(file, "utf8"))?.[1];
+    let item = null;
+    try {
+      item = note && JSON.parse(note);
+    } catch {}
+    const start = Number(a["data-start"]);
+    const end = start + (Number(a["data-duration"]) || Number(item?.length) || 0);
+    if (item?.kind !== "cover" || !Number.isFinite(start) || !(end > start)) continue;
+    const esc = (s) => s.replace(/["\\]/g, "\\$&");
+    covers.push({ name: `${item.code ? `${item.code} ` : ""}${item.name || a["data-composition-id"] || src}`, slot: a.id ? `[id="${esc(a.id)}"]` : `[data-composition-src="${esc(src)}"][data-start="${esc(a["data-start"])}"]`, start, end });
+  }
+  return covers;
+}
+
+/** HyperFrames' contrast findings without the times a cover paints over the words. Its pass hides each word and reads
+    the pixels behind it, so inside a cover's clip it reads the cover as the word's ground (1:1 when a stripe is the
+    words' colour), and neither the cover nor the scene under it can mark the other's words. A failing time inside a
+    cover's clip where the cover paints over half the word or more (coverShare) is left out: a finding with no time
+    left is one note per cover, and one with a time left keeps it, an error only while two or more fail (as HyperFrames
+    holds them). Anything else is as HyperFrames found it. { hf, notes } */
+async function underCovers(film, hf, log) {
+  const covers = coverClips(film);
+  const list = hf.contrast?.findings || [];
+  const timesOf = (f) => (Array.isArray(f.times) && f.times.length ? f.times : [f.time]).filter(Number.isFinite);
+  const inside = (t) => covers.filter((c) => t >= c.start - 0.01 && t <= c.end + 0.01);
+  const asked = list.filter((f) => f.code === "contrast_aa_failure" && f.severity !== "info" && f.bbox?.width > 0 && f.bbox?.height > 0 && timesOf(f).some((t) => inside(t).length));
+  if (!asked.length) return { hf, notes: [] };
+  log("Words under the covers…");
+  // each failing time a cover paints over a finding's word: finding → Map(time → cover)
+  const under = new Map(asked.map((f) => [f, new Map()]));
+  const times = [...new Set(asked.flatMap(timesOf))].sort((a, b) => a - b);
+  try {
+    const view = await openFilm(film.dir, { version: film.version, width: film.width, height: film.height });
+    try {
+      for (const t of times)
+        for (const c of inside(t)) {
+          const here = asked.filter((f) => timesOf(f).includes(t) && !under.get(f).has(t));
+          if (!here.length) continue;
+          const shares = await view.covers(t, c.slot, here.map((f) => f.bbox));
+          here.forEach((f, i) => shares[i] >= 0.5 && under.get(f).set(t, c));
+        }
+    } finally {
+      await view.close();
+    }
+  } catch {
+    // without the film open, HyperFrames' findings stand as they are
+    return { hf, notes: [] };
+  }
+  const folded = new Map();
+  const findings = [];
+  for (const f of list) {
+    const covered = under.get(f);
+    if (!covered?.size) {
+      findings.push(f);
+      continue;
+    }
+    for (const [t, c] of covered) {
+      const g = folded.get(c) || folded.set(c, { cover: c, times: new Set(), list: [] }).get(c);
+      g.times.add(t);
+      if (!g.list.includes(f)) g.list.push(f);
+    }
+    const rest = timesOf(f).filter((t) => !covered.has(t));
+    if (!rest.length) continue;
+    const at = [...covered.keys()];
+    // HyperFrames keeps the worst reading only: when that's from under the cover, so are its ratio and colour
+    const worst = covered.has(f.time);
+    findings.push({
+      ...f,
+      severity: f.severity === "error" && rest.length < 2 ? "warning" : f.severity,
+      time: rest.includes(f.time) ? f.time : rest[0],
+      times: rest,
+      message: `${f.message} At ${at.map((t) => `${round(t)} s`).join(", ")} ${covered.get(at[0]).name} covers it${worst ? " (that reading is from then)" : ""}, which isn't counted.`,
+      suggestedColor: worst ? undefined : f.suggestedColor,
+    });
+  }
+  const file = (f) => (String(f.sourceFile || "").startsWith("/") ? relative(film.dir, f.sourceFile) : f.sourceFile || "");
+  const notes = [...folded.values()].map((g) => {
+    const at = [...g.times].sort((a, b) => a - b);
+    const words = [...new Set(g.list.map((f) => quote(f.text, 30)))];
+    const worst = Math.min(...g.list.map((f) => f.ratio).filter(Number.isFinite));
+    return {
+      level: "note",
+      time: round(at[0]),
+      element: words.slice(0, 5).join(", ") + (words.length > 5 ? ` and ${words.length - 5} more` : ""),
+      file: [...new Set(g.list.map(file).filter(Boolean))].slice(0, 3).join(", "),
+      what: `${g.list.length > 1 ? `${g.list.length}× ` : ""}Contrast under ${g.cover.name} (at ${at.map((t) => `${round(t)} s`).join(", ")}${Number.isFinite(worst) ? `, ${worst}:1 at worst` : ""}): the cover paints over the words then, and HyperFrames' contrast pass reads it as their ground. Outside the cover they're checked as usual.`,
+      fix: "",
+      owner: "build",
+      source: "HyperFrames: contrast",
+      code: "contrast_under_cover",
+    };
+  });
+  return { hf: { ...hf, contrast: { ...hf.contrast, findings } }, notes };
 }
 
 // ───────── the plan, as HyperFrames' motion assertions ─────────
@@ -1117,8 +1223,9 @@ async function filmFindings(film, rules, row, log) {
   // the sound is measured while HyperFrames checks
   await new Promise((r) => setImmediate(r));
   const stems = stemFindings(film.dir, film.media, film.words, rules, film.duration);
-  const hf = await checking;
-  findings.push(...fromHyperFrames(hf, film, { ours: motion.written }));
+  const theirs = await checking;
+  const { hf, notes: covered } = await underCovers(film, theirs, log);
+  findings.push(...fromHyperFrames(hf, film, { ours: motion.written }), ...covered);
   const passes = Object.keys(PASSES).filter((k) => hf[k]);
   ran.push({
     name: `HyperFrames ${film.version}'s check`,

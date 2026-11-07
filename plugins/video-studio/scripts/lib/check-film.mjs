@@ -342,8 +342,54 @@ function blockShows({ id, w, h, min }) {
   return false;
 }
 
+/** In the page: how much of each box (a word HyperFrames' contrast pass measured) the cover clip at `slot` paints over
+    now: the share of its probe points (HyperFrames' own, 5 across and 3 down) where the first thing painted, from the
+    top, is the cover's, at half opacity or more. Every element is hit-tested while it runs, whatever its
+    pointer-events, since a cover is often `pointer-events: none`. Runs inside the browser. */
+function coverShare({ slot, boxes }) {
+  const host = document.querySelector(slot);
+  if (!host) return boxes.map(() => 0);
+  const opacity = (el) => {
+    let o = 1;
+    for (let e = el; e && e.nodeType === 1; e = e.parentElement) o *= Number(getComputedStyle(e).opacity);
+    return o;
+  };
+  const paints = (el) => {
+    if ([...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) return true;
+    if (el instanceof SVGGeometryElement || el instanceof SVGTextContentElement || /^(IMG|VIDEO|CANVAS|IFRAME)$/.test(el.tagName)) return true;
+    const s = getComputedStyle(el);
+    const bg = /^rgba?\(([^)]+)\)$/.exec(s.backgroundColor);
+    return s.backgroundImage !== "none" || (bg ? Number(bg[1].split(",")[3] ?? 1) > 0 : s.backgroundColor !== "transparent");
+  };
+  const style = document.createElement("style");
+  style.textContent = "* { pointer-events: auto !important; }";
+  document.head.appendChild(style);
+  try {
+    return boxes.map((b) => {
+      let n = 0;
+      let hits = 0;
+      for (const cx of [0.05, 0.25, 0.5, 0.75, 0.95])
+        for (const cy of [0.25, 0.5, 0.75]) {
+          const x = b.x + b.width * cx;
+          const y = b.y + b.height * cy;
+          if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) continue;
+          n++;
+          for (const el of document.elementsFromPoint(x, y)) {
+            if (el === document.documentElement || el === document.body) break;
+            if (!paints(el) || opacity(el) <= 0.01) continue;
+            if (host.contains(el) && opacity(el) >= 0.5) hits++;
+            break;
+          }
+        }
+      return n ? hits / n : 0;
+    });
+  } finally {
+    style.remove();
+  }
+}
+
 /** Open the film and sample it: every `step` seconds, and at `extra` times. `{ samples: [{ t, blocks, fills }], meta,
-    duration, refine(id, from, to) }`; `close()` when done. */
+    duration, refine(id, from, to), covers(t, slot, boxes) }`; `close()` when done. */
 export async function openFilm(dir, { version, width, height }) {
   const { dist, puppeteer } = hyperframesPackage(version);
   const server = await serve(dir, readFileSync(join(dist, "hyperframe.runtime.iife.js"), "utf8"));
@@ -392,6 +438,11 @@ export async function openFilm(dir, { version, width, height }) {
           else lo = mid;
         }
         return hi;
+      },
+      /** How much of each box the cover clip at `slot` (a selector) paints over at `t`, 0 to 1 (coverShare). */
+      async covers(t, slot, boxes) {
+        await seek(t);
+        return page.evaluate(coverShare, { slot, boxes });
       },
       async close() {
         await browser.close().catch(() => {});

@@ -144,7 +144,9 @@ hold and the time to take in a card, words on screen at once, headlines, safe ar
 the brand kit's fonts and colours, the words on screen against the approved ones and against the voice (a key word
 that lands after it's said), the music against the voice and each sound's ending, and on footage words over the
 face. HyperFrames' findings come as they are, never measured twice: its errors are must fix, its warnings should fix,
-and what it saw at one sample only (an entrance or exit in flight) or lint's advice are notes.
+and what it saw at one sample only (an entrance or exit in flight) or lint's advice are notes. So is contrast on
+words while a cover transition (a library item whose note says `"kind": "cover"`) paints over them, since HyperFrames
+reads the cover as their ground; outside the cover they're checked as usual.
 
 - One ranked report: must fix, should fix and notes, each with its time, the element, its file and what to do, saved
   as `docs/checks/film.json`; the video's overview shows it. It prints short: a line of counts, then each must fix
