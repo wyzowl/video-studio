@@ -9488,7 +9488,7 @@
         "4x5": "i06-4x5.png",
         "9x16": "i06-9x16.png"
       },
-      "hash": "7c7f36b5575bdd64946bf45f22364ea5eebee52372a0ae9e55f12366e0aa3d20"
+      "hash": "0e3fe5500a43ff0564f941097ce258e16ef1787360d00be106a1b376237287e9"
     },
     {
       "code": "I07",
@@ -16071,7 +16071,7 @@
         "4x5": "t23-4x5.png",
         "9x16": "t23-9x16.png"
       },
-      "hash": "a99561e79c4f9294aba819a41d5ea98d2d1ff5a38a798ebdb08aef1620b0d08e"
+      "hash": "05af907146b203487297e1854c8e181f4e13654f163c43b3575250e33b97ca7e"
     },
     {
       "code": "T24",
@@ -16692,8 +16692,8 @@
       "code": "T33",
       "name": "One word",
       "category": "text-effects",
-      "summary": "Captions one word at a time, big, in the middle of the frame.",
-      "use": "For punchy captions on short social videos, mostly 9:16 and 1:1. Give each word's start time from the transcript; each word replaces the last, on a card with a corner mark.",
+      "summary": "Captions one word at a time, big: in the middle of a tall frame, beside the presenter at 16:9.",
+      "use": "For punchy captions on short social videos, mostly 9:16 and 1:1. Give each word's start time from the transcript; each word replaces the last, on a card with a corner mark. At 16:9 it sits on one side (side), clear of a presenter on the other, or in the middle over a plain ground.",
       "motion": "Each word cuts in on the beat of the speech and replaces the last, with a quick pop from 92% (0.12 s). Out: the last word fades (0.20 s).",
       "backdrop": "presenter",
       "duration": 4,
@@ -16715,6 +16715,26 @@
           "label": "Words a second, when no times are given",
           "type": "number",
           "default": 2.4
+        },
+        {
+          "id": "side",
+          "label": "Side at 16:9 (the taller sizes centre it under the face)",
+          "type": "enum",
+          "default": "left",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "middle",
+              "label": "In the middle"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ]
         },
         {
           "id": "y",
@@ -16746,7 +16766,7 @@
         "4x5": "t33-4x5.png",
         "9x16": "t33-9x16.png"
       },
-      "hash": "ebe229cbf5dff2e3340c638d1d4d263289bc9823e60c8732f4e15d7938af6b68"
+      "hash": "db8b8b12409efd06aa49e0bb656baf553179880eef81171eeb27e67777064c9f"
     },
     {
       "code": "T34",
@@ -21825,9 +21845,9 @@
         },
         {
           "id": "badges",
-          "label": "The two stores, separated by |",
+          "label": "Where to get it: two badges, each its small words: the place (such as the stores it’s in), separated by |",
           "type": "string",
-          "default": "Download on the: App Store|Get it on: Google Play"
+          "default": "Download it: On your phone|Or use it: On the web"
         },
         {
           "id": "side",
@@ -21888,7 +21908,7 @@
         "4x5": "w46-4x5.png",
         "9x16": "w46-9x16.png"
       },
-      "hash": "bf34906ac7e70770993afbb980604c23ba9aaf09aa1b64d2d084bae93fa36e59"
+      "hash": "92656f10301f60c1406124cc82ad22fca95d6eb31033bc51f9e7c6258de8f142"
     },
     {
       "code": "W47",
@@ -22177,7 +22197,7 @@
         "4x5": "w49-4x5.png",
         "9x16": "w49-9x16.png"
       },
-      "hash": "462fe3dda1ca2ab4d8b78f4a829d8a89e1c7bc09fd1db801fa6d22622a1c0633"
+      "hash": "d071418d0dccf594c895093b8be6f52ba22259a1fa4c744867a96389caedbe47"
     },
     {
       "code": "W50",
@@ -23779,7 +23799,7 @@
       "category": "widgets",
       "summary": "One number the presenter is talking about, flipping into place like a departures board, with its source.",
       "use": "When a figure should land like an announcement: results, arrivals, a count that just came in. A short unit (up to three characters, such as % or k) gets flaps of its own. Every number carries its source.",
-      "motion": "The card rises 24 px and fades in (0.40 s). The marker scales in and the line draws down (0.90 s) while the flaps start blank and flip through the characters, stopping from left to right (0.08 s a flip, 1.00 s in all). The label and source fade up as the last flap lands. Out: the words fade (0.20 s), then the card drops 24 px and fades (0.30 s).",
+      "motion": "The card rises 24 px and fades in (0.40 s). The marker scales in and the line draws down (0.90 s) while the flaps start blank and flip through the characters, stopping from left to right (0.08 s a flip), the last landing 1.00 s after the card starts (its land setting). The label and source fade up as the last flap lands. Out: the words fade (0.20 s), then the card drops 24 px and fades (0.30 s).",
       "backdrop": "presenter",
       "duration": 6,
       "fields": [
@@ -23864,6 +23884,13 @@
               "label": "Hold, for a transition"
             }
           ]
+        },
+        {
+          "id": "land",
+          "label": "When the last flap lands, in seconds after the card starts (the words follow it)",
+          "type": "number",
+          "default": 1,
+          "unit": "s"
         }
       ],
       "stills": {
@@ -23872,7 +23899,7 @@
         "4x5": "w66-4x5.png",
         "9x16": "w66-9x16.png"
       },
-      "hash": "9230ddf4e78f5f6ab0742dffcfa5c40a06d73eda30f0e47b33e633d49a8ebca7"
+      "hash": "72ac1026927f95e005b4a7288fe1cc9006224caa66787ac79162e5d762ea610e"
     },
     {
       "code": "W67",
