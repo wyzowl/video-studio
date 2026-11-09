@@ -5,17 +5,15 @@
 //   node studio.mjs hook                       SessionStart hook output (JSON)
 //   node studio.mjs url [path]                 start the page server if needed and print the page's address
 //   node studio.mjs open [path]                the same, then open it in the default web browser
-//   node studio.mjs show [path]                the page's address; the band beside the chat opens the page by itself
-//                                              (--card, or a session without the band: how Claude shows it instead,
-//                                              beside the chat with a card, and waiting). It checks a script's,
+//   node studio.mjs show [path]                how Claude shows the page: its link first in Claude's message, then
+//                                              what's ready, and for a review, the wait. It checks a script's,
 //                                              storyboard's or video review's data file first, and says what's wrong
 //                                              (--check: only that, showing nothing)
 //   node studio.mjs wait <path>                wait until the user finishes reviewing a script, storyboard or video
 //                                              (Claude runs it in the background: finishing wakes Claude to carry on),
 //                                              then print what they decided and every note, with its pictures
-//   node studio.mjs ready [--session <id>]     the page waiting for the user's review, what Claude is making, and the
-//                                              page to open beside the chat, as JSON, for the band above Claude's
-//                                              message box (hooks/index.tsx), which says it's there with --session
+//   node studio.mjs ready                      the page waiting for the user's review and what Claude is making, as
+//                                              JSON, for the band above Claude's message box (hooks/index.tsx)
 //   node studio.mjs progress <video> <stage> <version> <step>
 //                                              start a stage on the video's pages (script, storyboard, video or
 //                                              final), at a step; then `progress <video> <step>` for each next step.
@@ -145,7 +143,7 @@ import {
   reviewState,
   setWaiting,
 } from "./lib/studio.mjs";
-import { bandInstructions, bandSeen, hasBand, openForBand, pageToOpen, showInstructions } from "./lib/show.mjs";
+import { showInstructions } from "./lib/show.mjs";
 import { dataFileOf, dataProblems, pageData } from "./lib/page-data.mjs";
 import { SCORES, STAGES, endStage, readProgress, startStage, stageTitle, stepsFor, stepsNow, updateProgress, videoAt } from "./lib/progress.mjs";
 import { EXTRAS, newer } from "./lib/extras.mjs";
@@ -173,8 +171,6 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // commands whose output is shown inside slash commands: they always exit 0 and explain any problem in words
 const FRIENDLY = new Set(["context", "open", "url", "show"]);
 const NOT_A_STUDIO = "Not inside a Wyzowl Video Studio folder (no studio.json here or above).";
-// the Claude Code session a command runs in, so the band of that session opens the pages it shows
-const SESSION = process.env.CLAUDE_CODE_SESSION_ID || "";
 
 function here() {
   return opt("--studio") ? resolve(opt("--studio")) : findStudio(process.env.CLAUDE_PROJECT_DIR || process.cwd());
@@ -527,21 +523,10 @@ async function pageReady() {
   shown[key] = now;
   writeFileSync(shownFile, JSON.stringify(shown, null, 2));
 
-  // the band opens the page beside the chat; without it, Claude does
-  const session = input.session_id || "";
-  let context;
-  if (hasBand(root, session)) {
-    openForBand(root, session, page);
-    context = bandInstructions(root, base, page);
-  } else {
-    const unsaved = open.filter((o) => o.unsaved).map((o) => pageUrl(base, encodeURI(o.path)));
-    context = showInstructions(root, base, page, { unsaved });
-  }
-  console.log(JSON.stringify({ hookSpecificOutput: { hookEventName: "PostToolUse", additionalContext: context } }));
+  console.log(JSON.stringify({ hookSpecificOutput: { hookEventName: "PostToolUse", additionalContext: showInstructions(root, base, page) } }));
 }
 
-/** `show`: a page's address, starting the page server if needed; the session's band opens the page beside the chat
-    (unless it's open already). With `--card`, or in a session without the band, how Claude shows it instead. */
+/** `show`: how Claude shows a page (its link first in Claude's message), starting the page server if needed. */
 async function show() {
   const root = studioRoot({ forPages: true });
   // a page's data file given for its page (videos/<project>/script/v1/script.json): the page that shows it
@@ -560,15 +545,7 @@ async function show() {
     console.log(`There's no page at ${path} yet. Pages: / (the dashboard), /brands/<brand>/, /videos/<project>/, /videos/<project>/script/, /videos/<project>/storyboard/, /videos/<project>/review/, and the library /library/ (a category: /library/data/; an item: /library/widgets/w03/).`);
     return;
   }
-  const base = await ensureServer(root);
-  const here = decodeURIComponent(page.path).replace(/\/$/, "");
-  const open = (await status(Number(new URL(base).port)))?.open || [];
-  if (!argv.includes("--card") && hasBand(root, SESSION)) {
-    if (!open.some((o) => String(o.path).replace(/\/$/, "") === here)) openForBand(root, SESSION, page);
-    return console.log(pageUrl(base, page.path));
-  }
-  const unsaved = open.filter((o) => o.unsaved && String(o.path).replace(/\/$/, "") !== here).map((o) => pageUrl(base, encodeURI(o.path)));
-  console.log(showInstructions(root, base, page, { unsaved }));
+  console.log(showInstructions(root, await ensureServer(root), page));
 }
 
 /** `wait`: block until the user saves their review of a script, storyboard or video, print what they decided and
@@ -601,15 +578,11 @@ async function waitForReview() {
   }
 }
 
-/** `ready`, as JSON: the newest script, storyboard or video waiting for the user's review (`page`), what Claude is
-    making (`making`: the video it's working on now, with the step it's on), and the page Claude has just shown, for the
-    band to open beside the chat (`open`: { path, at }), each null when there's none. The band above Claude's message
-    box (hooks/index.tsx) offers to open the one to review, or else to watch the one being made. */
+/** `ready`, as JSON: the newest script, storyboard or video waiting for the user's review (`page`) and what Claude is
+    making (`making`: the video it's working on now, with the step it's on), each null when there's none. The band
+    above Claude's message box (hooks/index.tsx) offers to open the one to review, or else to watch the one being made. */
 function ready() {
   const root = studioRoot();
-  // the band says it's there, and asks for the page it's to open beside the chat
-  const session = opt("--session") || "";
-  bandSeen(root, session);
   const videos = listVideos(root);
   const waiting = videos.filter((v) => ["script", "storyboard", "review"].includes(v.status.key) && !v.progress).sort((a, b) => b.updated - a.updated)[0];
   let page = null;
@@ -626,7 +599,7 @@ function ready() {
     const count = p.count?.total ? `, ${p.count.done} of ${p.count.total}` : "";
     making = { path: `/videos/${encodeURIComponent(busy.slug)}/`, text: `${stageTitle(p)} of ${busy.title}: ${steps[at].label.toLowerCase()}${count}`, button: "Watch" };
   }
-  console.log(JSON.stringify({ page, making, open: pageToOpen(root, session) }));
+  console.log(JSON.stringify({ page, making }));
 }
 
 /** Every value given for an option that may be repeated (`--fix a --fix b`). */
@@ -740,13 +713,8 @@ async function finalCommand() {
   const { makeFinal } = await import("./lib/draft.mjs");
   const r = await makeFinal(at, { log: (s) => process.stderr.write(`${s}\n`) });
   if (r.delivery) {
-    // the band opens the delivery page beside the chat; it refreshes itself as the words go in
-    const page = resolvePage(at.root, r.delivery);
     const url = pageUrl(await ensureServer(at.root), r.delivery);
-    if (page && hasBand(at.root, SESSION)) {
-      openForBand(at.root, SESSION, page);
-      r.lines.push(`The delivery page opens beside the chat by itself: ${url}. Write renders/delivery.json, the words to go with it (production skill, "Deliverables"): the page shows them as they're written.`);
-    } else r.lines.push(`The delivery page: ${url}. Write renders/delivery.json, the words to go with it (production skill, "Deliverables"), then show the page.`);
+    r.lines.push(`The delivery page: ${url}. Write renders/delivery.json, the words to go with it (production skill, "Deliverables"), then show the page.`);
   }
   console.log(r.lines.join("\n"));
   process.exitCode = r.code;

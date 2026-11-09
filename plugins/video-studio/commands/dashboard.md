@@ -7,6 +7,6 @@ argument-hint: "[page, e.g. /brands/acme/]"
 
 !`node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" show $ARGUMENTS 2>&1`
 
-The text above is the page's address, which the band beside the chat opens by itself (the page server starts if it
-isn't running): give the user a labelled link to it. If it gives steps instead, follow them. If it says this isn't a
-studio, or reports a problem, pass that on in plain words and suggest `/video-studio:setup` where it fits.
+The text above says how to show the page (the page server starts if it isn't running): start your message with its
+labelled link, on a line of its own. If it says this isn't a studio, or reports a problem, pass that on in plain words
+and suggest `/video-studio:setup` where it fits.

@@ -69,14 +69,12 @@ All of this happens only in a session inside a studio folder. Anywhere else, Vid
   page (a brand, script, storyboard or video review). If it is, it starts the page server if needed, asks the band to
   open the page, and tells Claude the page is ready.
 - **The band above the message box, and the answer box** (`hooks/index.tsx`):
-  - The band runs Video Studio's helper (`node <plugin>/scripts/studio.mjs ready`, with this session's id, and `url` to
-    open a page, each with your studio's folder) to see what's waiting for your review, and which page Claude has just
-    shown. It does this when the session starts, after each of Claude's turns, and after each Video Studio tool Claude
-    runs. It looks at Claude's Bash commands only to notice those tools. The helper keeps the session's id, and the
-    page Claude showed in it, in the studio's `.studio/` folder for a day.
-  - When Claude shows a studio page, or you press the band's button, the band opens the page (a `127.0.0.1` address)
-    in the desktop app's browser pane, through the browser pane's own tool, or else in your web browser, with `open`.
-    It opens each page Claude shows once.
+  - The band runs Video Studio's helper (`node <plugin>/scripts/studio.mjs ready`, and `url` to open a page, each with
+    your studio's folder) to see what's waiting for your review. It does this when the session starts, after each of
+    Claude's turns, and after each Video Studio tool Claude runs. It looks at Claude's Bash commands only to notice
+    those tools.
+  - When you press the band's button, the band opens the page (a `127.0.0.1` address) in your web browser, with
+    `open`.
   - The answer box reads the text of Claude's final answer, and keeps a short fingerprint of it for the session, to
     draw that answer in a yellow box.
   - Nothing the band or the answer box reads leaves your Mac.

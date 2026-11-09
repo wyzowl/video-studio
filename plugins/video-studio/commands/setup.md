@@ -21,9 +21,9 @@ folder. Stop with a clear explanation if a step fails. Assume the user isn't tec
 jargon.
 
 0. **The setup page.** Unless the check above says Node.js isn't installed, start with the page that follows setup as
-   you go: run `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" setup-page`, then open the address it prints in your
-   Browser pane, beside the chat (preview_start with that url); without a Browser pane, `open <address>`. Tell the
-   user in a sentence that it ticks off each step as it's done. Before each install below, say so on the page:
+   you go: run `node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" setup-page`, then start your message with a labelled
+   link to the address it prints, on a line of its own (`[Open the setup page ↗](address)`), and tell the user in a
+   sentence that it ticks off each step as it's done. Before each install below, say so on the page:
    `studio.mjs setup-note <check> installing`, where the check is `node`, `ffmpeg`, `git` or `chrome` (the test
    render); if it fails, `setup-note <check> failed`. The downloads in step 7 mark themselves. A check that's done
    ticks off by itself. Without Node.js, open the page once it's installed (step 4).

@@ -14,35 +14,30 @@ const STORYBOARD = { path: '/videos/intro/storyboard/v2/', text: 'Storyboard v2 
 const VIDEO = { path: '/videos/intro/review/v1/', text: 'Video v1 of Intro is ready for your review', button: 'Open video v1' }
 
 type Page = typeof STORYBOARD | null
-type Shown = { path: string; at: string } | null
 
 /**
  * The world beneath the plugin: a session in a studio's video folder (or not), the studio helper (whose `ready`
- * answers what `waiting()`, `making()` and `shown()` return, and whose `url` answers the page's address), the browser
- * pane, and the engine's own empty band. Returns what the helper ran and what the pane opened.
+ * answers what `waiting()` and `making()` return, and whose `url` answers the page's address), macOS's `open`, and the
+ * engine's own empty band. Returns what the helper ran and what `open` opened in the web browser.
  */
-function world(on: On, waiting: () => Page = () => null, inStudio = true, making: () => Page = () => null, shown: () => Shown = () => null) {
+function world(on: On, waiting: () => Page = () => null, inStudio = true, making: () => Page = () => null) {
   const runs: string[][] = []
   const opened: string[] = []
   on('session.start', ($, e) => ({ cwd: e.cwd }))
   on('turn.complete', ($, e) => ({ text: e.answer }))
   on('session.root', () => ({ value: `${STUDIO}/videos/intro` }))
-  on('session.id', () => ({ value: 'session-1' }))
   on('fs.exists', ($, e) => ({ value: inStudio && e.path === `${STUDIO}/studio.json` }))
   on('ui.toast', () => ({ value: undefined }))
   on('process.run', ($, e) => {
     const argv = [...e.argv]
-    runs.push(argv)
+    if (argv[0] === '/usr/bin/open') opened.push(argv[1])
+    else runs.push(argv)
     const at = argv.indexOf('url')
-    const stdout = argv.includes('ready') ? JSON.stringify({ page: waiting(), making: making(), open: shown() }) : at >= 0 ? `http://127.0.0.1:4747${argv[at + 1]}\n` : ''
+    const stdout = argv.includes('ready') ? JSON.stringify({ page: waiting(), making: making() }) : at >= 0 ? `http://127.0.0.1:4747${argv[at + 1]}\n` : ''
     return { value: { exitCode: 0, stdout, stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }
   })
   on('tool.call', () => ({ isError: true as const, result: 'not run in a test' }))
   on('turn.start', ($, e) => ({ turnId: e.turnId }))
-  on('mcp.call', ($, e) => {
-    opened.push(`${e.server} ${e.tool} ${String(e.args.url)}`)
-    return { value: { content: [], isError: false } }
-  })
   on('ui.render', { component: 'AbovePrompt' }, ($, e) => {
     const { Box } = $.ui.resolve(e)
     return <Box key="engine" />
@@ -66,10 +61,10 @@ test('with nothing waiting, the band offers the dashboard on every surface', asy
   const ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
   await ui.press({ key: 'open' })
   expect(runs.at(-1)).toEqual(expect.arrayContaining(['node', 'url', '/', '--studio', STUDIO]))
-  expect(opened).toEqual(['Claude_Browser preview_start http://127.0.0.1:4747/'])
+  expect(opened).toEqual(['http://127.0.0.1:4747/'])
 })
 
-test('a storyboard waiting for review gets its own words and button, which opens it beside the chat', async ($, on) => {
+test('a storyboard waiting for review gets its own words and button, which opens it in the web browser', async ($, on) => {
   const { opened } = world(on, () => STORYBOARD)
   mock.clock(on)
   await start($)
@@ -81,7 +76,7 @@ test('a storyboard waiting for review gets its own words and button, which opens
   }
   const ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
   await ui.press({ key: 'open' })
-  expect(opened).toEqual([`Claude_Browser preview_start http://127.0.0.1:4747${STORYBOARD.path}`])
+  expect(opened).toEqual([`http://127.0.0.1:4747${STORYBOARD.path}`])
 })
 
 test('after a turn the band shows what is waiting now, and a dismissed band comes back for something new', async ($, on) => {
@@ -118,7 +113,7 @@ test('while Claude makes something the band says what, after each studio tool, a
   await clock.advance(0)
   expect(await ui.find({ text: MAKING.text })).toBeDefined()
   await ui.press({ key: 'open' })
-  expect(opened).toEqual(['Claude_Browser preview_start http://127.0.0.1:4747/videos/intro/'])
+  expect(opened).toEqual(['http://127.0.0.1:4747/videos/intro/'])
   // any other command leaves the band as it is
   making = null
   await $.tool.call({ tool: 'Bash', tool_use_id: 'u2', command: 'ls', description: 'list' })
@@ -126,29 +121,14 @@ test('while Claude makes something the band says what, after each studio tool, a
   expect(await ui.find({ text: MAKING.text })).toBeDefined()
 })
 
-test('a page Claude shows opens beside the chat by itself, once, and the next one too', async ($, on) => {
-  let shown: Shown = null
-  const { runs, opened } = world(on, () => null, true, () => null, () => shown)
+test('a page Claude shows opens nothing by itself: the link in its message is the way in', async ($, on) => {
+  const { opened } = world(on, () => STORYBOARD)
   const clock = mock.clock(on)
   await start($)
-  expect(opened).toEqual([])
-  // the band tells the studio it's there, with this session
-  expect(runs.find((r) => r.includes('ready'))).toEqual(expect.arrayContaining(['ready', '--session', 'session-1']))
-  // Claude shows a storyboard: once the tool has run, the band opens it
-  shown = { path: STORYBOARD.path, at: '2026-11-06T10:00:00.000Z' }
   await $.tool.call({ tool: 'Bash', tool_use_id: 'u1', command: 'node /plugin/scripts/studio.mjs show /videos/intro/storyboard/v2/', description: 'show' })
-  await clock.advance(0)
-  expect(opened).toEqual([`Claude_Browser preview_start http://127.0.0.1:4747${STORYBOARD.path}`])
-  // the same request isn't opened again, after the wait or the turn
-  await $.tool.call({ tool: 'Bash', tool_use_id: 'u2', command: 'node /plugin/scripts/studio.mjs wait /videos/intro/storyboard/v2/', description: 'wait' })
   await turnEnds($)
   await clock.advance(0)
-  expect(opened.length).toBe(1)
-  // a new page is
-  shown = { path: VIDEO.path, at: '2026-11-06T10:20:00.000Z' }
-  await turnEnds($)
-  await clock.advance(0)
-  expect(opened).toEqual([`Claude_Browser preview_start http://127.0.0.1:4747${STORYBOARD.path}`, `Claude_Browser preview_start http://127.0.0.1:4747${VIDEO.path}`])
+  expect(opened).toEqual([])
 })
 
 test('outside a studio there is no band, and nothing runs', async ($, on) => {

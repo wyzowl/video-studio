@@ -15,7 +15,7 @@ The easiest way is to ask Claude. In Claude Code, say:
 Then start a new Claude Code session, so the plugin loads, and run `/video-studio:setup` (or ask Claude to set it
 up). Setup checks your Mac, installs everything Video Studio needs (it says first what it will download, about 1 GB,
 and only asks you to do what needs you: Homebrew's install, which takes your Mac password, and choosing where your
-studio lives), creates your studio folder and makes a test render. It opens a page beside the chat that ticks off each step as it's done. When it's done, open Claude Code in the
+studio lives), creates your studio folder and makes a test render. It gives you a link to a page that ticks off each step as it's done. When it's done, open Claude Code in the
 studio folder.
 
 To install it yourself, run this in a terminal (Claude Code 2.1.275 or later):
@@ -109,14 +109,12 @@ press **Got it**.
    replaced storyboards and its edit history in HyperFrames (up to 2 GB). Ask Claude to tidy it up (the delivery page
    and Studio health offer it): Claude lists what goes and what stays, and deletes nothing until you say yes.
 
-At each point where your feedback is needed, Claude opens the page for it as soon as it's ready: in the Claude
-desktop app, in the built-in browser beside the chat. In the chat it adds a card for the page with a link right under
-it that opens the page in your normal browser (in the terminal, the link alone).
+At each point where your feedback is needed, Claude's message starts with a link to the page for it, such as
+**Open storyboard v2**, which opens the page in your web browser.
 
 In a studio session, a band above Claude's message box keeps the studio one click away. When a script, storyboard or
 video is waiting for your review, it says so, with a button that opens it (for example **Open storyboard v2**). While
-Claude makes something, it says what, with **Watch**. Otherwise it says **Working on a video?** with **Open dashboard**. The button opens the page beside the chat, opening the browser
-panel if it's closed. Close the band with its × and it stays away until something new is waiting.
+Claude makes something, it says what, with **Watch**. Otherwise it says **Working on a video?** with **Open dashboard**. The button opens the page in your web browser. Close the band with its × and it stays away until something new is waiting.
 
 When Claude has worked on something, its final message, the one to read and act on, sits in a box with a yellow
 border, so it's easy to find after a long run of steps. Plain replies look as usual.

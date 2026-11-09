@@ -109,17 +109,14 @@ show them its page. Writing a page's file (`brand.json`, `script.json`, `storybo
 Write or Edit tool publishes it, and the studio tells you its address. Otherwise run
 `node PLUGIN/scripts/studio.mjs show <path>`, which prints it (it starts the page server; only one studio's server
 runs at a time). Either way the studio checks the page's data file first and says what's wrong: fix that and show it
-again (there's no need to check the file yourself). Video Studio's band, above the message box, opens the page beside
-the chat by itself, once, so:
-1. Say in a line what's ready, with a labelled link to it, such as `[Open storyboard v2 ↗](address)`, never a bare
-   address: the link opens the page in their browser too.
+again (there's no need to check the file yourself). Then, as it says:
+1. Start your message with a labelled link to the page, on a line of its own, such as
+   `[Open storyboard v2 ↗](address)`, never a bare address, then say in a line or two what's ready. Every message with
+   something new to review starts this way: the link is how the user opens it, so there's no need to open the page in
+   a browser pane or draw a card for it.
 2. For a script, storyboard or video, wait for the review in the background: `studio.mjs wait <path>` with
    run_in_background. Tell the user to save their review when they're done (the button at the foot of the page) and
    you'll take it from there, then end your turn.
-
-Where the band isn't running, the studio gives you steps instead of an address (`show <path> --card` gives them any
-time): open the page in your Browser pane, show its card and the link, as they say, and never navigate away from a
-page with feedback the user hasn't saved.
 
 When the wait finishes, you're woken with the review: its output is the decision and every note in the user's words,
 with the pictures to look at. Go on from it (`feedback.json` holds the same). Saving a review is the user's go-ahead
