@@ -1,5 +1,7 @@
 // Find the headless Chrome and puppeteer-core that HyperFrames installs, so the studio needs no browser of its own.
 // Override with CHROME=<path to chrome-headless-shell> and PUPPETEER_CORE=<path to the puppeteer-core folder>.
+// Every launch that draws a film, a storyboard's frames or a library item adds gpuArgs(), so WebGL draws on the
+// graphics chip as it does in the render.
 import { createRequire } from "node:module";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
@@ -28,4 +30,15 @@ export function findChrome() {
     );
   }
   return { puppeteer: createRequire(import.meta.url)(pup), executablePath: chrome };
+}
+
+/** Chrome's switches for the graphics chip. On Apple silicon these are the ones HyperFrames' render uses in its
+    hardware mode, which Video Studio's renders ask for (lib/render.mjs). Without them, headless Chrome draws WebGL in
+    software (SwiftShader) on the processor, so a film with a WebGL canvas (three.js) takes seconds a frame to check
+    rather than milliseconds. HyperFrames' own switch, PRODUCER_BROWSER_GPU_MODE, set to anything but hardware
+    (software or auto) leaves them off, as it does the render's. */
+export function gpuArgs() {
+  const mode = process.env.PRODUCER_BROWSER_GPU_MODE;
+  if (process.platform !== "darwin" || process.arch !== "arm64" || (mode && mode !== "hardware")) return [];
+  return ["--use-gl=angle", "--use-angle=metal", "--enable-gpu-rasterization"];
 }

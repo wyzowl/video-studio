@@ -10,7 +10,7 @@
 import { mkdirSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { findChrome } from "./lib/chrome.mjs";
+import { findChrome, gpuArgs } from "./lib/chrome.mjs";
 import { inVideo, report } from "./lib/progress.mjs";
 import { drawSheets } from "./lib/sheet.mjs";
 
@@ -28,7 +28,7 @@ const scale = Number(opt("--scale", 0.5));
 const only = opt("--only", "") ? opt("--only").split(",") : null;
 
 const { puppeteer, executablePath } = findChrome();
-const browser = await puppeteer.launch({ executablePath, headless: true, args: ["--force-color-profile=srgb", "--hide-scrollbars", "--allow-file-access-from-files"] });
+const browser = await puppeteer.launch({ executablePath, headless: true, args: ["--force-color-profile=srgb", "--hide-scrollbars", "--allow-file-access-from-files", ...gpuArgs()] });
 try {
   const page = await browser.newPage();
   await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: scale });

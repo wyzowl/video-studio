@@ -21,7 +21,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
-import { findChrome } from "./chrome.mjs";
+import { findChrome, gpuArgs } from "./chrome.mjs";
 import { BRAND_VARS, BUNDLED_FONTS, brandStyle, contentVariables, itemLayer, libraryItem, mediaSetting, sceneARuns } from "./library.mjs";
 import { parseSize, readBrand, readBrief, readJSON, storyboardVersions, summariseFeedback } from "./studio.mjs";
 
@@ -47,7 +47,7 @@ const hasNamed = (n) => (n.c || []).some((c) => isEl(c) && (c.a["data-el"] || ha
     { tag, svg, a: attributes, c: children, raw (a style or script's text), box (an image's laid-out size), fit }. */
 async function readFrames(file, size) {
   const { puppeteer, executablePath } = findChrome();
-  const browser = await puppeteer.launch({ executablePath, headless: true, args: ["--force-color-profile=srgb", "--hide-scrollbars", "--allow-file-access-from-files"] });
+  const browser = await puppeteer.launch({ executablePath, headless: true, args: ["--force-color-profile=srgb", "--hide-scrollbars", "--allow-file-access-from-files", ...gpuArgs()] });
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: size.w, height: size.h, deviceScaleFactor: 0.25 });

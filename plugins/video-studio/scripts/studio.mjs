@@ -1026,10 +1026,10 @@ async function libraryStill(item, { root, slug, size, at, out }) {
   if (slug) p.set("brand", slug);
   if (Object.keys(sets).length) p.set("vars", JSON.stringify(sets));
   const base = await ensureServer(root);
-  const { findChrome } = await import("./lib/chrome.mjs");
+  const { findChrome, gpuArgs } = await import("./lib/chrome.mjs");
   const { puppeteer, executablePath } = findChrome();
   const S = SIZES[size];
-  const browser = await puppeteer.launch({ executablePath, headless: true, args: ["--force-color-profile=srgb", "--hide-scrollbars"] });
+  const browser = await puppeteer.launch({ executablePath, headless: true, args: ["--force-color-profile=srgb", "--hide-scrollbars", ...gpuArgs()] });
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: S.w, height: S.h, deviceScaleFactor: 1 });
@@ -1067,10 +1067,10 @@ async function libraryStills() {
     return { item, at: +x.at, out: resolve(base, x.out), sets: stillValues(item, root, x.set || {}) };
   });
   const base0 = await ensureServer(root);
-  const { findChrome } = await import("./lib/chrome.mjs");
+  const { findChrome, gpuArgs } = await import("./lib/chrome.mjs");
   const { puppeteer, executablePath } = findChrome();
   const S = SIZES[size];
-  const browser = await puppeteer.launch({ executablePath, headless: true, args: ["--force-color-profile=srgb", "--hide-scrollbars"] });
+  const browser = await puppeteer.launch({ executablePath, headless: true, args: ["--force-color-profile=srgb", "--hide-scrollbars", ...gpuArgs()] });
   const made = [];
   try {
     const page = await browser.newPage();

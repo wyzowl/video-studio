@@ -10,7 +10,7 @@ import { closeSync, existsSync, openSync, readdirSync, readFileSync, readSync, s
 import { createRequire } from "node:module";
 import { homedir } from "node:os";
 import { extname, join, resolve, sep } from "node:path";
-import { findChrome } from "./chrome.mjs";
+import { findChrome, gpuArgs } from "./chrome.mjs";
 import { HYPERFRAMES_ENV } from "./versions.mjs";
 
 const TYPES = {
@@ -397,7 +397,7 @@ export async function openFilm(dir, { version, width, height }) {
   const browser = await puppeteer.launch({
     executablePath,
     headless: true,
-    args: ["--force-color-profile=srgb", "--hide-scrollbars", "--autoplay-policy=no-user-gesture-required", "--mute-audio"],
+    args: ["--force-color-profile=srgb", "--hide-scrollbars", "--autoplay-policy=no-user-gesture-required", "--mute-audio", ...gpuArgs()],
   });
   const errors = [];
   try {
