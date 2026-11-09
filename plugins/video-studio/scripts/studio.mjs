@@ -12,8 +12,9 @@
 //   node studio.mjs wait <path>                wait until the user finishes reviewing a script, storyboard or video
 //                                              (Claude runs it in the background: finishing wakes Claude to carry on),
 //                                              then print what they decided and every note, with its pictures
-//   node studio.mjs ready                      the page waiting for the user's review and what Claude is making, as
-//                                              JSON, for the band above Claude's message box (hooks/index.tsx)
+//   node studio.mjs ready [--video <video> …]  the page waiting for the user's review and what Claude is making, as
+//                                              JSON, for the band above Claude's message box (hooks/index.tsx); with
+//                                              --video, only among the videos named (the session's own)
 //   node studio.mjs progress <video> <stage> <version> <step>
 //                                              start a stage on the video's pages (script, storyboard, video or
 //                                              final), at a step; then `progress <video> <step>` for each next step.
@@ -580,10 +581,12 @@ async function waitForReview() {
 
 /** `ready`, as JSON: the newest script, storyboard or video waiting for the user's review (`page`) and what Claude is
     making (`making`: the video it's working on now, with the step it's on), each null when there's none. The band
-    above Claude's message box (hooks/index.tsx) offers to open the one to review, or else to watch the one being made. */
+    above Claude's message box (hooks/index.tsx) offers to open the one to review, or else to watch the one being made.
+    `--video <video>`, repeated, looks only at the videos named: the ones the band's session has worked on. */
 function ready() {
   const root = studioRoot();
-  const videos = listVideos(root);
+  const only = argv.includes("--video") ? opts("--video") : null;
+  const videos = listVideos(root).filter((v) => !only || only.includes(v.slug));
   const waiting = videos.filter((v) => ["script", "storyboard", "review"].includes(v.status.key) && !v.progress).sort((a, b) => b.updated - a.updated)[0];
   let page = null;
   if (waiting) {

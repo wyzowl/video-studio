@@ -114,7 +114,7 @@ At each point where your feedback is needed, Claude's message starts with a link
 
 In a studio session, a band above Claude's message box keeps the studio one click away. When a script, storyboard or
 video is waiting for your review, it says so, with a button that opens it (for example **Open storyboard v2**). While
-Claude makes something, it says what, with **Watch**. Otherwise it says **Working on a video?** with **Open dashboard**. The button opens the page in your web browser. Close the band with its × and it stays away until something new is waiting.
+Claude makes something, it says what, with **Watch**. Otherwise it says **Working on a video?** with **Open dashboard**. The band only shows the videos you're working on in that session, so a new session starts with **Open dashboard** until Claude starts or opens a video. The button opens the page in your web browser. Close the band with its × and it stays away until something new is waiting.
 
 When Claude has worked on something, its final message, the one to read and act on, sits in a box with a yellow
 border, so it's easy to find after a long run of steps. Plain replies look as usual.
