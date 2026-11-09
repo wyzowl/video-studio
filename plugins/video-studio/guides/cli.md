@@ -49,7 +49,8 @@ another storyboard version).
 
 Check changed moments with snapshots and keyframe strips first. In a review's rounds of fixes,
 `studio.mjs draft <video> --at <from>-<to>,…` renders each changed stretch by itself (`render --start` and `--end`,
-below) with a before-and-after sheet; a draft for the user is always the whole film. `--resume` (with
+below), or, where that's quicker on Apple silicon (a WebGL film, or a short one), the whole film once with each
+stretch cut from it, with a before-and-after sheet; a draft for the user is always the whole film. `--resume` (with
 `HF_SEGMENTED_CAPTURE=true`) only recovers a render that crashed.
 
 ## The film's words, timings and stills

@@ -30,10 +30,12 @@ are as in the production skill.
 - **Round 1 passes** when every score is 8 or more and there's no must fix: the draft goes to the user ("The user's
   video review").
 - **Otherwise, the next round checks the fixes.** Fix the worst problems (build skill, "Changes after a review"), then
-  `studio.mjs draft <project> --at 12.4-13.0,35.2-36.0` renders each changed stretch by itself and makes the fix sheet,
+  `studio.mjs draft <project> --at 12.4-13.0,35.2-36.0` renders each changed stretch and makes the fix sheet,
   `docs/review/r<n>/fixes.png`: each stretch before (the last whole draft) and after, at the same moments. Score the
-  round from it: what the fixes didn't touch stands as last scored. HyperFrames renders a stretch without the film's
-  motion blur, so the smear is judged on a whole draft. Repeat until every score is 8 or more.
+  round from it: what the fixes didn't touch stands as last scored. Where it's quicker (a WebGL film, or a short one,
+  on Apple silicon) the command renders the whole film once and cuts the stretches from it, and says so. A stretch
+  rendered by itself has no motion blur, so then the smear is judged on a whole draft. Repeat until every score is 8
+  or more.
 - **Then one whole draft** for the user: `studio.mjs draft <project>`, its render's checks clear, and a look over its
   key sheet to see nothing else moved.
 

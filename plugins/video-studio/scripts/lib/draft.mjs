@@ -9,9 +9,10 @@
 // - The final video (`final <video>`): the 60 fps master, the web copy, poster, thumbnail and contact sheet, the
 //   captions when there's speech, and the checks on the master.
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { basename, join, relative } from "node:path";
 import { checkFilm, describeReport, readFilm, speechFile } from "./check.mjs";
+import { gpuArgs } from "./chrome.mjs";
 import { readProgress, startStage, updateProgress } from "./progress.mjs";
 import { renderVideo } from "./render.mjs";
 import { drawSheets, ff, grab, pool, sheetRange, sheetTime } from "./sheet.mjs";
@@ -96,18 +97,77 @@ export async function makeDraft(at, { stretches = [], round = null, log = () => 
   return { code: 0, lines };
 }
 
-/** A round of fixes: each stretch rendered by itself, and a fix sheet of each, before (the last whole draft) and after. */
+/** Why a round of fixes should render the whole film once and cut its stretches from it, or null to render each stretch
+    by itself. HyperFrames (0.9.16) renders a stretch (--start/--end) through its distributed pipeline, which draws in
+    software (SwiftShader) whatever GPU mode it's given; a whole render draws on the graphics chip on Apple silicon
+    (lib/render.mjs). Measured on an M5 Max: a film that draws WebGL took over 6 minutes a stretch against 28 s for the
+    whole 39 s film; a stretch of an HTML film took about 75 s, and a whole render up to about 2 s a second of film.
+    Only where the whole render draws on the graphics chip: gpuArgs() says so, by the same rule as lib/render.mjs. */
+function wholeFirst(at, film, stretches) {
+  if (!gpuArgs().length) return null;
+  if (drawsWebGL(at.dir)) return "the film draws WebGL";
+  if (film.duration <= 35 * stretches.length) return "quicker than rendering each stretch by itself";
+  return null;
+}
+
+/** Whether the film's own code draws WebGL or WebGPU (three.js and the like): its pages and scripts, not its media. */
+function drawsWebGL(dir) {
+  const skip = new Set(["node_modules", "renders", "inputs", "docs", "storyboard", "script", "review", "tools", "footage", ".hyperframes"]);
+  const gl = /getContext\(\s*["'](?:webgl2?|experimental-webgl|webgpu)["']|WebGLRenderer|navigator\.gpu\b/;
+  const walk = (d, depth) => {
+    let entries = [];
+    try {
+      entries = readdirSync(d, { withFileTypes: true });
+    } catch {
+      return false;
+    }
+    for (const e of entries) {
+      if (e.isDirectory()) {
+        if (!skip.has(e.name) && depth < 4 && walk(join(d, e.name), depth + 1)) return true;
+      } else if (/\.(html?|m?js)$/i.test(e.name)) {
+        try {
+          if (gl.test(readFileSync(join(d, e.name), "utf8"))) return true;
+        } catch {}
+      }
+    }
+    return false;
+  };
+  return walk(dir, 0);
+}
+
+/** A round of fixes: each stretch rendered by itself (or cut from one whole render: wholeFirst), and a fix sheet of
+    each, before (the last whole draft) and after. */
 async function fixRound(at, { stretches, version, round, sheetDir, log }) {
   const film = readFilm(at.root, at.slug);
   for (const [a, b] of stretches) if (!(a >= 0 && b > a && a < film.duration)) return { code: 1, lines: [`${a}–${b} s isn't a stretch of this ${film.duration} s film: give each as <from>-<to>, in seconds.`] };
   const before = lastDraft(at);
   const renders = [];
-  for (const [a, b] of stretches) {
-    const out = join("renders", "drafts", "stretches", `${at.slug}_v${version}_r${round}_${a}-${b}.mp4`);
-    log(`The stretch ${sheetRange(a, b)}…`);
-    const made = await renderVideo(at, ["--quality", "draft", "--fps", "30", "--start", String(a), "--end", String(Math.min(b, film.duration)), "--output", out], { round });
-    if (made.code) return { code: made.code, lines: [made.summary] };
-    renders.push({ a, b, file: made.file, summary: made.summary });
+  const why = wholeFirst(at, film, stretches);
+  let whole = null;
+  if (why) {
+    // one whole render on the graphics chip, and each stretch cut from it at its frames
+    const out = join("renders", "drafts", "stretches", `${at.slug}_v${version}_r${round}_whole.mp4`);
+    log(`The whole film on the graphics chip (${why}), to cut the stretches from…`);
+    whole = await renderVideo(at, ["--quality", "draft", "--fps", "30", "--output", out], { round });
+    if (whole.code) return { code: whole.code, lines: [whole.summary] };
+    for (const [a, b] of stretches) {
+      const cut = join("renders", "drafts", "stretches", `${at.slug}_v${version}_r${round}_${a}-${b}.mp4`);
+      const length = +(Math.min(b, film.duration) - a).toFixed(3);
+      try {
+        await ff(["-ss", String(a), "-i", whole.file, "-t", String(length), "-c:v", "libx264", "-preset", "veryfast", "-crf", "16", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", join(at.dir, cut)]);
+      } catch (err) {
+        return { code: 1, lines: [`Couldn't cut ${sheetRange(a, b)} from the whole render (${relative(at.dir, whole.file)}): ${err.message}`] };
+      }
+      renders.push({ a, b, file: join(at.dir, cut), summary: `Cut ${cut} (${sheetRange(a, b)}) from the whole render.` });
+    }
+  } else {
+    for (const [a, b] of stretches) {
+      const out = join("renders", "drafts", "stretches", `${at.slug}_v${version}_r${round}_${a}-${b}.mp4`);
+      log(`The stretch ${sheetRange(a, b)}…`);
+      const made = await renderVideo(at, ["--quality", "draft", "--fps", "30", "--start", String(a), "--end", String(Math.min(b, film.duration)), "--output", out], { round });
+      if (made.code) return { code: made.code, lines: [made.summary] };
+      renders.push({ a, b, file: made.file, summary: made.summary });
+    }
   }
   // six frames across each stretch, at the same moments before and after
   mkdirSync(sheetDir, { recursive: true });
@@ -148,9 +208,12 @@ async function fixRound(at, { stretches, version, round, sheetDir, log }) {
   return {
     code: 0,
     lines: [
-      `Round ${round} of video v${version}: the fixes, ${renders.length} stretch${renders.length === 1 ? "" : "es"} rendered by ${renders.length === 1 ? "itself" : "themselves"}.`,
+      whole
+        ? `Round ${round} of video v${version}: the fixes, ${renders.length} stretch${renders.length === 1 ? "" : "es"} cut from one whole render on the graphics chip (${why}).`
+        : `Round ${round} of video v${version}: the fixes, ${renders.length} stretch${renders.length === 1 ? "" : "es"} rendered by ${renders.length === 1 ? "itself" : "themselves"}.`,
+      ...(whole ? [whole.summary] : []),
       ...renders.map((x) => x.summary),
-      `Fix sheet: ${sheets.map((f) => relative(at.dir, f)).join(", ")}: each stretch ${before ? `before (${basename(before)}) and ` : ""}after, at the same moments. HyperFrames renders a stretch without the film's motion blur: judge the smear on the whole draft.`,
+      `Fix sheet: ${sheets.map((f) => relative(at.dir, f)).join(", ")}: each stretch ${before ? `before (${basename(before)}) and ` : ""}after, at the same moments.${whole ? "" : " HyperFrames renders a stretch without the film's motion blur: judge the smear on the whole draft."}`,
       `Next: score round ${round} (what the fixes didn't touch stands as last scored), then: studio.mjs progress ${at.slug} fixes --round ${round} --scores … --fix "<where>: <what>". Once every score is 8 or more, the whole draft for the user: studio.mjs draft ${at.slug}`,
     ],
   };
