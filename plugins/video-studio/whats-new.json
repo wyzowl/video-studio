@@ -1,35 +1,24 @@
 {
   "0.10.0": [
     {
-      "text": "Video Studio has its own guides now: how it makes every part of a film, from motion and design to story, captions, sound and footage. Setup installs no outside skills into your studio, and Studio health offers to remove the ones an older setup put there.",
+      "text": "Richer films: every scene is drawn in a world made for your video, with depth and gentle movement, and moves between your brand's dark, light and accent grounds. Each storyboard scene has a plan under The plan, and the build starts from the frames you approved."
+    },
+    {
+      "text": "Before Claude reviews a draft, Video Studio's own checks go over it: words too small or gone too soon for a phone, anything outside the safe areas or off your brand, words that land after they're said, and the sound's level and balance. Every draft is scored on its story too: one clear message, a hook that pays off and one clear ask."
+    },
+    {
+      "text": "Quicker: checks, storyboard frames and library stills draw on the graphics chip, a round of fixes checks only what changed, and on a 3D film both take seconds rather than many minutes. New videos use HyperFrames 0.9.16, with quicker renders and real motion blur."
+    },
+    {
+      "text": "One review room: the script, storyboard and video pages share one layout, with your notes beside the content. Pages open from a link at the top of Claude's message, and the band above the message box shows only the videos you're working on in that session."
+    },
+    {
+      "text": "The full library adds Interface and Forms (browser and app windows, devices, messages, social posts, forms and controls), five split screens and captions that move. Brand kits have backgrounds, brand pages show your fonts as they are, and library colours read in every brand.",
+      "href": "/library/"
+    },
+    {
+      "text": "Video Studio has its own guides now, for every part of a film from motion and design to story, captions, sound and footage. Setup installs no outside skills into your studio, and Studio health offers to remove the ones an older setup put there.",
       "href": "/health"
-    },
-    {
-      "text": "Every draft is scored on its story too: one clear message, a hook whose promise is paid off, and one clear ask at the end."
-    },
-    {
-      "text": "Your voiceover is your own file by default. If you ask for an AI voice or an outside service on your own account, Claude can use it, at your request and under that tool's own terms."
-    },
-    {
-      "text": "Richer films: every scene is drawn in a world made for your video, with depth and gentle movement in it, and the film moves between your brand's dark, light and accent grounds."
-    },
-    {
-      "text": "Each storyboard scene has a plan you can open under The plan: its idea, what's behind and in front, the moves on their words, its sound and how it hands on. The build follows it."
-    },
-    {
-      "text": "Sound effects always come from SFX Kit; music made for a video is music only."
-    },
-    {
-      "text": "Library items fit their moment better: a card made larger keeps clear of a phone's buttons, a big number can land on its spoken word, and bold captions can star a whole phrase."
-    },
-    {
-      "text": "The delivery page opens from the chat like the others."
-    },
-    {
-      "text": "New videos are made with HyperFrames 0.9.16: renders are quicker, fast moves get a real motion blur, and its check also catches words too small or too quick to read before you see a draft."
-    },
-    {
-      "text": "Before Claude reviews a draft, Video Studio's own checks go over it: words too small or gone too soon for a phone, too many at once, anything outside the safe areas or off your brand, words that land after they're said, the planned moves landing on time, and the sound's level, its balance under the voice and sounds cut short. What they find shows on the video's page, ranked, with what to do."
     }
   ],
   "0.9.0": [

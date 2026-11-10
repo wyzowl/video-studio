@@ -46,8 +46,8 @@ it runs, downloads and sends, and when.
 ### What it runs
 
 - **Its own scripts,** in Node.js, from the plugin's folder: the studio helper (`scripts/studio.mjs`), the page server,
-  and the tools for review, footage, captions and sound. They draw storyboard frames and PDFs in HyperFrames' headless
-  browser.
+  and the tools for review, footage, captions and sound. They draw storyboard frames, checks, library stills and PDFs in
+  HyperFrames' headless browser, on the graphics chip on Apple silicon.
 - **HyperFrames 0.9.16,** through `npx --yes hyperframes@0.9.16`, to make, check, render and take stills of videos,
   and transcribe speech, all on your Mac. Videos made on an earlier version keep it, through their own scripts.
 - **ffmpeg and ffprobe,** for audio and video; macOS's `open`, to open a page in your browser or show a render or PDF

@@ -26,17 +26,12 @@ claude plugin install video-studio --marketplace wyzowl/video-studio
 
 Or type `/plugin install video-studio --marketplace wyzowl/video-studio` in Claude Code.
 
-While the repository is private, you need access to it on GitHub, and git must be able to sign in to GitHub (for
-example with the GitHub CLI: `gh auth login`, then `gh auth setup-git`).
-
 ### For Claude: installing this plugin
 
 When a user asks you to install Wyzowl Video Studio, or gives you this repository's link:
 
 1. Run `claude plugin install video-studio --marketplace wyzowl/video-studio`.
-2. If it fails because the repository is private or git can't sign in to GitHub, explain that in plain words. The
-   fix is access to `wyzowl/video-studio` on GitHub, then `gh auth login` and `gh auth setup-git`.
-3. Tell the user to start a new Claude Code session (plugins load when a session starts), then run
+2. Tell the user to start a new Claude Code session (plugins load when a session starts), then run
    `/video-studio:setup`.
 
 When a user asks you to update it: run `claude plugin marketplace update wyzowl`, then
@@ -99,7 +94,7 @@ press **Got it**.
    the frames are stills from the footage, and each scene has **Play the scene**, which plays its rough cut with its
    sound.
 5. **Build and review.** Claude builds the video, adds its sound effects from SFX Kit (as many as the brief calls for,
-   each placed exactly on its moment and set under the voiceover), renders drafts and reviews them against a
+   each placed exactly on its moment and set under the voiceover), renders drafts and reviews them against an
    eight-point rubric (hook, readability on a phone, motion, variety, composition, brand, sync and story, each against
    its standard in the guides), for at least two rounds, until every score is 8 or more.
 6. **Video review.** On the video's review page you watch it and pin notes to moments in it. The decision is
@@ -143,9 +138,9 @@ To get feedback from someone outside the studio, such as a client, send them a d
 ## The studio pages
 
 The pages are local web pages, served by a small page server on the Mac (`http://127.0.0.1:4747`, which only that
-Mac can reach). Only one studio's pages run at a time. Claude shows them in the built-in browser of the Claude
-desktop app, or in the normal web browser, and always gives a card or link to open them. `/video-studio:dashboard`
-shows them any time. The page designs come with the plugin; the content is the studio folder's own brands and videos.
+Mac can reach). Only one studio's pages run at a time. They open in your web browser: Claude's message starts with a
+link to the page, and the band above the message box has a button for it. `/video-studio:dashboard` shows them any
+time. The page designs come with the plugin; the content is the studio folder's own brands and videos.
 Nothing is uploaded.
 
 - **Dashboard:** what's waiting for your review, a timeline of recent videos with their status, the studio's brands,
@@ -155,11 +150,15 @@ Nothing is uploaded.
   whether it's working, and beside anything that isn't, what to say to Claude to fix it. Under **Space**, each
   finished video with room to free, and what to say to tidy it up. During setup the same page follows each step as
   it's done.
-- **Brand pages:** logo, colours (with contrast ratios), type specimens, motion identity and rules.
+- **Brand pages:** logo, colours (with contrast ratios), backgrounds, type specimens (in the brand's own fonts),
+  motion identity and rules.
 - **Video overviews:** one page per video showing what's happening now (including "Claude is making storyboard v3"
   while it works) and every stage, newest first, back to the brief: exactly what you wrote when you asked for the
   video, with Claude's summary and notes from starting it. On the overview, script, storyboard and video review pages,
   a switcher lists the script, storyboard and video versions, a row each; the breadcrumb leads back to the overview.
+- **Review pages** for the script, storyboard and video share one layout: the content on the left and your notes
+  beside it, each pinned to a cell, a scene or a moment and taking you back to it, under a bar with the version, the
+  download and copy buttons, the decision and the save button.
 - **Script pages:** the review page for each version of the script: the script as a table, its word count and
   length, a note on any cell, and the approve or change decision.
 - **Storyboard pages:** the review page for each storyboard version. A scene's frames sit on one row, at most 300 px
@@ -213,10 +212,9 @@ Pages keep themselves up to date. When Claude changes a brand, script, storyboar
 within a couple of seconds. If you have unsaved feedback on the page, it asks you to save first instead of
 refreshing. When a newer script, storyboard or video is ready, the older one links to it.
 
-Claude opens a page as soon as it writes the file behind it (`brand.json`, `script.json`, `storyboard.json` or
-`review.json`): a
-plugin hook gives Claude the page's address at that moment. It stays quiet when the page is already open, so later
-edits don't pull the browser away from what you're looking at.
+Claude shows a page as soon as it writes the file behind it (`brand.json`, `script.json`, `storyboard.json` or
+`review.json`): a plugin hook gives Claude the page's link at that moment, to start its message with. It stays quiet
+for a page it has just shown, since an open page refreshes itself.
 
 The band above the message box and the answer box make up the plugin's hooks module (`hooks/index.tsx`), and show
 only in sessions inside a studio.

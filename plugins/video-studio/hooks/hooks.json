@@ -1,5 +1,5 @@
 {
-  "description": "Wyzowl Video Studio: brief Claude about the studio when a session starts inside a studio folder (silent everywhere else); prompt Claude to show a studio page when it writes the file behind one; and, in a studio session, a band above the message box to open the dashboard, which also takes the commands studio pages ask for, and Claude's final answer after it has worked on something drawn in a yellow box; hooks/index.tsx holds both.",
+  "description": "Wyzowl Video Studio: brief Claude about the studio when a session starts inside a studio folder (silent everywhere else); prompt Claude to show a studio page when it writes the file behind one; and, in a studio session, a band above the message box that opens what's waiting for review in the session's own videos (or the dashboard), and Claude's final answer after it has worked on something drawn in a yellow box; hooks/index.tsx holds both.",
   "hooks": {
     "SessionStart": [
       {
