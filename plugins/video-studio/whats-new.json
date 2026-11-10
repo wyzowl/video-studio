@@ -1,4 +1,13 @@
 {
+  "0.11.0": [
+    {
+      "text": "SFX Kit has its own page, beside Library: listen to every sound by category or search them all, then ask Claude for one by its id. A sound named in a script or storyboard shows as a pink SFX pill: hover over it to listen.",
+      "href": "/sfx/"
+    },
+    {
+      "text": "Pages are tighter, with half the space above each section."
+    }
+  ],
   "0.10.0": [
     {
       "text": "Richer films: every scene is drawn in a world made for your video, with depth and gentle movement, and moves between your brand's dark, light and accent grounds. Each storyboard scene has a plan under The plan, and the build starts from the frames you approved."
