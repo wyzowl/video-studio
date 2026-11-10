@@ -332,3 +332,7 @@ strong {
   text-transform: uppercase;
   white-space: nowrap;
 }
+/* a sound from SFX Kit: pink, as on the studio's pages */
+.doc_item--sound {
+  border-color: #ef476f;
+}

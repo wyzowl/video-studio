@@ -155,7 +155,8 @@ scores. You mark two things by hand; the studio's commands mark the steps in bet
 Pages: `/` (dashboard), `/brands/<slug>/` (a brand), `/videos/<project>/` (a video's overview: what's happening now
 and every script, storyboard and video), `/videos/<project>/script/` (latest script),
 `/videos/<project>/storyboard/` (latest storyboard), `/videos/<project>/review/` (latest video review) and
-`/videos/<project>/delivery/` (the final video and every file made with it). After a finished review, the page takes the user to the video's overview, which says what
+`/videos/<project>/delivery/` (the final video and every file made with it), and `/sfx/` (SFX Kit: every sound to
+listen to, with its id). After a finished review, the page takes the user to the video's overview, which says what
 you're making while you work on it.
 
 ## The library

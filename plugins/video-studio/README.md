@@ -36,7 +36,7 @@ feedback counts.
 | `/video-studio:setup` | Checks this Mac, installs what Video Studio needs, creates a studio folder and makes a test render |
 | `/video-studio:new-video` | Asks a few questions, sets up the project, then writes a script and makes a storyboard, each for your approval |
 | `/video-studio:new-brand` | Builds a reusable brand kit, with a logo ident and its own brand page |
-| `/video-studio:dashboard` | Shows the studio's pages: videos, brands, scripts, storyboards, video reviews and the library |
+| `/video-studio:dashboard` | Shows the studio's pages: videos, brands, scripts, storyboards, video reviews, the library and SFX Kit |
 
 ## What Video Studio runs, fetches and sends
 

@@ -72,7 +72,7 @@ press **Got it**.
 | `/video-studio:setup` | Checks and installs what's needed, creates a studio folder, and makes a test render |
 | `/video-studio:new-video` | Asks a few questions (type, brand, script, size, where it's shown, length), sets up the project, then writes a script and makes a storyboard, each for your approval |
 | `/video-studio:new-brand` | Builds a brand kit from a website, logo files, colours, backgrounds and fonts, with a logo ident and its own brand page |
-| `/video-studio:dashboard` | Shows the studio's pages: recent videos, video overviews, brands, scripts, storyboards, video reviews and the library |
+| `/video-studio:dashboard` | Shows the studio's pages: recent videos, video overviews, brands, scripts, storyboards, video reviews, the library and SFX Kit |
 
 ## How a video is made
 
@@ -202,6 +202,11 @@ Nothing is uploaded.
     licence key above the cards on any library page (or ask Claude to activate it) and they unlock on that Mac: they play live in your brands and sizes,
     and Claude uses them in your videos. Once a day, when a session starts, the studio checks for new items in the
     background. The licence and the unlocked items are kept in `~/.wyzowl-video-studio/`, not in the studio folder.
+- **SFX Kit:** every sound effect in the kit, to listen to, under **SFX Kit** beside Library. Choose one of its 28
+  categories, or **Search** them all as you type (press `/` to start). Each sound plays from its button (or from any
+  point on its waveform) and shows its id, its length, its sync point (the moment it meets, marked on the waveform)
+  and its level. Ask Claude for any sound by its id; a sound named in a script or storyboard shows there as a pink
+  **SFX** pill that plays it when you hover over it. Before SFX Kit is on the Mac, the page says what to ask Claude.
 
 Long descriptions at the top of a page stop after 50 words, with "Read more" to open the rest. When you save a
 finished review, the page takes you to the video's overview, where you can see Claude working on the next step.

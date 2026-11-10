@@ -28,11 +28,12 @@ import {
   sawWhatsNew,
   registeredStudios,
 } from "./studio.mjs";
-import { dashboardPage, brandPage, projectPage, scriptPage, storyboardPage, reviewPage, deliveryPage, healthPage, checksParts, libraryPage, itemPage, page404, progressState } from "./pages.mjs";
+import { dashboardPage, brandPage, projectPage, scriptPage, storyboardPage, reviewPage, deliveryPage, healthPage, checksParts, libraryPage, itemPage, sfxPage, page404, progressState } from "./pages.mjs";
 import { scriptPrint, storyboardPrint } from "./print.mjs";
 import { CATEGORIES, findItem, libraryItem, previewDocument, SIZES } from "./library.mjs";
 import { renderPdf, shareName, attachment } from "./pdf.mjs";
 import { PREVIEWS_DIR, checkLibrary } from "./paid.mjs";
+import { KIT_DIR } from "./sfx.mjs";
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -180,6 +181,10 @@ export function createStudioServer(root) {
         const page = itemPage(studio, m[1], m[2], url.searchParams);
         return html(res, page.status, page.html);
       }
+      // SFX Kit: every sound to listen to, and the sounds themselves (from the kit on this Mac)
+      if (path === "/sfx") return redirect(res, "/sfx/");
+      if (path === "/sfx/") return html(res, 200, sfxPage(studio));
+      if ((m = /^\/sfx\/(sounds\/[a-z0-9-]+\/[a-z0-9-]+\.wav)$/.exec(path))) return file(req, res, KIT_DIR, m[1]);
       // the galleries' old addresses (before 0.3.0)
       if ((m = /^\/(widgets|layouts|text-effects)(\/[A-Za-z0-9]+)?\/?$/.exec(path))) return redirect(res, `/library/${m[1]}${m[2] || ""}/${url.search}`);
       // a locked paid item's preview video (and its poster), which the plugin carries

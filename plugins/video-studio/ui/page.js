@@ -11,7 +11,9 @@
 //   from the start" restarts them; "Copy" buttons copy their text. The search filters a category's items as you type,
 //   a star keeps an item in the studio's favourites, and "Try it with your words" plays an item with the words given.
 //   A brand, size or type, a category or one of an item's sizes opens the next page where this one was.
-// - A library item named in a script or storyboard shows itself playing while its chip is hovered or focused.
+// - A library item named in a script or storyboard shows itself playing while its chip is hovered or focused; a sound
+//   from SFX Kit shows a player on its pink pill.
+// - SFX Kit's page: a category's sounds at a time, a search through all of them, and a play button on each.
 // - While Claude makes something for a video, the panel on its overview follows the work as it happens.
 // - The Setup and Health page's checklist follows setup as it happens; the dashboard's "What's new" goes on "Got it".
 // - The masthead's height (and a review's bar's, and a storyboard's scene strip's) keeps jumps and focus clear of them.
@@ -619,31 +621,23 @@
     }, 1500);
   });
 
-  // ───────── a library item, on its chip ─────────
-  // A chip ("W03 Big number") shows the item playing in the video's brand and size while it's hovered or focused, with
-  // what the item is for: above the chip, or below it when there's no room. Moving away or Esc closes it; the pointer
-  // can move onto it without it closing. On a touch screen the first tap shows it and a second opens the item.
-  const chips = document.querySelectorAll("a.itemchip[data-pop]");
-  if (chips.length) {
-    const pop = document.createElement("div");
-    pop.className = "itempop";
-    pop.id = "itempop";
+  // ───────── a pill's popover ─────────
+  // A pill in a script or storyboard shows a popover while it's hovered or focused: above the pill, or below it when
+  // there's no room. Moving away or Esc closes it; the pointer can move onto it without it closing. On a touch screen
+  // the first tap shows it and a second opens the pill's link. `fill` puts the pill's content in; `leave` runs as it
+  // closes; `onClick` handles a click on the popover itself.
+  function hoverPop({ selector, pop, fill, leave = () => {}, onClick = null }) {
+    const chips = document.querySelectorAll(selector);
+    if (!chips.length) return null;
     pop.setAttribute("role", "tooltip");
     pop.hidden = true;
-    pop.innerHTML = `<div class="itempop_frame"><iframe title="Preview" tabindex="-1" aria-hidden="true"></iframe></div><div class="itempop_text"><p class="itempop_name"><b></b><span></span></p><p class="itempop_summary"></p></div>`;
     document.body.append(pop);
-    const box = pop.querySelector(".itempop_frame");
-    const frame = pop.querySelector("iframe");
-    const summary = pop.querySelector(".itempop_summary");
-    const still = matchMedia("(prefers-reduced-motion: reduce)");
-    const chipOf = (el) => (el instanceof Element ? el.closest("a.itemchip[data-pop]") : null);
+    const chipOf = (el) => (el instanceof Element ? el.closest(selector) : null);
     let chip = null;
     let pointer = "mouse";
     let showing = 0;
     let hiding = 0;
-    frame.addEventListener("load", () => box.classList.add("is-ready"));
-    // a click on it opens the item, as the chip does
-    pop.addEventListener("click", () => chip && window.open(chip.href, "_blank", "noopener"));
+    if (onClick) pop.addEventListener("click", (e) => chip && onClick(e, chip));
 
     // above the chip, centred on it, clear of the masthead (and the scene strip); below it when there's no room
     const place = () => {
@@ -669,20 +663,9 @@
       clearTimeout(hiding);
       if (target === chip && !pop.hidden) return;
       chip?.removeAttribute("aria-describedby");
+      const again = target === chip;
       chip = target;
-      const d = target.dataset;
-      const ratio = Number(d.ratio) || 16 / 9;
-      box.style.setProperty("--ratio", String(ratio));
-      box.style.setProperty("--ar", String(ratio));
-      pop.querySelector(".itempop_name b").textContent = d.code || "";
-      pop.querySelector(".itempop_name span").textContent = d.name || "";
-      summary.textContent = d.summary || "";
-      summary.hidden = !d.summary;
-      // a new item loads; the same one again plays from the start
-      if (frame.getAttribute("src") !== d.pop) {
-        box.classList.remove("is-ready");
-        frame.setAttribute("src", d.pop);
-      } else if (!still.matches) tell(frame, "replay");
+      fill(target, again);
       pop.hidden = false;
       place(); // (its layout, before the class, lets it fade in)
       pop.classList.add("is-open");
@@ -697,7 +680,7 @@
         chip.removeAttribute("aria-describedby");
         chip = null;
         pop.classList.remove("is-open");
-        tell(frame, "pause");
+        leave();
         setTimeout(() => !chip && (pop.hidden = true), 160);
       };
       if (now) close();
@@ -728,9 +711,13 @@
     document.addEventListener("focusin", (e) => {
       const target = chipOf(e.target);
       if (target && pointer !== "touch") show(target);
+      // (focus moving into the popover keeps it open)
+      else if (pop.contains(e.target)) clearTimeout(hiding);
     });
     document.addEventListener("focusout", (e) => {
-      if (chip && chipOf(e.target) === chip && !chip.matches(":hover")) hide();
+      const to = e.relatedTarget;
+      if (to instanceof Node && pop.contains(to)) return;
+      if (chip && (chipOf(e.target) === chip || pop.contains(e.target)) && !chip.matches(":hover") && !pop.matches(":hover")) hide();
     });
     document.addEventListener("click", (e) => {
       const target = chipOf(e.target);
@@ -742,5 +729,233 @@
     document.addEventListener("keydown", (e) => e.key === "Escape" && chip && hide(true));
     addEventListener("scroll", () => chip && requestAnimationFrame(place), { passive: true });
     addEventListener("resize", () => chip && place());
+    return { current: () => chip };
+  }
+
+  // ───────── a library item, on its chip ─────────
+  // A chip ("W03 Big number") shows the item playing in the video's brand and size, with what the item is for. A click
+  // on it opens the item, as the chip does.
+  {
+    const pop = document.createElement("div");
+    pop.className = "itempop";
+    pop.id = "itempop";
+    pop.innerHTML = `<div class="itempop_frame"><iframe title="Preview" tabindex="-1" aria-hidden="true"></iframe></div><div class="itempop_text"><p class="itempop_name"><b></b><span></span></p><p class="itempop_summary"></p></div>`;
+    const box = pop.querySelector(".itempop_frame");
+    const frame = pop.querySelector("iframe");
+    const summary = pop.querySelector(".itempop_summary");
+    const still = matchMedia("(prefers-reduced-motion: reduce)");
+    frame.addEventListener("load", () => box.classList.add("is-ready"));
+    hoverPop({
+      selector: "a.itemchip[data-pop]",
+      pop,
+      fill: (target) => {
+        const d = target.dataset;
+        const ratio = Number(d.ratio) || 16 / 9;
+        box.style.setProperty("--ratio", String(ratio));
+        box.style.setProperty("--ar", String(ratio));
+        pop.querySelector(".itempop_name b").textContent = d.code || "";
+        pop.querySelector(".itempop_name span").textContent = d.name || "";
+        summary.textContent = d.summary || "";
+        summary.hidden = !d.summary;
+        // a new item loads; the same one again plays from the start
+        if (frame.getAttribute("src") !== d.pop) {
+          box.classList.remove("is-ready");
+          frame.setAttribute("src", d.pop);
+        } else if (!still.matches) tell(frame, "replay");
+      },
+      leave: () => tell(frame, "pause"),
+      onClick: (e, chip) => window.open(chip.href, "_blank", "noopener"),
+    });
+  }
+
+  // ───────── SFX Kit's sounds ─────────
+  // One sound plays at a time: a play button starts its sound (or stops it, while it plays), and a click on a
+  // waveform plays from that point. The part played fills in pink as it goes.
+  const player = (() => {
+    const audio = new Audio();
+    audio.preload = "auto";
+    let button = null;
+    let wave = null;
+    let raf = 0;
+    const label = (b, playing) => b.setAttribute("aria-label", b.getAttribute("aria-label").replace(/^(Play|Stop) /, playing ? "Stop " : "Play "));
+    const tick = () => {
+      if (wave && audio.duration) wave.style.setProperty("--played", `${Math.min(100, (audio.currentTime / audio.duration) * 100)}%`);
+      raf = requestAnimationFrame(tick);
+    };
+    const stop = () => {
+      cancelAnimationFrame(raf);
+      if (button) {
+        button.setAttribute("aria-pressed", "false");
+        label(button, false);
+        button.closest(".sfxcard")?.classList.remove("is-playing");
+      }
+      wave?.style.setProperty("--played", "0%");
+      button = wave = null;
+    };
+    audio.addEventListener("ended", () => {
+      // (the last frame drawn full, then cleared)
+      wave?.style.setProperty("--played", "100%");
+      setTimeout(stop, 120);
+    });
+    /** Play `src` from `at` (0–1 of its length), shown on `b` and `w`. The same button again stops it. */
+    const play = (src, b, w, at = null) => {
+      if (at === null && b === button && !audio.paused) {
+        audio.pause();
+        return stop();
+      }
+      stop();
+      button = b;
+      wave = w;
+      const start = () => {
+        if (at && audio.duration) audio.currentTime = at * audio.duration;
+        else audio.currentTime = 0;
+        audio.play().catch(() => stop());
+      };
+      if (audio.dataset.src !== src) {
+        audio.dataset.src = src;
+        audio.src = src;
+        audio.addEventListener("loadedmetadata", start, { once: true });
+        audio.load();
+      } else start();
+      if (b) {
+        b.setAttribute("aria-pressed", "true");
+        label(b, true);
+        b.closest(".sfxcard")?.classList.add("is-playing");
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    return { play, stop, playing: () => button };
+  })();
+  // where in a waveform a click landed, 0–1
+  const waveAt = (wave, e) => {
+    const r = (wave.querySelector(".sfxwave_in") || wave).getBoundingClientRect();
+    return Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+  };
+
+  // ───────── the SFX Kit page ─────────
+  // A category's sounds show at a time (all of them with "All sounds"); the address keeps the category, and a sound's
+  // id in it opens its category and marks it. The search looks through every sound, as you type. "/" goes to it.
+  const kit = document.querySelector("[data-sfx-kit]");
+  if (kit) {
+    const sections = [...kit.querySelectorAll("[data-sfx-cat]")];
+    const links = [...kit.querySelectorAll("[data-sfx-show]")];
+    const cards = [...kit.querySelectorAll("[data-sfx-card]")];
+    const search = kit.querySelector("[data-sfx-search]");
+    const result = kit.querySelector("[data-sfx-result]");
+    let current = sections[0]?.dataset.sfxCat || "all";
+    const show = (cat) => {
+      current = cat;
+      for (const sec of sections) sec.hidden = cat !== "all" && sec.dataset.sfxCat !== cat;
+      for (const a of links) a.setAttribute("aria-current", String(a.dataset.sfxShow === cat));
+    };
+    const fromHash = () => {
+      const id = decodeURIComponent(location.hash.slice(1));
+      if (id === "all" || sections.some((sec) => sec.dataset.sfxCat === id)) return show(id);
+      const card = cards.find((c) => c.id === id);
+      if (!card) return show(current);
+      show(card.closest("[data-sfx-cat]").dataset.sfxCat);
+      cards.forEach((c) => c.classList.toggle("is-picked", c === card));
+      requestAnimationFrame(() => card.scrollIntoView({ block: "center" }));
+    };
+    const run = () => {
+      const q = search.value.trim();
+      // each word by its stem, so "slide" finds "sliding" and "typing" finds "type" (as scripts/lib/sfx.mjs finds them)
+      const words = q
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((w) => (w.length > 3 ? w.replace(/(ings?|ed|es|s)$/, "").replace(/e$/, "") || w : w));
+      result.replaceChildren();
+      if (!words.length) {
+        cards.forEach((c) => (c.hidden = false));
+        return show(current);
+      }
+      let shown = 0;
+      for (const card of cards) {
+        card.hidden = !words.every((w) => card.dataset.search.includes(w));
+        if (!card.hidden) shown++;
+      }
+      for (const sec of sections) sec.hidden = !sec.querySelector("[data-sfx-card]:not([hidden])");
+      for (const a of links) a.setAttribute("aria-current", "false");
+      result.append(shown ? `${shown} ${shown === 1 ? "sound matches" : "sounds match"} “${q}”, in every category.` : `No sounds match “${q}”. Try what happens on screen, such as “slide”, “land” or “type”.`);
+    };
+    links.forEach((a) =>
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        search.value = "";
+        cards.forEach((c) => {
+          c.hidden = false;
+          c.classList.remove("is-picked");
+        });
+        result.replaceChildren();
+        show(a.dataset.sfxShow);
+        history.replaceState(null, "", `#${a.dataset.sfxShow}`);
+      }),
+    );
+    let timer = 0;
+    search.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(run, 120);
+    });
+    addEventListener("hashchange", fromHash);
+    addEventListener("keydown", (e) => {
+      if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey || e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+      e.preventDefault();
+      search.focus();
+      search.select();
+    });
+    fromHash();
+    kit.addEventListener("click", (e) => {
+      const card = e.target.closest?.("[data-sfx-card]");
+      if (!card) return;
+      const button = card.querySelector("[data-sfx-play]");
+      const wave = card.querySelector("[data-sfx-wave]");
+      if (e.target.closest("[data-sfx-play]")) player.play(card.dataset.src, button, wave);
+      else if (wave?.contains(e.target)) player.play(card.dataset.src, button, wave, waveAt(wave, e));
+    });
+  }
+
+  // ───────── a sound from SFX Kit, on its pill ─────────
+  // A pink pill ("SFX Whoosh, fast and hard") shows a player: the sound's name (which opens it on the SFX Kit page),
+  // its waveform, what it is, and its length, sync point and level. Space on a focused pill plays it too.
+  {
+    const pop = document.createElement("div");
+    pop.className = "itempop sfxpop";
+    pop.id = "sfxpop";
+    pop.innerHTML = `<div class="sfxpop_head"><button class="sfxplay" type="button" aria-pressed="false" aria-label="Play the sound"><svg class="sfxplay_play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><svg class="sfxplay_pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg></button><p class="sfxpop_name"><a target="_blank" rel="noopener"></a><span></span></p></div><div class="sfxpop_wave"></div><p class="itempop_summary"></p><p class="sfxpop_facts"></p>`;
+    const button = pop.querySelector(".sfxplay");
+    const name = pop.querySelector(".sfxpop_name a");
+    const waveBox = pop.querySelector(".sfxpop_wave");
+    let chip = null;
+    const pills = hoverPop({
+      selector: "a.itemchip[data-sfx]",
+      pop,
+      fill: (target, again) => {
+        const d = target.dataset;
+        chip = target;
+        if (again) return;
+        if (player.playing() === button) player.stop();
+        name.textContent = d.name || "";
+        name.href = target.href;
+        pop.querySelector(".sfxpop_name span").textContent = d.sfx || "";
+        button.setAttribute("aria-label", `Play ${d.name || "the sound"}`);
+        waveBox.innerHTML = d.wave || "";
+        pop.querySelector(".itempop_summary").textContent = d.summary || "";
+        pop.querySelector(".sfxpop_facts").textContent = d.facts || "";
+      },
+      onClick: (e) => {
+        if (!chip || e.target.closest("a")) return;
+        const wave = waveBox.querySelector("[data-sfx-wave]");
+        if (e.target.closest(".sfxplay")) player.play(chip.dataset.src, button, wave);
+        else if (wave?.contains(e.target)) player.play(chip.dataset.src, button, wave, waveAt(wave, e));
+      },
+    });
+    if (pills)
+      document.addEventListener("keydown", (e) => {
+        const target = e.target.closest?.("a.itemchip[data-sfx]");
+        if (e.key !== " " || !target || target !== pills.current()) return;
+        e.preventDefault();
+        player.play(target.dataset.src, button, waveBox.querySelector("[data-sfx-wave]"));
+      });
   }
 })();

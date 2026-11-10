@@ -128,7 +128,8 @@ graphs), each with a code and each dressed in the video's brand at the video's s
   - Not every cut needs a transition. Use them where the video moves on, and let related beats simply cut.
 - **Write it into the action cell** by its code in square brackets, with what it shows, for example:
   `[W03] **48%** of customers chose the yearly plan`. The page shows each as a link that opens the item in the
-  video's brand and size; PDFs show its name.
+  video's brand and size; PDFs show its name. A sound from SFX Kit that the user asks for goes in the same way, by
+  its id: `[whoosh-medium-soft]` (`PLUGIN/guides/audio/sfx.md`).
 - **Use them where they help the viewer, and combine them freely:** a wall of work with captions over it, quick-fire
   widgets one after another, big words on one of the brand's colours with a stat beside them. When several share a
   moment, write them all in that row's action cell, saying which sits on top and where (`studio.mjs library` marks

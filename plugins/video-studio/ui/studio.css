@@ -203,7 +203,8 @@ p {
 .section {
   --_x: calc((100% - min(100% - 2 * var(--page-margin), var(--max) + 2 * var(--rail-pad))) / 2);
   position: relative;
-  padding-block: var(--section-space);
+  /* half the space above a section's content as below it */
+  padding-block: calc(var(--section-space) * 0.5) var(--section-space);
   background:
     linear-gradient(var(--border), var(--border)) left var(--_x) top 0 / var(--border-width) var(--_rail, 100%) no-repeat,
     linear-gradient(var(--border), var(--border)) right var(--_x) top 0 / var(--border-width) var(--_rail, 100%) no-repeat;
@@ -211,10 +212,10 @@ p {
   color: var(--text);
 }
 .section--tight {
-  padding-block: calc(var(--section-space) * 0.6);
+  padding-block: calc(var(--section-space) * 0.3) calc(var(--section-space) * 0.6);
 }
 .section--flush-top {
-  padding-top: var(--space-6);
+  padding-top: var(--space-4);
 }
 /* a rule opens the section: a hairline with square markers where it crosses the rails */
 .section--rule::before {
@@ -270,7 +271,7 @@ p {
     var(--background);
 }
 .section--hero > .container {
-  padding-block: var(--space-8) var(--space-7);
+  padding-block: var(--space-6) var(--space-7);
 }
 .section--hero .lede {
   color: var(--text-2);
@@ -3965,6 +3966,340 @@ a.stages_item:hover {
 @media (prefers-reduced-motion: reduce) {
   .itempop,
   .itempop_frame iframe {
+    transition: none;
+  }
+}
+
+/* ───────── SFX Kit: every sound, to listen to (scripts/lib/pages.mjs sfxPage, ui/page.js) ───────── */
+/* pink is SFX Kit's colour across the studio: its pills in scripts and storyboards, its play buttons, a sound playing */
+.sfxkit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+.sfxnav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.sfxnav_link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5em;
+  padding: 0.45rem 0.75rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--background-2);
+  font-weight: 600;
+  font-size: var(--text-small);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--hover) var(--ease);
+}
+.sfxnav_link span {
+  font: 500 var(--text-tiny) / 1 var(--font-mono);
+  color: var(--text-2);
+}
+.sfxnav_link:hover {
+  background: var(--background-3);
+}
+.sfxnav_link[aria-current="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.sfxnav_link[aria-current="true"] span {
+  color: var(--pink);
+}
+.sfxcats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+.sfxcat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  scroll-margin-top: 6rem;
+}
+.sfxcat_head {
+  display: grid;
+  gap: var(--space-1);
+}
+.sfxcat_head h3 {
+  font-size: var(--text-h4);
+}
+.sfxcat[hidden],
+.sfxcard[hidden] {
+  display: none;
+}
+.sfxgrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+}
+/* a row's cards share their rows, so their waveforms and facts line up whatever the names' lengths */
+.sfxcard {
+  display: grid;
+  grid-row: span 5;
+  grid-template-rows: subgrid;
+  align-content: start;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--background-2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  scroll-margin-top: 6rem;
+  transition: border-color var(--hover) var(--ease), box-shadow var(--hover) var(--ease);
+}
+.sfxcard.is-playing,
+.sfxcard.is-picked {
+  border-color: var(--pink);
+  box-shadow: 0 0 0 1px var(--pink);
+}
+.sfxcard_head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+.sfxcard_name {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.sfxcard_name h4 {
+  font-size: var(--text-main);
+  font-weight: 650;
+  line-height: 1.25;
+}
+.sfxcard_name p {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  font-size: var(--text-tiny);
+  color: var(--text-2);
+}
+.sfxcard_name .mono {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sfxcopy {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.25rem;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: transparent;
+  color: var(--text-2);
+  font: 500 var(--text-tiny) / 1 var(--font-body);
+  cursor: pointer;
+}
+.sfxcopy:hover {
+  background: var(--background-3);
+  color: var(--text);
+}
+.sfxcopy .icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+.sfxcard_text {
+  font-size: var(--text-small);
+  line-height: 1.45;
+}
+.sfxcard_use {
+  font-size: var(--text-tiny);
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.sfxcard_use .field-label {
+  margin-right: 0.35em;
+}
+/* the play button: pink, a pause sign while its sound plays */
+.sfxplay {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--pink);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform var(--hover) var(--ease), background-color var(--hover) var(--ease);
+}
+.sfxplay:hover {
+  transform: scale(1.06);
+}
+.sfxplay:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.sfxplay svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: currentColor;
+}
+.sfxplay .sfxplay_pause,
+.sfxplay[aria-pressed="true"] .sfxplay_play {
+  display: none;
+}
+.sfxplay[aria-pressed="true"] .sfxplay_pause {
+  display: block;
+}
+/* a sound's waveform on a dark panel: its sync point marked in yellow, what's played in pink; a click plays from there */
+.sfxwave {
+  --played: 0%;
+  position: relative;
+  height: 4.5rem;
+  border-radius: var(--radius-s);
+  background: var(--ink);
+  overflow: hidden;
+  cursor: pointer;
+}
+.sfxwave_in {
+  position: absolute;
+  inset: 0.5rem;
+}
+.sfxwave svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: color-mix(in lab, var(--paper) 42%, transparent);
+}
+.sfxwave .sfxwave_played {
+  fill: var(--pink);
+  clip-path: inset(0 calc(100% - var(--played)) 0 0);
+}
+.sfxwave_sync {
+  position: absolute;
+  top: -0.5rem;
+  bottom: -0.5rem;
+  left: var(--sync);
+  width: 0;
+  border-left: 1px dashed var(--yellow);
+}
+.sfxwave_sync::before {
+  content: "sync";
+  position: absolute;
+  top: 0.35rem;
+  left: 0.25rem;
+  font: 500 0.625rem / 1 var(--font-mono);
+  letter-spacing: 0.06em;
+  color: var(--yellow);
+}
+/* a sync point near the end: its label sits before the line */
+.sfxwave--late .sfxwave_sync::before {
+  left: auto;
+  right: 0.25rem;
+}
+.sfxfacts {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  justify-content: start;
+  gap: var(--space-1) var(--space-5);
+  margin: 0;
+}
+.sfxfacts div {
+  display: grid;
+  gap: 0.15rem;
+}
+.sfxfacts dt {
+  font: 500 0.625rem / 1 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.sfxfacts dd {
+  margin: 0;
+  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.sfxmissing_ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  color: var(--text);
+}
+
+/* a sound from SFX Kit named in a script or storyboard ("[whoosh-fast-hard]"): a pink pill; hovering or focusing it
+   shows a player (ui/page.js), and a click opens the sound on the SFX Kit page */
+.itemchip--sfx b {
+  background: var(--pink);
+}
+.itemchip--sfx:hover {
+  border-color: var(--pink);
+}
+/* the example on the SFX Kit page, in a line of smaller text */
+.itemchip--inline {
+  font-size: 0.85em;
+  vertical-align: 0.05em;
+}
+.sfxpop {
+  width: min(22rem, calc(100vw - 2rem));
+  padding: var(--space-3);
+  gap: var(--space-3);
+}
+.sfxpop.is-open {
+  cursor: default;
+}
+.sfxpop_head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+.sfxpop_name {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  font-size: var(--text-small);
+  line-height: 1.3;
+}
+.sfxpop_name a {
+  font-weight: 650;
+  color: var(--text);
+  text-decoration: none;
+}
+.sfxpop_name a:hover {
+  text-decoration: underline;
+}
+.sfxpop_name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
+  color: var(--text-2);
+}
+.sfxpop .sfxwave {
+  height: 3.5rem;
+  background: var(--background-2);
+}
+.sfxpop .sfxplay:focus-visible {
+  outline-color: var(--paper);
+}
+.sfxpop_facts {
+  font: 500 var(--text-tiny) / 1.3 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sfxplay,
+  .sfxcard {
     transition: none;
   }
 }

@@ -22,12 +22,23 @@ import {
 } from "./studio.mjs";
 import { esc, enc, rich } from "./pages.mjs";
 import { libraryItem } from "./library.mjs";
+import { kitInstalled, kitSound } from "./sfx.mjs";
 
-/** Library items named by code ("[W03]") read as their names here: the codes are for the studio, not the reader. */
-const items = (html) => String(html).replace(/\[([A-Z]\d{2,3})\]/g, (whole, code) => {
-  const item = libraryItem(code);
-  return item ? `<span class="doc_item">${esc(item.name)}</span>` : whole;
-});
+/** Library items named by code ("[W03]"), and sounds from SFX Kit by id ("[whoosh-fast-hard]"), read as their names
+    here: the codes are for the studio, not the reader. */
+const items = (html) =>
+  String(html)
+    .replace(/\[([A-Z]\d{2,3})\]/g, (whole, code) => {
+      const item = libraryItem(code);
+      return item ? `<span class="doc_item">${esc(item.name)}</span>` : whole;
+    })
+    .replace(/\[([a-z0-9]+(?:-[a-z0-9]+)+)\]/g, (whole, id) => {
+      let sound = null;
+      try {
+        sound = kitInstalled() && kitSound(id);
+      } catch {}
+      return sound ? `<span class="doc_item doc_item--sound">${esc(sound.name)}</span>` : whole;
+    });
 
 /** A string for a CSS `content` value. */
 const cssText = (s) => `"${String(s).replace(/[\\"]/g, "\\$&").replace(/[\r\n]+/g, " ").replace(/</g, "\\3c ")}"`;

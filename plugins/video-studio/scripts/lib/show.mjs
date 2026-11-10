@@ -7,7 +7,7 @@ import { PLUGIN_ROOT } from "./studio.mjs";
 
 export const pageUrl = (base, path) => base.replace(/\/$/, "") + (path.startsWith("/") ? path : `/${path}`);
 
-const LINKS = { dashboard: "Open the dashboard", brand: "Open the brand page", project: "Open the video overview", delivery: "Open the delivery page", library: "Open the library" };
+const LINKS = { dashboard: "Open the dashboard", brand: "Open the brand page", project: "Open the video overview", delivery: "Open the delivery page", library: "Open the library", sfx: "Open SFX Kit" };
 /** The labelled link to a page, as Claude writes it in the chat. */
 export function pageLink(base, page) {
   const label = LINKS[page.kind] || { script: `Open script v${page.version}`, storyboard: `Open storyboard v${page.version}`, review: `Open video v${page.version}`, item: `Open ${page.code}` }[page.kind] || "Open the page";

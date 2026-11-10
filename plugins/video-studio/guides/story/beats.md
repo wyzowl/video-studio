@@ -99,7 +99,8 @@ follows them (the storyboard skill has the format). The user can open each plan 
   in, with its time ("17.46 s Two minutes sets in on the right"): Video Studio's checks test that it lands then. A
   card's words land after the card does, so time the words, not the card ("13.7 s the tip card rises in; 14.1 s Try
   this week sets in").
-- **Sound:** the moments that take a sound from SFX Kit, and what the music does.
+- **Sound:** the moments that take a sound from SFX Kit, and what the music does. A sound you name from the kit goes
+  by its id in square brackets (`../audio/sfx.md`).
 - **Hand-over:** how the scene hands on to the next.
 
 ---

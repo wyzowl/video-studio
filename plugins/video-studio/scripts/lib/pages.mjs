@@ -42,6 +42,7 @@ import { deliveryFiles, deliveryWords, hasDelivery } from "./delivery.mjs";
 import { checksNow, setupNotes } from "./checks.mjs";
 import { TIDY_MIN_BYTES, lastTidy, sizeLabel, studioTidy, tidyPlan, tidyWhat } from "./tidy.mjs";
 import { HYPERFRAMES_VERSION } from "./versions.mjs";
+import { SFX_KIT, kitInstalled, kitSound, readKit, soundPeaks } from "./sfx.mjs";
 
 export const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -78,6 +79,7 @@ function layout({ title, active = "", studio, body, foot = "", head = "" }) {
     ["videos", "/#videos", "Videos"],
     ["brands", "/#brands", "Brands"],
     ["library", "/library/", "Library"],
+    ["sfx", "/sfx/", "SFX Kit"],
   ]
     .map(([key, href, label]) =>
       href
@@ -1862,10 +1864,12 @@ function sizeKey(size) {
 }
 
 /** Library items named in a script or storyboard by their code in square brackets ("[W03]"): a chip that opens the
-    item in the video's brand and size, in a new tab so unsaved notes stay put. Codes the library doesn't have stay as
-    they're written. */
+    item in the video's brand and size, in a new tab so unsaved notes stay put. Sounds from SFX Kit, by their id
+    ("[whoosh-fast-hard]"), are pink pills to listen to. Codes and ids that aren't there stay as they're written. */
 export function itemChips(html, video) {
-  return String(html).replace(/\[([A-Z]\d{2,3})\]/g, (whole, code) => {
+  // a sound from SFX Kit, by its id: a pink pill to listen to
+  const sounds = String(html).replace(/\[([a-z0-9]+(?:-[a-z0-9]+)+)\]/g, (whole, id) => soundChip(id) || whole);
+  return sounds.replace(/\[([A-Z]\d{2,3})\]/g, (whole, code) => {
     const item = libraryItem(code);
     if (!item) return whole;
     const p = new URLSearchParams();
@@ -1878,6 +1882,155 @@ export function itemChips(html, video) {
     if (video?.brand) pop.set("brand", video.brand);
     return `<a class="itemchip" href="/library/${item.category}/${enc(item.code.toLowerCase())}/${query}" target="_blank" rel="noopener" data-pop="/library/preview/${enc(item.code.toLowerCase())}?${pop}" data-ratio="${(SIZES[size].w / SIZES[size].h).toFixed(4)}" data-code="${esc(item.code)}" data-name="${esc(item.name)}" data-summary="${esc(item.summary)}"><b>${esc(item.code)}</b>${esc(item.name)}</a>`;
   });
+}
+
+// ───────── SFX Kit ─────────
+
+// (a number and its unit never part)
+const seconds = (s) => `${Number(s).toFixed(2)}\u00a0s`;
+const lufs = (v) => `${v < 0 ? "−" : ""}${Math.abs(v).toFixed(1)}\u00a0LUFS`;
+/** Where a kit sound plays from on the page server. */
+const soundSrc = (s) => `/sfx/${enc(s.file)}`;
+/** A sound's length, sync point and level, as the SFX Kit page and the pills show them. */
+const soundFacts = (s) => [
+  ["Length", seconds(s.duration)],
+  ["Sync", seconds(s.sync.at)],
+  ["Level", lufs(s.level.lufs)],
+];
+
+/** A sound's waveform: its loudest levels as bars across its length, a line at its sync point (the part that meets
+    the moment), and the part already played drawn over it while it plays (ui/page.js sets --played). */
+function soundWave(s, prefix = "w") {
+  const peaks = soundPeaks(s, 72);
+  if (!peaks) return "";
+  const id = `${prefix}-${s.id}`;
+  const d = peaks
+    .map((p, i) => {
+      const h = Math.max(0.6, Math.sqrt(p) * 19);
+      return `M${i + 0.19} ${(20 - h).toFixed(1)}h.62v${(2 * h).toFixed(1)}h-.62z`;
+    })
+    .join("");
+  const sync = Math.min(100, Math.max(0, (s.sync.at / s.duration) * 100)).toFixed(1);
+  return `<div class="sfxwave${sync > 80 ? " sfxwave--late" : ""}" data-sfx-wave style="--sync: ${sync}%"><div class="sfxwave_in"><svg viewBox="0 0 72 40" preserveAspectRatio="none" aria-hidden="true"><path id="${esc(id)}" d="${d}"/></svg><svg class="sfxwave_played" viewBox="0 0 72 40" preserveAspectRatio="none" aria-hidden="true"><use href="#${esc(id)}"/></svg><span class="sfxwave_sync" title="Sync point: ${esc(seconds(s.sync.at))}"></span></div></div>`;
+}
+
+const PLAY_ICON = `<svg class="sfxplay_play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><svg class="sfxplay_pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>`;
+const playButton = (s) => `<button class="sfxplay" type="button" data-sfx-play aria-label="Play ${esc(s.name)}">${PLAY_ICON}</button>`;
+
+/** A sound from SFX Kit named in a script or storyboard by its id in square brackets ("[whoosh-fast-hard]"): a pink
+    pill that plays it in a popover while it's hovered or focused (ui/page.js), and opens it on the SFX Kit page (in
+    a new tab, so unsaved notes stay put; on the SFX Kit page itself, `here`, in place). */
+function soundChip(id, { here = false } = {}) {
+  if (!kitInstalled()) return null;
+  let s;
+  try {
+    s = kitSound(id);
+  } catch {
+    return null;
+  }
+  if (!s) return null;
+  const facts = soundFacts(s).map(([k, v]) => `${k}\u00a0${v}`).join(" · ");
+  return `<a class="itemchip itemchip--sfx${here ? " itemchip--inline" : ""}" href="/sfx/#${enc(s.id)}"${here ? "" : ' target="_blank" rel="noopener"'} data-sfx="${esc(s.id)}" data-src="${esc(soundSrc(s))}" data-name="${esc(s.name)}" data-summary="${esc(s.description)}" data-facts="${esc(facts)}" data-wave="${esc(soundWave(s, "p"))}"><b>SFX</b>${esc(s.name)}</a>`;
+}
+
+/** What the SFX Kit page's search looks in: a sound's id, name, category, kind and what it's for. */
+const soundSearch = (s, cat) =>
+  [s.id, s.name, cat?.title, Object.values(s.variant || {}).join(" "), s.tags.join(" "), s.use_for.join(" "), s.description, s.character].join(" ").toLowerCase();
+
+function soundCard(s, cat) {
+  return `<article class="sfxcard" id="${esc(s.id)}" data-sfx-card data-src="${esc(soundSrc(s))}" data-search="${esc(soundSearch(s, cat))}">
+  <div class="sfxcard_head">${playButton(s)}<div class="sfxcard_name"><h4>${esc(s.name)}</h4><p><span class="mono">${esc(s.id)}</span><button class="sfxcopy" type="button" data-copy="${esc(s.id)}" aria-label="Copy the id ${esc(s.id)}" data-tip="Copy the id">${ICON.copy}</button></p></div></div>
+  ${soundWave(s)}
+  <dl class="sfxfacts">${soundFacts(s).map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+  <p class="sfxcard_text">${esc(s.description)}</p>
+  ${s.use_for.length ? `<p class="sfxcard_use"><span class="field-label">For</span> ${esc(s.use_for.join(" · "))}</p>` : ""}
+</article>`;
+}
+
+/** SFX Kit: every sound, by category, to listen to and find by what it's for, with its id to ask Claude for. Before
+    the kit's on this Mac, what to ask Claude to get it. */
+export function sfxPage(studio) {
+  const hero = (aside) => `
+<section class="section section--hero">
+  <div class="container">
+    <p class="breadcrumbs"><a href="/">Studio</a> / SFX Kit</p>
+    ${eyebrow(tc(0), "SFX Kit")}
+    <div class="split">
+      <div class="stack">
+        <h1>SFX Kit</h1>
+        <p class="lede">The sound effects Claude uses in your videos, made to sit together. Listen by category or search for a moment, then ask for any sound by its id.</p>
+      </div>
+      ${aside}
+    </div>
+  </div>
+</section>`;
+  if (!kitInstalled()) {
+    const ask = "Install SFX Kit";
+    const body = `${hero(`<dl class="titleblock">${cell("Version", SFX_KIT.version)}${cell("Download", SFX_KIT.size.replace(/^about /, "About "))}</dl>`)}
+<section class="section section--rule">
+  <div class="container">
+    ${eyebrow(tc(1), "Not installed")}
+    <div class="libempty sfxmissing">
+      <span class="libempty_label">SFX Kit isn't on this Mac yet</span>
+      <p>It's a one-off download (${esc(SFX_KIT.size)}). Ask Claude in your studio session, and this page fills in once it's here:</p>
+      <p class="sfxmissing_ask"><span class="mono">“${esc(ask)}”</span><button class="button button--secondary" type="button" data-copy="${esc(ask)}">Copy</button></p>
+      <p><a href="/health">Studio health</a> shows everything Video Studio downloads.</p>
+    </div>
+  </div>
+</section>`;
+    return layout({ title: "SFX Kit", active: "sfx", studio, body });
+  }
+  const kit = readKit();
+  // each category's sounds in its own order: its first kind's values first (fast, medium, slow), then the next kind's
+  const order = (c) => (s) => Object.entries(c.dimensions || {}).map(([k, values]) => (values.includes(s.variant?.[k]) ? values.indexOf(s.variant[k]) : values.length));
+  const byVariant = (c) => (a, b) => {
+    const [x, y] = [order(c)(a), order(c)(b)];
+    const i = x.findIndex((v, n) => v !== y[n]);
+    return i < 0 ? a.id.localeCompare(b.id) : x[i] - y[i];
+  };
+  const cats = kit.categories.map((c) => ({ ...c, sounds: kit.sounds.filter((s) => s.category === c.id).sort(byVariant(c)) })).filter((c) => c.sounds.length);
+  const nav = [`<li><a class="sfxnav_link" href="#all" data-sfx-show="all">All sounds <span>${kit.sounds.length}</span></a></li>`]
+    .concat(cats.map((c) => `<li><a class="sfxnav_link" href="#${esc(c.id)}" data-sfx-show="${esc(c.id)}">${esc(c.title)} <span>${c.sounds.length}</span></a></li>`))
+    .join("");
+  const sections = cats
+    .map(
+      (c) => `<section class="sfxcat" id="${esc(c.id)}" data-sfx-cat="${esc(c.id)}" aria-labelledby="sfx-${esc(c.id)}">
+  <div class="sfxcat_head"><h3 id="sfx-${esc(c.id)}">${esc(c.title)}</h3><p class="muted">${esc(c.description)} · ${esc(plural(c.sounds.length, "sound"))}</p></div>
+  <div class="sfxgrid">${c.sounds.map((s) => soundCard(s, c)).join("\n")}</div>
+</section>`,
+    )
+    .join("\n");
+  const example = kit.sounds.find((s) => s.id === "whoosh-medium-soft") || kit.sounds[0];
+  const body = `${hero(`<dl class="titleblock">${cell("Sounds", String(kit.sounds.length))}${cell("Categories", String(cats.length))}${cell("Version", kit.version)}${cell("Licence", "CC0, free to use")}</dl>`)}
+<section class="section section--rule">
+  <div class="container sfxkit" data-sfx-kit>
+    ${eyebrow(tc(1), "Listen")}
+    <div class="stack">
+      <h2>Listen to every sound</h2>
+      <p class="lede">Choose a category, then press play. Each sound shows its length, its sync point (the moment it meets, marked on its waveform) and its level.</p>
+    </div>
+    <nav class="sfxnav" aria-label="SFX Kit categories"><ul>${nav}</ul></nav>
+    <div class="libsearch" role="search">
+      <label class="field-label" for="sfx-q">Search the sounds</label>
+      <div class="libsearch_row"><input id="sfx-q" type="search" placeholder="Try “whoosh”, “notification” or “typing”" autocomplete="off" spellcheck="false" data-sfx-search><kbd aria-hidden="true">/</kbd></div>
+      <p class="libsearch_result" data-sfx-result aria-live="polite"></p>
+    </div>
+    <div class="sfxcats">${sections}</div>
+  </div>
+</section>
+<section class="section section--rule">
+  <div class="container">
+    ${eyebrow(tc(2), "Use one")}
+    <div class="split" style="align-items: start">
+      <div class="stack">
+        <h2>Using one in a video</h2>
+        <p>Tell Claude the sound's id and the moment it's for, for example: <span class="mono">“Use ${esc(example.id)} as the phone slides in.”</span> Claude places it by its sync point and sets its level when it builds the video's sound.</p>
+      </div>
+      <div class="callout"><strong>In scripts and storyboards</strong><p>A sound named in a script or storyboard shows as a pink ${soundChip(example.id, { here: true })} tag. Hover over it to listen.</p></div>
+    </div>
+  </div>
+</section>`;
+  return layout({ title: "SFX Kit", active: "sfx", studio, body });
 }
 
 /** The brand and size the library shows its items in, and whether it shows only the free ones, from the page's address

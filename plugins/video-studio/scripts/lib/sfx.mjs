@@ -123,3 +123,59 @@ export function logGap({ what, video = "", at = null, made = "" }) {
   writeFileSync(GAPS, `${JSON.stringify(gaps, null, 2)}\n`);
   return true;
 }
+
+// ───────── the sounds, to listen to ─────────
+
+const peaksCache = new Map();
+/** A sound's waveform for its pages: `n` loudest sample levels (0–1, both channels), evenly across the file, or null
+    when the file can't be read. Read from the WAV once per page server. */
+export function soundPeaks(sound, n = 96) {
+  const key = `${sound.id}:${n}`;
+  if (peaksCache.has(key)) return peaksCache.get(key);
+  let peaks = null;
+  try {
+    peaks = wavPeaks(readFileSync(join(KIT_DIR, sound.file)), n);
+  } catch {}
+  peaksCache.set(key, peaks);
+  return peaks;
+}
+
+/** The loudest level in each of `n` equal stretches of a PCM or float WAV. */
+function wavPeaks(buf, n) {
+  if (buf.toString("ascii", 0, 4) !== "RIFF" || buf.toString("ascii", 8, 12) !== "WAVE") return null;
+  let fmt = null;
+  let data = null;
+  for (let at = 12; at + 8 <= buf.length; ) {
+    const id = buf.toString("ascii", at, at + 4);
+    const size = buf.readUInt32LE(at + 4);
+    if (id === "fmt ") {
+      const tag = buf.readUInt16LE(at + 8);
+      // WAVE_FORMAT_EXTENSIBLE names its real format in its sub-format
+      fmt = { format: tag === 0xfffe && size >= 26 ? buf.readUInt16LE(at + 32) : tag, channels: buf.readUInt16LE(at + 10), bits: buf.readUInt16LE(at + 22) };
+    }
+    if (id === "data") data = [at + 8, Math.min(buf.length, at + 8 + size)];
+    at += 8 + size + (size % 2);
+  }
+  if (!fmt || !data) return null;
+  const bytes = fmt.bits / 8;
+  const float = fmt.format === 3;
+  const read =
+    float && bytes === 4 ? (o) => buf.readFloatLE(o)
+    : bytes === 2 ? (o) => buf.readInt16LE(o) / 32768
+    : bytes === 3 ? (o) => buf.readIntLE(o, 3) / 8388608
+    : bytes === 4 ? (o) => buf.readInt32LE(o) / 2147483648
+    : null;
+  if (!read) return null;
+  const frame = bytes * fmt.channels;
+  const frames = Math.floor((data[1] - data[0]) / frame);
+  if (!frames) return null;
+  const out = new Array(n).fill(0);
+  for (let i = 0; i < frames; i++) {
+    const b = Math.min(n - 1, Math.floor((i * n) / frames));
+    for (let c = 0; c < fmt.channels; c++) {
+      const v = Math.abs(read(data[0] + i * frame + c * bytes));
+      if (v > out[b]) out[b] = v;
+    }
+  }
+  return out.map((v) => Math.min(1, Math.round(v * 1000) / 1000));
+}

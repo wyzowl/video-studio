@@ -547,6 +547,8 @@ export function pageStamp(root, path) {
     const brands = listBrands(root).map((b) => `${b.slug}:${b._updated}`);
     return { stamp: hash(`${items.join(":")}#${brands.join("|")}`) };
   }
+  // SFX Kit: it arriving (or a new version) reloads its page
+  if (/^\/sfx(\/|$)/.test(path)) return { stamp: hash(listDir(join(USER_DIR, "sfx-kit")).map((e) => `${e.name}:${mtime(join(USER_DIR, "sfx-kit", e.name))}`).join("|")) };
   if ((m = /^\/videos\/([^/]+)\/storyboard\/v(\d+)\/?$/.exec(path))) {
     const d = join(root, "videos", m[1], "storyboard", `v${m[2]}`);
     const latest = storyboardVersions(root, m[1]).at(-1);
@@ -581,7 +583,7 @@ export function pageStamp(root, path) {
 }
 
 /** A studio page from its path, made concrete (/videos/<p>/storyboard/ becomes its latest version), or null if it
-    doesn't exist yet. kind is dashboard, project, delivery, brand, script, storyboard, review, library or item. */
+    doesn't exist yet. kind is dashboard, project, delivery, brand, script, storyboard, review, library, item or sfx. */
 export function resolvePage(root, path = "/") {
   let p = String(path || "/").trim();
   try {
@@ -607,6 +609,8 @@ export function resolvePage(root, path = "/") {
     if (!Object.hasOwn(CATEGORIES, category)) return null;
     return { kind: "library", path: `/library/${category}/`, category, label: `the library page for ${CATEGORIES[category].title.toLowerCase()}` };
   }
+  // SFX Kit: every sound (or what to ask Claude, before it's on this Mac); a sound's id after # opens it
+  if ((m = /^\/sfx\/?(#[a-z0-9-]+)?$/.exec(p))) return { kind: "sfx", path: `/sfx/${m[1] || ""}`, label: "the SFX Kit page" };
   if ((m = /^\/(?:library\/)?([a-z-]+)\/([A-Za-z0-9]+)\/?$/.exec(p)) && Object.hasOwn(CATEGORIES, m[1])) {
     // an item is a file in the plugin's library, named after its code ("w03-stat.html")
     const code = m[2].toLowerCase();

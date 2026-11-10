@@ -17,22 +17,26 @@ The studio's sound effects come from SFX Kit, which setup downloads to `~/.wyzow
    needs.
 3. **Made with the video.** Sound effects are added when the video is built, not in the storyboard: there's nothing on
    screen to sync to yet, so storyboards and their rough cuts go without them. The user first hears them in the video
-   and asks for changes there.
-4. **Every sound has a reason.** Each marks something the viewer should notice. Sounds that overlap are chosen to work
+   and asks for changes there. A sound named before then (by the user, who finds them on the SFX Kit page, `/sfx/`, or
+   in a scene's plan) is the build's choice for its moment unless it doesn't fit, and then say why.
+4. **Named by its id in square brackets.** Wherever a script, a scene's description or its plan names a kit sound,
+   write its id in square brackets: `a soft whoosh [whoosh-medium-soft] as the dots lift`. The pages show it as a
+   pink pill that plays it, and PDFs show its name.
+5. **Every sound has a reason.** Each marks something the viewer should notice. Sounds that overlap are chosen to work
    together, not blur. The same sound on every cut is a repeat like any other (`../motion/variety.md`).
-5. **The voice stays clear.** Under a voiceover each sound comes down by its `under_voiceover_db` (the build does it
+6. **The voice stays clear.** Under a voiceover each sound comes down by its `under_voiceover_db` (the build does it
    from the word times). Sounds whose `avoid_for` starts "On top of speech" (bass hits, stings, rings) go in the
    pauses, unless the brief wants otherwise.
-6. **Levels.** The kit's sounds are matched, so they move together: the effects sit about 2.5 dB under the music (the
+7. **Levels.** The kit's sounds are matched, so they move together: the effects sit about 2.5 dB under the music (the
    cue list's `gain_db`), set by ear for each video. Single sounds change only for a deliberate accent.
-7. **Placed by the data.** Every sound is placed by its sync point and fitted with its `span_seconds` and
+8. **Placed by the data.** Every sound is placed by its sync point and fitted with its `span_seconds` and
    `fits_seconds`, never by eye: the build works out each start from the moment it meets.
-8. **In tune.** Tuned sounds (`tuning` in a sound's record: C major pentatonic) can't be retuned, so the bed is
+9. **In tune.** Tuned sounds (`tuning` in a sound's record: C major pentatonic) can't be retuned, so the bed is
    written to fit them (`music.md`, "The score kit").
-9. **Consistent, with variety.** The same action gets the same sound through a video, and a brand's logo gets its
+10. **Consistent, with variety.** The same action gets the same sound through a video, and a brand's logo gets its
    brand kit's ident (`brand.json` `ident`). Quick repeats get small variations (a sibling, a rate change of a few
    per cent) so they don't sound mechanical.
-10. **Kept with the video.** The build copies every kit sound a video uses, with its record, into `assets/audio/sfx/`,
+11. **Kept with the video.** The build copies every kit sound a video uses, with its record, into `assets/audio/sfx/`,
    and builds from those copies, so a finished film never changes when the kit does.
 
 ## Building the effects track

@@ -165,7 +165,7 @@ folder). Look at every point's picture (Read tool) before changing that frame: i
         "depth": "Back: the warehouse wall and its high window. Middle: the drum. Front: sacks at the edge.",
         "atmosphere": "A warm glow behind the drum, breathing; dust in the window's light, drifting.",
         "moves": "0.0–1.2 s the drum spins up (camera-push in)\n1.2–3.4 s Roasted fast slams in on its word",
-        "sound": "The drum's whir from SFX Kit under the first line; a hit on Roasted fast.",
+        "sound": "The drum's whir [move-spin] under the first line; a hit on Roasted fast.",
         "handover": "The steam rises and carries the camera up into s02."
       },
       "frames": [
