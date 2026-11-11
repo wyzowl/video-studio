@@ -1,4 +1,10 @@
 {
+  "0.11.3": [
+    {
+      "text": "The library shows whether the full library is unlocked right under its header, with the licence key box there when it isn't.",
+      "href": "/library/"
+    }
+  ],
   "0.11.2": [
     {
       "text": "Mark any video complete from its card or overview, alongside Archive; Reopen undoes it. Only videos in progress show anything as waiting for you.",
