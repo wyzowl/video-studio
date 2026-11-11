@@ -1,4 +1,13 @@
 {
+  "0.11.2": [
+    {
+      "text": "Mark any video complete from its card or overview, alongside Archive; Reopen undoes it. Only videos in progress show anything as waiting for you.",
+      "href": "/"
+    },
+    {
+      "text": "Video pages are simpler: Video Studio's checks still run on every draft, but their reports are no longer shown on the video's overview or review page."
+    }
+  ],
   "0.11.1": [
     {
       "text": "Videos now sit in three lists you can switch between: In progress, Completed and Archived. Videos move between In progress and Completed by themselves; archive one from its card or overview, and its reviews stop showing as waiting.",
