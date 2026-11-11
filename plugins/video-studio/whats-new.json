@@ -1,4 +1,17 @@
 {
+  "0.11.1": [
+    {
+      "text": "Videos now sit in three lists you can switch between: In progress, Completed and Archived. Videos move between In progress and Completed by themselves; archive one from its card or overview, and its reviews stop showing as waiting.",
+      "href": "/"
+    },
+    {
+      "text": "Brands have their own page, and the header reads Videos, Brands, Library and SFX Kit.",
+      "href": "/brands/"
+    },
+    {
+      "text": "A long message from Claude ends with the page's link as well as starting with it, and the studio's pages restart on a new version by themselves after an update."
+    }
+  ],
   "0.11.0": [
     {
       "text": "SFX Kit has its own page, beside Library: listen to every sound by category or search them all, then ask Claude for one by its id. A sound named in a script or storyboard shows as a pink SFX pill: hover over it to listen.",
