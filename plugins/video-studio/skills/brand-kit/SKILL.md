@@ -15,6 +15,7 @@ brands/<slug>/
   fonts/       font files the studio may use
   refs/        screenshots and reference images
   sounds/      the logo ident (a sting from SFX Kit)
+  characters/  the brand's characters or mascots, as the user gave them (only when they give some)
 ```
 
 The studio pages render each kit as a brand page at `/brands/<slug>/`. `PLUGIN` is this plugin's folder ("Plugin
@@ -39,7 +40,9 @@ files" in the session-start note).
    or stock image only when the user asks for one and supplies it (or its licence).
 5. **Logos.** A logo is the brand's real file, never redrawn or retyped. Use the files the user gives you. If they have none, offer to download
    the logo from their website, but only with their OK, preferring SVG. If only a small raster image exists, ask for a
-   proper file. Note which logo goes on light and on dark backgrounds.
+   proper file. Note which logo goes on light and on dark backgrounds. Characters or mascots among the files they
+   give go in `characters/` as given, with any layered source files (`PLUGIN/guides/design/characters.md`); don't
+   ask for any.
 6. **Fonts.** Only use font files the user is allowed to use.
    - Google Fonts (SIL Open Font License) can be downloaded with the user's OK. Prefer the variable version.
    - Commercial fonts must come from the user, as licensed files.

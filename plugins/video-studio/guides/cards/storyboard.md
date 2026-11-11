@@ -3,6 +3,7 @@
 The storyboard's guides on a page, for the storyboard skill: read it once a session in their place. Each section names
 its full guide, and when to open it. Always read each scene pattern a plan uses (`../motion/patterns/`), and for an
 animated video `../design/illustration.md` before scene 1, where the film's world and its drawing style are decided.
+When the user has given a character, `../design/characters.md` ("What the file allows") before planning its moves.
 
 ## Each scene's plan (`../story/beats.md`)
 

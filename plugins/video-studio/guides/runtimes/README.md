@@ -10,6 +10,7 @@ for what they do best.
 | Lottie / dotLottie | Vector motion as data: idents, icons, characters, After Effects work | Seeks players pushed to `window.__hfLottie` | `lottie.md` |
 | three.js | 3D objects, product spins, camera flights, shader planes | Sends `hf-seek` with the time; you draw that frame | `three.md` |
 | Canvas 2D, WebGL, p5.js | Generative drawing, particles, shaders over captured HTML | `hf-seek`, or a GSAP tween's value | `canvas.md` |
+| Character puppet (`puppet.js`) | A character given as one flat picture, bent by pins | Draw from `render(t)` or `hf-seek` | `../design/characters.md` |
 | WebGPU (TypeGPU or raw) | Heavy shaders and compute: glass, fluids, big particle fields | `hf-seek` with a `waitUntil` for GPU work | `webgpu.md` |
 | anime.js 4 | Existing anime.js code, its SVG helpers | Seeks instances pushed to `window.__hfAnime` | `animejs.md` |
 | Web Animations | Native keyframes made in script | Sets every animation's `currentTime` | `waapi.md` |

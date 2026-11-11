@@ -13,7 +13,7 @@ full); beyond that, read what the job in hand needs.
 | Video Studio's numbers: pace, reading time, sizes, safe areas, loudness (the checks read them from `rules.json`) | `numbers.md` |
 | The animation libraries: GSAP, Lottie, three.js, canvas, WebGPU, anime.js, Web Animations, CSS | `runtimes/` |
 | Motion: principles, timing, choreography, camera, transitions, scene patterns, techniques | `motion/` |
-| Design: type, readability, layout, colour, data, brand, illustration, generative | `design/` |
+| Design: type, readability, layout, colour, data, brand, illustration, characters, generative | `design/` |
 | Story: the message, hooks, words, beats, post words, types of video | `story/` |
 | Captions | `captions/` |
 | Sound: mixing, sound effects, music, sync | `audio/` |

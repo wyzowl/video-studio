@@ -13,6 +13,7 @@ video frame, which is not a web page.
 | Showing figures and charts | `data.md` |
 | Using a brand kit well; logos, product screens and photos | `brand.md` (the Brand accuracy standard) |
 | Drawing the film's world: places, objects, people, in one style | `illustration.md` |
+| Moving a character the user has given: a mascot, illustrated people | `characters.md` |
 | Making a generative ground or a piece of code art | `generative.md` |
 
 ## Before designing a frame

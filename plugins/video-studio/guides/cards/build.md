@@ -61,7 +61,8 @@ command (capture, measure, keyframes, beats, audio, transcribe, the app's histor
 - **Every scene has depth and a living world:** atmosphere behind, detail in front, and slow ambient motion on
   different cycles, below a fifth of the main motion's energy; words being read stay still.
 - Drawing an animated film's world, `../design/illustration.md` (SVG groups with their own origins, symbols reused,
-  light, three planes).
+  light, three planes); moving a character the user has given, `../design/characters.md` (its parts about their
+  joints, or one picture bent by pins, checked before it's built in).
 
 ## The motion (`../motion/choreography.md`, `../motion/timing.md`)
 

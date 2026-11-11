@@ -17,8 +17,9 @@ The frame's design is in `README.md` and `layout.md`; the brand's own style is t
   parts (a kettle's spout, lid, handle and base; a meter's display and dial), enough to read at phone size and to look
   made, never more detail than the style holds. The product's own interface stays the real one (`brand.md`, "Real
   assets").
-- **People,** when the brief has them: the brand's own illustrations or characters if the kit has some; otherwise
-  hands, figures or silhouettes drawn in the film's style. Never a real person's likeness unless the user supplies it.
+- **People,** when the brief has them: the brand's own illustrations or characters if the user has given some
+  (moved as `characters.md` says); otherwise hands, figures or silhouettes drawn in the film's style. Never a real
+  person's likeness unless the user supplies it.
 
 ## One style, from the kit
 
