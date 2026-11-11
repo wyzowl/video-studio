@@ -27,8 +27,9 @@ import {
   setFavourite,
   sawWhatsNew,
   registeredStudios,
+  setArchived,
 } from "./studio.mjs";
-import { dashboardPage, brandPage, projectPage, scriptPage, storyboardPage, reviewPage, deliveryPage, healthPage, checksParts, libraryPage, itemPage, sfxPage, page404, progressState } from "./pages.mjs";
+import { dashboardPage, brandsPage, brandPage, projectPage, scriptPage, storyboardPage, reviewPage, deliveryPage, healthPage, checksParts, libraryPage, itemPage, sfxPage, page404, progressState } from "./pages.mjs";
 import { scriptPrint, storyboardPrint } from "./print.mjs";
 import { CATEGORIES, findItem, libraryItem, previewDocument, SIZES } from "./library.mjs";
 import { renderPdf, shareName, attachment } from "./pdf.mjs";
@@ -87,6 +88,18 @@ export function createStudioServer(root) {
       if (req.method === "POST" && path === "/api/reveal") return await reveal(req, res, studioRoot);
       if (req.method === "POST" && path === "/api/licence") return await licencePost(req, res);
       if (req.method === "POST" && path === "/api/favourite") return await favouritePost(req, res, studioRoot);
+      // a video archived from the dashboard or its overview, or restored
+      if (req.method === "POST" && path === "/api/archive") {
+        const data = await readPost(req, res);
+        if (!data) return;
+        if (typeof data.video !== "string" || !PROJECT.test(data.video)) return json(res, 400, { ok: false, error: "Which video?" });
+        try {
+          setArchived(studioRoot, data.video, data.on !== false);
+        } catch (err) {
+          return json(res, 404, { ok: false, error: err.message });
+        }
+        return json(res, 200, { ok: true });
+      }
       if (req.method === "POST" && path === "/api/seen") {
         const data = await readPost(req, res);
         if (!data) return;
@@ -114,7 +127,9 @@ export function createStudioServer(root) {
         const slug = url.searchParams.get("video") || "";
         return json(res, 200, PROJECT.test(slug) ? progressState(studio, slug) : { active: false });
       }
-      if (path === "/" || path === "/index.html") return html(res, 200, dashboardPage(studio));
+      if (path === "/" || path === "/index.html") return html(res, 200, dashboardPage(studio, url.searchParams));
+      if (path === "/brands") return redirect(res, "/brands/");
+      if (path === "/brands/") return html(res, 200, brandsPage(studio));
       // what's on this Mac: setup's checklist, and the studio's health (ui/page.js keeps them up to date)
       if (path === "/setup" || path === "/setup/" || path === "/health" || path === "/health/") return html(res, 200, healthPage(studio, { setup: path.startsWith("/setup") }));
       if (path === "/api/checks") return json(res, 200, { parts: checksParts(studioRoot, { setup: url.searchParams.get("view") === "setup" }) });

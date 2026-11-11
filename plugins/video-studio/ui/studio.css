@@ -4303,3 +4303,58 @@ a.stages_item:hover {
     transition: none;
   }
 }
+
+/* ───────── the dashboard's videos: In progress, Completed and Archived ───────── */
+.phasehead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+/* the library's switch, as links: one list showing at a time */
+.seg--links a {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.seg--links a + a span {
+  border-left: var(--border-width) solid var(--border-strong);
+}
+.seg--links a:hover:not([aria-current="true"]) span {
+  background: var(--background-3);
+}
+.seg--links a[aria-current="true"] span {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.seg--links a:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -4px;
+}
+.seg--links b {
+  margin-left: 0.35em;
+  font-weight: 500;
+  opacity: 0.7;
+}
+.phaselist[hidden] {
+  display: none;
+}
+/* Archive or Restore: a quiet button that reads as a link */
+.textbutton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+.textbutton:hover {
+  color: var(--text);
+}
+.textbutton:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}

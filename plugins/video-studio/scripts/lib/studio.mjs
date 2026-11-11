@@ -26,8 +26,11 @@ export function registerStudio(root, name) {
   writeFileSync(REGISTRY, `${JSON.stringify({ studios: [{ path: root, name, registered: new Date().toISOString() }, ...others] }, null, 2)}\n`);
 }
 
+let version = null;
+/** The plugin's version, as this process started with it: a page server left running across an update in place
+    reports its own version, not the new one on disk, so `ensureServer` replaces it. */
 export function pluginVersion() {
-  return readJSON(join(PLUGIN_ROOT, ".claude-plugin/plugin.json"), {}).version || "0.0.0";
+  return (version ??= readJSON(join(PLUGIN_ROOT, ".claude-plugin/plugin.json"), {}).version || "0.0.0");
 }
 
 export function readJSON(path, fallback = null) {
@@ -396,8 +399,12 @@ export function readVideo(root, slug) {
       }
     : null;
 
+  // The final video was made after the latest review was settled: delivered, unless more work has started since (a
+  // newer video under review, notes on it, or an approval the final render hasn't caught up with)
+  const settled = !review || (review.decision === "approved" && mtime(join(latestRv.dir, "feedback.json")) <= master?.mtime);
+  const deliveredNow = Boolean(master) && settled;
   let status = "planning";
-  if (master) status = "delivered";
+  if (deliveredNow) status = "delivered";
   else if (review?.decision === "approved") status = "approved";
   else if (review?.decision === "changes") status = "changes";
   else if (review) status = "review";
@@ -409,10 +416,13 @@ export function readVideo(root, slug) {
   else if (script) status = "script";
 
   // Claude picked up a finished review and is working on the next step (until that step's result appears)
-  const working = workingOn(root, slug, { sc: latestSc?.version, sb: latestSb?.version, rv: latestRv?.version, delivered: Boolean(master) });
+  const working = workingOn(root, slug, { sc: latestSc?.version, sb: latestSb?.version, rv: latestRv?.version, delivered: deliveredNow });
   // what Claude is making now (lib/progress.mjs): the stage it marked or, until it marks one, the stage that follows the
   // review it picked up, at its first step
   const progress = readProgress(root, slug) || nextStage(working, { sb: latestSb?.version, rv: latestRv?.version });
+  // where it sits on the dashboard: archived by the user; completed while it's delivered and nothing new is being
+  // made; otherwise in progress. The last two follow the work by themselves.
+  const phase = brief.archived ? "archived" : deliveredNow && !progress && !working ? "completed" : "inProgress";
 
   const rel = (p) => (p ? `/videos/${encodeURIComponent(slug)}/${p.slice(dir.length + 1).split("/").map(encodeURIComponent).join("/")}` : null);
   const updated = Math.max(
@@ -436,6 +446,8 @@ export function readVideo(root, slug) {
     created,
     updated,
     status: { key: status, label: progress ? progressLabel(progress, brief) : statusLabel(status, storyboard, review, working, script) },
+    phase,
+    archived: brief.archived || null,
     working,
     progress,
     script,
@@ -498,6 +510,31 @@ export function listVideos(root) {
     .sort((a, b) => b.created - a.created);
 }
 
+/** The dashboard's three lists, in order: { key, label }. */
+export const PHASES = [
+  { key: "inProgress", label: "In progress" },
+  { key: "completed", label: "Completed" },
+  { key: "archived", label: "Archived" },
+];
+
+/** Archives a video (it leaves the dashboard's In progress and Completed lists, and nothing of it shows as waiting),
+    or restores it (`on` false): `archived: <when>` in its brief's front matter. Returns whether it changed. */
+export function setArchived(root, slug, on) {
+  const dir = join(root, "videos", slug);
+  if (!isDir(dir)) throw new Error(`There's no video "${slug}" in this studio.`);
+  const file = join(dir, "BRIEF.md");
+  const text = existsSync(file) ? readFileSync(file, "utf8") : "";
+  const m = /^---\r?\n([\s\S]*?)\r?\n---[ \t]*(\r?\n|$)/.exec(text);
+  const lines = m ? m[1].split(/\r?\n/) : [];
+  const had = lines.some((l) => /^archived:/.test(l));
+  if (had === Boolean(on)) return false;
+  const kept = lines.filter((l) => !/^archived:/.test(l));
+  if (on) kept.push(`archived: ${new Date().toISOString()}`);
+  const rest = m ? text.slice(m[0].length) : text;
+  writeFileSync(file, `---\n${kept.join("\n")}\n---\n${rest}`);
+  return true;
+}
+
 // ───────── live pages ─────────
 
 /** A short fingerprint of the files behind a page, so an open page can tell when to refresh itself.
@@ -511,9 +548,14 @@ export function pageStamp(root, path) {
   const newestIn = (dir) => listDir(dir).reduce((mx, e) => Math.max(mx, e.isFile() ? mtime(join(dir, e.name)) : 0), mtime(dir));
   let m;
   if (path === "/" || path === "/index.html") {
-    const videos = listVideos(root).map((v) => `${v.slug}:${v.updated}:${v.status.label}`);
+    const videos = listVideos(root).map((v) => `${v.slug}:${v.updated}:${v.status.label}:${v.phase}`);
+    return { stamp: hash(videos.join("|")) };
+  }
+  if (path === "/brands/" || path === "/brands") {
+    // every brand kit, and how many videos use each
     const brands = listBrands(root).map((b) => `${b.slug}:${b._updated}`);
-    return { stamp: hash(`${videos.join("|")}#${brands.join("|")}`) };
+    const uses = listVideos(root).map((v) => `${v.slug}:${v.brand || ""}`);
+    return { stamp: hash(`${brands.join("|")}#${uses.join("|")}`) };
   }
   if ((m = /^\/videos\/([^/]+)\/?$/.exec(path))) {
     // a video's overview: its brief, every script, storyboard and draft with their feedback, the final video and Claude's
@@ -583,7 +625,7 @@ export function pageStamp(root, path) {
 }
 
 /** A studio page from its path, made concrete (/videos/<p>/storyboard/ becomes its latest version), or null if it
-    doesn't exist yet. kind is dashboard, project, delivery, brand, script, storyboard, review, library, item or sfx. */
+    doesn't exist yet. kind is dashboard, project, delivery, brands, brand, script, storyboard, review, library, item or sfx. */
 export function resolvePage(root, path = "/") {
   let p = String(path || "/").trim();
   try {
@@ -599,6 +641,7 @@ export function resolvePage(root, path = "/") {
   if ((m = /^\/videos\/([^/]+)\/delivery\/?$/.exec(p))) {
     return readVideo(root, m[1]) ? { kind: "delivery", path: `/videos/${enc(m[1])}/delivery/`, project: m[1], label: `the delivery page of ${m[1]}` } : null;
   }
+  if (p === "/brands" || p === "/brands/") return { kind: "brands", path: "/brands/", label: "the brands page" };
   if ((m = /^\/brands\/([^/]+)\/?$/.exec(p))) {
     const brand = readBrand(root, m[1]);
     return brand ? { kind: "brand", path: `/brands/${enc(m[1])}/`, slug: m[1], label: `the brand page for ${brand.name}` } : null;

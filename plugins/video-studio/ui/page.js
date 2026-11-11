@@ -1,7 +1,7 @@
 // Behaviour shared by every studio page:
 // - "Read more" opens a long hero description (and "Show less" closes it); "Show all" opens a long block, such as
 //   the request in a video's brief.
-// - On the dashboard, the nav marks the section on screen: Videos, Brands or Library.
+// - The dashboard's videos switch between In progress, Completed and Archived; Archive and Restore move a video.
 // - A storyboard frame opens full size, as large as the window allows, in a viewer: arrows step through the
 //   page's frames, Esc or a click outside closes it. A footage storyboard's "Play the scene" plays its rough cut there.
 //   On the latest storyboard, Box and Arrow on a frame (or in the viewer) point at something in it ("Point at it",
@@ -67,37 +67,43 @@
     box.after(button);
   });
 
-  // ───────── the dashboard's sections ─────────
-  // The dashboard holds the videos, the brands and a taste of the library, and the nav marks the one on screen: the
-  // one a nav link jumped to, until the page is scrolled by hand, then the last whose top has passed a third of the way
-  // down the window.
-  const sections = [...document.querySelectorAll("main > section[id]")];
-  const navFor = (id) => document.querySelector(`.nav a[href="/#${id}"]`) || document.querySelector(`.nav a[href="/${id}/"]`);
-  if (location.pathname === "/" && sections.some((s) => navFor(s.id))) {
-    let jumped = location.hash.slice(1);
-    const mark = () => {
-      let current = sections[0].id;
-      const target = jumped && document.getElementById(jumped);
-      if (target && target.getBoundingClientRect().bottom > 0 && target.getBoundingClientRect().top < innerHeight) current = jumped;
-      else for (const s of sections) if (s.getBoundingClientRect().top <= innerHeight / 3) current = s.id;
-      document.querySelectorAll(".nav a").forEach((a) => a.removeAttribute("aria-current"));
-      navFor(current)?.setAttribute("aria-current", "page");
-    };
-    const byHand = () => {
-      if (!jumped) return;
-      jumped = "";
-      mark();
-    };
-    addEventListener("hashchange", () => {
-      jumped = location.hash.slice(1);
-      mark();
-    });
-    addEventListener("scroll", () => requestAnimationFrame(mark), { passive: true });
-    addEventListener("wheel", byHand, { passive: true });
-    addEventListener("touchmove", byHand, { passive: true });
-    addEventListener("keydown", (e) => ["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(e.key) && byHand());
-    mark();
+  // ───────── the dashboard's videos ─────────
+  // Its three lists (In progress, Completed, Archived) switch in place, the address keeping the one showing. The
+  // dashboard's old addresses for its sections (/#videos, /#brands, /#library) lead to their pages now.
+  if (location.pathname === "/") {
+    const old = { "#brands": "/brands/", "#library": "/library/" }[location.hash];
+    if (old) location.replace(old);
+    else if (location.hash === "#videos") history.replaceState(null, "", location.pathname + location.search);
   }
+  const phases = document.querySelector("[data-phases]");
+  if (phases) {
+    phases.addEventListener("click", (e) => {
+      const tab = e.target.closest?.("a[data-phase]");
+      if (!tab || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      phases.querySelectorAll("a[data-phase]").forEach((a) => a.setAttribute("aria-current", String(a === tab)));
+      phases.querySelectorAll("[data-phase-list]").forEach((list) => (list.hidden = list.dataset.phaseList !== tab.dataset.phase));
+      history.replaceState(null, "", tab.getAttribute("href"));
+    });
+  }
+
+  // ───────── archive or restore a video ─────────
+  // The page server marks it in the video's brief; the page then reloads by itself (live.js), with the video in its
+  // new list.
+  document.addEventListener("click", async (e) => {
+    const button = e.target.closest?.("[data-archive]");
+    if (!button || button.disabled) return;
+    e.preventDefault();
+    button.disabled = true;
+    try {
+      const res = await fetch("/api/archive", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ video: button.dataset.archive, on: button.dataset.on === "true" }) });
+      if (!(await res.json()).ok) throw new Error();
+      location.reload();
+    } catch {
+      button.disabled = false;
+      button.textContent = "Couldn't change it: try again";
+    }
+  });
 
   // ───────── frame viewer ─────────
   // It also plays a footage storyboard's scene: its rough cut, with its sound, in the same place.

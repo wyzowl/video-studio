@@ -113,7 +113,8 @@ again (there's no need to check the file yourself). Then, as it says:
 1. Start your message with a labelled link to the page, on a line of its own, such as
    `[Open storyboard v2 ↗](address)`, never a bare address, then say in a line or two what's ready. Every message with
    something new to review starts this way: the link is how the user opens it, so there's no need to open the page in
-   a browser pane or draw a card for it.
+   a browser pane or draw a card for it. A message that runs on past a few lines (a delivery, say) ends with the
+   same link too, on a line of its own.
 2. For a script, storyboard or video, wait for the review in the background: `studio.mjs wait <path>` with
    run_in_background. Tell the user to save their review when they're done (the button at the foot of the page) and
    you'll take it from there, then end your turn.
@@ -152,11 +153,20 @@ scores. You mark two things by hand; the studio's commands mark the steps in bet
 - Writing the stage's result (`script.json`, `storyboard.json`, `review.json`, or the final video's web copy) ends
   it. If you stop a stage without one, end it: `studio.mjs progress <project> --end`.
 
-Pages: `/` (dashboard), `/brands/<slug>/` (a brand), `/videos/<project>/` (a video's overview: what's happening now
+Pages: `/` (dashboard: what's waiting, and the videos In progress, Completed or Archived), `/brands/` (every
+brand), `/brands/<slug>/` (a brand), `/videos/<project>/` (a video's overview: what's happening now
 and every script, storyboard and video), `/videos/<project>/script/` (latest script),
 `/videos/<project>/storyboard/` (latest storyboard), `/videos/<project>/review/` (latest video review) and
 `/videos/<project>/delivery/` (the final video and every file made with it), and `/sfx/` (SFX Kit: every sound to
-listen to, with its id). After a finished review, the page takes the user to the video's overview, which says what
+listen to, with its id).
+
+A video is **In progress** until its final files are delivered, and again while anything new is made for it after
+that; then it's **Completed**. Both follow the work by themselves. **Archived** is the user's choice (Archive on the
+dashboard or the video's overview): an archived video's reviews don't show as waiting. When the user asks you to
+archive one, or bring one back, run `node PLUGIN/scripts/studio.mjs archive <video>` (`--restore` brings it back);
+starting a stage on an archived video brings it back by itself.
+
+After a finished review, the page takes the user to the video's overview, which says what
 you're making while you work on it.
 
 ## The library

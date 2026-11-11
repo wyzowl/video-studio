@@ -1,5 +1,5 @@
 // How Claude shows a studio page: its message starts with a labelled link to the page, on a line of its own, then says
-// what's ready; for a script, storyboard or video, Claude then waits in the background for the user's review. Nothing
+// what's ready (a longer message ends with the same link too); for a script, storyboard or video, Claude then waits in the background for the user's review. Nothing
 // opens the page for them and there's no card: the link is the one way in, in every message with something new to
 // review. Used by `studio.mjs show` and the page-ready hook, so both say the same thing.
 import { join } from "node:path";
@@ -7,7 +7,7 @@ import { PLUGIN_ROOT } from "./studio.mjs";
 
 export const pageUrl = (base, path) => base.replace(/\/$/, "") + (path.startsWith("/") ? path : `/${path}`);
 
-const LINKS = { dashboard: "Open the dashboard", brand: "Open the brand page", project: "Open the video overview", delivery: "Open the delivery page", library: "Open the library", sfx: "Open SFX Kit" };
+const LINKS = { dashboard: "Open the dashboard", brands: "Open the brands page", brand: "Open the brand page", project: "Open the video overview", delivery: "Open the delivery page", library: "Open the library", sfx: "Open SFX Kit" };
 /** The labelled link to a page, as Claude writes it in the chat. */
 export function pageLink(base, page) {
   const label = LINKS[page.kind] || { script: `Open script v${page.version}`, storyboard: `Open storyboard v${page.version}`, review: `Open video v${page.version}`, item: `Open ${page.code}` }[page.kind] || "Open the page";
@@ -21,6 +21,7 @@ export function showInstructions(root, base, page) {
   return [
     `Wyzowl Video Studio: ${page.label} is ready to show: ${pageUrl(base, page.path)}`,
     `Show it to the user now: start your message with this link, on a line of its own, then say in a line or two what's ready: ${pageLink(base, page)}`,
+    "If the message runs on past a few lines, end it with the same link, on a line of its own, so it's there whichever end they read from.",
     "The link is how they open it, so there's no need to open the page in a browser pane or draw a card for it.",
     waits &&
       `Then wait for their review in the background: run ${helper} wait ${page.path} --studio "${root}" with run_in_background. Tell them to press Approve and save when they're done (it says ${page.kind === "storyboard" ? "Send feedback" : "Send changes"} once there are notes) and you'll take it from there, then end your turn. When the wait finishes you're woken with their review. Saving it was their go-ahead, so carry on straight away.`,

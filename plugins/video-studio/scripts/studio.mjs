@@ -21,6 +21,8 @@
 //                                              --round <n>, --scores hook=8,phone=6,… and --fix "<where>: <what>"
 //                                              (up to five) give a review round's scores and what's being fixed;
 //                                              --end ends the stage without its result
+//   node studio.mjs archive <video> [--restore] move a video to the dashboard's Archived list (nothing of it shows as
+//                                              waiting), or back; starting a stage on it restores it by itself
 //   node studio.mjs render [HF render options]  `HF render …` with the project's HyperFrames, run from the video's
 //                                              folder, that also shows the render's progress on the video's pages; it
 //                                              prints one line on the file it made, HyperFrames' log beside it
@@ -128,6 +130,7 @@ import {
   formatDateTime,
   listBrands,
   listVideos,
+  setArchived,
   pageForFile,
   pluginVersion,
   readJSON,
@@ -288,6 +291,7 @@ async function main() {
   if (cmd === "setup-note") return setupNote();
   if (cmd === "ready") return ready();
   if (cmd === "progress") return progressCommand();
+  if (cmd === "archive") return archiveCommand();
   if (cmd === "render") return renderCommand();
   if (cmd === "draft") return draftCommand();
   if (cmd === "final") return finalCommand();
@@ -444,7 +448,7 @@ async function hook() {
   if (spawnSync("ffmpeg", ["-version"], { stdio: "ignore" }).status !== 0) warn.push("ffmpeg is missing");
   // the outside skills an older setup installed: Video Studio's own skills and guides replace them
   const outside = outsideSkills(root).names;
-  const open = videos.filter((v) => v.status.key !== "delivered");
+  const open = videos.filter((v) => v.phase === "inProgress");
   // the full library's daily check, in the background so the session never waits on the network
   if (checkDue()) {
     try {
@@ -587,7 +591,7 @@ function ready() {
   const root = studioRoot();
   const only = argv.includes("--video") ? opts("--video") : null;
   const videos = listVideos(root).filter((v) => !only || only.includes(v.slug));
-  const waiting = videos.filter((v) => ["script", "storyboard", "review"].includes(v.status.key) && !v.progress).sort((a, b) => b.updated - a.updated)[0];
+  const waiting = videos.filter((v) => v.phase !== "archived" && ["script", "storyboard", "review"].includes(v.status.key) && !v.progress).sort((a, b) => b.updated - a.updated)[0];
   let page = null;
   if (waiting) {
     const stage = { script: waiting.script, storyboard: waiting.storyboard, review: waiting.review }[waiting.status.key];
@@ -611,6 +615,17 @@ const opts = (k) => argv.flatMap((a, i) => (a === k && argv[i + 1] && !argv[i + 
 /** `progress <video> <stage> <version> <step>` starts a stage on the video's pages; `progress <video> <step>` moves it
     on. A review round's scores (`--scores hook=8,…`, with `--round`) and what's being fixed (`--fix "<where>: <what>"`)
     show beside the newest frames. `--end` ends the stage without its result. */
+/** `archive <video>`: the video leaves the dashboard's In progress and Completed lists for Archived, and nothing of it
+    shows as waiting; `--restore` brings it back. (Starting a stage on an archived video restores it by itself.) */
+function archiveCommand() {
+  const root = studioRoot();
+  const slug = positional[1];
+  if (!slug) throw new Error("usage: studio.mjs archive <video> [--restore]");
+  const restore = argv.includes("--restore");
+  const changed = setArchived(root, slug, !restore);
+  console.log(`${slug}: ${restore ? (changed ? "restored: it's back in In progress or Completed" : "wasn't archived") : changed ? "archived" : "was already archived"}.`);
+}
+
 function progressCommand() {
   const root = studioRoot();
   const [, slug, ...rest] = positional;
@@ -630,6 +645,8 @@ function progressCommand() {
     const keys = stepsFor(stage, brief).map((x) => x.key);
     if (!keys.includes(named)) throw new Error(`"${named}" isn't a step of ${stage.stage === "final" ? "the final video" : `${stage.stage} v${stage.version}`}. Its steps: ${keys.join(", ")}.`);
   }
+  // new work on an archived video brings it back to In progress
+  if (starting) setArchived(root, slug, false);
   let p = starting
     ? startStage(root, slug, rest[0], Number(rest[1]), rest[2] || "")
     : updateProgress(root, slug, (q) => {

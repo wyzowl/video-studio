@@ -121,7 +121,7 @@ if it isn't open, show it again. Videos already delivered keep their own copies 
 ```
 
 - `colours[].role` drives the pages: the colour whose role mentions background, ground or primary paints the brand's
-  card, and the accent marks the brand on the dashboard.
+  card, and the accent marks the brand on the dashboard's video cards.
 - `logos[].on` is `light`, `dark` or `brand` (shown on the brand's ground colour); add `"background": "#hex"` to force
   a specific panel colour.
 - `backgrounds` are the grounds the brand's scenes stand on, the main one first. Each is a flat colour (`hex`), a CSS

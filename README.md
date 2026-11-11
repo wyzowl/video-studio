@@ -72,7 +72,7 @@ press **Got it**.
 | `/video-studio:setup` | Checks and installs what's needed, creates a studio folder, and makes a test render |
 | `/video-studio:new-video` | Asks a few questions (type, brand, script, size, where it's shown, length), sets up the project, then writes a script and makes a storyboard, each for your approval |
 | `/video-studio:new-brand` | Builds a brand kit from a website, logo files, colours, backgrounds and fonts, with a logo ident and its own brand page |
-| `/video-studio:dashboard` | Shows the studio's pages: recent videos, video overviews, brands, scripts, storyboards, video reviews, the library and SFX Kit |
+| `/video-studio:dashboard` | Shows the studio's pages: videos, video overviews, brands, scripts, storyboards, video reviews, the library and SFX Kit |
 
 ## How a video is made
 
@@ -139,13 +139,20 @@ To get feedback from someone outside the studio, such as a client, send them a d
 
 The pages are local web pages, served by a small page server on the Mac (`http://127.0.0.1:4747`, which only that
 Mac can reach). Only one studio's pages run at a time. They open in your web browser: Claude's message starts with a
-link to the page, and the band above the message box has a button for it. `/video-studio:dashboard` shows them any
+link to the page (a long message ends with it too), and the band above the message box has a button for it. `/video-studio:dashboard` shows them any
 time. The page designs come with the plugin; the content is the studio folder's own brands and videos.
 Nothing is uploaded.
 
-- **Dashboard:** what's waiting for your review, a timeline of recent videos with their status, the studio's brands,
-  and the library. After an update, it says what's new; if something the studio needs is missing from the Mac, it
-  says so.
+- **Dashboard** (**Videos** in the header): what's waiting for your review, then the studio's videos with their
+  status, in three lists with a switch at the top:
+  - **In progress:** until a video's final files are delivered, and again while anything new is made for it after
+    that.
+  - **Completed:** delivered, with nothing new being made. Videos move between these two by themselves.
+  - **Archived:** videos you've archived (**Archive** on a video's card or its overview; **Restore** brings one back,
+    and so does asking Claude for new work on it). Nothing of an archived video shows as waiting.
+
+  After an update, it says what's new; if something the studio needs is missing from the Mac, it says so.
+- **Brands** (`/brands/`): every brand kit in the studio, with its logo, colours and fonts, and how many videos use it.
 - **Studio health** (`/health`, linked at the foot of every page): everything the studio uses on the Mac and
   whether it's working, and beside anything that isn't, what to say to Claude to fix it. Under **Space**, each
   finished video with room to free, and what to say to tidy it up. During setup the same page follows each step as

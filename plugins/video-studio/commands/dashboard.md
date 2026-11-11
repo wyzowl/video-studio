@@ -8,5 +8,5 @@ argument-hint: "[page, e.g. /brands/acme/]"
 !`node "${CLAUDE_PLUGIN_ROOT}/scripts/studio.mjs" show $ARGUMENTS 2>&1`
 
 The text above says how to show the page (the page server starts if it isn't running): start your message with its
-labelled link, on a line of its own. If it says this isn't a studio, or reports a problem, pass that on in plain words
+labelled link, on a line of its own (and end with it too if the message runs long). If it says this isn't a studio, or reports a problem, pass that on in plain words
 and suggest `/video-studio:setup` where it fits.

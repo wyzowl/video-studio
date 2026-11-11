@@ -8,6 +8,7 @@ import {
   pluginVersion,
   listBrands,
   listVideos,
+  PHASES,
   readBrand,
   readVideo,
   readBrief,
@@ -76,8 +77,8 @@ const CHIP = {
 
 function layout({ title, active = "", studio, body, foot = "", head = "" }) {
   const nav = [
-    ["videos", "/#videos", "Videos"],
-    ["brands", "/#brands", "Brands"],
+    ["videos", "/", "Videos"],
+    ["brands", "/brands/", "Brands"],
     ["library", "/library/", "Library"],
     ["sfx", "/sfx/", "SFX Kit"],
   ]
@@ -338,54 +339,122 @@ function page404(studio, what) {
 
 // ───────── dashboard ─────────
 
-export function dashboardPage(studio) {
+/** Archive or Restore, for a video: the page server moves it (ui/page.js posts it to /api/archive). */
+const archiveButton = (v, cls = "textbutton") =>
+  `<button class="${cls}" type="button" data-archive="${esc(v.slug)}" data-on="${v.phase === "archived" ? "false" : "true"}">${v.phase === "archived" ? "Restore" : "Archive"}</button>`;
+
+/** The dashboard: what's waiting, then the studio's videos in three lists (In progress, Completed and Archived), one
+    showing at a time (`?show=completed`; ui/page.js switches between them in place). */
+export function dashboardPage(studio, query) {
   const videos = listVideos(studio.root);
   const brands = listBrands(studio.root);
   const brandBySlug = Object.fromEntries(brands.map((b) => [b.slug, b]));
-  const inProgress = videos.filter((v) => v.status.key !== "delivered").length;
-  const delivered = videos.length - inProgress;
+  const byPhase = Object.fromEntries(PHASES.map((p) => [p.key, videos.filter((v) => v.phase === p.key)]));
+  const show = PHASES.some((p) => p.key === query?.get("show")) ? query.get("show") : "inProgress";
   const last = videos.reduce((m, v) => Math.max(m, v.updated || 0), 0);
-  const usage = (slug) => videos.filter((v) => v.brand === slug).length;
 
-  const videoItems = videos
-    .map((v) => {
-      const brand = v.brand ? brandBySlug[v.brand] : null;
-      const portrait = v.size.h > v.size.w;
-      const key = v.status.key;
-      const overview = `/videos/${enc(v.slug)}/`;
-      const actions = [
-        v.review
-          ? `<a class="button${key === "review" ? " button--corners" : " button--secondary"}" href="${esc(v.review.url)}">${key === "review" ? "Review video" : `Video v${v.review.version}`}</a>`
-          : "",
-        v.storyboard
-          ? `<a class="button${key === "storyboard" ? " button--corners" : " button--secondary"}" href="${esc(v.storyboard.url)}">${key === "storyboard" ? "Review storyboard" : `Storyboard v${v.storyboard.version}`}</a>`
-          : "",
-        v.script && !v.storyboard
-          ? `<a class="button${key === "script" ? " button--corners" : " button--secondary"}" href="${esc(v.script.url)}">${key === "script" ? "Review script" : `Script v${v.script.version}`}</a>`
-          : "",
-        v.master ? `<a class="button button--secondary" href="${esc(v.master.url)}">Watch video</a><a class="button button--secondary" href="${overview}delivery/">All assets</a>` : "",
-      ].join("");
-      const brandChip = brand
-        ? `<a class="chip chip--swatch" style="--_dot: ${esc(brandColours(brand).accent || "#ccc")}" href="/brands/${enc(brand.slug)}/">${esc(brand.name)}</a>`
-        : v.brand
-          ? `<span class="chip chip--plain">${esc(v.brand)}</span>`
-          : "";
-      return `<li class="timeline_item">
+  const videoItem = (v) => {
+    const brand = v.brand ? brandBySlug[v.brand] : null;
+    const portrait = v.size.h > v.size.w;
+    const key = v.status.key;
+    const overview = `/videos/${enc(v.slug)}/`;
+    const actions = [
+      v.review
+        ? `<a class="button${key === "review" ? " button--corners" : " button--secondary"}" href="${esc(v.review.url)}">${key === "review" ? "Review video" : `Video v${v.review.version}`}</a>`
+        : "",
+      v.storyboard
+        ? `<a class="button${key === "storyboard" ? " button--corners" : " button--secondary"}" href="${esc(v.storyboard.url)}">${key === "storyboard" ? "Review storyboard" : `Storyboard v${v.storyboard.version}`}</a>`
+        : "",
+      v.script && !v.storyboard
+        ? `<a class="button${key === "script" ? " button--corners" : " button--secondary"}" href="${esc(v.script.url)}">${key === "script" ? "Review script" : `Script v${v.script.version}`}</a>`
+        : "",
+      v.master ? `<a class="button button--secondary" href="${esc(v.master.url)}">Watch video</a><a class="button button--secondary" href="${overview}delivery/">All assets</a>` : "",
+    ].join("");
+    const brandChip = brand
+      ? `<a class="chip chip--swatch" style="--_dot: ${esc(brandColours(brand).accent || "#ccc")}" href="/brands/${enc(brand.slug)}/">${esc(brand.name)}</a>`
+      : v.brand
+        ? `<span class="chip chip--plain">${esc(v.brand)}</span>`
+        : "";
+    const chip = v.phase === "archived" ? `<span class="chip chip--plain">Archived</span>` : `<span class="chip chip--${v.progress ? "working" : CHIP[key] || "planning"}">${esc(v.status.label)}</span>`;
+    return `<li class="timeline_item">
   <time class="timeline_date" datetime="${new Date(v.created).toISOString()}">${esc(formatDate(v.created))}</time>
   <article class="video-card">
     ${frame({ src: v.thumbnail, ratio: v.size.ratio, href: overview, empty: "Frames appear with the storyboard", portrait })}
     <div class="video-card_body">
-      <div class="row"><span class="chip chip--${v.progress ? "working" : CHIP[key] || "planning"}">${esc(v.status.label)}</span></div>
+      <div class="row">${chip}</div>
       <h3 class="video-card_title"><a class="title-link" href="${overview}">${esc(v.title)}</a></h3>
       <div class="row">${brandChip}<span class="chip chip--plain">${esc(v.type === "footage" ? "Footage" : "Animated")}</span><span class="chip chip--plain">${esc(v.size.label)}</span>${v.length ? `<span class="chip chip--plain chip--raw">${esc(v.length)}</span>` : ""}</div>
-      <p class="video-card_status">Updated ${esc(formatDateTime(v.updated))} · <span class="mono">videos/${esc(v.slug)}</span></p>
+      <p class="video-card_status">Updated ${esc(formatDateTime(v.updated))} · <span class="mono">videos/${esc(v.slug)}</span> · ${archiveButton(v)}</p>
       ${actions ? `<div class="row">${actions}</div>` : ""}
     </div>
   </article>
 </li>`;
-    })
-    .join("\n");
+  };
 
+  // a new studio shows this instead of example content
+  const videoPlaceholder = `<li class="timeline_item">
+  <span class="timeline_date">Next</span>
+  <article class="video-card video-card--placeholder">
+    <figure class="frame"><div class="frame_stage"><div class="frame_media" style="--ratio: 16 / 9"><span class="frame_empty"><span class="placeholder_plus" aria-hidden="true">+</span>Your first video</span></div></div></figure>
+    <div class="video-card_body">
+      <h3 class="video-card_title">Make your first video</h3>
+      <p class="video-card_status">In Claude Code, in this studio, run <code>${COMMANDS.newVideo}</code>. Claude asks a few questions, makes a storyboard for you to approve, then builds the video.</p>
+    </div>
+  </article>
+</li>`;
+  const EMPTY = {
+    inProgress: `Nothing in progress. Start a video with <code>${COMMANDS.newVideo}</code>, or ask Claude for more on a completed one.`,
+    completed: "A video is completed once its final files are delivered and nothing new is being made for it.",
+    archived: "Archive a video to move it here: it leaves the other lists, and nothing of it shows as waiting. Restore it any time.",
+  };
+  const lists = PHASES.map(({ key, label }) => {
+    const list = byPhase[key];
+    const items = list.length ? list.map(videoItem).join("\n") : !videos.length && key === "inProgress" ? videoPlaceholder : "";
+    return `<div class="phaselist" data-phase-list="${key}" aria-label="${esc(label)}"${key === show ? "" : " hidden"}>${
+      items ? `<ol class="timeline">${items}</ol>` : `<div class="libempty"><span class="libempty_label">No ${esc(label.toLowerCase())} videos</span><p>${EMPTY[key]}</p></div>`
+    }</div>`;
+  }).join("\n");
+  const tabs = `<nav class="seg seg--links phasetabs" aria-label="Which videos">${PHASES.map(
+    ({ key, label }) => `<a href="/${key === "inProgress" ? "" : `?show=${key}`}" data-phase="${key}"${key === show ? ' aria-current="true"' : ""}><span>${esc(label)} <b>${byPhase[key].length}</b></span></a>`,
+  ).join("")}</nav>`;
+
+  const body = `
+<section class="section section--hero">
+  <div class="container">
+    ${eyebrow(tc(0), "Studio")}
+    <div class="split">
+      <div class="stack">
+        <h1 class="display">${esc(studio.name)}</h1>
+        <p class="lede">Every video in this studio. Start a video with <code>${COMMANDS.newVideo}</code> or add a brand with <code>${COMMANDS.newBrand}</code>.</p>
+        ${waitingFor(videos.filter((v) => v.phase !== "archived"))}
+        ${needsAttention(studio)}
+      </div>
+      <dl class="titleblock">
+        ${cell("Videos", String(videos.length))}
+        ${cell("In progress", String(byPhase.inProgress.length))}
+        ${cell("Completed", String(byPhase.completed.length))}
+        ${cell("Archived", String(byPhase.archived.length))}
+        ${cell("Last activity", last ? formatDateTime(last) : "")}
+      </dl>
+    </div>
+  </div>
+</section>
+${whatsNewCard(studio)}
+<section class="section section--rule" id="videos">
+  <div class="container" data-phases>
+    ${eyebrow(tc(1), "Videos")}
+    <div class="phasehead"><h2>Videos</h2>${tabs}</div>
+    ${lists}
+  </div>
+</section>`;
+  return layout({ title: studio.name, active: "videos", studio, body });
+}
+
+/** Every brand kit in the studio, each with its logo, colours and fonts, and how many videos use it. */
+export function brandsPage(studio) {
+  const videos = listVideos(studio.root);
+  const brands = listBrands(studio.root);
+  const usage = (slug) => videos.filter((v) => v.brand === slug).length;
   const brandCards = brands
     .map((b) => {
       const { all, ground } = brandColours(b);
@@ -406,18 +475,6 @@ export function dashboardPage(studio) {
 </article>`;
     })
     .join("\n");
-
-  // placeholders: a new studio shows these instead of example content
-  const videoPlaceholder = `<li class="timeline_item">
-  <span class="timeline_date">Next</span>
-  <article class="video-card video-card--placeholder">
-    <figure class="frame"><div class="frame_stage"><div class="frame_media" style="--ratio: 16 / 9"><span class="frame_empty"><span class="placeholder_plus" aria-hidden="true">+</span>Your first video</span></div></div></figure>
-    <div class="video-card_body">
-      <h3 class="video-card_title">Make your first video</h3>
-      <p class="video-card_status">In Claude Code, in this studio, run <code>${COMMANDS.newVideo}</code>. Claude asks a few questions, makes a storyboard for you to approve, then builds the video.</p>
-    </div>
-  </article>
-</li>`;
   const brandPlaceholder = `<article class="placeholder">
   <div class="placeholder_panel"><span><span class="placeholder_plus" aria-hidden="true">+</span>${brands.length ? "Add another brand" : "Add your first brand"}</span></div>
   <div class="card_body">
@@ -425,51 +482,31 @@ export function dashboardPage(studio) {
     <p>Run <code>${COMMANDS.newBrand}</code>. Claude builds a brand kit from the website, logo, colours and fonts, and gives it a page here.</p>
   </div>
 </article>`;
-
+  const used = brands.filter((b) => usage(b.slug)).length;
   const body = `
 <section class="section section--hero">
   <div class="container">
-    ${eyebrow(tc(0), "Studio")}
+    <p class="breadcrumbs"><a href="/">Studio</a> / Brands</p>
+    ${eyebrow(tc(0), "Brands")}
     <div class="split">
       <div class="stack">
-        <h1 class="display">${esc(studio.name)}</h1>
-        <p class="lede">Every video and brand in this studio. Start a video with <code>${COMMANDS.newVideo}</code> or add a brand with <code>${COMMANDS.newBrand}</code>.</p>
-        ${waitingFor(videos)}
-        ${needsAttention(studio)}
+        <h1>Brands</h1>
+        <p class="lede">Every brand kit in this studio: logos, colours, backgrounds, fonts and motion, used across its videos. Add one with <code>${COMMANDS.newBrand}</code>.</p>
       </div>
       <dl class="titleblock">
-        ${cell("Videos", String(videos.length))}
-        ${cell("In progress", String(inProgress))}
-        ${cell("Delivered", String(delivered))}
         ${cell("Brands", String(brands.length))}
-        ${cell("Last activity", last ? formatDateTime(last) : "")}
+        ${cell("Used in videos", String(used))}
       </dl>
     </div>
   </div>
 </section>
-${whatsNewCard(studio)}
-<section class="section section--rule" id="videos">
+<section class="section section--rule">
   <div class="container">
-    ${eyebrow(tc(1), "Videos")}
-    <h2>Recent videos</h2>
-    <ol class="timeline">${videos.length ? videoItems : videoPlaceholder}</ol>
-  </div>
-</section>
-<section class="section section--rule" id="brands">
-  <div class="container">
-    ${eyebrow(tc(2), "Brands")}
-    <h2>Brands</h2>
+    ${eyebrow(tc(1), "Brand kits")}
     <div class="grid">${brandCards}${brandPlaceholder}</div>
   </div>
-</section>
-<section class="section section--rule" id="library">
-  <div class="container">
-    ${eyebrow(tc(3), "Library")}
-    <h2>Ideas for your next video</h2>
-    <div class="ggrid">${Object.keys(CATEGORIES).map(libraryCard).join("")}</div>
-  </div>
 </section>`;
-  return layout({ title: studio.name, active: "videos", studio, body });
+  return layout({ title: "Brands", active: "brands", studio, body });
 }
 
 /** On the dashboard, when something this studio needs isn't on the Mac: what, and the way to Studio health. */
@@ -510,24 +547,6 @@ function waitingFor(videos) {
     return [`<a class="waiting_item" href="${esc(stage.url)}"><b>${what} v${esc(stage.version)}</b><span>${esc(v.title)}</span></a>`];
   });
   return items.length ? `<div class="waiting"><span class="field-label">Waiting for you</span><div class="waiting_items">${items.join("")}</div></div>` : "";
-}
-
-/** A library category on the dashboard: its first item playing, and what's in it. */
-function libraryCard(category) {
-  const c = CATEGORIES[category];
-  const items = libraryItems(category);
-  const free = items.filter((i) => i.free).length;
-  const chips = items.length
-    ? `<span class="chip chip--plain">${esc(plural(items.length, "item"))}</span>${free ? `<span class="chip chip--plain">${esc(`${free} free`)}</span>` : ""}`
-    : `<span class="chip chip--soon">On the way</span>`;
-  return `<article class="card gitem">
-  <div class="gitem_media">${items[0] ? gframe(items[0], { brand: null, size: "16x9" }) : `<div class="gframe gframe--empty" style="--ratio: 16 / 9; --ar: 1.7778"><span>On the way</span></div>`}</div>
-  <div class="card_body">
-    <div class="row">${chips}</div>
-    <h3 class="card_title"><a class="card_link" href="/library/${category}/">${esc(c.title)}</a></h3>
-    <p class="muted">${esc(c.lede)}</p>
-  </div>
-</article>`;
 }
 
 function pickLogo(brand, ground) {
@@ -751,7 +770,7 @@ export function brandPage(studio, slug) {
   const body = `
 <section class="section section--hero">
   <div class="container">
-    <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/#brands">Brands</a> / ${esc(b.name)}</p>
+    <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/brands/">Brands</a> / ${esc(b.name)}</p>
     ${eyebrow(tc(0), "Brand kit")}
     <div class="split">
       <div class="stack">
@@ -1236,7 +1255,7 @@ export function projectPage(studio, slug) {
   const body = `
 <section class="section section--hero">
   <div class="container">
-    <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/#videos">Videos</a> / ${esc(video.title)}</p>
+    <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/">Videos</a> / ${esc(video.title)}</p>
     ${eyebrow(tc(0), "Video")}
     <div class="hero_head">
       <h1>${esc(video.title)}</h1>
@@ -1252,6 +1271,7 @@ export function projectPage(studio, slug) {
           ${cell("For", video.destination || "")}
           ${cell("Voiceover", VOICEOVER[brief.voiceover] || brief.voiceover || "")}
           ${cell("Created", formatDate(video.created))}
+          <div class="titleblock_cell"><dt>On the dashboard</dt><dd>${esc(PHASES.find((p) => p.key === video.phase)?.label || "")} · ${archiveButton(video)}</dd></div>
         </dl>
       </div>
     </div>
@@ -1720,7 +1740,7 @@ export function deliveryPage(studio, slug) {
   const body = `
 <section class="section section--hero">
   <div class="container">
-    <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/#videos">Videos</a> / <a href="${base}">${esc(video.title)}</a> / Delivery</p>
+    <p class="breadcrumbs"><a href="/">Studio</a> / <a href="/">Videos</a> / <a href="${base}">${esc(video.title)}</a> / Delivery</p>
     ${eyebrow("Final", "Video delivery")}
     <div class="hero_head">
       <h1>${esc(video.title)}</h1>
