@@ -27,7 +27,7 @@ import {
   setFavourite,
   sawWhatsNew,
   registeredStudios,
-  setArchived,
+  changePhase,
 } from "./studio.mjs";
 import { dashboardPage, brandsPage, brandPage, projectPage, scriptPage, storyboardPage, reviewPage, deliveryPage, healthPage, checksParts, libraryPage, itemPage, sfxPage, page404, progressState } from "./pages.mjs";
 import { scriptPrint, storyboardPrint } from "./print.mjs";
@@ -88,13 +88,13 @@ export function createStudioServer(root) {
       if (req.method === "POST" && path === "/api/reveal") return await reveal(req, res, studioRoot);
       if (req.method === "POST" && path === "/api/licence") return await licencePost(req, res);
       if (req.method === "POST" && path === "/api/favourite") return await favouritePost(req, res, studioRoot);
-      // a video archived from the dashboard or its overview, or restored
-      if (req.method === "POST" && path === "/api/archive") {
+      // a video archived, restored, marked complete or reopened, from the dashboard or its overview
+      if (req.method === "POST" && path === "/api/phase") {
         const data = await readPost(req, res);
         if (!data) return;
         if (typeof data.video !== "string" || !PROJECT.test(data.video)) return json(res, 400, { ok: false, error: "Which video?" });
         try {
-          setArchived(studioRoot, data.video, data.on !== false);
+          changePhase(studioRoot, data.video, String(data.action || ""));
         } catch (err) {
           return json(res, 404, { ok: false, error: err.message });
         }

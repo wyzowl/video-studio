@@ -1,7 +1,7 @@
 // Behaviour shared by every studio page:
 // - "Read more" opens a long hero description (and "Show less" closes it); "Show all" opens a long block, such as
 //   the request in a video's brief.
-// - The dashboard's videos switch between In progress, Completed and Archived; Archive and Restore move a video.
+// - The dashboard's videos switch between In progress, Completed and Archived; Mark complete, Reopen, Archive and Restore move a video.
 // - A storyboard frame opens full size, as large as the window allows, in a viewer: arrows step through the
 //   page's frames, Esc or a click outside closes it. A footage storyboard's "Play the scene" plays its rough cut there.
 //   On the latest storyboard, Box and Arrow on a frame (or in the viewer) point at something in it ("Point at it",
@@ -87,16 +87,16 @@
     });
   }
 
-  // ───────── archive or restore a video ─────────
-  // The page server marks it in the video's brief; the page then reloads by itself (live.js), with the video in its
-  // new list.
+  // ───────── move a video between the dashboard's lists ─────────
+  // Mark complete, Reopen, Archive or Restore: the page server marks it in the video's brief, then the page reloads
+  // with the video in its new list.
   document.addEventListener("click", async (e) => {
-    const button = e.target.closest?.("[data-archive]");
+    const button = e.target.closest?.("[data-phase-action]");
     if (!button || button.disabled) return;
     e.preventDefault();
     button.disabled = true;
     try {
-      const res = await fetch("/api/archive", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ video: button.dataset.archive, on: button.dataset.on === "true" }) });
+      const res = await fetch("/api/phase", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ video: button.dataset.video, action: button.dataset.phaseAction }) });
       if (!(await res.json()).ok) throw new Error();
       location.reload();
     } catch {

@@ -141,7 +141,7 @@ Once a draft passes the loop, the user reviews it on its review page.
    `poster` and `changes` are optional. `version` must match the folder (`v2` → `2`): a video shows up once it does.
 2. Show the page `/videos/<project>/review/v<N>/` (production skill, "Showing a page") with the scores and what you'd
    improve next. Flag every departure from the brief or the approved storyboard (the build's `docs/decisions.md` lists
-   its changes to the scene plans; the page itself lists the checks' findings kept on purpose, with why). Then wait for
+   its changes to the scene plans). Then wait for
    the review in the background and end your turn.
 3. When the review comes in (the wait finishes, or the user says they've saved), the wait's output is the review: the
    decision, each note by its time in the user's words with its picture (look at every picture first, Read tool), and

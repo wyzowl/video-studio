@@ -2586,6 +2586,8 @@ a.stages_item:hover {
   margin: 0;
   padding: 0;
   display: grid;
+  gap: var(--space-5);
+  max-width: 64rem;
   border-top: var(--border-width) solid var(--border);
 }
 .check {
@@ -3143,111 +3145,6 @@ a.stages_item:hover {
 @media (prefers-reduced-motion: reduce) {
   .making_bar span {
     transition: none;
-  }
-}
-/* Video Studio's checks on a video's overview: must fix, should fix, then the notes folded away */
-.checks {
-  display: grid;
-  gap: var(--space-5);
-  max-width: 64rem;
-}
-.checks_head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-3);
-}
-.checks_when {
-  font: 500 var(--text-tiny) / 1.4 var(--font-mono);
-  color: var(--text-2);
-  overflow-wrap: anywhere;
-}
-.chip--must {
-  --_c: var(--error);
-  --_bg: color-mix(in srgb, var(--error) 12%, var(--white));
-}
-.chip--should {
-  --_c: var(--warning);
-  --_bg: color-mix(in srgb, var(--warning) 14%, var(--white));
-}
-.checks_level {
-  display: grid;
-  gap: var(--space-3);
-}
-.checks_list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: var(--space-2);
-}
-.checks_item {
-  display: grid;
-  grid-template-columns: 8.5rem minmax(0, 1fr);
-  gap: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  background: var(--background-2);
-  border: var(--border-width) solid var(--border);
-  border-left: 3px solid var(--border-strong);
-}
-.checks_item--must {
-  border-left-color: var(--error);
-}
-.checks_item--should {
-  border-left-color: var(--warning);
-}
-.checks_body {
-  display: grid;
-  gap: var(--space-1);
-  min-width: 0;
-}
-.checks_body p {
-  margin: 0;
-}
-.checks_time {
-  font: 500 var(--text-tiny) / 1.6 var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  color: var(--text-2);
-}
-.checks_fix {
-  font-size: var(--text-small);
-  color: var(--text-2);
-}
-.checks_where {
-  font: 500 var(--text-tiny) / 1.5 var(--font-mono);
-  color: var(--text-2);
-  overflow-wrap: anywhere;
-}
-.checks_more {
-  display: grid;
-  gap: var(--space-3);
-}
-.checks_more > summary {
-  cursor: pointer;
-  font: 500 var(--text-tiny) / 1.6 var(--font-mono);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-2);
-}
-.checks_more[open] > summary {
-  margin-bottom: var(--space-3);
-}
-.checks_ran {
-  margin: 0;
-  padding-left: var(--space-5);
-  display: grid;
-  gap: var(--space-2);
-  font-size: var(--text-small);
-  color: var(--text-2);
-}
-.checks_ran b {
-  color: var(--text);
-  font-weight: 600;
-}
-@media (max-width: 40rem) {
-  .checks_item {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-1);
   }
 }
 /* the timeline of stages, brief to final video */

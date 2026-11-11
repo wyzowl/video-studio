@@ -421,8 +421,8 @@ export function readVideo(root, slug) {
   // review it picked up, at its first step
   const progress = readProgress(root, slug) || nextStage(working, { sb: latestSb?.version, rv: latestRv?.version });
   // where it sits on the dashboard: archived by the user; completed while it's delivered and nothing new is being
-  // made; otherwise in progress. The last two follow the work by themselves.
-  const phase = brief.archived ? "archived" : deliveredNow && !progress && !working ? "completed" : "inProgress";
+  // made, or when the user marked it so; otherwise in progress. Starting new work clears both marks.
+  const phase = brief.archived ? "archived" : brief.completed || (deliveredNow && !progress && !working) ? "completed" : "inProgress";
 
   const rel = (p) => (p ? `/videos/${encodeURIComponent(slug)}/${p.slice(dir.length + 1).split("/").map(encodeURIComponent).join("/")}` : null);
   const updated = Math.max(
@@ -448,6 +448,8 @@ export function readVideo(root, slug) {
     status: { key: status, label: progress ? progressLabel(progress, brief) : statusLabel(status, storyboard, review, working, script) },
     phase,
     archived: brief.archived || null,
+    // marked complete by the user (it may also be delivered)
+    markedComplete: Boolean(brief.completed) && !(deliveredNow && !progress && !working),
     working,
     progress,
     script,
@@ -517,22 +519,33 @@ export const PHASES = [
   { key: "archived", label: "Archived" },
 ];
 
-/** Archives a video (it leaves the dashboard's In progress and Completed lists, and nothing of it shows as waiting),
-    or restores it (`on` false): `archived: <when>` in its brief's front matter. Returns whether it changed. */
-export function setArchived(root, slug, on) {
+/** Sets or clears one of a video's dashboard marks in its brief's front matter: `archived` (it leaves the In progress
+    and Completed lists for Archived, and nothing of it shows as waiting) or `completed` (in Completed, whatever its
+    stage). Returns whether it changed. */
+export function setMark(root, slug, key, on) {
+  if (!["archived", "completed"].includes(key)) throw new Error(`"${key}" isn't a mark`);
   const dir = join(root, "videos", slug);
   if (!isDir(dir)) throw new Error(`There's no video "${slug}" in this studio.`);
   const file = join(dir, "BRIEF.md");
   const text = existsSync(file) ? readFileSync(file, "utf8") : "";
   const m = /^---\r?\n([\s\S]*?)\r?\n---[ \t]*(\r?\n|$)/.exec(text);
   const lines = m ? m[1].split(/\r?\n/) : [];
-  const had = lines.some((l) => /^archived:/.test(l));
+  const re = new RegExp(`^${key}:`);
+  const had = lines.some((l) => re.test(l));
   if (had === Boolean(on)) return false;
-  const kept = lines.filter((l) => !/^archived:/.test(l));
-  if (on) kept.push(`archived: ${new Date().toISOString()}`);
+  const kept = lines.filter((l) => !re.test(l));
+  if (on) kept.push(`${key}: ${new Date().toISOString()}`);
   const rest = m ? text.slice(m[0].length) : text;
   writeFileSync(file, `---\n${kept.join("\n")}\n---\n${rest}`);
   return true;
+}
+
+/** What the dashboard's buttons and `studio.mjs archive|complete` do to a video: archive, restore (out of the
+    archive), complete (mark it complete) or reopen (clear that mark). */
+export function changePhase(root, slug, action) {
+  const [key, on] = { archive: ["archived", true], restore: ["archived", false], complete: ["completed", true], reopen: ["completed", false] }[action] || [];
+  if (!key) throw new Error(`"${action}" isn't one of archive, restore, complete or reopen`);
+  return setMark(root, slug, key, on);
 }
 
 // ───────── live pages ─────────

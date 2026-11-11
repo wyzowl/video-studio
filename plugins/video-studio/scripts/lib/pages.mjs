@@ -303,11 +303,10 @@ const headDecision = (chosen, approve) => `<fieldset class="decide" data-decisio
 
 /** The notes beside a review's content: an earlier version's warning, what changed in this version (closed), the
     notes pinned to the content, the general notes and what saving will do, then how to review (closed). */
-function notesPanel({ earlier = "", changed = null, kept = "", add = "", empty, general, hint = true, howTo = "", count = 0 }) {
+function notesPanel({ earlier = "", changed = null, add = "", empty, general, hint = true, howTo = "", count = 0 }) {
   return `<aside class="notespanel" aria-label="Notes">
   ${earlier}
   ${changed ? `<details class="notespanel_fold"><summary>${esc(changed.title)}</summary><p>${esc(changed.text)}</p></details>` : ""}
-  ${kept}
   <div class="notespanel_head">
     <h2 class="notespanel_title">Notes <span class="notespanel_count" data-count="notes">${count}</span></h2>
   </div>
@@ -339,9 +338,14 @@ function page404(studio, what) {
 
 // ───────── dashboard ─────────
 
-/** Archive or Restore, for a video: the page server moves it (ui/page.js posts it to /api/archive). */
-const archiveButton = (v, cls = "textbutton") =>
-  `<button class="${cls}" type="button" data-archive="${esc(v.slug)}" data-on="${v.phase === "archived" ? "false" : "true"}">${v.phase === "archived" ? "Restore" : "Archive"}</button>`;
+/** A video's dashboard controls, by where it sits: Mark complete and Archive while in progress; Archive once completed
+    (and Reopen when the user marked it complete); Restore once archived. ui/page.js posts each to /api/phase. */
+const phaseButtons = (v) => {
+  const b = (action, label) => `<button class="textbutton" type="button" data-phase-action="${action}" data-video="${esc(v.slug)}">${label}</button>`;
+  if (v.phase === "archived") return b("restore", "Restore");
+  if (v.phase === "completed") return [v.markedComplete && b("reopen", "Reopen"), b("archive", "Archive")].filter(Boolean).join(" · ");
+  return `${b("complete", "Mark complete")} · ${b("archive", "Archive")}`;
+};
 
 /** The dashboard: what's waiting, then the studio's videos in three lists (In progress, Completed and Archived), one
     showing at a time (`?show=completed`; ui/page.js switches between them in place). */
@@ -375,7 +379,7 @@ export function dashboardPage(studio, query) {
       : v.brand
         ? `<span class="chip chip--plain">${esc(v.brand)}</span>`
         : "";
-    const chip = v.phase === "archived" ? `<span class="chip chip--plain">Archived</span>` : `<span class="chip chip--${v.progress ? "working" : CHIP[key] || "planning"}">${esc(v.status.label)}</span>`;
+    const chip = v.phase === "archived" ? `<span class="chip chip--plain">Archived</span>` : v.markedComplete ? `<span class="chip chip--delivered">Marked complete</span>` : `<span class="chip chip--${v.progress ? "working" : CHIP[key] || "planning"}">${esc(v.status.label)}</span>`;
     return `<li class="timeline_item">
   <time class="timeline_date" datetime="${new Date(v.created).toISOString()}">${esc(formatDate(v.created))}</time>
   <article class="video-card">
@@ -384,7 +388,7 @@ export function dashboardPage(studio, query) {
       <div class="row">${chip}</div>
       <h3 class="video-card_title"><a class="title-link" href="${overview}">${esc(v.title)}</a></h3>
       <div class="row">${brandChip}<span class="chip chip--plain">${esc(v.type === "footage" ? "Footage" : "Animated")}</span><span class="chip chip--plain">${esc(v.size.label)}</span>${v.length ? `<span class="chip chip--plain chip--raw">${esc(v.length)}</span>` : ""}</div>
-      <p class="video-card_status">Updated ${esc(formatDateTime(v.updated))} · <span class="mono">videos/${esc(v.slug)}</span> · ${archiveButton(v)}</p>
+      <p class="video-card_status">Updated ${esc(formatDateTime(v.updated))} · <span class="mono">videos/${esc(v.slug)}</span> · ${phaseButtons(v)}</p>
       ${actions ? `<div class="row">${actions}</div>` : ""}
     </div>
   </article>
@@ -404,7 +408,7 @@ export function dashboardPage(studio, query) {
 </li>`;
   const EMPTY = {
     inProgress: `Nothing in progress. Start a video with <code>${COMMANDS.newVideo}</code>, or ask Claude for more on a completed one.`,
-    completed: "A video is completed once its final files are delivered and nothing new is being made for it.",
+    completed: "A video is completed once its final files are delivered and nothing new is being made for it, or when you mark it complete.",
     archived: "Archive a video to move it here: it leaves the other lists, and nothing of it shows as waiting. Restore it any time.",
   };
   const lists = PHASES.map(({ key, label }) => {
@@ -426,7 +430,7 @@ export function dashboardPage(studio, query) {
       <div class="stack">
         <h1 class="display">${esc(studio.name)}</h1>
         <p class="lede">Every video in this studio. Start a video with <code>${COMMANDS.newVideo}</code> or add a brand with <code>${COMMANDS.newBrand}</code>.</p>
-        ${waitingFor(videos.filter((v) => v.phase !== "archived"))}
+        ${waitingFor(videos.filter((v) => v.phase === "inProgress"))}
         ${needsAttention(studio)}
       </div>
       <dl class="titleblock">
@@ -1078,65 +1082,6 @@ export function progressState(studio, slug) {
   return { active: true, quiet: Boolean(video.progress.quiet), parts: progressParts({ ...video, root: studio.root }, video.progress, readBrief(studio.root, slug)) };
 }
 
-// ───────── Video Studio's checks ─────────
-
-const CHECK_LEVELS = { must: "Must fix", should: "Should fix", note: "Notes" };
-
-const checkWhen = (f) => (f.time == null ? "The film" : `${timecode(f.time, true)}${f.until != null && f.until > f.time ? `–${timecode(f.until, true)}` : ""}`);
-
-/** The newest report of Video Studio's checks (`studio.mjs check`, lib/check.mjs) on a video's overview: what to fix,
-    ranked, each with its time, the element and what to do; the notes, and what Claude kept with why, folded away. */
-function checksSection(root, slug, index) {
-  const report = readJSON(join(root, "videos", slug, "docs", "checks", "film.json"));
-  if (!Array.isArray(report?.findings)) return "";
-  const c = { must: 0, should: 0, note: 0, ...(report.counts || {}) };
-  const item = (f) => `<li class="checks_item checks_item--${esc(f.kept ? "note" : f.level)}">
-  <span class="checks_time">${esc(checkWhen(f))}</span>
-  <div class="checks_body"><p>${esc(f.what)}</p>${f.kept ? `<p class="checks_fix">Kept: ${esc(f.kept.why)}</p>` : f.fix ? `<p class="checks_fix">${esc(f.fix)}</p>` : ""}<p class="checks_where">${esc([f.element, f.file, f.source].filter(Boolean).join(" · "))}</p></div>
-</li>`;
-  const level = (key) => {
-    const list = report.findings.filter((f) => (key === "kept" ? f.kept : f.level === key && !f.kept));
-    if (!list.length) return "";
-    const ol = `<ol class="checks_list">${list.map(item).join("")}</ol>`;
-    if (key === "kept") return `<details class="checks_more"><summary>${esc(`${list.length} kept on purpose`)}</summary>${ol}</details>`;
-    return key === "note" ? `<details class="checks_more"><summary>${esc(plural(list.length, "note"))}</summary>${ol}</details>` : `<div class="checks_level"><h3 class="field-label">${CHECK_LEVELS[key]} · ${list.length}</h3>${ol}</div>`;
-  };
-  const chip = (key, cls) => `<span class="chip chip--${cls}">${esc(`${c[key]} ${CHECK_LEVELS[key].toLowerCase().replace(/s$/, c[key] === 1 ? "" : "s")}`)}</span>`;
-  const what = [`Checked ${formatDateTime(Date.parse(report.checked))}`, report.hyperframes && `HyperFrames ${report.hyperframes}`, report.storyboard && `storyboard v${report.storyboard}`, report.render && `the render ${report.render}`].filter(Boolean).join(" · ");
-  const clear = !c.must && !c.should;
-  return `<section class="section section--rule" id="checks">
-  <div class="container">
-    ${eyebrow(tc(index), "Checks")}
-    <h2>Video Studio's checks</h2>
-    <div class="checks">
-      <div class="checks_head">${chip("must", c.must ? "must" : "plain")}${chip("should", c.should ? "should" : "plain")}${chip("note", "plain")}<span class="checks_when">${esc(what)}</span></div>
-      ${clear ? `<p class="muted">Nothing to fix: what the checks measure is in order, so Claude's review judges the rest.</p>` : ""}
-      ${level("must")}${level("should")}${level("kept")}${level("note")}
-      <details class="checks_more"><summary>What ran</summary><ul class="checks_ran">${(report.ran || []).map((r) => `<li><b>${esc(r.name)}</b> ${esc(r.detail)}</li>`).join("")}</ul></details>
-    </div>
-  </div>
-</section>`;
-}
-
-/** For a video's review page: what Video Studio's checks flagged and Claude kept on purpose, each with why (`studio.mjs
-    check --keep`), from the newest check. */
-function keptFindings(root, slug) {
-  const report = readJSON(join(root, "videos", slug, "docs", "checks", "film.json"));
-  const list = Array.isArray(report?.findings) ? report.findings.filter((f) => f.kept?.why) : [];
-  if (!list.length) return "";
-  const items = list.map((f) => `<li><span class="mono">${esc(checkWhen(f))}</span> ${esc(f.what)} <b>Kept:</b> ${esc(f.kept.why)}</li>`).join("");
-  return `<details class="notespanel_fold"><summary>${esc(`Kept on purpose · ${list.length}`)}</summary><p>Video Studio's checks flagged ${list.length === 1 ? "this" : "these"}, and Claude kept ${list.length === 1 ? "it" : "them"} as ${list.length === 1 ? "it is" : "they are"}, for the reason given.</p><ul>${items}</ul></details>`;
-}
-
-/** A line for a script's stage card: what Video Studio's checks found in it, if they ran on this version. */
-function scriptChecks(root, slug, v) {
-  const r = readJSON(join(root, "videos", slug, "docs", "checks", "script.json"));
-  if (!r || r.script !== v) return "";
-  const c = r.counts || {};
-  const parts = [c.must && `${c.must} must fix`, c.should && `${c.should} should fix`, c.note && plural(c.note, "note")].filter(Boolean);
-  return `Video Studio's checks: ${parts.length ? parts.join(", ") : "nothing to fix"}.`;
-}
-
 /** A video's overview: where it stands, and every stage from the brief to the final video, to move between them. */
 export function projectPage(studio, slug) {
   const video = /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(slug) ? readVideo(studio.root, slug) : null;
@@ -1176,7 +1121,7 @@ export function projectPage(studio, slug) {
         title: `Script v${v}`,
         chip: chip(st),
         meta: [plural(rows.length, "row"), length ? `${length.words} words ≈ ${length.seconds} s` : "text on screen", reviewed(data.summary)].filter(Boolean).join(" · "),
-        text: [opening && `Opens: “${clip(opening, 16)}”`, sc.changes && `What changed: ${clip(sc.changes)}`, scriptChecks(studio.root, slug, v)],
+        text: [opening && `Opens: “${clip(opening, 16)}”`, sc.changes && `What changed: ${clip(sc.changes)}`],
         actions: `<a class="button${st.key === "ready" ? " button--corners" : " button--secondary"}" href="${href}">Open script v${v}</a>`,
       }),
     );
@@ -1251,7 +1196,6 @@ export function projectPage(studio, slug) {
     scVersions.length ? readScript(studio.root, slug, scVersions.at(-1))?.script?.summary : "",
     sbVersions.length ? readStoryboard(studio.root, slug, sbVersions.at(-1))?.storyboard?.summary : "",
   );
-  const checks = checksSection(studio.root, slug, 1);
   const body = `
 <section class="section section--hero">
   <div class="container">
@@ -1271,17 +1215,16 @@ export function projectPage(studio, slug) {
           ${cell("For", video.destination || "")}
           ${cell("Voiceover", VOICEOVER[brief.voiceover] || brief.voiceover || "")}
           ${cell("Created", formatDate(video.created))}
-          <div class="titleblock_cell"><dt>On the dashboard</dt><dd>${esc(PHASES.find((p) => p.key === video.phase)?.label || "")} · ${archiveButton(video)}</dd></div>
+          <div class="titleblock_cell"><dt>On the dashboard</dt><dd>${esc(PHASES.find((p) => p.key === video.phase)?.label || "")} · ${phaseButtons(video)}</dd></div>
         </dl>
       </div>
     </div>
     ${video.progress ? progressPanel({ ...video, root: studio.root }, brief) : nowPanel(video)}
   </div>
 </section>
-${checks}
 <section class="section section--rule">
   <div class="container">
-    ${eyebrow(tc(checks ? 2 : 1), "Stages")}
+    ${eyebrow(tc(1), "Stages")}
     <h2>Every stage, newest first</h2>
     <ol class="timeline timeline--stages">${items.reverse().join("\n")}</ol>
   </div>
@@ -1856,7 +1799,6 @@ ${reviewRoom(
   notesPanel({
     earlier: latest ? "" : earlierNote("video", `/videos/${enc(slug)}/review/v${versions.at(-1)}/`, versions.at(-1)),
     changed: rv.changes ? { title: `What changed in video v${v}`, text: rv.changes } : null,
-    kept: latest ? keptFindings(studio.root, slug) : "",
     add: latest ? `<div class="notespanel_add"><button class="button button--secondary button--medium" type="button" data-add-note${there ? "" : " disabled"}>Add a note at <span class="mono" data-now>00:00.0</span></button></div>` : "",
     empty: latest ? "No notes yet. Pause on a moment, then press “Add a note”, or Box or Arrow on the picture to point at something." : "No notes on this version.",
     general: `<textarea id="n-general" data-general rows="4" placeholder="Music, pace, overall feel"></textarea>`,

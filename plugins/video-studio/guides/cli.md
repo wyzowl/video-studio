@@ -150,7 +150,7 @@ words while a cover transition (a library item whose note says `"kind": "cover"`
 reads the cover as their ground; outside the cover they're checked as usual.
 
 - One ranked report: must fix, should fix and notes, each with its time, the element, its file and what to do, saved
-  as `docs/checks/film.json`; the video's overview shows it. It prints short: a line of counts, then each must fix
+  as `docs/checks/film.json`. It prints short: a line of counts, then each must fix
   and should fix on a line with its id (`M1`, `S1`), each kind's fix once, and the notes as a count (`--notes` lists
   them). `--changes` prints only what's new since the last check, and what it cleared.
 - A must fix stops the render (the command exits 1). A should fix is fixed, or kept: `studio.mjs check <video> --keep

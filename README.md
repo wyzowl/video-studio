@@ -147,9 +147,12 @@ Nothing is uploaded.
   status, in three lists with a switch at the top:
   - **In progress:** until a video's final files are delivered, and again while anything new is made for it after
     that.
-  - **Completed:** delivered, with nothing new being made. Videos move between these two by themselves.
-  - **Archived:** videos you've archived (**Archive** on a video's card or its overview; **Restore** brings one back,
-    and so does asking Claude for new work on it). Nothing of an archived video shows as waiting.
+  - **Completed:** delivered, with nothing new being made. Videos move between these two by themselves, and you can
+    also **Mark complete** any video (**Reopen** undoes it).
+  - **Archived:** videos you've archived with **Archive** (**Restore** brings one back).
+
+  The buttons are on each video's card and its overview. Asking Claude for new work on a completed or archived video
+  brings it back to In progress, and only In progress videos show anything as waiting.
 
   After an update, it says what's new; if something the studio needs is missing from the Mac, it says so.
 - **Brands** (`/brands/`): every brand kit in the studio, with its logo, colours and fonts, and how many videos use it.

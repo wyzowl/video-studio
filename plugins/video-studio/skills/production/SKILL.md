@@ -161,10 +161,11 @@ and every script, storyboard and video), `/videos/<project>/script/` (latest scr
 listen to, with its id).
 
 A video is **In progress** until its final files are delivered, and again while anything new is made for it after
-that; then it's **Completed**. Both follow the work by themselves. **Archived** is the user's choice (Archive on the
-dashboard or the video's overview): an archived video's reviews don't show as waiting. When the user asks you to
-archive one, or bring one back, run `node PLUGIN/scripts/studio.mjs archive <video>` (`--restore` brings it back);
-starting a stage on an archived video brings it back by itself.
+that; then it's **Completed**. Both follow the work by themselves, and the user can also mark a video complete
+whatever its stage. **Archived** is the user's choice too. They do both on the dashboard or the video's overview, and
+only an In progress video's reviews show as waiting. When the user asks you to, run
+`node PLUGIN/scripts/studio.mjs complete <video>` (`--reopen` clears it) or `studio.mjs archive <video>` (`--restore`
+brings it back); starting a stage on a video clears both by itself.
 
 After a finished review, the page takes the user to the video's overview, which says what
 you're making while you work on it.

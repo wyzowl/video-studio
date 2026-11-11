@@ -22,7 +22,9 @@
 //                                              (up to five) give a review round's scores and what's being fixed;
 //                                              --end ends the stage without its result
 //   node studio.mjs archive <video> [--restore] move a video to the dashboard's Archived list (nothing of it shows as
-//                                              waiting), or back; starting a stage on it restores it by itself
+//                                              waiting), or back
+//   node studio.mjs complete <video> [--reopen] mark a video Completed whatever its stage, or clear that; starting a
+//                                              stage on a video clears both marks by itself
 //   node studio.mjs render [HF render options]  `HF render …` with the project's HyperFrames, run from the video's
 //                                              folder, that also shows the render's progress on the video's pages; it
 //                                              prints one line on the file it made, HyperFrames' log beside it
@@ -130,7 +132,7 @@ import {
   formatDateTime,
   listBrands,
   listVideos,
-  setArchived,
+  changePhase,
   pageForFile,
   pluginVersion,
   readJSON,
@@ -291,7 +293,7 @@ async function main() {
   if (cmd === "setup-note") return setupNote();
   if (cmd === "ready") return ready();
   if (cmd === "progress") return progressCommand();
-  if (cmd === "archive") return archiveCommand();
+  if (cmd === "archive" || cmd === "complete") return phaseCommand();
   if (cmd === "render") return renderCommand();
   if (cmd === "draft") return draftCommand();
   if (cmd === "final") return finalCommand();
@@ -591,7 +593,7 @@ function ready() {
   const root = studioRoot();
   const only = argv.includes("--video") ? opts("--video") : null;
   const videos = listVideos(root).filter((v) => !only || only.includes(v.slug));
-  const waiting = videos.filter((v) => v.phase !== "archived" && ["script", "storyboard", "review"].includes(v.status.key) && !v.progress).sort((a, b) => b.updated - a.updated)[0];
+  const waiting = videos.filter((v) => v.phase === "inProgress" && ["script", "storyboard", "review"].includes(v.status.key) && !v.progress).sort((a, b) => b.updated - a.updated)[0];
   let page = null;
   if (waiting) {
     const stage = { script: waiting.script, storyboard: waiting.storyboard, review: waiting.review }[waiting.status.key];
@@ -615,15 +617,19 @@ const opts = (k) => argv.flatMap((a, i) => (a === k && argv[i + 1] && !argv[i + 
 /** `progress <video> <stage> <version> <step>` starts a stage on the video's pages; `progress <video> <step>` moves it
     on. A review round's scores (`--scores hook=8,…`, with `--round`) and what's being fixed (`--fix "<where>: <what>"`)
     show beside the newest frames. `--end` ends the stage without its result. */
-/** `archive <video>`: the video leaves the dashboard's In progress and Completed lists for Archived, and nothing of it
-    shows as waiting; `--restore` brings it back. (Starting a stage on an archived video restores it by itself.) */
-function archiveCommand() {
+/** `archive <video>` moves the video to the dashboard's Archived list (nothing of it shows as waiting), `--restore`
+    brings it back; `complete <video>` marks it Completed whatever its stage, `--reopen` clears that. Starting a stage
+    on the video clears both by itself. */
+function phaseCommand() {
   const root = studioRoot();
   const slug = positional[1];
-  if (!slug) throw new Error("usage: studio.mjs archive <video> [--restore]");
-  const restore = argv.includes("--restore");
-  const changed = setArchived(root, slug, !restore);
-  console.log(`${slug}: ${restore ? (changed ? "restored: it's back in In progress or Completed" : "wasn't archived") : changed ? "archived" : "was already archived"}.`);
+  const archive = cmd === "archive";
+  const undo = argv.includes(archive ? "--restore" : "--reopen");
+  if (!slug) throw new Error(archive ? "usage: studio.mjs archive <video> [--restore]" : "usage: studio.mjs complete <video> [--reopen]");
+  const action = archive ? (undo ? "restore" : "archive") : undo ? "reopen" : "complete";
+  const changed = changePhase(root, slug, action);
+  const done = { archive: "archived", restore: "restored from the archive", complete: "marked complete", reopen: "no longer marked complete" }[action];
+  console.log(`${slug}: ${changed ? done : `already ${{ archive: "archived", restore: "not archived", complete: "marked complete", reopen: "not marked complete" }[action]}`}.`);
 }
 
 function progressCommand() {
@@ -645,8 +651,8 @@ function progressCommand() {
     const keys = stepsFor(stage, brief).map((x) => x.key);
     if (!keys.includes(named)) throw new Error(`"${named}" isn't a step of ${stage.stage === "final" ? "the final video" : `${stage.stage} v${stage.version}`}. Its steps: ${keys.join(", ")}.`);
   }
-  // new work on an archived video brings it back to In progress
-  if (starting) setArchived(root, slug, false);
+  // new work on an archived or completed video brings it back to In progress
+  if (starting) for (const action of ["restore", "reopen"]) changePhase(root, slug, action);
   let p = starting
     ? startStage(root, slug, rest[0], Number(rest[1]), rest[2] || "")
     : updateProgress(root, slug, (q) => {
