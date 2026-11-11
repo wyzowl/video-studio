@@ -47,6 +47,9 @@ works to it, and HyperFrames' check measures the parts that can be measured. The
 | Stutter on a slow move | a layout property animated (`left`, `width`, `font-size`) | the transform that looks the same (`../runtimes/gsap.md`, "What to animate") |
 | Fast moves strobing, sharp in every frame | motion blur off on the root or on that part | HyperFrames' shutter on the root (`techniques/effects.md`, "Motion blur") |
 | A jump at a cut | the two sides don't match | snapshot just before and after the seam; match position, speed and direction |
+| Thin lines shimmering or vanishing | 1–2 px lines resampled by a slow push or scale | lines about 3 px at a lower opacity; whole-pixel positions while they hold |
+| Something white lost on white (or dark on dark) | no edge between it and the ground as it arrives | a thin outline or a soft shadow edge while it crosses the matching ground |
+| A fade that snaps off | an ease that ends fast (`power2.in`, `expo.in`) on a fade out | a symmetric ease (`sine.inOut`) over a longer fade |
 | A slideshow | everything on screen in the first quarter, then frozen | reveal each part on its cue (`principles.md`, "Reveal with the words") |
 | Dead | everything arrives, then nothing moves; no atmosphere | slow motion in the world and the atmosphere (`choreography.md`, "Ambient motion") |
 

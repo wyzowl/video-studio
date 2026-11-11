@@ -58,6 +58,15 @@ tl.to("#cam", {
   follow through.
 - Camera moves are calmer than the objects they show, and smooth at both ends (`power2.inOut`, `sine.inOut`); an
   abrupt camera stop feels cheap.
+- **A move doesn't reverse.** No push in and then back out on the same subject, no scale up and then down, no orbit
+  that settles and turns back: a turn of more than about 90° reads as indecision. When a subject has to end square to
+  the camera, let a slow drift arrive there rather than stopping and turning back. A reversal the storyboard asks for
+  on purpose (a pull back to reveal what the push hid) is a move of its own, with a hold between.
+- **One curve per move.** Two tweens joined end to end leave a kink where they meet, even when the positions match:
+  a change of speed at the join reads as a jolt. Drive the whole move from one tween (keyframes inside it are fine),
+  and check the frames either side of any join.
+- **Fast, then slow for longer.** An opening pull-back starts quick and eases out over most of its length
+  (`expo.out`), then gentle pushes take over. First drafts usually run too fast: give the slow part room.
 - A punch-in on emphasis can be hard (a `set`), or quick and eased; a push for drama is slow.
 - A move's last pose is part of it: hold a final framing long enough to read, and don't drift back to rest or to
   black unless asked.
@@ -90,6 +99,7 @@ timeline (`../runtimes/three.md`).
 | The subject is replaced mid-move | Keep one element alive between the two boxes; remove the cross-fade |
 | Depth looks flat | Add `z` or camera travel and occlusion; check from an angle |
 | It ends in the wrong place | Add a final hold; snapshot just before it and the last frame |
+| A jolt partway through a smooth move | Two tweens joined: make it one tween, or match the speed on both sides of the join |
 | It doesn't scrub | Remove autoplay and timers; register the timeline after it's built |
 
 ---

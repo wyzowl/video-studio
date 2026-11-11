@@ -17,7 +17,10 @@ the ask. 4.5–11 s. The mark itself is always the brand kit's own file; the bui
 **Then**
 - The lockup holds still, centred; or a push through the mark's negative space streaks the ask past the camera and
   lands on the address; or the address or a button wipes in beside or below it.
-- The finished lockup holds dead still for a long stretch (up to half the scene).
+- The finished lockup holds dead still for a long stretch (up to half the scene), the camera included: no drift on
+  the last shot.
+- Centre the mark by what's visible, not by its file: padding in an image, or a mark heavier on one side, puts the
+  file's centre off the mark's. Measure the visible bounds on a still and place by those.
 
 **Keep:** the mark's geometry, colours and spacing exactly; no squash, spin or blur on it unless the brand is
 playful; the brand kit's ident sound on the moment it lands (`../../audio/sfx.md`).

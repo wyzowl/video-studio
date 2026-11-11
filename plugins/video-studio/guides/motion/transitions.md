@@ -123,6 +123,7 @@ start `T`.
 | Dip | Fade to a solid colour (the brand's ground, or black), a beat, then fade up; 3 frames of darkening before a hard cut makes the cut read as meant |
 | Colour flood | The hero stays while the ground changes colour around it in about 0.4 s |
 | Growing circle | A circle in the next scene's colour grows from the centre (or the hero) to fill the frame, then the new content arrives on it |
+| Becomes the next | The outgoing scene's key shape (a card, a button, a badge) squashes about 8% for a moment (a brand's mark only if the brand is playful), then grows to fill the frame, changing shape steadily on the way (a circle to a rounded square to the frame); it fills with the next scene's ground colour as it grows, and the new content eases in on it from 0.93 scale to 1. Curves change steadily and never flip through straight |
 | Staggered blocks | Two to five full-frame blocks in the palette's colours sweep across 0.04–0.06 s apart; the scenes swap while covered |
 | Blinds | Full-width (or full-height) strips sweep across in a stagger: 4–6 for calm, 6–8 for medium, 12–16 for high energy |
 | Shutter | Two halves close from the top and bottom, the scenes swap, they open again |
