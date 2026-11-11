@@ -1,4 +1,15 @@
 {
+  "0.12.1": [
+    {
+      "text": "Video Studio's checks stick to what looks broken, can't be read or can't be heard. Style norms, like a headline's length or the end card's hold, are notes the review weighs against your brief, so a stylised film isn't pushed back to the usual."
+    },
+    {
+      "text": "When your brief or storyboard asks for something the guides usually advise against, like an interface pulsing on the beat, the plan wins."
+    },
+    {
+      "text": "Fixes: starting a film from a storyboard stops if its drawing code is missing, stills work on older HyperFrames projects, and small print such as a credit line can be marked so it isn't treated as a line to read."
+    }
+  ],
   "0.12.0": [
     {
       "text": "Characters you give Claude come alive: a mascot or illustrated person drawn in parts moves each part about its joint, and one drawn as a single picture breathes, nods, leans and waves, bent by pins that keep the drawing's shape."
