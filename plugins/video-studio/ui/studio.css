@@ -2103,7 +2103,30 @@ kbd {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
-/* the full library, above the cards: what it adds, and the licence key */
+/* the full library, under the library's header: a band the width of the dark panel above it, its text lined up with
+   the panel's */
+.libband {
+  width: min(100% - 2 * var(--page-margin), var(--max) + 2 * var(--rail-pad));
+  margin-inline: auto;
+  padding: var(--space-5) var(--rail-pad);
+  background: var(--background-3);
+}
+.libband .callout {
+  border: 0;
+  padding: 0;
+  background: none;
+  font-size: var(--text-main);
+}
+.libband .callout > strong {
+  font-size: var(--text-large);
+}
+.libband .callout p {
+  max-width: 60rem;
+}
+.libband .libkey {
+  max-width: 44rem;
+}
+/* what the full library adds, and the licence key */
 [data-licence-panel] {
   scroll-margin-top: 6rem;
 }

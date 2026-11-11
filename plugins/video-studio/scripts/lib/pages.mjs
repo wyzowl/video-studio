@@ -2046,7 +2046,7 @@ const byCode = (a, b) => a.code.localeCompare(b.code, "en", { numeric: true });
 // where people get a licence key for the full library
 const GET_KEY = "https://wyzowl.com/get-video-studio-library/";
 
-/** The full library, above the locked items (the cards' "Paid upgrade" badges lead to it): what it adds and a box for
+/** The full library, under the library's header (the cards' "Paid upgrade" badges lead to it): what it adds and a box for
     the licence key; or, once a key has unlocked it on this Mac, where it stands, with a check for new items (ui/page.js
     posts both to /api/licence). */
 function paidPanel(category) {
@@ -2162,6 +2162,8 @@ export function libraryPage(studio, category, query) {
       ? `<div class="libempty"><span class="libempty_label">No free ${esc(c.one)}s</span><p>Every ${esc(c.one)} here is in the full library. <a href="/library/${category}/${bothTypes}">Show paid and free</a>.</p></div>`
       : `<div class="libempty"><span class="libempty_label">On the way</span><p>The first ${esc(c.one)}s come in a plugin update. Until then, Claude designs them for each video from scratch.</p></div>`;
   const example = items[0] || all[0];
+  // whether the full library is unlocked on this Mac, right under the header where it can't be missed
+  const band = paidPanel(category);
   const body = `
 <section class="section section--hero">
   <div class="container">
@@ -2181,6 +2183,7 @@ export function libraryPage(studio, category, query) {
     </div>
     ${libraryControls(view, { type: true })}
   </div>
+  ${band ? `<div class="libband">${band}</div>` : ""}
 </section>
 <section class="section section--rule">
   <div class="container">
@@ -2193,7 +2196,6 @@ export function libraryPage(studio, category, query) {
           <p class="lede">${esc(c.lede)}</p>
         </div>
         ${librarySearch(view, category)}
-        ${freeOnly || favesOnly ? "" : paidPanel(category)}
         ${shown.length ? `<div class="ggrid${S.h > S.w ? " ggrid--tall" : ""}" data-lib-grid>${cards}</div>` : empty}
         ${brokenItems(category)
           .map((b) => `<div class="callout"><strong>${esc(b.file.split("/").pop())} couldn't be shown</strong><p>${esc(b.error)}</p></div>`)
