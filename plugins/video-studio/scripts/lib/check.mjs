@@ -560,17 +560,24 @@ function runsOf(samples, meta, step) {
   const by = new Map();
   for (const s of samples) for (const b of s.blocks) (by.get(b.id) || by.set(b.id, []).get(b.id)).push({ t: s.t, b });
   const shape = (t) => t.replace(/\d/g, "#").replace(/\s+/g, "");
+  // words arriving or leaving one at a time keep it the same line: one's words all in the other's
+  const within = (a, b) => {
+    const [x, y] = [tokens(a), tokens(b)];
+    return x.length > 0 && x.every((w) => y.includes(w));
+  };
   const sameLine = (a, b) => {
     const [x, y] = [shape(a), shape(b)];
-    return x === y || x.startsWith(y) || y.startsWith(x) || x.replace(/#+/g, "#") === y.replace(/#+/g, "#");
+    return x === y || x.startsWith(y) || y.startsWith(x) || x.replace(/#+/g, "#") === y.replace(/#+/g, "#") || within(a, b) || within(b, a);
   };
   const runs = [];
   for (const [id, seen] of by) {
     let cur = null;
     const close = () => {
       if (!cur) return;
-      // its words are in once the line has its final shape: a typewriter's whole line, a count-up from its first figure
-      const final = cur.seen.at(-1).b.text;
+      // its words are in once the line has its final shape: a typewriter's whole line, a count-up from its first figure;
+      // for words that leave one at a time, the fullest it got before they began to go
+      const fullest = cur.seen.reduce((a, x) => (tokens(x.b.text).length > tokens(a).length ? x.b.text : a), cur.seen[0].b.text);
+      const final = tokens(fullest).length > tokens(cur.seen.at(-1).b.text).length ? fullest : cur.seen.at(-1).b.text;
       const complete = cur.seen.find((x) => shape(x.b.text) === shape(final))?.t ?? cur.first;
       const settled = cur.seen.filter((x) => x.t >= complete);
       const mid = settled[Math.floor(settled.length / 2)] || cur.seen.at(-1);
@@ -684,14 +691,23 @@ function ourFindings({ film, rules, runs, samples, step, hf, refined }) {
   const owner = "build";
   const add = (f) => out.push({ source: "Video Studio: the words", owner, ...f });
   const need = (words) => Math.max(R.holdMin, R.findSeconds + R.perWord * words + R.holdExtra);
-  const held = (r) => r.last - r.complete + step;
+  // the same words carried on by another element as this one ends (a label redrawn in the next scene) are one hold
+  const flat = (t) => t.replace(/\s+/g, " ").trim().toLowerCase();
+  const carries = (a, b) => b !== a && flat(b.text) === flat(a.text) && b.first >= a.first && b.first <= a.last + step * 1.5;
+  const lastOf = (r, seen = new Set()) => {
+    seen.add(r);
+    const next = runs.find((b) => !seen.has(b) && carries(r, b));
+    return next ? Math.max(r.last, lastOf(next, seen)) : r.last;
+  };
+  const carried = (r) => runs.some((a) => carries(a, r));
+  const held = (r) => lastOf(r) - r.complete + step;
 
   // type sizes for the frame: HyperFrames flags words under its own floor; this flags the rest under ours, one finding
   // for each library item or element
   const least = T.smallest * k;
   const small = new Map();
   for (const r of runs) {
-    if (r.meta.ignore || r.words < 1 || isItem(r.meta, /^i\d\d/) || held(r) < R.heldAtLeast || !(r.px < least) || tooSmallHF.has(r.text)) continue;
+    if (r.meta.ignore || r.meta.fine || r.words < 1 || isItem(r.meta, /^i\d\d/) || held(r) < R.heldAtLeast || !(r.px < least) || tooSmallHF.has(r.text)) continue;
     const key = r.meta.comp || r.meta.selector || r.text;
     (small.get(key) || small.set(key, []).get(key)).push(r);
   }
@@ -719,7 +735,7 @@ function ourFindings({ film, rules, runs, samples, step, hf, refined }) {
     return spokenAt(spoken, want.slice(0, Math.min(want.length, 4))).filter((t) => t >= from && t <= to);
   };
   for (const r of runs) {
-    if (!reading(r) || r.text.replace(/\s/g, "").length <= 2 || isItem(r.meta, /^[wd]\d\d/) || atEnd(r) || unreadHF.has(r.text)) continue;
+    if (!reading(r) || r.meta.fine || carried(r) || r.text.replace(/\s/g, "").length <= 2 || isItem(r.meta, /^[wd]\d\d/) || atEnd(r) || unreadHF.has(r.text)) continue;
     const h = held(r);
     const n = need(r.words);
     if (h + step >= n) continue;
@@ -949,12 +965,14 @@ function ourFindings({ film, rules, runs, samples, step, hf, refined }) {
       code: "key_word_late",
     });
 
-  // the ask at the end holds
-  const last = runs.filter((r) => reading(r) && atEnd(r));
+  // the ask at the end holds: its time, and a short film's less (a twentieth of its length, a second at least); small
+  // print (a credit, a disclaimer) isn't the ask
+  const last = runs.filter((r) => reading(r) && atEnd(r) && !r.meta.fine);
   if (last.length) {
     const inAt = Math.max(...last.map((r) => r.complete));
-    if (film.duration - inAt < rules.hook.askHolds - step / 2)
-      add({ level: "should", time: round(inAt), ...where(last[0]), what: `The last words are all in at ${secs(inAt)}, ${secs(film.duration - inAt)} before the end: the ask holds ${rules.hook.askHolds} s at least.`, fix: "Bring the end card in sooner, or hold the last frame longer.", code: "ask_short" });
+    const holds = Math.min(rules.hook.askHolds, Math.max(1, round(film.duration / 20, 1)));
+    if (film.duration - inAt < holds - step / 2)
+      add({ level: "should", time: round(inAt), ...where(last[0]), what: `The last words are all in at ${secs(inAt)}, ${secs(film.duration - inAt)} before the end: the ask holds ${holds} s at least${holds < rules.hook.askHolds ? ` in a ${secs(film.duration)} film` : ""}.`, fix: "Bring the end card in sooner, or hold the last frame longer.", code: "ask_short" });
   }
   return out;
 }
@@ -1183,6 +1201,15 @@ function filmPrint(film) {
 /** The film's own checks (everything but a render's): { ran, findings, motion, carry }, `carry` holding what a later
     render's check needs from this one (the stretches HyperFrames' craft pass found still on purpose, and on footage the
     words' places on screen, for the face). */
+/** Style norms: findings about how a film usually looks (a headline's length, words at once, the end card's hold,
+    a still stretch, an empty first frame, colours, fonts or grounds outside the kit) rather than about something
+    broken, unreadable or unheard. A stylised film can mean any of them, so they're notes: the review judges them. */
+export const STYLE_NORMS = new Set(["headline_long", "words_at_once", "ask_short", "colour_off_brand", "font_off_brand", "ground_off_brand", "first_frame_empty", "dead_stretch"]);
+export function asStyleNotes(findings) {
+  for (const f of findings) if (STYLE_NORMS.has(f.code) && f.level === "should") f.level = "note";
+  return findings;
+}
+
 async function filmFindings(film, rules, row, log) {
   const step = rules.check.step;
   const ran = [];
@@ -1250,6 +1277,13 @@ async function filmFindings(film, rules, row, log) {
     ran.push({ name: "Video Studio's words", detail: `didn't run: ${looked}` });
   } else {
     findings.push(...ourFindings({ film, rules, runs, samples, step, hf, refined: late }));
+    // small print (data-fine-print) isn't read like a line: HyperFrames' reading hold on it is a note
+    const fine = new Set(runs.filter((r) => r.meta.fine).map((r) => r.text.replace(/\s+/g, " ").trim()));
+    for (const f of findings)
+      if (f.code === "line_unread" && f.text && fine.has(f.text.replace(/\s+/g, " ").trim())) {
+        f.level = "note";
+        f.fix = "It's small print (data-fine-print), so it isn't held like reading text; it only has to be legible.";
+      }
     const shown = runs.filter((r) => !r.meta.ignore).length;
     ran.push({ name: "Video Studio's words", detail: `${plural(samples.length, "sample")} every ${step} s, ${plural(shown, "block")} of words; sizes, holds, words at once, headlines and safe areas at ${row.key.replace("x", ":")}; the brand's fonts and colours${film.words.length ? `; ${plural(film.words.length, "spoken word")} against the screen` : ""}${film.storyboard ? `; storyboard v${film.storyboard.version}'s words` : ""}` });
   }
@@ -1262,6 +1296,7 @@ async function filmFindings(film, rules, row, log) {
       ? runs.filter((r) => !r.meta.ignore).map((r) => ({ first: r.first, last: r.last, box: r.box, text: r.text, meta: { own: r.meta.own || "", selector: r.meta.selector || "", file: r.meta.file || "" } }))
       : [],
   };
+  asStyleNotes(findings);
   return { ran, findings, motion: motion.written ? { file: "index.motion.json", tested: plan.tested } : null, carry };
 }
 

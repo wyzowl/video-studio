@@ -254,6 +254,7 @@ itself is dropped when the video uses shader transitions or HDR media: put it on
 | `data-layout-allow-occlusion` | An element meant to cover text (a full-frame transparent canvas, a cut-out in front of words) |
 | `data-layout-allow-caption-zone` | Words meant to sit in the caption band (`--caption-zone`) |
 | `data-layout-ignore` | A decorative element, such as a 3D surface, never measured; also text that's texture rather than reading (a phone's clock, a sign in the world), which the type floor would flag. Mark the words themselves, not a container that moves: the motion checks skip whatever it marks, so an interface marked whole reads as nothing moving |
+| `data-fine-print` | Small print: a credit line, a disclaimer, "Example figures". Video Studio's own type floor and reading holds skip it, and it isn't the ask at the end; it stays readable (HyperFrames' own floor and contrast still apply). Mark the words themselves |
 | `data-hold` | A stillness that's meant (a pause on a key word, a chart held to be read), on the element that holds, not the whole stage: the still-stretch finding (`dead_stretch`) |
 
 Words a cover transition passes over need no mark: Video Studio's checks make their contrast under the cover a note.

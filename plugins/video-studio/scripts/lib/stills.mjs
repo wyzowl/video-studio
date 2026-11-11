@@ -30,6 +30,14 @@ function snapshot(dir, version, times, out) {
         if (j.ok === false || !Array.isArray(j.frames)) throw new Error(j.error || "no frames");
         done(j.frames);
       } catch (e) {
+        // a HyperFrames before --json (a project pinned to 0.8.x) prints no JSON: its stills are named by their times
+        const folder = join(dir, out);
+        const found = (existsSync(folder) ? readdirSync(folder) : [])
+          .map((name) => ({ name, m: /^frame-(\d+)-at-([\d.]+)s\.png$/.exec(name) }))
+          .filter((x) => x.m)
+          .sort((a, b) => Number(a.m[1]) - Number(b.m[1]))
+          .map((x) => ({ path: join(folder, x.name), time: Number(x.m[2]) }));
+        if (found.length) return done(found);
         fail(new Error(`HyperFrames' snapshot made no stills: ${(err.trim().split("\n").filter((l) => l && !/^\[/.test(l)).pop() || e.message).slice(0, 300)}`));
       }
     });

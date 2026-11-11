@@ -435,6 +435,15 @@ export async function framesIntoFilm(at, { version = null, force = false, prefix
 
   const drawn = await readFrames(framesFile, { w: size.w, h: size.h });
   if (!drawn.frames.length) return { code: 1, lines: [`frames.html has no [data-frame] elements.`] };
+  // a frame drawn by a script that isn't there comes out empty: stop, rather than start a film with nothing in it
+  const missing = drawn.scripts
+    .filter((x) => x.src && !/^[a-z]+:|^\/\//i.test(x.src))
+    .map((x) => x.src)
+    .filter((src) => !existsSync(resolve(versionDir, decodeURI(src.split(/[?#]/)[0]))));
+  if (missing.length)
+    return { code: 1, lines: [`frames.html loads ${missing.length === 1 ? "a script that isn't" : "scripts that aren't"} in the project: ${missing.join(", ")}. The frames are drawn by ${missing.length === 1 ? "it" : "them"}, so without ${missing.length === 1 ? "it" : "them"} the film would start empty. Put ${missing.length === 1 ? "it" : "them"} back where frames.html looks (relative to storyboard/v${v}/), then run frames again.`] };
+  const empty = drawn.frames.filter((f) => !f.c.some((n) => n.tag || (n.t || "").trim()));
+  if (empty.length === drawn.frames.length) return { code: 1, lines: [`Every frame in frames.html came out empty (${empty.map((f) => f.id).join(", ")}): its drawing didn't run. Open storyboard v${v}'s page to see it fail, fix it, then run frames again.`] };
   const problems = new Set();
   const stills = readStills(versionDir);
   let motionMarks = 0;
@@ -687,7 +696,10 @@ export async function framesIntoFilm(at, { version = null, force = false, prefix
     shared.push(rel);
   }
   const drawing = drawn.scripts.filter((s) => !s.src && s.lines > 3);
-  const gsapTag = /<script\s+src="[^"]*gsap[^"]*"><\/script>/i.exec(before)?.[0] || `<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>`;
+  // GSAP from the project's own copy where it has one (HyperFrames uses its own copy for the jsDelivr link otherwise)
+  const gsapTag =
+    /<script\s+src="[^"]*gsap[^"]*"><\/script>/i.exec(before)?.[0] ||
+    (existsSync(join(dir, "assets", "vendor", "gsap.min.js")) ? `<script src="assets/vendor/gsap.min.js"></script>` : `<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>`);
   const sprite = drawn.defs.map((d) => markup({ ...d, a: { ...d.a, "aria-hidden": "true", width: "0", height: "0", style: "position:absolute;width:0;height:0;overflow:hidden" } }, rw, "defs", new Map())).join("\n");
 
   const html = [

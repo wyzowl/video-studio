@@ -12,7 +12,8 @@ works to it, and HyperFrames' check measures the parts that can be measured. The
   beat later, big enough to see; organic things travel on arcs; nothing spatial moves linearly unless it's meant to
   look mechanical.
 - **Every move has a job:** it reveals, orders, answers, explains or celebrates. Nothing moves just to look busy,
-  and nothing breathes, floats or pulses on words or interface.
+  and nothing breathes, floats or pulses on words or interface unless the plan asks for it (interface pulsing on
+  the beat in a music-led film).
 - **The eye always knows where to go.** One main action at a time, the most important thing first, everything else
   quieter.
 - **The world is alive.** Once things have arrived, the atmosphere and the film's world keep slow motion of their own

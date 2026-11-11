@@ -8,9 +8,11 @@ Levels, room for the voice, effects, and checking the result. The targets are in
   informational film about 1 dB quieter still. A video about sound, or a brief that asks for more, can let them lead.
 - **Level the stems before rendering.** When the encoded mix's true peak passes −1 dBTP, HyperFrames' render puts a
   true-peak limiter at −3 dBTP over the whole mix, which keeps its loudness but flattens its peaks (the effects' hits
-  first); if that can't hold it, it turns the whole mix down and says by how much (`Audio lowered … dB`). Versions
-  before 0.8.228 only turned it down. So level the stems to sum to −14 LUFS at −1.8 dBTP or lower, and neither
-  happens:
+  first); if that can't hold it, it turns the whole mix down and says by how much (`Audio lowered … dB`). So level
+  the stems to sum to −14 LUFS at −1.8 dBTP or lower, and neither happens. A project pinned to a HyperFrames before
+  0.8.228 is different: it has no limiter and turns the mix down well before −1 dBTP (on 0.8.149, a mix at −1.8 or
+  even −3 dBTP came out 2–3 dB quieter), so level it to about −5 dBTP and check the render's loudness
+  (`studio.mjs check --render`):
 
   ```bash
   node tools/score-kit/level.mjs --stem music=assets/audio/music_raw.wav:limit --stem sfx=assets/audio/sfx_raw.wav

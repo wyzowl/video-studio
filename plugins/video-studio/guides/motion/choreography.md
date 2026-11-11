@@ -117,7 +117,7 @@ things in the film's world keep slow motion of their own once they've arrived, s
 the content and stays below about a fifth of the main motion's energy: a gradient shifting over 8–20 s, a background panning at a fifth of the foreground's speed, a few slow
 particles, a slow orbit of a backdrop (3–5° a second). Layered elements that drift run on different cycle lengths so
 they never fall into step. Words and interface the viewer is reading don't breathe, float or pulse
-(`principles.md`, "Motion that's alive, and motion that's filler").
+unless the plan asks for it (`principles.md`, "Motion that's alive, and motion that's filler").
 
 ---
 Sources: written for Video Studio from LottieFiles' motion-design skill (choreography, narrative structure and

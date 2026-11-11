@@ -72,7 +72,8 @@ bottom of a 9:16 frame (`cli.md`).
 
 - The first frame is already a composed frame, never black or empty.
 - The hook's promise is clear within the first 3 seconds (within 1.5 s in a vertical feed).
-- The ask at the end holds at least 2.5 seconds, with the brand.
+- The ask at the end holds at least 2.5 seconds, with the brand; a short film's, a twentieth of its length (a
+  second at least: 1.5 s in a 30 s film). Small print on the end card (a credit, a disclaimer) isn't the ask.
 
 ## Sound
 

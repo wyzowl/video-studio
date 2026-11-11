@@ -110,6 +110,8 @@ export function checkScript(root, slug) {
   }
 
   const order = { must: 0, should: 1, note: 2 };
+  // pacing and words-on-screen norms are notes: a stylised script can mean them (the script skill judges them)
+  for (const f of findings) if (["beat_long", "row_words", "runs_long"].includes(f.code) && f.level === "should") f.level = "note";
   findings.sort((a, b) => order[a.level] - order[b.level]);
   const report = settle({
     version: 1,

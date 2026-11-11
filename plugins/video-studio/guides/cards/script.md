@@ -61,7 +61,7 @@ idea of what the product does sinks the whole film.
   in (a figure and its label, a widget, a list) holds 3 s or twice its reading time.
 - **On screen:** a headline of 2–7 words; about 12 words at once at most (captions and interface shown as a picture
   don't count); a line at headline size up to about 35 characters at 16:9, 25 at 1:1 and 4:5, 20 at 9:16.
-- **The end:** the ask holds 2.5 s at least, with the brand.
+- **The end:** the ask holds 2.5 s at least (a short film's, a twentieth of its length), with the brand.
 
 `studio.mjs check <project> --script` measures the hook's length, the words each row puts on screen, the pace against
 the brief's length and the longest beat, against these numbers.

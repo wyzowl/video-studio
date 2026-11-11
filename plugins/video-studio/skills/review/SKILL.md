@@ -15,7 +15,8 @@ are as in the production skill.
 1. `node PLUGIN/scripts/studio.mjs draft <project>` does a round's routine in one go and prints one summary:
    - Video Studio's checks first (`PLUGIN/guides/cli.md`, "lint and check"). A must fix stops it: fix it and run it
      again. Fix each should fix, or keep it with why (`studio.mjs check <project> --keep S2 "<why>"`: a quick-fire run
-     meant to be glanced at, a label that's texture);
+     meant to be glanced at, a label that's texture). The style norms are notes (`--notes`): weigh each against the
+     brief and the plan, and change it only where the film didn't mean it;
    - the draft render, `renders/drafts/<project>_v<N>_draft_r<n>.mp4` (`HF render`, pinned, its progress on the
      video's overview), and the render's own checks: its loudness, peaks, sounds that stop dead and a stuck picture
      (and words over a face, on footage);

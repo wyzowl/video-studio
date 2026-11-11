@@ -52,7 +52,10 @@ plain film that only avoids faults isn't agency-grade.
 ## Defaults, not bans
 
 Everything in these guides is a default: where a film starts. The brief, the brand kit or the user can choose
-otherwise, and the guides say what each choice costs rather than forbidding it. What's never compromised is
+otherwise, and the guides say what each choice costs rather than forbidding it. When the brief or the approved plan
+asks for something a guide or a standard advises against (interface pulsing on the beat, a hard-cut style, an end
+card that holds briefly), the plan wins, and the review judges it as what was asked for. The checks follow the same
+line: what looks broken, can't be read or can't be heard is a fix; a style norm is a note. What's never compromised is
 HyperFrames' contract (`format.md`): a frame drawn from anything but the time renders wrong.
 
 Where things come from, by default: the user's own files (voiceover, footage, logos, music), the brand kit, SFX Kit,

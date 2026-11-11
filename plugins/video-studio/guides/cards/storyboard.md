@@ -80,7 +80,8 @@ element only, tonal steps before effects, tinted neutrals.
   14%, the bottom 25%, the right 15% and the left 6%.
 - **Something new** every 2–4 s; nothing unchanged for more than about 4 s while the voice talks; the slowest scene
   about three times slower than the fastest.
-- **The first frame** already composed; the hook's promise by 3 s (1.5 s vertical); the ask held 2.5 s with the brand.
+- **The first frame** already composed; the hook's promise by 3 s (1.5 s vertical); the ask held 2.5 s with the brand (a short film's, a
+  twentieth of its length).
 
 ---
 Sources: Video Studio's own summary of its guides (`../story/beats.md`, `../design/`, `../motion/`, `../numbers.md`);

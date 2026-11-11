@@ -145,7 +145,10 @@ hold and the time to take in a card, words on screen at once, headlines, safe ar
 the brand kit's fonts and colours, the words on screen against the approved ones and against the voice (a key word
 that lands after it's said), the music against the voice and each sound's ending, and on footage words over the
 face. HyperFrames' findings come as they are, never measured twice: its errors are must fix, its warnings should fix,
-and what it saw at one sample only (an entrance or exit in flight) or lint's advice are notes. So is contrast on
+and what it saw at one sample only (an entrance or exit in flight) or lint's advice are notes. Must fix and should
+fix are for what looks broken, can't be read or can't be heard; style norms (a headline's length, words at once, the
+end card's hold, a still stretch, an empty first frame, colours, fonts or grounds outside the kit) are notes, since a
+stylised film can mean them: read them with `--notes`, and the review judges them. So is contrast on
 words while a cover transition (a library item whose note says `"kind": "cover"`) paints over them, since HyperFrames
 reads the cover as their ground; outside the cover they're checked as usual.
 

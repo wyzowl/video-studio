@@ -160,6 +160,7 @@ function measure({ w, h, captions, grounds }) {
       file: host?.getAttribute("data-composition-src") || "index.html",
       caption: Boolean(el.closest('[data-track-kind="captions"]')) || captions.some((c) => comp.startsWith(c)),
       ignore: Boolean(el.closest("[data-layout-ignore]")),
+      fine: Boolean(el.closest("[data-fine-print]")),
       bleed: Boolean(el.closest("[data-layout-allow-overflow],[data-layout-bleed]")),
       svg: el instanceof SVGElement,
     };
@@ -232,7 +233,8 @@ function measure({ w, h, captions, grounds }) {
   // a part on a new line, or set apart from the last, is a new word
   const append = (acc, words, r, el) => {
     const prev = acc.last;
-    if (prev && !/\s$/.test(prev.text) && !/^\s/.test(words) && (r.top >= prev.bottom - 0.3 * (prev.bottom - prev.top) || r.left - prev.right > 0.25 * parseFloat(cs(el).fontSize))) acc.parts.push(" ");
+    if (prev && !/\s$/.test(prev.text) && !/^\s/.test(words) && (acc.space || r.top >= prev.bottom - 0.3 * (prev.bottom - prev.top) || r.left - prev.right > 0.25 * parseFloat(cs(el).fontSize))) acc.parts.push(" ");
+    acc.space = false;
     acc.last = { text: words, top: r.top, bottom: r.bottom, right: r.right };
     acc.parts.push(words);
   };
@@ -240,7 +242,19 @@ function measure({ w, h, captions, grounds }) {
   const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   for (let n = walk.nextNode(); n; n = walk.nextNode()) {
     const text = n.textContent;
-    if (!text || !text.trim()) continue;
+    if (!text) continue;
+    if (!text.trim()) {
+      // the space between two words set as separate spans: the next word in that line starts a new word
+      const el = n.parentElement;
+      if (el && !el.closest("script,style,template,noscript,title,head")) {
+        const b = blocks.get(idOf(blockOf(el)));
+        if (b) {
+          b.space = true;
+          for (const acc of b.inner.values()) acc.space = true;
+        }
+      }
+      continue;
+    }
     const el = n.parentElement;
     if (!el || el.closest("script,style,template,noscript,title,head")) continue;
     const o = opacityOf(el);

@@ -116,7 +116,9 @@ A state change never rides on opacity alone: pair it with position or scale, so 
 - Things that really move keep a film alive: the product's interface working, footage playing, a character acting,
   a 3D world turning slowly, a background drifting far behind.
 - Filler reads as made by a machine: titles and cards breathing, floating or pulsing in a loop; a title still sliding
-  or growing after it has landed; a slow creeping push late in a scene that pulls the eye off what it's reading.
+  or growing after it has landed; a slow creeping push late in a scene that pulls the eye off what it's reading. It's
+  filler when nobody asked for it: a film that's about the beat can make its interface pulse on it, when the plan
+  says so.
 - A landed title holds dead still; the motion moves on to the next element, the camera or the world behind. A held,
   still frame is better than a frame kept busy by drift. If a held hero needs life, a tiny, low-amplitude jitter
   or the subject's own internal motion (a clock's hands, a dot pulsing on a live status) does it.
